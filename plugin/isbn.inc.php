@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.8 2004/01/30 15:00:30 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -21,10 +21,10 @@ if (!defined('ISBN_AMAZON_XML'))
 	define('ISBN_AMAZON_XML','http://xml.amazon.com/onca/xml3?t=webservices-20&dev-t=GTYDRES564THU&type=lite&page=1&f=xml&locale=jp&AsinSearch=');
 // amazon shop URI (_ISBN_ に商品IDがセットされる)
 if (!defined('ISBN_AMAZON_SHOP'))
-	define('ISBN_AMAZON_SHOP','http://www.amazon.co.jp/exec/obidos/ASIN/_ISBN_/ref=ase_'.AMAZON_ASE_ID);
+	define('ISBN_AMAZON_SHOP','http://www.amazon.co.jp/exec/obidos/ASIN/_ISBN_/ref=nosim/'.AMAZON_ASE_ID);
 // amazon UsedShop URI (_ISBN_ に商品IDがセットされる)
 if (!defined('ISBN_AMAZON_USED'))
-	define('ISBN_AMAZON_USED','http://www.amazon.co.jp/exec/obidos/tg/detail/offer-listing/-/_ISBN_/all/ref=ase_'.AMAZON_ASE_ID);
+	define('ISBN_AMAZON_USED','http://www.amazon.co.jp/exec/obidos/tg/detail/offer-listing/-/_ISBN_/all/ref='.AMAZON_ASE_ID);
 
 /////////////////////////////////////////////////
 // expire 画像キャッシュを何日で削除するか
