@@ -80,9 +80,26 @@ $_btn_freeze = 'Freeze';
 $_btn_unfreeze = 'Unfreeze';
 $_btn_notchangetimestamp = 'Not change timestamp';
 $_btn_addtop = 'Add to top of page';
-$_btn_template = 'Page for use template';
+$_btn_template = 'Page as template';
 $_btn_load = 'Load';
 $_btn_edit = 'Edit';
+$_btn_enter_enable = ' Enable auto CR';
+$_btn_autobracket_enable = ' Enable auto bracket';
+$_btn_freeze_enable = ' Enable config of edit permission of this page (Unfreeze if unchecked)';
+$_btn_auther_id = 'Created by:';
+$_btn_allow_header = 'Permission of this page';
+$_btn_allow_deny = 'Disallow';
+$_btn_allow_group = 'Group';
+$_btn_allow_user = 'User';
+$_btn_allow_memo_t = 'Description';
+$_btn_allow_memo = '
+<ul>
+<li>More than one group or user can be selected</li>
+<li>All logged in users can edit when "_LOGDINUSER_" selected</li>
+<li>No one except Administrators and creators of this page can edit when both user and group are disallowed</li>
+<li>Every user beloging to a group can edit when the group is permitted</li>
+<li>To allow certain user to edit, set group disallowed and select the user to be permitted</li>
+</ul>';
 
 ///////////////////////////////////////
 // plug-in message

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: where.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: where.inc.php,v 1.3 2003/07/02 13:57:54 wellwine Exp $
 //
 // 指定ページへの階層をリンク付で表示するプラグイン
 //
@@ -16,6 +16,19 @@
 //  ページ名を省略した場合は、最後のページ名はリンクがつかない。
 //  ページ名を指定すると、最後のページもリンクがつく。
 /////////////////////////////////////////////////
+
+function plugin_where_init() {
+	if (LANG=='ja') {
+		$_plugin_where_messages = array(
+			'_where_msg_top' => 'トップ',
+		);
+	} else {
+		$_plugin_where_messages = array(
+			'_where_msg_top' => 'Top',
+		);
+	}
+	set_plugin_messages($_plugin_where_messages);
+}
 
 function plugin_where_convert() {
 	global $script,$vars;
@@ -35,6 +48,7 @@ function plugin_where_inline() {
 }
 
 function plugin_where_make($prefix) {
+	global $_where_msg_top;
 	global $script,$vars,$defaultpage;
 	$this_page = false;
 
@@ -45,7 +59,7 @@ function plugin_where_make($prefix) {
 	$page_names = array();
 	$page_names = explode("/",$prefix);
 	$title = $defaultpage.' '.get_pg_passage($defaultpage,FALSE);
-	$ret = "<a href=\"$script?cmd=read&amp;page=$defaultpage\" title=\"$title\">トップ</a>";
+	$ret = "<a href=\"$script?cmd=read&amp;page=$defaultpage\" title=\"$title\">$_where_msg_top</a>";
 	$access_name = "";
 	foreach ($page_names as $page_name){
 		$access_name .= $page_name."/";

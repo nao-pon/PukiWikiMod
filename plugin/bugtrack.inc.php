@@ -8,34 +8,56 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.3 2003/06/28 15:46:11 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.4 2003/07/02 13:57:54 wellwine Exp $
  */
 
 function plugin_bugtrack_init()
 {
-  global $script;
-  $_plugin_bugtrack_messages = array(
-    '_bugtrack_plugin_priority_list' => array("緊急","重要","普通","低"),
-    '_bugtrack_plugin_state_list' => array("提案","着手","CVS待ち","完了","保留","却下"),
-    '_bugtrack_plugin_state_sort' => array("着手","CVS待ち","保留","完了","提案","却下"),
-    '_bugtrack_plugin_state_bgcolor' => array("#ccccff","#ffcc99","#ccffcc","#ccffcc","#ffccff","#cccccc","#ff3333"),
-    
-    '_bugtrack_plugin_title' => "\$1 Bugtrack Plugin",
-    '_bugtrack_plugin_base' => "ページ",
-    '_bugtrack_plugin_summary' => "サマリ",
-    '_bugtrack_plugin_priority' => "優先順位",
-    '_bugtrack_plugin_state' => "状態",
-    '_bugtrack_plugin_name' => "投稿者",
-    '_bugtrack_plugin_date' => "投稿日",
-    '_bugtrack_plugin_body' => "メッセージ",
-    '_bugtrack_plugin_category' => "カテゴリー",
-    '_bugtrack_plugin_pagename' => "ページ名",
-    '_bugtrack_plugin_pagename_comment' => "<font size=\"1\">空欄のままだと自動的にページ名が振られます。</font>",
-    '_bugtrack_plugin_version_comment' => "<font size=\"1\">空欄でも構いません</font>",
-    '_bugtrack_plugin_version' => "バージョン",
-    '_bugtrack_plugin_submit' => "追加"
-    );
-  set_plugin_messages($_plugin_bugtrack_messages);
+    global $script;
+    if (LANG=='ja') {
+        $_plugin_bugtrack_messages = array(
+            '_bugtrack_plugin_priority_list' => array("緊急","重要","普通","低"),
+            '_bugtrack_plugin_state_list' => array("提案","着手","CVS待ち","完了","保留","却下"),
+            '_bugtrack_plugin_state_sort' => array("着手","CVS待ち","保留","完了","提案","却下"),
+            '_bugtrack_plugin_state_bgcolor' => array("#ccccff","#ffcc99","#ccffcc","#ccffcc","#ffccff","#cccccc","#ff3333"),
+            '_bugtrack_plugin_title' => "\$1 Bugtrack Plugin",
+            '_bugtrack_plugin_base' => "ページ",
+            '_bugtrack_plugin_summary' => "サマリ",
+            '_bugtrack_plugin_priority' => "優先順位",
+            '_bugtrack_plugin_state' => "状態",
+            '_bugtrack_plugin_name' => "投稿者",
+            '_bugtrack_plugin_date' => "投稿日",
+            '_bugtrack_plugin_body' => "メッセージ",
+            '_bugtrack_plugin_category' => "カテゴリー",
+            '_bugtrack_plugin_pagename' => "ページ名",
+            '_bugtrack_plugin_pagename_comment' => "<font size=\"1\">空欄のままだと自動的にページ名が振られます。</font>",
+            '_bugtrack_plugin_version_comment' => "<font size=\"1\">空欄でも構いません</font>",
+            '_bugtrack_plugin_version' => "バージョン",
+            '_bugtrack_plugin_submit' => "追加"
+        );
+    } else {
+        $_plugin_bugtrack_messages = array(
+            '_bugtrack_plugin_priority_list' => array("Urgent","High","Middle","Low"),
+            '_bugtrack_plugin_state_list' => array("Open","in Progress","Ready to CVS","Closed","Pending","Rejected"),
+            '_bugtrack_plugin_state_sort' => array("in Progress","Ready to CVS","Pending","Closed","Open","Rejected"),
+            '_bugtrack_plugin_state_bgcolor' => array("#ccccff","#ffcc99","#ccffcc","#ccffcc","#ffccff","#cccccc","#ff3333"),
+            '_bugtrack_plugin_title' => "\$1 Bugtrack Plugin",
+            '_bugtrack_plugin_base' => "Page",
+            '_bugtrack_plugin_summary' => "Summary",
+            '_bugtrack_plugin_priority' => "Priority",
+            '_bugtrack_plugin_state' => "Status",
+            '_bugtrack_plugin_name' => "Poster",
+            '_bugtrack_plugin_date' => "Posted",
+            '_bugtrack_plugin_body' => "Description",
+            '_bugtrack_plugin_category' => "Category",
+            '_bugtrack_plugin_pagename' => "Page Name",
+            '_bugtrack_plugin_pagename_comment' => "<font size=\"1\">Automatically assigned if left empty</font>",
+            '_bugtrack_plugin_version_comment' => "<font size=\"1\">Can be empty</font>",
+            '_bugtrack_plugin_version' => "Version",
+            '_bugtrack_plugin_submit' => "Add"
+        );
+    }
+    set_plugin_messages($_plugin_bugtrack_messages);
 }
 
 
