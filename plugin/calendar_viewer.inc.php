@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.10 2004/01/24 14:47:50 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.11 2004/01/30 14:49:42 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -13,7 +13,7 @@
   -2002-11-13
   --前後へのリンクに年月や「次のn件」と表示するようにした。
  *使い方
-  /// #calendar_viewer(pagename,(yyyy-mm|n|this),[mode],[separater])
+  /// #calendar_viewer(pagename,(yyyy-mm|n|this),[mode],[separater],notoday)
  **pagename
   calendar or calendar2プラグインを記述してるページ名
  **(yyyy-mm|n|this)
@@ -34,6 +34,8 @@
   -[separater]
   省略可能。デフォルトは-。（calendar2なら省略でOK）
   --年月日を区切るセパレータを指定。
+ **notoday
+  -本日分を表示しないオプション
 
  *todo
   past or future で月単位表示するときに、それぞれ来月、先月の一覧へのリンクを表示しないようにする
@@ -65,6 +67,7 @@ function plugin_calendar_viewer_convert()
   global $WikiName,$BracketName,$vars,$get,$post,$hr,$script,$trackback;
   global $anon_writable,$wiki_user_dir;
   global $comment_no,$h_excerpt,$digest;
+  //return false;
   //*デフォルト値をセット
   //基準となるページ名
   $pagename = "";
@@ -76,6 +79,10 @@ function plugin_calendar_viewer_convert()
   $mode = "past";
   //日付のセパレータ calendar2なら"-" calendarなら""
   $date_sep = "-";
+  //本日分を表示しない
+  $notuday = false;
+  
+
 
 	$cal2=0;
 
@@ -84,8 +91,22 @@ function plugin_calendar_viewer_convert()
   //*引数の確認
   if(func_num_args()>=2){
     $func_vars_array = func_get_args();
-
+    $_options = array();
+	foreach($func_vars_array as $option)
+	{
+		if (strtolower($option) == "notoday")
+			$notoday = true;
+		else
+			$_options[] = $option;
+	}
+	$func_vars_array = $_options;
+	unset($_options,$option);
+	
     $pagename = $func_vars_array[0];
+    if (strtolower($pagename) == "this")
+    	$pagename = $vars['page'];
+    else
+        $pagename = add_bracket($pagename);
 
     if (isset($func_vars_array[3])){
       	if ($func_vars_array[3] == "cal2"){
@@ -127,6 +148,9 @@ function plugin_calendar_viewer_convert()
   }else{
     return $_calendar_viewer_msg_noargs;
   }
+  
+  //本日のページ名
+  $today_prefix = date("Y{$date_sep}m{$date_sep}d");
 
   //*一覧表示するページ名とファイル名のパターン　ファイル名には年月を含む
   if ($pagename == ""){
@@ -155,6 +179,8 @@ function plugin_calendar_viewer_convert()
 		//$pageがカレンダー形式なのかチェック デフォルトでは、 yyyy-mm-dd-([1-9])?
 		$page = strip_bracket($page);
 		if (plugin_calendar_viewer_isValidDate(substr($page,$pagepattern_len),$date_sep) == false) continue;
+		//本日分は？
+		if ($notoday && strpos($page,$today_prefix) !== false) continue;
 		//*mode毎に別条件ではじく
 		//past modeでは未来のページはNG
 		if (((substr($page,$pagepattern_len,$datelength)) > date("Y".$date_sep."m".$date_sep."d"))&&($mode=="past") )continue;
