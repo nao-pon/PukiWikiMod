@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: images.php,v 1.1 2004/07/31 06:48:04 nao-pon Exp $
+// $Id: images.php,v 1.2 2004/08/04 13:59:54 nao-pon Exp $
 /////////////////////////////////////////////////
 
 if (!isset($_GET['q'])) exit;
@@ -20,7 +20,7 @@ exit;
 function get_image_filename($q)
 {
 	error_reporting(0);
-	$dir = "./plugin_cache/";
+	$dir = "./cache/p/";
 	$file = $dir.md5($q).".tig";
 	if (file_exists($file))
 		return $file;
