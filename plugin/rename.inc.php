@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rename.inc.php,v 1.5 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: rename.inc.php,v 1.6 2005/02/23 14:59:39 nao-pon Exp $
 //
 
 /*
@@ -38,7 +38,7 @@ function plugin_rename_init() {
 	'msg_oldname' => '現在の名前',
 	'msg_newname' => '新しい名前',
 	'msg_adminpass' => '管理者パスワード',
-	'msg_arrow' => '→',
+	'msg_arrow' => '<span style="color:red;font-weight:bold;">→</span>',
 	'msg_exist_none' => 'そのページを処理しない',
 	'msg_exist_overwrite' => 'そのファイルを上書きする',
 	'msg_confirm' => '以下のファイルをリネームします。',
@@ -202,7 +202,7 @@ function rename_phase2($err='')
 		$msg_related = $_rename_messages['msg_do_related'].
 			'<input type="checkbox" name="related" value="1" checked="checked" /><br />';
 	}
-	$msg_rename = sprintf($_rename_messages['msg_rename'],make_pagelink($refer));
+	$msg_rename = sprintf($_rename_messages['msg_rename'],make_pagelink($refer,strip_bracket($refer)));
 	
 	$s_page = htmlspecialchars(strip_bracket($page));
 	$s_refer = htmlspecialchars(strip_bracket($refer));
@@ -227,7 +227,7 @@ EOD;
 		sort($related);
 		foreach ($related as $name)
 		{
-			$ret['body'].= '<li>'.make_pagelink($name).'</li>'; 
+			$ret['body'].= '<li>'.make_pagelink($name,strip_bracket($name)).'</li>'; 
 		}
 		$ret['body'].= '</ul>';
 	}
@@ -330,9 +330,9 @@ function rename_phase3($pages)
 		foreach ($exists as $page=>$arr)
 		{
 			$msg .= '<li>';
-			$msg .= make_pagelink(decode($page));
+			$msg .= make_pagelink(decode($page),strip_bracket(decode($page)));
 			$msg .= $_rename_messages['msg_arrow'];
-			$msg .= htmlspecialchars(decode($pages[$page]));
+			$msg .= htmlspecialchars(strip_bracket(decode($pages[$page])));
 			if (count($arr) > 0)
 			{
 				$msg .= "<ul>\n";
@@ -370,9 +370,9 @@ EOD;
 	{
 		$ret['body'] .= "<li>".
 			//make_pagelink(decode($old)).
-			decode($old).
+			strip_bracket(decode($old)).
 			$_rename_messages['msg_arrow'].
-			htmlspecialchars(decode($new)).
+			strip_bracket(htmlspecialchars(decode($new))).
 			"</li>\n";
 	}
 	$ret['body'] .= "</ul>\n";
@@ -510,8 +510,9 @@ function rename_proceed($pages,$files,$exists)
 		
 		// 送信済みPING
 		// [md5値(ブラケットなし)].ping
-		@unlink("./tracback/".md5($new).".ping");
-		@rename("./tracback/".md5($old).".ping","./tracback/".md5($new).".ping");
+		// Ver 1.2.1 以降は、[pgid].ping になったので必要なし
+		//@unlink("./tracback/".md5($new).".ping");
+		//@rename("./tracback/".md5($old).".ping","./tracback/".md5($new).".ping");
 	}
 	
 	// 更新の衝突はチェックしない。
