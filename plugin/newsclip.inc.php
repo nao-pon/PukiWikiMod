@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: newsclip.inc.php,v 1.4 2004/11/01 01:17:42 nao-pon Exp $
+// $Id: newsclip.inc.php,v 1.5 2004/12/08 01:46:33 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -11,8 +11,8 @@ function plugin_newsclip_init()
 {
 	$data = array('plugin_newsclip_dataset'=>array(
 	'cache_time'    => 1,                                  // キャッシュ有効時間(h)
-//	'def_max'       => 10,                                 // デフォルト表示数
-//	'max_limit'     => 50,                                 // 最大表示数
+	'def_max'       => 10,                                 // デフォルト表示数
+	'max_limit'     => 10,                                 // 最大表示数
 	'head_msg'      => '<h4>検索結果: %s <span class="small">by NEWSサイト</span></h4><p class="empty"></p>',
 	'research'      => 'goo でさらにで探す',
 	'err_noresult'  => '%sに関するニュースは見つかりませんでした。',
@@ -24,6 +24,7 @@ function plugin_newsclip_init()
 function plugin_newsclip_split($_data)
 {
 	$arg = explode("<br />",$_data[1]);
+	
 	$data ="";
 	$data .= "<div class=\"small\" style=\"text-align:right;\">".$arg[2]."</div>";
 	$data .= "<p class=\"quotation\" style=\"margin-top:1px;\">".make_link($arg[0])."</p>";
@@ -83,19 +84,23 @@ function plugin_newsclip_convert()
 	$array = func_get_args();
 	
 	$word = "";
-//	$def_max = $max = $plugin_newsclip_dataset['def_max'];
-//	$max_limit = $plugin_newsclip_dataset['max_limit'];
+	$def_max = $max = $plugin_newsclip_dataset['def_max'];
+	$max_limit = $plugin_newsclip_dataset['max_limit'];
 	
 	switch (func_num_args())
 	{
-		//case 2:
-		//	$max = min($array[1],$max_limit);
+		case 2:
+			$max = min($array[1],$max_limit);
 		case 1:
 			$word = trim($array[0]);
 	}
-	//if ($max < 1) $max = $def_max;
-	
+	if ($max < 1) $max = $def_max;
+
 	@list($data,$refresh) = plugin_newsclip_get($word);
+	
+	// 指定件数切り出し
+	$data = join("</li>\n",(array_slice(explode("</li>",$data),0,$max)));
+	
 	// リフレッシュ用のイメージタグ付加
 	$refresh = ($refresh)? "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=newsclip&amp;pmode=refresh&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;q=".rawurlencode($word)."\" width=\"1\" height=\"1\" /></div>" : "";
 
@@ -176,6 +181,7 @@ function plugin_newsclip_get($word,$do_refresh=FALSE)
 		
 		//trim -> last
 		$data = trim($data);
+		
 		if (!$data)
 			$data = "<ul><li>".str_replace("%s",htmlspecialchars($word),$plugin_newsclip_dataset['err_noresult'])."</li></ul>";
 		else
