@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.en.php,v 1.2 2003/07/09 14:45:51 wellwine Exp $
+<?php // $Id: pukiwiki.skin.en.php,v 1.3 2003/07/15 13:19:02 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -91,7 +91,7 @@ if($_freeze){
 	<?php if($is_page) { ?>
 		<table cellspacing="1" cellpadding="0" border="0" width="100%">
 			<tr>
-			<td valign="top" style="word-break:break-all;">
+			<td valign="top" style="word-break:normal;">
 	<?php } ?>
 	<?php echo $body ?>
 	<?php if($is_page) { ?>
