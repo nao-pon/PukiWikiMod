@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.8 2004/01/12 13:12:55 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.9 2004/01/15 13:09:34 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -72,7 +72,7 @@ function xb_make_link($page,$alias="#/#")
 	if (isset($linktag[$page.$alias])) return $linktag[$page.$alias];
 	
 	$url = rawurlencode($name);
-	if (preg_match("/#(.*)#/",$alias,$sep))
+	if (preg_match("/^#(.*)#$/",$alias,$sep))
 	{
 		// パン屑リスト出力
 		$sep = htmlspecialchars($sep[1]);
@@ -88,6 +88,8 @@ function xb_make_link($page,$alias="#/#")
 			{
 				$heading = xb_get_heading($page);
 				if ($heading) $page_name = $heading;
+				// 無限ループ防止　姑息だけど
+				$page_name = preg_replace("/^(#.*#)$/"," $1",$page_name);
 			}
 			$link = xb_make_link($name,$page_name);
 			if ($i)
@@ -102,7 +104,8 @@ function xb_make_link($page,$alias="#/#")
 		if ($alias) $_name = $alias;
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 		if (preg_match("/^(.*\/)?[0-9\-]+$/",$name,$f_name)){
-			$_name = xb_get_heading($page);
+			$heading = xb_get_heading($page);
+			if ($heading) $_name = $heading;
 		}
 		$pgp = xb_get_pg_passage($page,FALSE);
 		if ($pgp)
