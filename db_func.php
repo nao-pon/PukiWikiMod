@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.4 2004/01/12 13:15:57 nao-pon Exp $
+// $Id: db_func.php,v 1.5 2004/01/27 14:29:36 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false)
@@ -144,6 +144,14 @@ function get_header_link_tag_by_name($page)
 
 }
 
+// 指定ページ以下のページ数をカウントする
+function get_child_counts($page)
+{
+	$page = strip_bracket($page);
+	$page = preg_replace("/\/$/","",$page);
+	return count(get_existpages_db(false,$page."/"));
+}
+
 
 // pginfo DB を更新
 function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$freeze="",$unvisible="")
@@ -153,7 +161,12 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	//最初の見出し行取得
 	$title = addslashes(get_heading_init($page));
 	
-	$uid = $X_uid;
+	//ページ作成者
+	//$uid = $X_uid;
+	$uid = get_pg_auther($page);
+	//ページ更新者
+	$lastediter = $X_uid;
+	
 	// ページ削除時
 	if ($action == "delete")
 		$unvisible = false;
@@ -161,7 +174,6 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	$name = strip_bracket($page);
 	$s_name = addslashes($name);
 	$editedtime = @filemtime(DATA_DIR.encode($page).".txt");
-	$lastediter = $X_uid;
 	
 	// 編集権限情報
 	if ($freeze === "")
@@ -284,8 +296,8 @@ function plain_db_write($page,$action)
 	//処理しないプラグインを削除
 	$no_plugins = split(',',$noplain_plugin);
 	
+	$data = addslashes(preg_replace("/[\s]+/","",strip_htmltag(convert_html($data,false))));
 	//echo $data."<hr>";
-	$data = addslashes(preg_replace("/[\s]+/","",strip_htmltag(convert_html($data,false,$noplain_plugin))));
 	// 新規作成
 	if ($action == "insert")
 	{
