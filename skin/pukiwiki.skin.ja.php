@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.26 2004/10/07 05:39:51 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.27 2004/10/26 14:39:33 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -87,7 +87,7 @@ if (!defined('DATA_DIR')) exit;
 	<?php echo $counter ?>
 	</div>
 	
-	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> &lt;&lt;---&gt;&gt; <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
+	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev"> <img src="./image/next.png" width="6" height="12" alt="Next"> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
 	
 	<?php } // is_read ?>
 	
@@ -134,19 +134,26 @@ if (!defined('DATA_DIR')) exit;
 		&nbsp;
 		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.png" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
 	</div>
-	<span class="small"><?php echo $sended_ping_tag ?><br /></span>
 	<?php
 	if ($is_page)
 	{
 	?>
-	<table style="width:auto;" class="small"><tr>
-	<td style="text-align:right;margin:0px;padding:0px;">ページ作成:</td><td style="margin:0px;padding:0px;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a></td><td style="margin:0px;padding:0px;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['buildtime']) . "<small>" . get_passage($pginfo['buildtime']); ?></small></td>
-	</tr><tr>
-	<td style="text-align:right;margin:0px;padding:0px;">最終更新:</td><td style="margin:0px;padding:0px;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo $pginfo['lastediter'] ?>"><?php echo $last_editer ?></a></td><td style="margin:0px;padding:0px;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) . get_pg_passage($vars["page"]); ?></td>
-	</tr></table>
-	<?php } ?>
+	<table style="width:auto;" class="small">
+	<tr>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">ページ名:</td><td style="margin:0px;padding:0px;" colspan="2"><?php echo strip_bracket($vars['page'])." ".$sended_ping_tag ?></td>
+	</tr>
+	<tr>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">ページ作成:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a></td><td style="margin:0px;padding:0px;;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['buildtime']) . "<small>" . get_passage($pginfo['buildtime']); ?></small></td>
+	</tr>
+	<tr>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">最終更新:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo $pginfo['lastediter'] ?>"><?php echo $last_editer ?></a></td><td style="margin:0px;padding:0px;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) . get_pg_passage($vars["page"]); ?></td>
 	<?php if($related) { ?>
-		 <span class="small">リンクページ: <?php echo $related ?></span><br />
+		<tr>
+		 <td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">リンクページ:<td style="margin:0px;padding:0px;" colspan="2"><?php echo $related ?></td>
+		</tr>
+	<?php } ?>
+	</tr>
+	</table>
 	<?php } ?>
 	<br />
 	<address>
