@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.1 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: trackback.php,v 1.2 2003/11/06 12:41:08 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -88,7 +88,7 @@ function tb_count($page,$ext='.txt')
 }
 
 // TrackBack Ping 送信
-function tb_send($page,$ffile=false)
+function tb_send($page,$data="")
 {
 	global $script,$trackback,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name;
 	
@@ -103,7 +103,7 @@ function tb_send($page,$ffile=false)
 	}
 	
 	
-	if (!$ffile)
+	if (!$data)
 	{
 		// ファイルに一時保管
 		$filename = CACHE_DIR.encode($page).".tbf";
@@ -129,27 +129,8 @@ function tb_send($page,$ffile=false)
 			$to_pukiwiki[] = trim($line);
 		$sended_count++;
 	}
-
-	//ソースを取得
-	$data = get_source($page);
-	
-	//処理しないプラグインを削除
-	if ($notb_plugin)
-	{
-		// 念のため quote
-		$notb_plugin = preg_quote($notb_plugin,"/");
-		// 正規表現形式へ
-		$notb_plugin = str_replace(",","|",$notb_plugin);
-		
-		// 該当プラグインを削除
-		$data = preg_replace("/#($notb_plugin)(\(((?!#[^(]+\()(?!\),).)*\))?/","",$data);
-	}
-
-	$data = join("",$data);
 	
 	set_time_limit(0); // 処理実行時間制限(php.ini オプション max_execution_time )
-	
-	$data = convert_html($data);
 	
 	// convert_html() 変換結果の <a> タグから URL 抽出
 	preg_match_all('#href="(https?://[^"]+)"#',$data,$links,PREG_PATTERN_ORDER);
@@ -166,16 +147,16 @@ function tb_send($page,$ffile=false)
 	$pings = str_replace("&amp;","&",$pings);
 	$pings = array_unique($pings);
 	
-	$r_page = rawurlencode($page);
+	$myurl = $script."?pgid=".get_pgid_by_name($page);
 	
 	$data = trim(strip_htmltag($data));
 	$data = preg_replace("/^".preg_quote($h_excerpt,"/")."/","",$data);
 	// 自文書の情報
 	$putdata = array(
 		'title'     => $page." ".$h_excerpt, // タイトルはページ名
-		'url'       => "$script?$r_page", // 送信時に再度、rawurlencode される
+		'url'       => $myurl,
 		'excerpt'   => mb_strimwidth(preg_replace("/[\r\n]/",' ',$data),0,255,'...'),
-		'blog_name' => $page_title." - PukiWikiMod [XOOPS]",
+		'blog_name' => $page_title,
 		'charset'   => SOURCE_ENCODING // 送信側文字コード(未既定)
 	);
 	
@@ -216,7 +197,13 @@ function tb_send($page,$ffile=false)
 		foreach ($pings as $tb_id)
 		{
 			$result = http_request($tb_id,'POST','',$putdata);
-			//echo htmlspecialchars($tb_id).":ping<hr />";
+/*********
+			echo htmlspecialchars($tb_id).":ping<hr />";
+			echo $result['query']."<hr />";
+			echo $result['rc']."<hr />";
+			echo $result['header']."<hr />";
+			echo $result['data']."<hr />";
+**********/
 			if ($result['rc'] === 200)
 				$sended[] = $tb_id;
 		}
