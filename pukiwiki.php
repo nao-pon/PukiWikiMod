@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.11 2003/07/06 12:03:29 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.12 2003/07/07 06:09:48 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -64,6 +64,9 @@ if ( $xoopsUser ) {
 		$X_admin = 1;
 	}
 	$X_uid = $xoopsUser->uid();
+	$X_uname = $xoopsUser->uname();
+} else {
+	$X_uname = $no_name;
 }
 /////////////////////////////////////////////////
 // 編集権限セット
@@ -457,7 +460,7 @@ else if($post["write"])
 				$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
 				$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["page"]))."\n";
 				$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["page"]))."\n";
-				$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$xoopsUser->uname()."\n";
+				$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$X_uname."\n";
 				$mail_body .= _MD_PUKIWIKI_MAIL_DEL_LINES."\n";
 				$mail_body .= $mail_del;
 				$mail_body .= _MD_PUKIWIKI_MAIL_ADD_LINES."\n";
