@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: new.inc.php,v 1.3 2003/07/30 14:56:00 nao-pon Exp $
+// $Id: new.inc.php,v 1.4 2004/02/08 13:23:28 nao-pon Exp $
 // ORG: new.inc.php,v 1.3 2003/07/28 07:10:29 arino Exp $
 //
 
@@ -26,12 +26,11 @@ function plugin_new_inline()
 {
 	global $vars,$_plugin_new_elapses;
 	
-/*
 	if (func_num_args() < 1)
 	{
 		return FALSE;
 	}
-*/
+
 	$retval = '';
 	$args = func_get_args();
 	$date = strip_htmltag(array_pop($args)); // {}部分の引数
@@ -50,7 +49,12 @@ function plugin_new_inline()
 		$timestamp = 0;
 		if (substr($page,-1) == '/')
 		{
-			foreach (preg_grep('/^'.preg_quote($page,'/').'/',get_existpages()) as $page)
+			$page = substr($page,0,-1);
+			//foreach (preg_grep('/^'.preg_quote($page,'/').'/',get_existpages()) as $page)
+			list($page) = get_existpages_db(false,$page,1,"ORDER BY `editedtime` DESC");
+			$timestamp = get_filetime($page);
+/*			
+			foreach (get_existpages(false,$page,1,"ORDER BY `editedtime` DESC") as $page)
 			{
 				$_timestamp = get_filetime($page);
 				if ($timestamp < $_timestamp)
@@ -59,6 +63,7 @@ function plugin_new_inline()
 					$timestamp = $_timestamp;
 				}
 			}
+*/
 		}
 		else if (is_page($page))
 		{

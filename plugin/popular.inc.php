@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.8 2004/01/27 14:35:08 nao-pon Exp $
+// $Id: popular.inc.php,v 1.9 2004/02/08 13:23:28 nao-pon Exp $
 //
 
 /*
@@ -131,7 +131,11 @@ function plugin_popular_convert()
 		
 		foreach ($counters as $page=>$count) {
 			$page = htmlspecialchars(substr($page,1));
-			$items .= " <li>".make_pagelink($page)."<span class=\"counter\">($count)</span></li>\n";
+			//Newマーク付加
+			if (exist_plugin_inline("new"))
+				$new_mark = do_plugin_inline("new","{$page}/,nolink","");
+			
+			$items .= " <li>".make_pagelink($page)."<span class=\"counter\">($count)</span>$new_mark</li>\n";
 			}
 		$items .= '</ul>';
 	}
