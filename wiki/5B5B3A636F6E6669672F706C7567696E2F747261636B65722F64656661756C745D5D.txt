@@ -1,0 +1,38 @@
+*trackerプラグインのデフォルト項目設定
+trackerプラグインで項目設定を指定しなかった場合、この設定が使用されます。
+#ls(./)
+
+* fields
+|項目名|見出し|形式|オプション|デフォルト値|h
+|name|投稿者|page|20|$X_uname|
+|category|カテゴリー|select|||
+|priority|優先度|select||低|
+|state|状態|select||提案|
+|version|バージョン|text|10||
+|summary|サマリ|title|60||
+|body|メッセージ|textarea|60,6||
+
+* priority
+|見出し|セルの書式|h
+|緊急|SC:#ff8080%s|
+|重要|SC:#ffcccc%s|
+|普通|SC:#cccccc%s|
+|低|SC:#ffffff%s|
+
+* state
+|見出し|セルの書式|h
+|提案|SC:#ffccff%s|
+|着手|SC:#ccccff%s|
+|CVS待ち|SC:#ffccff%s|
+|完了|SC:#ccffcc%s|
+|保留|SC:#ccddcc%s|
+|却下|SC:#cccccc%s|
+
+* category
+|見出し|セルの書式|h
+|本体バグ|SC:#ffccff%s|
+|本体新機能|SC:#ccccff%s|
+|プラグイン|SC:#ccffcc%s|
+|欲しいプラグイン|SC:#ccffcc%s|
+|サイト|SC:#ccddcc%s|
+|その他|SC:#cccccc%s|

@@ -1,0 +1,3 @@
+|TCENTER:100%||||||c
+|[_page]|[state]|[priority]|[category]|[name]|[summary]|h
+|[[[_real,state]>[_page]]]|[state]|[priority,state]|[category,state]|[[[name,state]]]|[[[summary,state]>[_page]]]|

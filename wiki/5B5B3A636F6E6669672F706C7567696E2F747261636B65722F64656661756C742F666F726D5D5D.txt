@@ -1,0 +1,10 @@
+|TCENTER:100% RIGHT:|LEFT:|c
+|投稿者|[name]|
+|カテゴリー|[category]|
+|優先順位|[priority]|
+|状態|[state]|
+|ページ名|[_name] SIZE(12){空欄のままだと自動的にページ名が振られます。}|
+|バージョン|[version] SIZE(12){空白でも構いません}|
+|サマリ|[summary]|
+|メッセージ|[body]|
+|>|CENTER:[_submit]|
