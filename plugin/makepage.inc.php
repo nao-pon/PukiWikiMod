@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.2 2004/08/04 13:58:55 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.3 2004/09/07 12:09:32 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -64,11 +64,17 @@ function plugin_makepage_convert()
 		$body_message = (!empty($post['body_message']))? htmlspecialchars($post['body_message']) : $_makepage_messages['msg_makepage'];
 		$body_message = str_replace('$1',htmlspecialchars($post['new_page']),$body_message);
 		$post['usebody'] = ($post['usebody'])? "1" : "0";
+		$post['usename'] = ($post['usename'])? "1" : "0";
+		
+		preg_match("/((.+)\/([^\/]+))/",$s_makepage.$post['new_page'],$matches);
+		$temp = auto_template("[[:template_mp/".strip_bracket($makepage)."]]",TRUE,$matches);
+		
 		$page_tag  = '<input type="hidden" name="new_page" value="'.htmlspecialchars($post['new_page']).'" />';
 		$page_tag .= '<input type="hidden" name="usebody" value="'.$post['usebody'].'" />';
+		$page_tag .= '<input type="hidden" name="usename" value="'.$post['usename'].'" />';
 		$page_tag .= '<input type="hidden" name="body_message" value="'.$body_message.'" />';
 		$body_tag  = convert_html("***".$_makepage_messages['msg_makepage'].": [[".$s_makepage.htmlspecialchars($post['new_page'])."]]");
-		$body_tag .= "<br />".$body_message.'<br />'.fontset_js_tag().'<br /><textarea name="body" rows="5"></textarea><br />';
+		$body_tag .= "<br />".$body_message.'<br />'.fontset_js_tag().'<br /><textarea name="body" rows="15">'.$temp.'</textarea><br />';
 		if ($post['usename'])
 			$body_tag .= $_makepage_messages['msg_name'].' <input type="text" name="name" size="50" value="'.htmlspecialchars($X_uname).'" />';
 		$body_message = "";
@@ -159,13 +165,14 @@ function plugin_makepage_action()
 			}
 			$post['body'] = rtrim(preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post['body']));
 			
+			if (!$post['usename']) $post['body'] .= "\n#clear";
 			$postdata = str_replace("___BODY___",$post['body'],$postdata);
 			
 			$_name = (!empty($post['name']))? $post['name'] : $no_name;
 			
 			make_user_link($_name);
 			
-			$postdata = str_replace("___NAME___",$_name,$postdata);
+			$postdata = str_replace("___NAME___",$_name."\n#clear",$postdata);
 			
 			$postdata = auto_br($postdata);
 		}
