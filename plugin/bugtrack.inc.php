@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.5 2003/07/03 13:54:03 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.6 2003/07/09 07:13:52 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -188,7 +188,7 @@ function plugin_bugtrack_template($base, $summary, $name, $priority, $state, $ca
 $body
 ----
 
-#comment";
+#pcomment";
 }
 
 function plugin_bugtrack_write($base, $pagename, $summary, $name, $priority, $state, $category, $version, $body)
