@@ -232,7 +232,8 @@ li
 	text-align: left;
 }
 
-.pukiwiki_body h5, h6
+.pukiwiki_body h5,
+.pukiwiki_body h6
 {
 	font-family: verdana, arial, helvetica, Sans-Serif;
 	background-color: #DDEEFF;
