@@ -1,7 +1,14 @@
 <?php
-// $Id: menu.php,v 1.2 2003/06/28 11:33:02 nao-pon Exp $
+// $Id: menu.php,v 1.3 2004/06/06 12:55:14 nao-pon Exp $
 
-$adminmenu[0]['title'] = _MI_PUKIWIKI_ADMENU;
-$adminmenu[0]['link'] = "admin/index.php";
+$adminmenu[0] = array(
+	'title' => _MI_PUKIWIKI_ADMENU ,
+	'link' => "admin/index.php"
+	);
+
+$adminmenu[1] = array(
+	'title' => _MI_SYSTEM_ADMENU2 ,
+	'link' => "admin/myblocksadmin.php"
+	);
 ?>
 

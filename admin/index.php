@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.19 2004/05/22 14:00:17 nao-pon Exp $
+// $Id: index.php,v 1.20 2004/06/06 12:51:59 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -250,6 +250,8 @@ function displayForm(){
 	}
 
 	echo "
+	| "._AM_SYSTEM_ADMENU." | <a href='./myblocksadmin.php'>"._AM_SYSTEM_ADMENU2."</a> |
+	<hr />
 	<h2>"._AM_WIKI_TITLE0."</h2>
 	<span style='color:red;font-weight:bold;'>"._AM_WIKI_INFO0."</span>
 	<ul>

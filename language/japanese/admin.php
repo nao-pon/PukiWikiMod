@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.12 2004/05/22 14:00:17 nao-pon Exp $
+// $Id: admin.php,v 1.13 2004/06/06 12:51:59 nao-pon Exp $
 
 define("_AM_WIKI_TITLE0", "PukiWiki 初期設定");
 define("_AM_WIKI_INFO0", "初期設定を完了するために次の２つのリンク先にアクセスして処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
@@ -61,5 +61,7 @@ define("_AM_WIKI_USE_STATIC_URL", "WikiページのURLを[ページID].html といった静的
 
 define("_AM_WIKI_UPDATE_PING_TO", "ページ更新時、常にPing送信する送信先<br />改行または半角スペースで区切る");
 define("_AM_WIKI_COMMON_DIRS", "共通リンク(仮想)ディレクトリ<br />ここで指定した(仮想)ディレクトリは省略しても正しくリンクされます。<br />最後に / (スラッシュ)が必要です。<br />改行または半角スペースで区切る");
+define("_AM_SYSTEM_ADMENU","基本設定");
+define("_AM_SYSTEM_ADMENU2","ブロック管理");
 
 ?>
