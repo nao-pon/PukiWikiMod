@@ -5,7 +5,7 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: counter.inc.php,v 1.8 2004/11/25 02:59:39 nao-pon Exp $
+ * $Id: counter.inc.php,v 1.9 2005/01/29 03:13:54 nao-pon Exp $
  */
 
 // counter file
@@ -118,6 +118,9 @@ function plugin_counter_get_count($page)
 		$counters[$page]['today']++;
 		$counters[$page]['total']++;
 	}
+	
+	//なぜかカウンタがリセットされることがある問題に対処
+	if (!$counters[$page]['total'] || preg_match("/[^0-9]/",$counters[$page]['total'])) $modify = FALSE;
 
 	//ページ読み出し時のみファイルを更新
 	if ($modify and $vars['cmd'] == 'read')

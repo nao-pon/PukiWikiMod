@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.14 2005/01/13 13:36:26 nao-pon Exp $
+// $Id: rss.php,v 1.15 2005/01/29 03:13:54 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -26,7 +26,7 @@ function catrss($rss,$page,$with_content="false",$list_count=0)
 	
 	if (file_exists($catch_file))
 	{
-		echo join('',file($catch_file));
+		echo str_replace('<XOOPS_WIKI_URL>', XOOPS_WIKI_URL , join('',file($catch_file)));
 		return;
 	}
 	$lines = get_existpages(false,$page,$list_count," ORDER BY editedtime DESC",true);
@@ -37,14 +37,14 @@ function catrss($rss,$page,$with_content="false",$list_count=0)
 		if ($use_static_url)
 		{
 			$lpgid = get_pgid_by_name($up_page);
-			$linkpage = XOOPS_WIKI_URL."/".$lpgid.".html";
+			$linkpage = '<XOOPS_WIKI_URL>'."/".$lpgid.".html";
 		}
 		else
-			$linkpage = $script."?".rawurlencode($up_page);
+			$linkpage = '<XOOPS_WIKI_URL>'."/?".rawurlencode($up_page);
 	}
 	else
 	{
-		$linkpage = XOOPS_WIKI_URL."/";
+		$linkpage = '<XOOPS_WIKI_URL>'."/";
 	}
 	
 	$description = htmlspecialchars(mb_convert_encoding(get_heading($up_page),"UTF-8",SOURCE_ENCODING));
@@ -74,10 +74,10 @@ function catrss($rss,$page,$with_content="false",$list_count=0)
 		
 		if ($use_static_url){
 			$pgid = get_pgid_by_name($line);
-			$link_url = XOOPS_WIKI_URL."/".$pgid.".html";
+			$link_url = '<XOOPS_WIKI_URL>'."/".$pgid.".html";
 		}
 		else
-			$link_url = $script."?".rawurlencode($url);
+			$link_url = '<XOOPS_WIKI_URL>'."/?".rawurlencode($url);
 		
 		if($rss==2)
 			$items.= "<item rdf:about=\"".$link_url."\">\n";
@@ -121,7 +121,7 @@ function catrss($rss,$page,$with_content="false",$list_count=0)
 				$r_page=rawurlencode($url);
 				$tb_id = tb_get_id($url);
 				$dc_identifier = " <dc:identifer>$link_url</dc:identifer>\n";
-				$trackback_ping = " <trackback:ping>$script?plugin=tb&amp;tb_id=$tb_id</trackback:ping>\n";
+				$trackback_ping = " <trackback:ping>".'<XOOPS_WIKI_URL>'."/?plugin=tb&amp;tb_id=$tb_id</trackback:ping>\n";
 				$items.=$dc_identifier . $trackback_ping;
 			}
 			foreach(get_source($line) as $_line)
@@ -206,6 +206,6 @@ function catrss($rss,$page,$with_content="false",$list_count=0)
 		}
 	}
 	//出力
-	echo $ret;
+	echo str_replace('<XOOPS_WIKI_URL>', XOOPS_WIKI_URL , $ret);
 }
 ?>

@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.10 2005/01/13 23:39:02 nao-pon Exp $
+// $Id: xoops_version.php,v 1.11 2005/01/29 03:13:54 nao-pon Exp $
  
 $modversion['name'] = "PukiWiki";
 $modversion['description'] = "PukiWiki";
@@ -30,13 +30,19 @@ $modversion['adminindex'] = "admin/index.php";
 $modversion['adminmenu'] = "admin/menu.php";
 
 // Menu
+global $xoopsUser;
+include(XOOPS_ROOT_PATH."/modules/".$modversion['dirname']."/cache/config.php");
+
 $modversion['hasMain'] = 1;
-$modversion['sub'][1]['name'] = _MI_PUKIWIKI_RECENT;
-$modversion['sub'][1]['url'] = "?RecentChanges";
-$modversion['sub'][2]['name'] = _MI_PUKIWIKI_LIST;
-$modversion['sub'][2]['url'] = "?cmd=list";
-$modversion['sub'][3]['name'] = _MI_PUKIWIKI_NEWPAGE;
-$modversion['sub'][3]['url'] = "?plugin=newpage";
+$modversion['sub'][0]['name'] = _MI_PUKIWIKI_RECENT;
+$modversion['sub'][0]['url'] = "?RecentChanges";
+$modversion['sub'][1]['name'] = _MI_PUKIWIKI_LIST;
+$modversion['sub'][1]['url'] = "?cmd=list";
+if (!$wiki_allow_new || ($wiki_allow_new == 1 && is_object($xoopsUser)))
+{
+	$modversion['sub'][2]['name'] = _MI_PUKIWIKI_NEWPAGE;
+	$modversion['sub'][2]['url'] = "?plugin=newpage";
+}
 
 // Search
 $modversion['hasSearch'] = 1;
@@ -48,6 +54,7 @@ $modversion['blocks'][1]['file'] = "pukiwiki_new.php";
 $modversion['blocks'][1]['name'] = _MI_PUKIWIKI_BNAME1;
 $modversion['blocks'][1]['description'] = "Shows recently contents";
 $modversion['blocks'][1]['show_func'] = "b_pukiwiki_new_show";
+$modversion['blocks'][1]['can_clone'] = true ;
 
 $modversion['blocks'][2]['file'] = "pukiwiki_page.php";
 $modversion['blocks'][2]['name'] = "PukiWiki Page#1";
@@ -70,6 +77,13 @@ $modversion['blocks'][4]['description'] = "Show A PukiWiki's page.";
 $modversion['blocks'][4]['show_func'] = "b_pukiwiki_page_show";
 $modversion['blocks'][4]['edit_func'] = "b_pukiwiki_page_edit";
 $modversion['blocks'][4]['options'] = "|5|3";
+
+$modversion['blocks'][5]['file'] = "pukiwiki_new.php";
+$modversion['blocks'][5]['name'] = _MI_PUKIWIKI_BNAME2;
+$modversion['blocks'][5]['description'] = "Shows recently contents";
+$modversion['blocks'][5]['show_func'] = "b_pukiwiki_newtb_show";
+$modversion['blocks'][5]['can_clone'] = true ;
+
 
 // Templates
 $modversion['templates'][1]['file'] = 'pukiwiki_index.html';

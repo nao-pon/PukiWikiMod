@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.18 2005/01/13 13:35:12 nao-pon Exp $
+// $Id: db_func.php,v 1.19 2005/01/29 03:13:54 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -519,6 +519,8 @@ function attach_db_write($data,$action)
 {
 	global $xoopsDB,$post,$get,$vars;
 	
+	$ret = TRUE;
+	
 	//if (!$pgid = $data['pgid']) return false;
 	
 	$pgid = (int)$data['pgid'];
@@ -568,6 +570,17 @@ function attach_db_write($data,$action)
 	{
 		$q_name = ($name)? " AND name='{$name}' LIMIT 1" : "";
 		
+		$ret = array();
+		$query = "SELECT name FROM ".$xoopsDB->prefix("pukiwikimod_attach")." WHERE pgid = {$pgid}{$q_name};";
+		if ($result=$xoopsDB->query($query))
+		{
+			while($data = mysql_fetch_row($result))
+			{
+				$ret[] = $data[0];
+			}
+		}
+		if (!$ret) $ret = TRUE;
+		
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_attach")." WHERE pgid = {$pgid}{$q_name};";
 		
 		$result=$xoopsDB->queryF($query);
@@ -576,7 +589,7 @@ function attach_db_write($data,$action)
 	else
 		return false;
 	
-	return true;
+	return $ret;
 }
 
 // プラグインからplane_text DB を更新を指示(コンバート時)

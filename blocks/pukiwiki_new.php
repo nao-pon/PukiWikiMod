@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.15 2005/01/13 13:57:51 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.16 2005/01/29 03:13:54 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -64,6 +64,41 @@ function b_pukiwiki_new_show($option) {
 
 	return $block;
 }
+
+function b_pukiwiki_newtb_show($option) {
+
+	global $xoopsUser,$xoopsDB;
+
+	//表示する件数
+	$show_num = 10;
+
+	$query = 'SELECT * FROM `'.$xoopsDB->prefix("pukiwikimod_tb").'` ORDER BY `last_time` DESC LIMIT '.$show_num;
+	$res = $xoopsDB->query($query);
+
+	if ($res)
+	{
+		$date = $items = "";
+		$close = FALSE;
+		while($data = mysql_fetch_row($res))
+		{
+			if(date("Y-n-j",$data[0]) != $date)
+			{
+				if ($close) $items .= "</ul>";
+				$date = date("Y-n-j",$data[0]);
+				$items .= "<strong>".$date."</strong>\n<ul>\n";
+				$close = TRUE;
+			}
+			$items .="<li><a href=\"{$data[1]}\" target=\"_blank\">{$data[2]}</a>({$data[4]})<br />to: ".xb_make_link($data[6])."</li>\n";
+		}
+		if ($close) $items .= "</ul>";
+	}
+
+	$block['title'] = _MI_PUKIWIKI_BTITLE2;
+	$block['content'] = "<div style=\"word-break: break-all;\">$items</div>";
+
+	return $block;
+}
+
 
 //ページ名からリンクを作成
 function xb_make_link($page,$alias="#/#")

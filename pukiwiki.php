@@ -25,8 +25,20 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.63 2005/01/13 13:35:52 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.64 2005/01/29 03:13:54 nao-pon Exp $
 /////////////////////////////////////////////////
+// Protectorのチェックを回避する
+if (
+	(isset($_GET['plugin']) && $_GET['plugin']=='showrss' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
+	(isset($_GET['plugin']) && $_GET['plugin']=='newsclip' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
+	(isset($_GET['plugin']) && $_GET['plugin']=='aws' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
+	(isset($_GET['plugin']) && $_GET['plugin']=='google' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
+	(isset($_GET['plugin']) && $_GET['plugin']=='gimage' && isset($_GET['pmode']) && $_GET['pmode']=='refresh')
+	)
+{
+	unset($_SERVER['REMOTE_ADDR']);
+}
+
 //XOOPS設定読み込み
 include("../../mainfile.php");
 global $xoopsUser,$xoopsDB,$xoopsConfig;

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.30 2004/11/24 14:19:59 nao-pon Exp $
+// $Id: make_link.php,v 1.31 2005/01/29 03:13:54 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -420,6 +420,14 @@ EOD;
 	function set($arr,$page)
 	{
 		list(,$alias,$name) = $this->splice($arr);
+		$_mail = "";
+		$_i = 0;
+		while($name[$_i])
+		{
+			$_mail .= "&#".ord($name[$_i]).";";
+			$_i++;
+		}
+		$name = $_mail;
 		return parent::setParam($page,$name,'','mailto',$alias == '' ? $name : $alias);
 	}
 	function toString()

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.26 2004/12/09 13:54:09 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.27 2005/01/29 03:13:54 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -103,6 +103,15 @@ function plugin_attach_action()
 		$vars['file'] = $vars['delfile'];
 	}
 	if (empty($vars['refer'])) $vars['refer'] = $vars['page'];
+	
+	// リファラチェック
+	if (($vars['pcmd'] == 'open' || $vars['pcmd'] == 'delete') && !xoops_refcheck())
+	{
+		//redirect_header(XOOPS_WIKI_URL,0,"Access denied!");
+		//echo "Access Denied!";
+		@readfile("./image/accdeny.gif");
+		exit;
+	}
 	
 	$age = array_key_exists('age',$vars) ? $vars['age'] : 0;
 	$pcmd = array_key_exists('pcmd',$vars) ? $vars['pcmd'] : '';
@@ -916,8 +925,9 @@ EOD;
 	function del_thumb_files(){
 		// 該当ファイルのサムネイルを削除
 		$dir = opendir(UPLOAD_DIR."s/")
-			or die('directory '.UPLOAD_DIR.' is not exist or not readable.');
+			or die('directory '.UPLOAD_DIR.'s/ is not exist or not readable.');
 		
+		/*
 		$page_pattern = ($this->page == '') ? '(?:[0-9A-F]{2})+' : preg_quote(encode($this->page),'/');
 		$age_pattern = ($age === NULL) ?
 			'(?:\.([0-9]+))?' : ($age ?  "\.($age)" : '');
@@ -936,6 +946,15 @@ EOD;
 			}
 		}
 		closedir($dir);
+		*/
+		for ($i = 1; $i < 100; $i++)
+		{
+			$file = encode($this->page).'_'.encode($i."%").encode($this->file);
+			if (file_exists(UPLOAD_DIR."s/".$file))
+			{
+				unlink(UPLOAD_DIR."s/".$file);
+			}
+		}
 	}
 }
 

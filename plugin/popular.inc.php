@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.11 2005/01/13 13:57:51 nao-pon Exp $
+// $Id: popular.inc.php,v 1.12 2005/01/29 03:13:54 nao-pon Exp $
 //
 
 /*
@@ -66,7 +66,7 @@ function plugin_popular_convert()
 			$today = get_date('Y/m/d');
 	case 2:
 		$except = $array[1];
-		$except = str_replace("&#124;","|",$except);
+		$except = str_replace(array("&#124;","&#x7c;"," "),"|",$except);
 	case 1:
 		$max = $array[0];
 	}

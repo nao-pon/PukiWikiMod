@@ -17,7 +17,7 @@ function plugin_filesdel_init()
 function plugin_filesdel_action()
 {
 	// 実行時間を制限しない
-	set_time_limit(0);
+	//set_time_limit(0);
 	// 出力をバッファリングしない
 	//ob_end_clean();
 	//echo str_pad('',256);//for IE
@@ -35,49 +35,57 @@ function plugin_filesdel_action()
 	else
 	{
 		// 添付ファイルDB
-		attach_db_write(array('pgid'=>($vars['_pgid'])),'delete');
+		$del_files = attach_db_write(array('pgid'=>($vars['_pgid'])),'delete');
 		
-		// 添付ファイル
-		$msg = "<hr />\nAttach files:<br />\n";
-		$pattern = $vars['tgt'];
-		if ($dir = @opendir(UPLOAD_DIR)) {
-			while ($name = readdir($dir)) {
-				if ($name == '..' || $name == '.') { continue; }
-				if (strpos($name, $pattern) === 0) {
-					$msg .= $name."<br />";
+		$att = $thm = array();
+		
+		if (is_array($del_files) && $del_files)
+		{
+			foreach($del_files as $del_file)
+			{
+				$name = $vars['tgt']."_".encode($del_file);
+				// 添付ファイル
+				if (file_exists(UPLOAD_DIR.$name))
+				{
 					unlink(UPLOAD_DIR.$name);
+					$att[] = $del_file." [$name]";
 				}
-			}
-			closedir($dir);
-		}
-		
-		//サムネイル
-		$msg .= "<hr />\nThumbnail files:<br />\n";
-		$pattern = $vars['tgt'];
-		if ($dir = @opendir(UPLOAD_DIR."s/")) {
-			while ($name = readdir($dir)) {
-				if ($name == '..' || $name == '.') { continue; }
-				if (strpos($name, $pattern) === 0) {
-					$msg .= $name."<br />";
+				//サムネイル
+				/*
+				if (file_exists(UPLOAD_DIR."s/".$name))
+				{
 					unlink(UPLOAD_DIR."s/".$name);
 				}
-			}
-			closedir($dir);
-		}
-		
-		//カウンターファイル
-		$msg .= "<hr />\nCounter file:<br />\n";
-		if ($dir = @opendir(COUNTER_DIR)) {
-			while ($name = readdir($dir)) {
-				if ($name == '..' || $name == '.') { continue; }
-				if (strpos($name, $pattern) === 0) {
-					$msg .= $name."<br />";
-					unlink(COUNTER_DIR.$name);
+				*/
+				for ($i = 1; $i < 100; $i++)
+				{
+					$file = $vars['tgt'].'_'.encode($i."%").encode($del_file);
+					if (file_exists(UPLOAD_DIR."s/".$file))
+					{
+						unlink(UPLOAD_DIR."s/".$file);
+						$thm[] = $i.'%'.$del_file." [$name]";
+					}
 				}
 			}
-			closedir($dir);
 		}
 		
+		// 添付ファイル
+		$msg = "<hr />\nAttach files:<br />".join("<br />",$att)."\n";
+		
+		//サムネイル
+		$msg .= "<hr />\nThumbnail files:<br />".join("<br />",$thm)."\n";
+		
+		//カウンターファイル
+		include_once("./plugin/counter.inc.php");
+		
+		$msg .= "<hr />\nCounter file:<br />\n";
+		
+		$name = $vars['tgt'].COUNTER_EXT;
+		if (file_exists(COUNTER_DIR.$name))
+		{
+			unlink(COUNTER_DIR.$name);
+			$msg .= $name."<br />";
+		}
 		
 		return array(
 			'msg'=>strip_bracket(decode($vars['tgt']))." - ".$_filesdel_messages['title'],

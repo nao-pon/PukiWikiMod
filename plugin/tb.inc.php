@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.4 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: tb.inc.php,v 1.5 2005/01/29 03:13:54 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -27,11 +27,7 @@ function plugin_tb_action()
 		}
 		tb_delete_url($del_urls,$vars['tb_id']);
 	}
-	// POST: TrackBack Ping を保存する
-	if (!empty($vars['url']))
-	{
-		tb_save();
-	}
+	
 	if ($trackback and !empty($vars['__mode']) and !empty($vars['tb_id']))
 	{
 		switch ($vars['__mode'])
@@ -44,7 +40,13 @@ function plugin_tb_action()
 				break;
 		}
 	}
-	return array('msg'=>'','body'=>'');
+	else
+	{
+		// POST: TrackBack Ping を保存する
+		tb_save();
+	}
+	
+	return array('msg'=>'','body'=>'','redirect'=>XOOPS_URL."/");
 }
 
 // TrackBack Ping データ保存(更新)

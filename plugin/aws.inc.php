@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.7 2004/10/11 13:36:41 nao-pon Exp $
+// $Id: aws.inc.php,v 1.8 2005/01/29 03:13:54 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -102,7 +102,7 @@ function plugin_aws_action()
 
 function plugin_aws_convert()
 {
-	global $script,$vars;
+	global $script,$vars,$plugin_aws_dataset;
 	
 	//$start = getmicrotime();
 	
@@ -112,12 +112,18 @@ function plugin_aws_convert()
 	
 	$style = " style='word-break:break-all;'";
 	$clear = "";
-	
+	$more = "";
+	if ($k)
+	{
+		$more_link = "http://www.amazon.co.jp/exec/obidos/external-search?mode=blended&amp;tag={$plugin_aws_dataset['amazon_t']}&amp;keyword=".rawurlencode($k)."&amp;encoding-string-jp=".rawurlencode("日本語");
+		$more = "<h4><a href=\"{$more_link}\" target=\"_blank\">「".htmlspecialchars($k)."」をAmazonで探す...</a></h4>";
+		
+	}
 	// リフレッシュ用のイメージタグ付加
 	$refresh = ($refresh)? "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=aws&amp;pmode=refresh&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;f=".rawurlencode($f)."&amp;m=".rawurlencode($m)."&amp;k=".rawurlencode($k)."&amp;b=".rawurlencode($b)."&amp;s=".rawurlencode($s)."\" width=\"1\" height=\"1\" /></div>" : "";
 	
 	//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
-	return "<div{$style}>{$ret}</div>{$refresh}{$clear}";
+	return "{$more}<div{$style}>{$ret}</div>{$refresh}{$clear}";
 
 }
 function plugin_aws_add_imgsize_tag($tag)
@@ -151,7 +157,7 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 	if (!$xls_url || !$amazon_dev_t || !$amazon_t)
 		return array($plugin_aws_dataset['err_setconfig'],false);
 	
-	$refresh = FLASE;
+	$refresh = 0;
 	$ret = "";
 
 	$cache_file = P_CACHE_DIR.md5($f.$m.$k.$b.$s).".aws";
@@ -161,7 +167,12 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 		$ret = join('',@file($cache_file));
 		if (time() - filemtime($cache_file) >  $cache_time * 60)
 		{
-			$refresh = TRUE;
+			$refresh = 1;
+		}
+		if ((trim($ret) == $plugin_aws_dataset['msg_notfound']) && (time() - filemtime($cache_file) > $cache_time * 6))
+		{
+			$refresh = 1;
+			$ret = "";
 		}
 	}
 	
@@ -185,7 +196,7 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 		$ret = join('',@file($url));
 		$ret = mb_convert_encoding($ret, "EUC-JP", "UTF-8");
 		
-		if (strpos($ret,"<ErrorMsg>") === FALSE)
+		if (strpos(strtolower($ret),"<errormsg>") === FALSE)
 		{
 			$ret = str_replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","",$ret);
 			
