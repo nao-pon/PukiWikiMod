@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.13 2004/01/15 13:03:45 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.14 2004/01/24 14:47:50 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -38,7 +38,7 @@ function plugin_calendar2_convert()
 	global $_calendar2_msg_detail, $_calendar2_msg_month, $_calendar2_msg_day;
 	global $script,$weeklabels,$vars,$command,$WikiName,$BracketName,$post,$get;
 	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable, $_msg_month;
-	global $wiki_user_dir,$comment_no,$h_excerpt;
+	global $wiki_user_dir,$comment_no,$h_excerpt,$digest;
 	
 	$today_view = true;
 	$category_view = "";
@@ -332,6 +332,7 @@ function plugin_calendar2_convert()
 			if (is_page($_page) && check_readable($_page,false,false)) {
 				$page_ = $vars['page'];
 				$_h_excerpt = $h_excerpt;
+				$_digest = $digest;
 				$get['page'] = $post['page'] = $vars['page'] = add_bracket($_page);
 				//comment_no 初期化
 				$_comment_no = $comment_no;
@@ -348,6 +349,7 @@ function plugin_calendar2_convert()
 				$get['page'] = $post['page'] = $vars['page'] = $page_;
 				$comment_no = $_comment_no;
 				$h_excerpt = $_h_excerpt;
+				$digest = $_digest;
 				$page_found = true;
 			}
 			else

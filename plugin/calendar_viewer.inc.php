@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.9 2004/01/15 13:03:45 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.10 2004/01/24 14:47:50 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -64,7 +64,7 @@ function plugin_calendar_viewer_convert()
   global $_calendar_viewer_msg_arg2, $_calendar_viewer_msg_noargs, $_calendar_viewer_msg_edit;
   global $WikiName,$BracketName,$vars,$get,$post,$hr,$script,$trackback;
   global $anon_writable,$wiki_user_dir;
-  global $comment_no,$h_excerpt;
+  global $comment_no,$h_excerpt,$digest;
   //*デフォルト値をセット
   //基準となるページ名
   $pagename = "";
@@ -275,6 +275,7 @@ if ($cal2 == 1){
   $tmppage = $vars["page"];
   $_comment_no = $comment_no;
 	$_h_excerpt = $h_excerpt;
+	$_digest = $digest;
   
   //$tmp_related = $related;
   $return_body = "";
@@ -299,9 +300,7 @@ if ($cal2 == 1){
     $pagelist[$tmp] = preg_replace("/{$date_sep}-$/","",$pagelist[$tmp]);
     $page = "[[" . $pagelist[$tmp] .  "]]";
 
-    $get["page"] = $page;
-    $post["page"] = $page;
-    $vars["page"] = $page;
+    $vars["page"] = $post["page"] = $get["page"] = $page;
     $user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($page)) : "[[".get_pg_auther_name($page)."]]";
 		$user_tag = make_link($user_tag);
 		$tb_tag = ($trackback)? "<div style=\"text-align:right\">by $user_tag at ".get_makedate_byname($page)." ".make_pagelink($page,"<img src=\"./image/search.png\" />")." [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]</div>" : "";
@@ -327,11 +326,10 @@ if ($cal2 == 1){
   //表示データがあったらナビバー表示
   if ($kensu) $return_body .= $navi_bar;
   
-  $get["page"] = $tmppage;
-  $post["page"] = $tmppage;
-  $vars["page"] = $tmppage;
+  $vars["page"] = $post["page"] = $get["page"] = $tmppage;
   $comment_no = $_comment_no;
 	$h_excerpt = $_h_excerpt;
+	$digest = $_digest;
   //$related = $tmp_related;
 
 
