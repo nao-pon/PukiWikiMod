@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.10 2003/07/11 14:09:02 nao-pon Exp $
+// $Id: html.php,v 1.11 2003/07/12 04:56:12 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -122,12 +122,10 @@ function convert_html($string)
 	//$string = preg_replace("/^#freeze\n/","",$string);
 	$string = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$string);
 
-	//整形済みの行末~は、スペースを付加して行連結を防ぐ
-	$string = preg_replace("/((^|\n)( [^\n]*))~\n/","$1~ \n",$string);
-
 	//~\nは&br;に変換して1行として処理 nao-pon 03/06/25
 	// 改行を挟んででURLなどが列挙してあると上手く切り分けられないので\tを挿入 03/06/29
-	$string = str_replace("~\n","\t&br;\t",$string);
+	//  (スペース)*#で始まる行は処理しない。 03/07/12
+	$string = preg_replace("/((^|\n)[^ *#~\n]*)~\n/","$1\t&br;\t",$string);
 
 	//これはなんだったけ？必要ないのとおもうのでとりあえずコメントアウト 03/06/29
 	//$string = str_replace("&br; ","~\n ",$string);
