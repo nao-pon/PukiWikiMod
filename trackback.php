@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.16 2005/02/23 02:20:28 nao-pon Exp $
+// $Id: trackback.php,v 1.17 2005/02/23 02:45:37 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -247,7 +247,7 @@ function tb_send($page,$data="")
 				// URL から TrackBack ID を取得する
 				$tb_id = trim(str_replace("&amp;","&",tb_get_url($link)));
 				
-				tb_debug_output($tb_id);
+				//tb_debug_output($tb_id);
 				
 				if (empty($tb_id) || in_array($tb_id,$sended)) // TrackBack に対応していないか送信済み
 				{
@@ -284,7 +284,7 @@ function tb_send($page,$data="")
 		{
 			set_time_limit(120); // 処理実行時間を長めに再設定
 			
-			tb_debug_output($tb_id);
+			//tb_debug_output($tb_id);
 			
 			$done = false;
 			// XML RPC Ping を打ってみる
