@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.22 2005/03/11 15:00:39 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.23 2005/03/15 02:50:11 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -174,7 +174,7 @@ function plugin_pcomment_convert() {
 		$name = '<input type="text" name="name" size="'.PCMT_COLS_NAME.'" value="'.WIKI_NAME_DEF.'" />';
 	}
 
-	$radio = $params['reply'] ? '<input class="pcmt" type="radio" name="reply" value="0" checked />' : '';
+	$radio = $params['reply'] ? '<input type="radio" name="reply" value="0" checked />' : '';
 	$comment = '<input type="text" name="msg" size="'.$comment_size.'" />';
 
 	//XSS脆弱性問題 - 外部から来た変数をエスケープ
@@ -193,8 +193,10 @@ function plugin_pcomment_convert() {
   <input type="hidden" name="nodate" value="$f_nodate" />
   <input type="hidden" name="dir" value="$dir" />
   <input type="hidden" name="count" value="$s_count" />
-  $areaedit <table style="width:auto;"><tr><td style="vertical-align:bottom;white-space:nowrap;"> $radio $title $name </td><td style="vertical-align: bottom;">$fontset_js_tag<br />$comment
-  <input type="submit" value="$btn_text" /></td></tr></table>
+  $areaedit
+  <table style="width:auto;"><tr><td style="vertical-align:bottom;white-space:nowrap;">{$radio}{$title} {$name}</td><td style="vertical-align: bottom;">$fontset_js_tag<br />$comment
+  <input type="submit" value="$btn_text" />
+  </td></tr></table>
   </div>
 EOD;
 	$link = $_page;
