@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.8 2004/07/31 06:48:04 nao-pon Exp $
+// $Id: db_func.php,v 1.9 2004/09/01 12:10:59 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false)
@@ -285,7 +285,7 @@ function get_child_counts($page)
 
 
 // pginfo DB を更新
-function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$freeze="",$unvisible="")
+function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$freeze="",$unvisible="",$notimestamp=false)
 {
 	global $xoopsDB,$X_uid;
 	
@@ -377,7 +377,8 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	// ページ更新
 	elseif ($action == "update")
 	{
-		$value = "editedtime=$editedtime,lastediter=$lastediter,title='$title'";
+		$value = "editedtime=$editedtime,title='$title'";
+		if (!$notimestamp) $value .= ",lastediter=$lastediter";
 		if ($aids) $value .= ",aids='$aids'";
 		if ($gids) $value .= ",gids='$gids'";
 		if ($vaids) $value .= ",vaids='$vaids'";
