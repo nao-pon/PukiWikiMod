@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.11 2004/10/28 11:28:51 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.12 2004/10/29 12:54:09 nao-pon Exp $
 
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	global $xoopsDB,$xoopsUser;
@@ -85,8 +85,8 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 			$ret[$i]['link'] = $myrow['id'].".html";
 		else
 			$ret[$i]['link'] = "index.php?cmd=read&amp;page=$page_url&amp;word=$word_url";
-		//$ret[$i]['title'] = htmlspecialchars($myrow['name'].$title, ENT_QUOTES);
-		$ret[$i]['title'] = $myrow['name'].$title;
+		$ret[$i]['title'] = htmlspecialchars($myrow['name'].$title, ENT_QUOTES);
+		//$ret[$i]['title'] = $myrow['name'].$title;
 		$ret[$i]['image'] = "image/search.gif";
 		$ret[$i]['time'] = $myrow['editedtime'];
 		$ret[$i]['uid'] = $myrow['uid'];

@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.12 2004/10/26 14:38:52 nao-pon Exp $
+// $Id: db_func.php,v 1.13 2004/10/29 12:54:09 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -298,7 +298,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	global $xoopsDB,$X_uid,$X_admin;
 	
 	//最初の見出し行取得
-	$title = addslashes(get_heading_init($page));
+	$title = addslashes(str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),get_heading_init($page)));
 	
 	//ページ作成者
 	//$uid = $X_uid;
@@ -465,7 +465,8 @@ function plain_db_write($page,$action)
 	//処理しないプラグインを削除
 	$no_plugins = split(',',$noplain_plugin);
 	
-	$data = addslashes(preg_replace("/[\s]+/","",strip_htmltag(convert_html($data,false))));
+	$data = str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),strip_tags(convert_html($data,false)));
+	$data = addslashes(preg_replace("/[\s]+/","",$data));
 	//echo $data."<hr>";
 	// 新規作成
 	if ($action == "insert")

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pginfo.inc.php,v 1.5 2004/10/05 12:46:47 nao-pon Exp $
+// $Id: pginfo.inc.php,v 1.6 2004/10/29 12:54:09 nao-pon Exp $
 //
 
 // メッセージ設定
@@ -314,7 +314,7 @@ function pginfo_db_retitle()
 			$page = decode(trim(preg_replace("/\.txt$/"," ",$file)));
 			$vars['page'] = $page;
 			if($page === $whatsnew) continue;
-			$title = addslashes(get_heading_init($page));
+			$title = addslashes(str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),get_heading_init($page)));
 			$name = addslashes(strip_bracket($page));
 			$value = "title='$title'";
 			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE name = '$name';";
