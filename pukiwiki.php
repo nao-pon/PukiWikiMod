@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.53 2004/10/05 12:46:48 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.54 2004/10/07 00:59:56 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -69,6 +69,8 @@ elseif (arg_check("filelist"))
 elseif ($arg === $whatsnew)
 {
 	$vars["plugin"] = "recentchanges";
+	$vars['cmd']  = '';
+	$vars['page'] = '';
 }
 
 // Plug-in action
@@ -207,6 +209,9 @@ else if(arg_check("edit"))
 // プレビュー
 else if(arg_check("preview") || $post["preview"] || $post["template"])
 {
+	// 新規作成時にプレビューした時 pgid を振る
+	check_pginfo($vars['page']);
+	
 	if(is_uploaded_file($_FILES['attach_file']['tmp_name'])){
 		//添付ファイルあり
 		include_once (PLUGIN_DIR.'attach.inc.php');

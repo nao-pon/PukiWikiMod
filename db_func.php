@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.10 2004/10/05 12:46:48 nao-pon Exp $
+// $Id: db_func.php,v 1.11 2004/10/07 00:59:56 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -294,7 +294,7 @@ function get_child_counts($page)
 // pginfo DB を更新
 function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$freeze="",$unvisible="",$notimestamp=false)
 {
-	global $xoopsDB,$X_uid;
+	global $xoopsDB,$X_uid,$X_admin;
 	
 	//最初の見出し行取得
 	$title = addslashes(get_heading_init($page));
@@ -311,7 +311,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	
 	$name = strip_bracket($page);
 	$s_name = addslashes($name);
-	$editedtime = @filemtime(DATA_DIR.encode($page).".txt");
+	$editedtime = filemtime(DATA_DIR.encode($page).".txt");
 	
 	// 編集権限情報
 	if ($freeze === "")
@@ -376,8 +376,12 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	{
 		$buildtime = $editedtime;
 		
-		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name = '$s_name' LIMIT 1;";
-		if (!$result=$xoopsDB->query($query))
+		$query = "SELECT count(*) FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name = '$s_name' LIMIT 1;";
+		//if ($X_admin) echo $query."<br />";
+		$result=$xoopsDB->query($query);
+		$count = mysql_fetch_row($result);
+		
+		if ($count[0])
 		{
 			// 以前に削除したページ
 			$value = "editedtime=$editedtime";
@@ -397,6 +401,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		{
 			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_pginfo")." (name,buildtime,editedtime,aids,gids,vaids,vgids,lastediter,uid,freeze,unvisible,title) VALUES('$s_name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible,'$title');";
 		}
+		//if ($X_admin) echo $query;exit;
 		$result=$xoopsDB->queryF($query);
 		plain_db_write($page,"insert");
 	}
@@ -574,5 +579,45 @@ function need_update_plaindb($page = null)
 		fclose($fp);
 	}
 	return;
+}
+
+function check_pginfo($page)
+{
+	global $X_uid,$xoopsDB;
+	
+	if (!$page) return;
+	
+	// id取得
+	$id = get_pgid_by_name($page);
+	
+	if ($id) return;
+	
+	$name = strip_bracket($page);
+	
+	$name = addslashes($name);
+	$buildtime = 0;
+	$editedtime = 0;
+	
+	// 編集権限
+	$aids = "&all";
+	$gids = "&3&";
+	$freeze = 0;
+	
+	// 閲覧権限
+	$unvisible = 0;
+	$vaids = "";
+	$vgids = "";
+
+	// ページ作成者
+	$uid = $X_uid;
+	$lastediter = $uid;
+	
+	// 新規作成
+	$query = "insert into ".$xoopsDB->prefix("pukiwikimod_pginfo")." (`name`,`buildtime`,`editedtime`,`aids`,`gids`,`vaids`,`vgids`,`lastediter`,`uid`,`freeze`,`unvisible`) values('$name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible);";
+	
+	$result=$xoopsDB->queryF($query);
+	
+	return;
+	
 }
 ?>
