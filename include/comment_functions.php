@@ -1,5 +1,5 @@
 <?php
-// $Id: comment_functions.php,v 1.1 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: comment_functions.php,v 1.2 2005/03/24 23:53:37 nao-pon Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -31,7 +31,7 @@ function pukiwiki_com_update($id, $total_num)
 {
 	global $xoopsDB,$xoopsUser;
 	
-	error_reporting(E_ALL);
+	//error_reporting(E_ALL);
 	
 	$X_uid = (is_object($xoopsUser))? $xoopsUser->uid() : 0;
 	$time = time();
@@ -62,7 +62,7 @@ function pukiwiki_com_approve(&$comment)
 function pukiwiki_com_touch($id,$time)
 {
 	global $xoopsDB;
-	error_reporting(E_ALL);
+	//error_reporting(E_ALL);
 	
 	$dir = str_replace("\\","/",dirname(__FILE__));
 	$dir = str_replace("/include","",$dir);
