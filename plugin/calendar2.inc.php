@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.23 2005/02/28 14:44:02 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.24 2005/03/02 00:06:45 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -411,7 +411,7 @@ function plugin_calendar2_convert()
 		$categorys = convert_html("****Categorys\n#ls2($category_view,pagename,notemplate,relatedcount)");
 	}
 	
-	$_contnts = $_body = "";
+	$_contents = $_body = "";
 	if (exist_plugin_convert("calendar_viewer") && ($vars['file'] != "") && !$single_day)
 	{
 		$_co_lev = ($contents_lev)? ",contents:{$contents_lev}":"";
