@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.19 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: rss.php,v 1.20 2005/03/29 23:50:04 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -42,7 +42,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 	
 	if (file_exists($catch_file))
 	{
-		echo str_replace('<XOOPS_WIKI_URL>', XOOPS_WIKI_URL , join('',file($catch_file)));
+		echo str_replace('<XOOPS_WIKI_URL>', XOOPS_WIKI_HOST.XOOPS_WIKI_URL , join('',file($catch_file)));
 		return;
 	}
 	$lines = get_existpages(false,$page,$list_count," ORDER BY editedtime DESC",true);
@@ -50,11 +50,11 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 	$up_page = ($page)? $page : $defaultpage;
 	if ($page)
 	{
-		$linkpage = get_url_by_name($up_page);
+		$linkpage = XOOPS_WIKI_HOST.get_url_by_name($up_page);
 	}
 	else
 	{
-		$linkpage = '<XOOPS_WIKI_URL>'."/";
+		$linkpage = XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/";
 	}
 	
 	$description = htmlspecialchars(mb_convert_encoding(get_heading($up_page),"UTF-8",SOURCE_ENCODING));
@@ -123,7 +123,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 				{
 					$addtext = strip_tags(str_replace(array("\r","\n"),"",$addtext));
 					$addtext = preg_replace("/&$entity_pattern;/",'',$addtext);
-					$addtext = htmlspecialchars($addtext);
+					//$addtext = htmlspecialchars($addtext);
 				}
 			}
 			
@@ -140,7 +140,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 				$vars["page"] = $post["page"] = $get["page"] = $line;
 				$desc = strip_tags(str_replace(array("\r","\n"),"",$content));
 				$desc = preg_replace("/&$entity_pattern;/",'',$desc);
-				$desc = $addtext.htmlspecialchars($desc);
+				//$desc = $addtext.htmlspecialchars($desc);
 			}
 			else
 			{
@@ -150,7 +150,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 			$desc .= (strlen($desc) > 250)? "..." : "";
 			
 			
-			$items.= " <description>$desc</description>\n";
+			$items.= " <description>".htmlspecialchars($desc)."</description>\n";
 			if($with_content && !$size_over)
 			{
 				if ($with_content == "l")
@@ -262,16 +262,17 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 </rdf:RDF>';
 	}
 	$ret = input_filter($ret);
+	
 	//キャッシュ書き込み
 	if ($catch_file)
 	{
 		if ($fp = @fopen($catch_file,"wb"))
 		{
-			fputs($fp,$ret);
+			fputs($fp,str_replace(XOOPS_WIKI_HOST.XOOPS_WIKI_URL , '<XOOPS_WIKI_URL>' , $ret));
 			fclose($fp);
 		}
 	}
 	//出力
-	echo str_replace('<XOOPS_WIKI_URL>', XOOPS_WIKI_URL , $ret);
+	echo $ret;
 }
 ?>
