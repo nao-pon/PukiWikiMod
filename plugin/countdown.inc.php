@@ -1,5 +1,5 @@
 <?php
-// $Id: countdown.inc.php,v 1.5 2003/09/25 13:12:51 nao-pon Exp $
+// $Id: countdown.inc.php,v 1.6 2003/10/08 15:32:14 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -65,7 +65,6 @@ function plugin_countdown_inline() {
 	if (!checkdate($m,$d,$y)) return false;
 	
 	if ($title) {
-		$title = htmlspecialchars($title);
 		return sprintf($_countdown_msg,$title,plugin_countdown_day($y,$m,$d),$just_day);
 	} else {
 		return plugin_countdown_day($y,$m,$d).$just_day;
