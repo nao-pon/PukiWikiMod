@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.5 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: google.inc.php,v 1.6 2004/09/01 14:00:11 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -10,8 +10,8 @@
 function plugin_google_init()
 {
 	$data = array('plugin_google_dataset'=>array(
-	'license_key'   => '', // GoogleAPIsライセンスキー
-	'cache_time'    => 1,                                  // キャッシュ有効時間(h)
+	'license_key'   => 'pkaaAJNQFHKma6am27SWnV9V2DJ1XPns', // GoogleAPIsライセンスキー
+	'cache_time'    => 6,                                  // キャッシュ有効時間(h)
 	'def_max'       => 10,                                 // デフォルト表示数
 	'max_limit'     => 50,                                 // 最大表示数
 	'head_msg'      => '<h4>検索結果: %s <span class="small">by Google</span></h4><p class="empty"></p>',
@@ -23,9 +23,52 @@ function plugin_google_init()
 	set_plugin_messages($data);
 }
 
+function plugin_google_action()
+{
+	global $get,$plugin_google_dataset;
+	
+	if ($get['pmode'] == "refresh")
+	{
+		$word = (isset($get['q']))? $get['q'] : "";
+		$max = (isset($get['m']))? $get['m'] : "";
+		$page = (isset($get['ref']))? $get['ref'] : "";
+		$start = 0;
+		
+		// キャッシュファイル名
+		$filename = P_CACHE_DIR.md5($word.$max.$start).".ggl";
+		
+		$old_time = filemtime($filename);
+
+		if (!is_readable($filename) || time() - filemtime($filename) > $plugin_google_dataset['cache_time'] * 3600 )
+		{
+			// 処理中に別スレッドが走らないように
+			touch($filename);
+			
+			@list($ret,$refresh) = plugin_google_result_google_api($word,$max,$start,TRUE);
+			
+			if ($ret['rc'] == 200)
+			{
+				// plane_text DB を更新
+				need_update_plaindb($page);
+			}
+			else
+			{
+				// 失敗したのでタイムスタンプを戻す
+				touch($filename,$old_time);
+			}
+		}
+		
+		header("Content-Type: image/gif");
+		readfile('image/transparent.gif');
+		exit;
+	}
+	
+	return false;
+}
+
 function plugin_google_convert()
 {
-	global $plugin_google_dataset;
+	global $plugin_google_dataset,$vars,$script;
 	
 	if (!$plugin_google_dataset['license_key']) return $plugin_google_dataset['err_nolicense'];
 	$array = func_get_args();
@@ -42,15 +85,21 @@ function plugin_google_convert()
 			$query = trim($array[0]);
 	}
 	if ($max < 1) $max = $def_max;
-	
-	return "<div>".sprintf($plugin_google_dataset['head_msg'],htmlspecialchars($query)).plugin_google_search_google_result($query)."</div>";
+
+	return "<div>".sprintf($plugin_google_dataset['head_msg'],htmlspecialchars($query)).plugin_google_search_google_result($query,$max)."</div>";
 }
 
 function plugin_google_search_google_result($query,$max=10)
 {
-	global $plugin_google_dataset;
+	global $plugin_google_dataset,$vars,$script;
 
-	$ret = plugin_google_get_result_by_google($query,$max);
+	//$start = getmicrotime();
+
+	@list($ret,$refresh) = plugin_google_get_result_by_google($query,$max);
+	
+	// リフレッシュ用のイメージタグ付加
+	$refresh = ($refresh)? "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=google&amp;pmode=refresh&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;q=".rawurlencode($query)."&amp;m=".rawurlencode($max)."\" width=\"1\" height=\"1\" /></div>" : "";
+	
 	if ($ret !== false)
 	{
 		foreach($ret as $line)
@@ -64,7 +113,8 @@ function plugin_google_search_google_result($query,$max=10)
 		{
 			$result = "\n<ul class=\"recent_list\">\n".$result."</ul>\n";
 			$result .= "<p><a href='http://www.google.co.jp/search?num=".$max."&lr=lang_ja&ie=euc_jp&q=".rawurlencode($query)."'>".$plugin_google_dataset['research']."</a></p>\n";
-			return $result;
+			//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
+			return $result.$refresh;
 		}
 		else
 			return $plugin_google_dataset['err_noresult'];
@@ -77,7 +127,7 @@ function plugin_google_search_google_result($query,$max=10)
 
 function plugin_google_get_result_by_google($word,$max=10,$start=0)
 {
-	$res = plugin_google_result_google_api($word);
+	@list($res,$refresh) = plugin_google_result_google_api($word,$max);
 	if ($res['rc'] != 200) return false;
 	$data = str_replace(array("\r","\n"),"",$res['data']);
 	$data = str_replace(array("&lt;","&gt;","&amp;"),array("<",">","&"),$data);
@@ -95,13 +145,21 @@ function plugin_google_get_result_by_google($word,$max=10,$start=0)
 			$i++;
 		}
 	}
-	return $ret;
+	return array($ret,$refresh);
 }
 
-function plugin_google_result_google_api($word,$max=10,$start=0)
+function plugin_google_result_google_api($word,$max=10,$start=0,$do_refresh=FALSE)
 {
 	global $plugin_google_dataset;
-
+	
+	$ret = array(
+		'query'  => '', // Query String
+		'rc'     => 400, // エラー番号
+		'header' => '',     // Header
+		'data'   => ''
+	);
+	$refresh = FALSE;
+	
 	////////   Googleライセンスキーを設定   ////////
 	$google_license_key = $plugin_google_dataset['license_key'];
 	
@@ -111,85 +169,95 @@ function plugin_google_result_google_api($word,$max=10,$start=0)
 	// キャッシュファイル名
 	$c_file = P_CACHE_DIR.md5($word.$max.$start).".ggl";
 	
-	if (file_exists($c_file) && $cache_time * 3600 > time() - filemtime($c_file))
+	if (!$do_refresh && is_readable($c_file))
 	{
-		return array(
-			'query'  => $query, // Query String
+		$ret = array(
+			'query'  => 'Is cache.', // Query String
 			'rc'     => 200, // エラー番号
 			'header' => '',     // Header
 			'data'   => join('',file($c_file))
 		);
+		if (time() - filemtime($c_file) > $cache_time * 3600)
+		{
+			$refresh = TRUE;
+		}
 	}
 	
-	$word = mb_convert_encoding($word, "UTF-8", "EUC-JP");
-	
-	$data = "<?xml version='1.0' encoding='UTF-8'?>
-
-<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\">
-  <SOAP-ENV:Body>
-    <ns1:doGoogleSearch xmlns:ns1=\"urn:GoogleSearch\" 
-         SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">
-      <key xsi:type=\"xsd:string\">$google_license_key</key>
-      <q xsi:type=\"xsd:string\">$word</q>
-      <start xsi:type=\"xsd:int\">$start</start>
-      <maxResults xsi:type=\"xsd:int\">$max</maxResults>
-      <filter xsi:type=\"xsd:boolean\">true</filter>
-      <restrict xsi:type=\"xsd:string\"></restrict>
-      <safeSearch xsi:type=\"xsd:boolean\">false</safeSearch>
-      <lr xsi:type=\"xsd:string\">lang_ja</lr>
-      <ie xsi:type=\"xsd:string\">utf8</ie>
-      <oe xsi:type=\"xsd:string\">utf8</oe>
-    </ns1:doGoogleSearch>
-  </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>";
-
-	$query = 'POST '."/search/beta2"." HTTP/1.0\r\n";
-	$query .= "Host: "."api.google.com"."\r\n";
-
-	$query .= "Content-Type: text/xml; charset=utf-8\r\n";
-	$query .= 'Content-Length: '.strlen($data)."\r\n";
-	$query .= "\r\n";
-	$query .= $data;
-
-	$fp = fsockopen("api.google.com",80,$errno,$errstr,5);
-	if (!$fp)
+	if (!$ret['data'])
 	{
-		return array(
-			'query'  => $query, // Query String
-			'rc'     => $errno, // エラー番号
-			'header' => '',     // Header
-			'data'   => $errstr // エラーメッセージ
-		);
+		$word = mb_convert_encoding($word, "UTF-8", "EUC-JP");
+		
+		$data = "<?xml version='1.0' encoding='UTF-8'?>
+
+	<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\">
+	  <SOAP-ENV:Body>
+	    <ns1:doGoogleSearch xmlns:ns1=\"urn:GoogleSearch\" 
+	         SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">
+	      <key xsi:type=\"xsd:string\">$google_license_key</key>
+	      <q xsi:type=\"xsd:string\">$word</q>
+	      <start xsi:type=\"xsd:int\">$start</start>
+	      <maxResults xsi:type=\"xsd:int\">$max</maxResults>
+	      <filter xsi:type=\"xsd:boolean\">true</filter>
+	      <restrict xsi:type=\"xsd:string\"></restrict>
+	      <safeSearch xsi:type=\"xsd:boolean\">false</safeSearch>
+	      <lr xsi:type=\"xsd:string\">lang_ja</lr>
+	      <ie xsi:type=\"xsd:string\">utf8</ie>
+	      <oe xsi:type=\"xsd:string\">utf8</oe>
+	    </ns1:doGoogleSearch>
+	  </SOAP-ENV:Body>
+	</SOAP-ENV:Envelope>";
+
+		$query = 'POST '."/search/beta2"." HTTP/1.0\r\n";
+		$query .= "Host: "."api.google.com"."\r\n";
+
+		$query .= "Content-Type: text/xml; charset=utf-8\r\n";
+		$query .= 'Content-Length: '.strlen($data)."\r\n";
+		$query .= "\r\n";
+		$query .= $data;
+
+		$fp = fsockopen("api.google.com",80,$errno,$errstr,5);
+		if (!$fp)
+		{
+			$ret = array(
+				'query'  => $query, // Query String
+				'rc'     => $errno, // エラー番号
+				'header' => '',     // Header
+				'data'   => $errstr // エラーメッセージ
+			);
+		}
+		else
+		{
+			fputs($fp, $query);
+			
+			$response = '';
+			while (!feof($fp))
+			{
+				$response .= fgets($fp,4096);
+			}
+			fclose($fp);
+			
+			$response = mb_convert_encoding($response, "EUC-JP", "UTF-8");
+			//echo $response;
+			$resp = explode("\r\n\r\n",$response,2);
+			$rccd = explode(' ',$resp[0],3); // array('HTTP/1.1','200','OK\r\n...')
+			
+			if ($resp[1])
+			{
+				// キャッシュ保存
+				$fp = fopen($c_file, "wb");
+				fwrite($fp, $resp[1]);
+				fclose($fp);
+			}
+			
+			$ret = array(
+				'query'  => $query,             // Query String
+				'rc'     => (integer)$rccd[1], // Response Code
+				'header' => $resp[0],           // Header
+				'data'   => $resp[1]            // Data
+			);
+		}
 	}
-	
-	fputs($fp, $query);
-	
-	$response = '';
-	while (!feof($fp))
-	{
-		$response .= fgets($fp,4096);
-	}
-	fclose($fp);
-	
-	$response = mb_convert_encoding($response, "EUC-JP", "UTF-8");
-	//echo $response;
-	$resp = explode("\r\n\r\n",$response,2);
-	$rccd = explode(' ',$resp[0],3); // array('HTTP/1.1','200','OK\r\n...')
-	
-	// キャッシュ保存
-	$fp = fopen($c_file, "wb");
-	fwrite($fp, $resp[1]);
-	fclose($fp);
-	
-	// plane_text DB を更新を指示
-	need_update_plaindb();
-	
-	return array(
-		'query'  => $query,             // Query String
-		'rc'     => (integer)$rccd[1], // Response Code
-		'header' => $resp[0],           // Header
-		'data'   => $resp[1]            // Data
-	);
+	return array($ret,$refresh);
 }
 
 ?>

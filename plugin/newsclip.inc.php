@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: newsclip.inc.php,v 1.1 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: newsclip.inc.php,v 1.2 2004/09/01 14:00:11 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -30,9 +30,53 @@ function plugin_newsclip_split($_data)
 	return $data;
 }
 
+function plugin_newsclip_action()
+{
+	global $get,$plugin_newsclip_dataset;
+	
+	
+	if ($get['pmode'] == "refresh")
+	{
+		$word = (isset($get['q']))? $get['q'] : "";
+		$page = (isset($get['ref']))? $get['ref'] : "";
+		
+		// キャッシュファイル名
+		$filename = P_CACHE_DIR.md5($word).".ncp";
+		
+		$old_time = filemtime($filename);
+
+		if (!is_readable($filename) || time() - filemtime($filename) > $plugin_newsclip_dataset['cache_time'] * 3600 )
+		{
+			// 処理中に別スレッドが走らないように
+			touch($filename);
+			
+			@list($ret,$refresh) = plugin_newsclip_get($word,TRUE);
+			
+			if ($ret)
+			{
+				// plane_text DB を更新
+				need_update_plaindb($page);
+			}
+			else
+			{
+				// 失敗したのでタイムスタンプを戻す
+				touch($filename,$old_time);
+			}
+		}
+		
+		header("Content-Type: image/gif");
+		readfile('image/transparent.gif');
+		exit;
+	}
+	
+	return false;
+}
+
 function plugin_newsclip_convert()
 {
-	global $plugin_newsclip_dataset;
+	global $plugin_newsclip_dataset,$script,$vars;
+	
+	//$start = getmicrotime();
 	
 	$array = func_get_args();
 	
@@ -49,17 +93,37 @@ function plugin_newsclip_convert()
 	}
 	//if ($max < 1) $max = $def_max;
 	
+	@list($data,$refresh) = plugin_newsclip_get($word);
+	// リフレッシュ用のイメージタグ付加
+	$refresh = ($refresh)? "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=newsclip&amp;pmode=refresh&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;q=".rawurlencode($word)."\" width=\"1\" height=\"1\" /></div>" : "";
+
+	//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
+	return "<div>".sprintf($plugin_newsclip_dataset['head_msg'],htmlspecialchars($word)).$data."</div>".$refresh;
+}
+
+function plugin_newsclip_get($word,$do_refresh=FALSE)
+{
+	global $plugin_newsclip_dataset;
+	
+	$data = "";
+	$refresh = FALSE;
+	
 	// キャッシュ有効時間(h)
 	$cache_time = $plugin_newsclip_dataset['cache_time'];
 	
 	// キャッシュファイル名
 	$c_file = P_CACHE_DIR.md5($word).".ncp";
 
-	if (file_exists($c_file) && $cache_time * 3600 > time() - filemtime($c_file))
+	if (file_exists($c_file))
 	{
 		$data = join('',file($c_file));
+		if (time() - filemtime($c_file) > $cache_time * 3600)
+		{
+			$refresh = TRUE;
+		}
 	}
-	else
+	
+	if (!$data)
 	{
 		$r_word = rawurlencode($word);
 		$goo = "http://news.goo.ne.jp";
@@ -120,11 +184,8 @@ function plugin_newsclip_convert()
 		$fp = fopen($c_file, "wb");
 		fwrite($fp, $data);
 		fclose($fp);
-		
-		// plane_text DB を更新を指示
-		need_update_plaindb();
 	}
-
-	return "<div>".sprintf($plugin_newsclip_dataset['head_msg'],htmlspecialchars($word)).$data."</div>";
+	
+	return array($data,$refresh);
 }
 ?>

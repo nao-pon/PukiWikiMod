@@ -22,13 +22,51 @@
  *
  * 避難所       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.13 2004/08/24 13:04:44 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.14 2004/09/01 14:00:11 nao-pon Exp $
  *
  */
 
 // showrssプラグインが使用可能かどうかを表示
 function plugin_showrss_action()
 {
+	global $vars;
+	
+	$pmode = (!empty($vars['pmode']))? $vars['pmode'] : "";
+	$target = (!empty($vars['tgt']))? $vars['tgt'] : "";
+	$usecache = (!empty($vars['uc']))? $vars['uc'] : 1;
+	$page = (!empty($vars['ref']))? $vars['ref'] : "";
+	
+	// キャッシュデータ更新処理	
+	if ($pmode == "refresh")
+	{
+		$filename = P_CACHE_DIR . md5($target) . '.srs';
+		
+		$old_time = filemtime($filename);
+		
+		if (!is_readable($filename) || time() - filemtime($filename) > $usecache * 60 * 60)
+		{
+			// 処理中に別スレッドが走らないように
+			touch($filename);
+			
+			// RSSキャッシュを更新
+			@list($rss,$time,$refresh) = plugin_showrss_get_rss($target,$usecache,true);
+			
+			if ($rss)
+			{
+				// plane_text DB を更新
+				need_update_plaindb($page);
+			}
+			else
+			{
+				// 失敗したのでタイムスタンプを戻す
+				touch($filename,$old_time);
+			}
+		}
+		header("Content-Type: image/gif");
+		readfile('image/transparent.gif');
+		exit;
+	}
+	
 	$xml_extension = extension_loaded('xml');
 	$mbstring_extension = extension_loaded('mbstring');
 
@@ -44,6 +82,10 @@ function plugin_showrss_action()
 
 function plugin_showrss_convert()
 {
+	global $script,$vars;
+	
+	//$start = getmicrotime();
+	
 	if (func_num_args() == 0)
 	{
 		// 引数がない場合はエラー
@@ -57,7 +99,9 @@ function plugin_showrss_convert()
 	}
 
 	$array = func_get_args();
-	$rssurl = $tmplname = $usecache = $usetimestamp = $show_description = '';
+	$rssurl = $usetimestamp = $show_description = '';
+	$usecache = 1;
+	$tmplname = "menubar";
 
 	switch (func_num_args())
 	{
@@ -86,21 +130,30 @@ function plugin_showrss_convert()
 	}
 	
 
-	list($rss,$time) = plugin_showrss_get_rss($rssurl,$usecache);
+	@list($rss,$time,$refresh) = plugin_showrss_get_rss($rssurl,$usecache);
 
 	if ($rss === FALSE)
 	{
-		return "<p>showrss: cannot get rss from server.</p>\n";
+		return "<p><a href=\"{$rssurl}\" target=\"_blank\">showrss: cannot get rss from server.</a></p>\n";
 	}
 	
 	$obj = new $class($rss,$show_description);
 
 	$timestamp = '';
+	
+	if ($refresh)
+	{
+		// リフレッシュ用のイメージタグ付加
+		$timestamp .= "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=showrss&amp;pmode=refresh&amp;uc={$usecache}&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;tgt=".rawurlencode($rssurl)."\" width=\"1\" height=\"1\" /></div>";
+	}
+	
 	if ($usetimestamp > 0)
 	{
 		$time = get_date('Y/m/d H:i:s',$time);
-		$timestamp = "<p style=\"font-size:10px; font-weight:bold\">Last-Modified:$time</p>";
+		$timestamp .= "<p style=\"font-size:10px; font-weight:bold\">Last-Modified:$time</p>";
 	}
+	
+	//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
 	return $obj->toString($timestamp);
 }
 // rss配列からhtmlを作る
@@ -123,8 +176,10 @@ class ShowRSS_html
 				
 				$link = "<a href=\"$link\" title=\"$title $passage\" target=\"_blank\">$title</a>";
 				if ($show_description)
+				{
 					$item['DESCRIPTION'] = htmlspecialchars(strip_tags(str_replace(array("&lt;","&gt;"),array("<",">"),$item['DESCRIPTION'])));
 					$link .= "<br />"."<p class=\"quotation\">".make_link($item['DESCRIPTION'])."</p>";
+				}
 				$this->items[$date][] = $this->format_link($link);
 			}
 		}
@@ -183,19 +238,24 @@ class ShowRSS_html_recent extends ShowRSS_html
 	}
 }
 // rssを取得する
-function plugin_showrss_get_rss($target,$usecache)
+function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 {
 	$buf = '';
 	$time = NULL;
-	if ($usecache)
+	$refresh = FALSE;
+	
+	$filename = P_CACHE_DIR . md5($target) . '.srs';
+	
+	if ($usecache && !$do_refresh)
 	{
-		// 期限切れのキャッシュをクリア
-		plugin_showrss_cache_expire($usecache);
-
 		// キャッシュがあれば取得する
-		$filename = P_CACHE_DIR . encode($target) . '.srs';
 		if (is_readable($filename))
 		{
+			if (time() - filemtime($filename) > $usecache * 60 * 60)
+			{
+				// 更新が必要
+				$refresh = true;
+			}
 			$buf = join('',file($filename));
 			$time = filemtime($filename) - LOCALZONE;
 		}
@@ -206,24 +266,38 @@ function plugin_showrss_get_rss($target,$usecache)
 		$data = http_request($target);
 		if ($data['rc'] !== 200)
 		{
-			return array(FALSE,0);
+			// エラー時キャッシュがあればキャッシュを返す
+			if (is_readable($filename))
+			{
+				$buf = join('',file($filename));
+				$time = filemtime($filename) - LOCALZONE;
+			}
+			else
+				return array(FALSE,0,FALSE);
 		}
-		$buf = $data['data'];
-		$time = UTIME;
-		// キャッシュを保存
-		if ($usecache)
+		else
 		{
-			$fp = fopen($filename, 'w');
-			fwrite($fp,$buf);
-			fclose($fp);
+			$buf = $data['data'];
+			$time = UTIME;
+			// キャッシュを保存
+			if ($usecache)
+			{
+				$fp = fopen($filename, 'wb');
+				fwrite($fp,$buf);
+				fclose($fp);
+			}
 		}
-		// plane_text DB を更新を指示
-		need_update_plaindb();
+		
+		if ($do_refresh)
+		{
+			return array(TRUE,$time,FALSE);
+		}
+		
 	}
 
 	// parse
 	$obj = new ShowRSS_XML();
-	return array($obj->parse($buf),$time);
+	return array($obj->parse($buf),$time,$refresh);
 }
 // 期限切れのキャッシュをクリア
 function plugin_showrss_cache_expire($usecache)
