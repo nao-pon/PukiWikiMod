@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.17 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: index.php,v 1.18 2004/05/15 02:55:10 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -94,6 +94,7 @@ function writeConfig(){
 	\$trackback = $f_trackback;
 	\$page_cache_min = $f_page_cache_min;
 	\$use_static_url = $f_use_static_url;
+	\$update_ping_to = '$update_ping_to';
 	";
 	$content .= "\n?>";
 
@@ -152,7 +153,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to;
 	
 	xoops_cp_header();
 	OpenTable();
@@ -299,6 +300,11 @@ function displayForm(){
 		"._AM_WIKI_FUNCTION_TRACKBACK."
 	</td><td>
 		<input type='text' size='2' name='f_trackback' value='".$trackback."'>
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_UPDATE_PING_TO."
+	</td><td>
+		<textarea name='update_ping_to' cols='70' rows='5'>".htmlspecialchars($update_ping_to)."</textarea>
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_PAGE_CACHE_MIN."

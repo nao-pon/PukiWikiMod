@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.10 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: admin.php,v 1.11 2004/05/15 02:55:10 nao-pon Exp $
 
 define("_AM_WIKI_TITLE0", "PukiWiki 初期設定");
 define("_AM_WIKI_INFO0", "初期設定を完了するために次の２つのリンク先にアクセスして処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
@@ -58,4 +58,7 @@ define("_AM_WIKI_FUNCTION_TRACKBACK", "ページあたりのTrackBack Ping 最大送信数<b
 // Ver 0.08 b5
 define("_AM_WIKI_PAGE_CACHE_MIN", "HTMLへのコンバート結果をキャッシュする分数<br />ゲストユーザーのみキャッシュが有効となります。<br /> ( 0 を指定でキャッシュなし。)");
 define("_AM_WIKI_USE_STATIC_URL", "WikiページのURLを[ページID].html といった静的ページURL風にする。<br />(.htaccess での設定が必須です。)");
+
+define("_AM_WIKI_UPDATE_PING_TO", "ページ更新時、常にPing送信する送信先<br />改行または半角スペースで区切る");
+
 ?>

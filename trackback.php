@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.7 2004/04/03 14:13:47 nao-pon Exp $
+// $Id: trackback.php,v 1.8 2004/05/15 02:55:10 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -90,7 +90,11 @@ function tb_count($page,$ext='.txt')
 // TrackBack Ping 送信
 function tb_send($page,$data="")
 {
-	global $script,$trackback,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$use_static_url;
+	global $script,$trackback,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$use_static_url,$update_ping_to,$defaultpage;
+	
+	//error_reporting("E_ALL");
+	
+	//echo $data;
 	
 	$page = strip_bracket($page);
 	
@@ -148,17 +152,28 @@ function tb_send($page,$data="")
 	$pings = str_replace("&amp;","&",$pings);
 	$pings = array_unique($pings);
 	
-	$xml_title = $title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
+	$title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
+	//$xml_title = $title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
+	$up_page = (strpos($page,"/")) ? preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($page)) : $defaultpage;
 	if ($h_excerpt) $title .= "/".$h_excerpt;
 	
 	//静的URLのようなURLにするか？
 	if ($use_static_url)
+	{
 		$myurl = XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html";
+		//$xml_myurl = $myurl;
+		$xml_myurl = XOOPS_WIKI_URL."/".get_pgid_by_name($up_page).".html";
+		//$xml_myurl = XOOPS_WIKI_URL."/".get_pgid_by_name($xml_title).".html";
+	}
 	else
+	{
 		$myurl = $script."?pgid=".get_pgid_by_name($page);
+		$xml_myurl = $script."?pgid=".get_pgid_by_name($up_page);
+		//$xml_myurl = $script."?".rawurlencode($xml_title);
+	}
 	
-	$xml_myurl = $script."?".rawurlencode($xml_title);
-	$xml_title = $page_title."/".$xml_title;
+	$xml_title = $page_title."/".$up_page;
+	//$xml_title = $page_title."/".$xml_title;
 	
 	$data = trim(strip_htmltag($data));
 	$data = preg_replace("/^".preg_quote($h_excerpt,"/")."/","",$data);
@@ -216,30 +231,35 @@ function tb_send($page,$data="")
 		//送信Ping制限値を超えている場合は、PukiWiki宛てのみ送信
 		$pings = $to_pukiwiki;
 	}
+	
+	// 更新通知Ping送信指定先
+	$pings = array_merge($pings,preg_split("/\s+/",trim($update_ping_to)));
 
 	if (is_array($pings) && count($pings) != 0)
 	{
 		// Ping 指定先へ送信
 		foreach ($pings as $tb_id)
 		{
-			$result = http_request($tb_id,'POST','',$putdata);
-/*
-			echo htmlspecialchars($tb_id).":ping<hr />";
-			echo $result['query']."<hr />";
-			echo $result['rc']."<hr />";
-			echo $result['header']."<hr />";
-			echo $result['data']."<hr />";
-*/
 			$done = false;
+			//echo $tb_id."<hr />";
+			// XML RPC Ping を打ってみる
+			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata);
 			// 超手抜きなチェック
-			if (strpos($result['data'],"<error>0</error>") !== false)
+			if (strpos($result['data'],"<boolean>0</boolean>") !== false)
 				$done = true;
 			else
 			{
-				// XML RPC Ping を打ってみる
-				$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata);
+				//Track Back Ping
+				$result = http_request($tb_id,'POST','',$putdata);
+				/*
+				echo htmlspecialchars($tb_id).":ping<hr />";
+				echo $result['query']."<hr />";
+				echo $result['rc']."<hr />";
+				echo $result['header']."<hr />";
+				echo $result['data']."<hr />";
+				*/
 				// 超手抜きなチェック
-				if (strpos($result['data'],"<boolean>0</boolean>") !== false)
+				if (strpos($result['data'],"<error>0</error>") !== false)
 					$done = true;
 			}
 			

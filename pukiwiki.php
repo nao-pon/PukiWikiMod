@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.41 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.42 2004/05/15 02:55:10 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -1277,7 +1277,10 @@ $xoops_mod_add_title = $xoops_pagetitle;
 //<link>タグを追加
 if (is_page($vars["page"]))
 {
-	$up_page = (strpos($vars["page"],"/"))? "&page=".rawurlencode(preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($vars["page"]))) : "";
+	if ($vars['is_rsstop'])
+		$up_page ="&page=".rawurlencode(strip_bracket($vars["page"]));
+	else
+		$up_page = (strpos($vars["page"],"/")) ? "&page=".rawurlencode(preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($vars["page"]))) :"";
 	
 	$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php?cmd=rss10&content=true'.$up_page;
 	

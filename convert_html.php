@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.20 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: convert_html.php,v 1.21 2004/05/15 02:55:10 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -14,7 +14,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		if (!$X_uid && file_exists($filename) && ($cache || (filemtime($filename) + PAGE_CACHE_MIN * 60) > time()))
 		{
 			$htmls = file($filename);
-			list($related_link,$noattach,$noheader,$h_excerpt,$wiki_ads_shown,$foot_explain) = explode("\t",trim(array_shift($htmls)),6);
+			list($related_link,$noattach,$noheader,$h_excerpt,$wiki_ads_shown,$vars['is_rsstop'],$foot_explain) = explode("\t",trim(array_shift($htmls)),6);
 			$foot_explain = explode("\t",$foot_explain);
 			return join('',$htmls);
 		}
@@ -77,7 +77,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		//マルチドメイン対応
 		$str = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$str);
 		
-		$html = $related_link."\t".$noattach."\t".$noheader."\t".$h_excerpt."\t".$wiki_ads_shown."\t".preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain))."\n".$str;
+		$html = $related_link."\t".$noattach."\t".$noheader."\t".$h_excerpt."\t".$wiki_ads_shown."\t".$vars['is_rsstop']."\t".preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain))."\n".$str;
 		
 		//キャッシュ書き込み
 		if ($fp = @fopen($filename,"w"))

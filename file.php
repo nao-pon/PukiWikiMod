@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.22 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: file.php,v 1.23 2004/05/15 02:55:10 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -254,10 +254,13 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			fclose($fp);
 		}
 		
-		// TrackBack Ping用ファイル作成
-		// pcomment用：親ページ名をセット
-		$page = ($post['refer'])? $post['refer'] : $page; 
-		tb_send($page);
+		if (!$notimestamp && !$unvisible)
+		{
+			// TrackBack Ping用ファイル作成
+			// pcomment用：親ページ名をセット
+			$page = ($post['refer'])? $post['refer'] : $page; 
+			tb_send($page);
+		}
 	}	
 }
 
