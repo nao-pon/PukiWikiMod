@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.3 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: db_func.php,v 1.4 2004/01/12 13:15:57 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false)
@@ -92,6 +92,58 @@ function get_pgid_by_name($page)
 	$ret = mysql_fetch_row($res);
 	return $ret[0];
 }
+
+//ページ名から前後のページへの<link>タグを得る
+function get_header_link_tag_by_name($page)
+{
+	global $xoopsDB;
+	$page = strip_bracket($page);
+	$this_id = get_pgid_by_name($page);
+	
+	// 階層を抽出
+	if (preg_match("/(.+)\/[^\/]+/",$page,$match))
+	{
+		$up_page = $match[1];
+		$where = "AND name LIKE '".addslashes($up_page)."/%' ";
+	}
+	else
+	{
+		$up_page = "";
+		$where = "AND name NOT LIKE '%/%' ";
+	}
+	//echo $where;
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id<$this_id ".$where."ORDER BY id DESC LIMIT 1;";
+	$res = $xoopsDB->query($query);
+	if ($res) 
+	{
+		$ret = mysql_fetch_row($res);
+		$prev_pg = rawurlencode($ret[1]);
+	}
+	else
+		$prev_pg = "";
+	
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id>$this_id ".$where."ORDER BY id LIMIT 1;";
+	$res = $xoopsDB->query($query);
+	if ($res) 
+	{
+		$ret = mysql_fetch_row($res);
+		$next_pg = rawurlencode($ret[1]);
+	}
+	else
+		$next_pg = "";
+		
+	$ret = "";
+	if ($up_page)
+		$ret .= '<link rel="start" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?'.rawurlencode($up_page).'">'."\n";
+	else
+		$ret .= '<link rel="start" href="'.XOOPS_URL.'/modules/pukiwiki/index.php">'."\n";
+	if ($prev_pg) $ret .= '<link rel="prev" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?'.$prev_pg.'">'."\n";
+	if ($next_pg) $ret .= '<link rel="next" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?'.$next_pg.'">'."\n";
+	
+	return $ret;
+
+}
+
 
 // pginfo DB を更新
 function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$freeze="",$unvisible="")
