@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.5 2004/09/07 12:16:42 nao-pon Exp $
+// $Id: xoops_version.php,v 1.6 2004/10/14 13:05:31 nao-pon Exp $
  
 $modversion['name'] = "PukiWiki";
 $modversion['version'] = "1.0.x";
@@ -21,6 +21,7 @@ $modversion['tables'][0] = "pukiwikimod_count";
 $modversion['tables'][1] = "pukiwikimod_pginfo";
 $modversion['tables'][2] = "pukiwikimod_plain";
 $modversion['tables'][3] = "pukiwikimod_tb";
+$modversion['tables'][4] = "pukiwikimod_attach";
 
 //Admin things
 $modversion['hasAdmin'] = 1;
