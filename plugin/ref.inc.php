@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.8 2003/07/30 14:56:00 nao-pon Exp $
+// $Id: ref.inc.php,v 1.9 2003/08/03 13:44:58 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -33,6 +33,10 @@ Last-Update:2002-10-29 rev.33
 
 */
 
+// GDのバージョンセット(必ず環境に合わせる)
+//if (!defined('_WIKI_GD_VERSION')) define('_WIKI_GD_VERSION',1); // Ver 1
+if (!defined('_WIKI_GD_VERSION')) define('_WIKI_GD_VERSION',2); // Ver 2
+
 // upload dir(must set end of /)
 if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR','./attach/');
 
@@ -44,6 +48,8 @@ if (!defined('REF_DEFAULT_ALIGN')) define('REF_DEFAULT_ALIGN','left'); // 'left'
 
 // force wrap on default
 if (!defined('REF_WRAP_TABLE')) define('REF_WRAP_TABLE',FALSE); // TRUE,FALSE
+
+
 
 function plugin_ref_inline() {
 
@@ -71,8 +77,13 @@ function plugin_ref_inline() {
 		$params['_args'][] = $val;
 	}
 
-	$ret = plugin_ref_body($name,$args,$params);
-	unset($params,$args,$name);
+	$rets = plugin_ref_body($name,$args,$params);
+	if ($rets['_error']) {
+		$ret = $rets['_error'];
+	} else {
+		$ret = $rets['_body'];
+	}
+	unset($name,$args,$params,$rets);
 
 	return $ret;
 }
@@ -95,9 +106,13 @@ function plugin_ref_convert() {
 	//パラメータ変換
 	$params = array('left'=>FALSE,'center'=>FALSE,'right'=>FALSE,'wrap'=>FALSE,'nowrap'=>FALSE,'around'=>FALSE,'_args'=>array(),'_done'=>FALSE,'nocache'=>FALSE,'_size'=>FALSE,'_w'=>0,'_h'=>0);
 	array_walk($args, 'ref_check_arg', &$params);
-	//if (count($params['_args']) > 0) { $title = join(',', $params['_args']); }
 
-	$ret = plugin_ref_body($name,$args,$params);
+	$rets = plugin_ref_body($name,$args,$params);
+	if ($rets['_error']) {
+		$ret = $rets['_error'];
+	} else {
+		$ret = $rets['_body'];
+	}
 
 	//アラインメント判定
 	if ($params['right'])
@@ -113,8 +128,7 @@ function plugin_ref_convert() {
 		$ret = wrap_table($ret, $align, $params['around']);
 	}
 	$ret = wrap_div($ret, $align, $params['around']);
-
-	unset($params,$args,$name);
+	unset($name,$args,$params,$rets);
 
 	return $ret;
 }
@@ -122,7 +136,12 @@ function plugin_ref_convert() {
 //-----------------------------------------------------------------------------
 // 画像かどうか
 function is_picture($text) {
-	return preg_match('/(\.gif|\.png|\.jpeg|\.jpg)$/i', $text);
+	$size = @getimagesize($text);
+	if ($size[2] > 0 && $size[2] < 4) {
+		return true;
+	} else {
+		return false;
+	}
 }
 // divで包む
 function wrap_div($text, $align, $around) {
@@ -175,6 +194,7 @@ function plugin_ref_body($name,$args,$params){
 	if (is_url($name)) { //URL
 		$url = $ext = $info = htmlspecialchars($name);
 		$icon = $size = '';
+		$page = $vars['page'];
 		if (preg_match('/([^\/]+)$/', $name, $match)) { $ext = $match[1]; }
 	} else { //添付ファイル
 		$icon = REF_FILE_ICON;
@@ -188,7 +208,7 @@ function plugin_ref_body($name,$args,$params){
 				array_shift($args);
 			}
 		}
-
+		//相対パスからフルパスを得る
 		if (preg_match('/^(.+)\/([^\/]+)$/',$name,$matches))
 		{
 			if ($matches[1] == '.' or $matches[1] == '..')
@@ -198,23 +218,29 @@ function plugin_ref_body($name,$args,$params){
 			$page = add_bracket(get_fullname($matches[1],$page));
 			$name = $matches[2];
 		}
-		if (!is_page($page)) { return 'page not found.'; }
+		if (!is_page($page)) { 
+			$rets['_error'] = 'page not found.';
+			return $rets;
+		}
 		$ext = $name;
 		$file = UPLOAD_DIR.encode($page).'_'.encode($name);
-		if (!is_file($file)) { return 'not found.'; }
+		if (!is_file($file)) {
+			$rets['_error'] = 'not found.';
+			return $rets;
+		}
+		$l_url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
+		$fsize = sprintf('%01.1f',round(filesize($file)/1000,1)).'KB';
 
-		if (is_picture($ext)) {
+		$is_picture = is_picture($file);
+
+		if ($is_picture) {
 			$url = $file;
 			$size = getimagesize($file);
-			//$org_w = $width = $size[0];
 			$org_w = $size[0];
-			//$org_h = $height = $size[1];
 			$org_h = $size[1];
 		} else {
-			$url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 			$lastmod = date('Y/m/d H:i:s',filemtime($file));
-			$size = sprintf('%01.1f',round(filesize($file)/1000,1)).'KB';
-			$info = "$lastmod $size";
+			$info = "$lastmod $fsize";
 		}
 	}
 
@@ -223,17 +249,26 @@ function plugin_ref_body($name,$args,$params){
 	$title = htmlspecialchars($title);
 
 	// ファイル種別判定
-	if (is_picture($ext)) { // 画像
+	if (!isset($is_picture)) $is_picture = is_picture($url);
+	if ($is_picture) { // 画像
 		$info = "";
 		$width=$height=0;
 		//URLの場合キャッシュ判定
-		if ((is_url($url)) && (!$params['nocache'])){
+		if (is_url($url)){
 			$parse = parse_url($url);
-			$tmpname = $parse['host']."_".basename($parse['path']);
-			$filename = $dir.encode($vars['page'])."_".encode($tmpname);
-			$size = plugin_ref_cache_image_fetch($filename, &$url);
-			//$url = $img_arg[0];
-			//$size = $img_arg[1];
+			$name = $parse['host']."_".basename($parse['path']);
+			$filename = encode($page)."_".encode($name);
+			if (!$params['nocache']){
+				//キャッシュする
+				$size = plugin_ref_cache_image_fetch($filename, &$url);
+				$l_url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
+				$fsize = sprintf('%01.1f',round(filesize($url)/1000,1)).'KB';
+			} else {
+				//キャッシュしない
+				$size = @getimagesize($url);
+				$l_url = $url;
+				$fsize = '?KB';
+			}
 			$org_w = $size[0];
 			$org_h = $size[1];
 		}
@@ -252,12 +287,12 @@ function plugin_ref_body($name,$args,$params){
 				$params['_%'] = $m[1];
 			}
 			if (preg_match("/^t:(.*)$/i",$arg,$m)){
-				$title .= " ".htmlspecialchars($m[1]);
+				$title = htmlspecialchars($m[1])."&#13;&#10;".$title;
 			}
 		}
 		// 指定されたサイズを使用する
 		if ($params['_size']) {
-			if ($params['_w'] > 0 && $params['_h'] > 0){
+			if ($params['_w'] > 0 && $params['_h'] > 0 && !$max_flg){
 				$width = $params['_w'];
 				$height = $params['_h'];
 			} else {
@@ -266,35 +301,58 @@ function plugin_ref_body($name,$args,$params){
 				$zoom = max($_w,$_h);
 				if ($zoom) {
 					if (!$max_flg || ($zoom >= 1 && $max_flg)){
-						$width = (int)($org_w / $zoom);
-						$height = (int)($org_h / $zoom);
+						$width = floor($org_w / $zoom);
+						$height = floor($org_h / $zoom);
 					}
 				}
 			}
 		}
 		if ($params['_%']) {
-			$width = (int)($org_w * $params['_%'] / 100);
-			$height = (int)($org_h * $params['_%'] / 100);
+			$width = floor($org_w * $params['_%'] / 100);
+			$height = floor($org_h * $params['_%'] / 100);
 		}
-		if ($width and $height) {
+		if ($org_w && $width && $org_h && $height){
+			$zoom = floor(max($width/$org_w,$height/$org_h)*100);
+		}
+		$title .= "&#13;&#10;SIZE:{$org_w}x{$org_h}($fsize)";
+		//EXIF DATA
+		$exif_data = get_exif_data($file);
+		if ($exif_data){
+			$title .= "&#13;&#10;".$exif_data['title'];
+			foreach($exif_data as $key => $value){
+				if ($key != "title") $title .= "&#13;&#10;$key: $value";
+			}
+		}
+		//IE以外は改行文字をスペースに変換
+		if ( !strstr($_SERVER["HTTP_USER_AGENT"], "MSIE")) $title = str_replace("&#13;&#10;"," ",$title);
+		
+		if ($width && $height) {
+			$s_file = UPLOAD_DIR.encode($page).'_'.encode($zoom."%".$name);
+			if (!file_exists($s_file) && ($zoom < 90) && (!$params['nocache'])) {
+				//サムネイル作成
+				$url = plugin_ref_make_thumb($url,$s_file,$width,$height,$org_w,$org_h);
+			} else {
+				if (file_exists($s_file)) {
+					//サムネイルがあればサムネイルを参照
+					$url = $s_file;
+				}
+			}
 			$info = "width=\"$width\" height=\"$height\" ";
-			$title .= " SIZE:{$org_w}x{$org_h}";
-			$ret .= "<a href=\"$url\" title=\"$title\"><img src=\"$url\" alt=\"$title\" title=\"$title\" $info/></a>";
+			$ret .= "<a href=\"$l_url\" title=\"$title\"><img src=\"$url\" alt=\"$title\" title=\"$title\" $info/></a>";
 		} else {
 			if ($org_w and $org_h) $info = "width=\"$org_w\" height=\"$org_h\" ";
 			$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info/>";
 		}
 	} else { // 通常ファイル
-		$ret .= "<a href=\"$url\" title=\"$info\">$icon$title</a>";
+		$ret .= "<a href=\"$l_url\" title=\"$info\">$icon$title</a>";
 	}
-	return $ret;
+	$rets[_body] = $ret;
+	return $rets;
 }
 
 // 画像キャッシュがあるか調べる
 function plugin_ref_cache_image_fetch($filename, &$url) {
-	
 	$filename = UPLOAD_DIR.$filename;
-
 	if (!is_readable($filename)) {
 		$file = fopen($url, "rb"); // たぶん size 取得よりこちらが原始的だからやや速い
 		if (! $file) {
@@ -302,7 +360,7 @@ function plugin_ref_cache_image_fetch($filename, &$url) {
 			$url = NOIMAGE;
 			$size = @getimagesize($url);
 		} else {
-			$data = fread($file, 1000000); 
+			$data = fread($file, 2000000); 
 			fclose ($file);
 			$size = @getimagesize($url); // あったら、size を取得、通常は1が返るが念のため0の場合も(reimy)
 			if ($size[0] <= 1){
@@ -327,5 +385,52 @@ function plugin_ref_cache_image_save($data, $filename) {
 	fwrite($fp, $data);
 	fclose($fp);
 	return $filename;
+}
+// サムネイル画像を作成
+function plugin_ref_make_thumb($url,$s_file,$width,$height,$org_w,$org_h) {
+
+	// GD fuction のチェック
+	if (!function_exists("ImageCreate")) return $url;//GDをサポートしていない
+
+	$gifread = '';
+	if (_WIKI_GD_VERSION == 2) {
+		$imagecreate = "ImageCreateTrueColor";
+		$imageresize = "ImageCopyResampled";
+	}else {
+		$imagecreate = "ImageCreate";
+		$imageresize = "ImageCopyResized";
+	}
+	if (function_exists ("ImageCreateFromGif")) {
+		$gifread = "on";
+	}
+
+	$size = @GetImageSize($url);
+
+	$dst_im = $imagecreate($width,$height);
+	switch($size[2]):
+		case "1": //gif形式
+			if ($gifread == "on"){
+				$src_im = ImageCreateFromGif($url);
+				$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$size[0],$size[1]);
+				ImageJpeg($dst_im,$s_file);
+				$url = $s_file;
+			}
+			break;
+		case "2": //jpg形式
+			$src_im = ImageCreateFromJpeg($url);
+			$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$size[0],$size[1]);
+			ImageJpeg($dst_im,$s_file);
+			$url = $s_file;
+			break;
+		case "3": //png形式
+			$src_im = ImageCreateFromPng($url);
+			$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$size[0],$size[1]);
+			ImageJpeg($dst_im,$s_file);
+			$url = $s_file;
+			break;
+		default:
+			break;
+	endswitch;
+	return $url;
 }
 ?>
