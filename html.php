@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.49 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: html.php,v 1.50 2005/03/11 15:00:39 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -299,7 +299,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 		{
 			// ページ名読みBOX
 			$reading_tag = "<hr /><div>ページ読み: ".'<input type="text" name="f_page_reading" size="60" value="'.get_reading($page).'" /><br />';
-			$reading_tag .= '&nbsp;&nbsp;&nbsp;<input type="checkbox" name="c_page_reading" value=" checked" />ページ読みを更新する (未入力で自動取得)</div>';
+			$reading_tag .= '&nbsp;&nbsp;&nbsp;<input type="checkbox" id="c_page_reading" name="c_page_reading" value=" checked" /><label for="c_page_reading">ページ読みを更新する (未入力で自動取得)</label></div>';
 
 		}
 	}
@@ -325,14 +325,14 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 		{
 			// ページ名読みBOX
 			$reading_tag = "<hr /><div>ページ読み: ".'<input type="text" name="f_page_reading" size="60" value="'.$vars["f_page_reading"].'" /><br />';
-			$reading_tag .= '&nbsp;&nbsp;&nbsp;<input type="checkbox" name="c_page_reading" value=" checked"'.$vars["c_page_reading"].' />ページ読みを更新する (未入力で自動取得)</div>';
+			$reading_tag .= '&nbsp;&nbsp;&nbsp;<input type="checkbox" id="c_page_reading" name="c_page_reading" value=" checked"'.$vars["c_page_reading"].' /><label for="c_page_reading">ページ読みを更新する (未入力で自動取得)</label></div>';
 		}
 	}
 
 	if($add)
 	{
 		$addtag = '<input type="hidden" name="add" value="true" />';
-		$add_top = '<input type="checkbox" name="add_top" value="true"'.$add_top_enable.' /><span class="small">'.$_btn_addtop.'</span>';
+		$add_top = '<input type="checkbox" id="add_top" name="add_top" value="true"'.$add_top_enable.' /><label for="add_top"><span class="small">'.$_btn_addtop.'</span></label>';
 	}
 
 	if($vars["help"] == "true")
@@ -350,7 +350,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 			} else {
 				$enable_user = _MD_PUKIWIKI_ALL;
 			}
-			$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.sprintf($_btn_freeze_enable,$enable_user).'</span>';
+			$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" /><input type="checkbox" id="freeze" name="freeze" value="true" '.$freeze_check.'/><label for="freeze"><span class="small">'.sprintf($_btn_freeze_enable,$enable_user).'</span></label>';
 			$allow_edit_tag = allow_edit_form($allow_groups,$allow_users);
 		}
 	}
@@ -368,7 +368,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 			else
 				$unvisible_check = !empty($vars['unvisible'])? "checked" : "";
 			$unvisible_tag = ($function_freeze)? '' : '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" />';
-			$unvisible_tag .= '<input type="checkbox" name="unvisible" value="true" '.$unvisible_check.'/><span class="small">'.sprintf($_btn_unvisible_enable).'</span>';
+			$unvisible_tag .= '<input type="checkbox" id="unvisible" name="unvisible" value="true" '.$unvisible_check.'/><label for="unvisible"><span class="small">'.sprintf($_btn_unvisible_enable).'</span></label>';
 			$allow_view_tag = allow_view_form($v_gids,$v_aids);
 		}
 	}
@@ -381,7 +381,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 	
 	// タイムスタンプ
 	$timestamp_tag = ($X_admin || (($X_uid == $author_uid) && $X_uid))?
-		'<input type="checkbox" name="notimestamp" value="true"'.$notimestamp_enable.' /><span style="small">'.$_btn_notchangetimestamp.'</span>'
+		'<input type="checkbox" id="notimestamp" name="notimestamp" value="true"'.$notimestamp_enable.' /><label for="notimestamp"><span style="small">'.$_btn_notchangetimestamp.'</span></label>'
 		:'';
 	
 	if($load_template_func && !$b_preview && empty($vars['id']) && !is_page($page))
@@ -424,8 +424,8 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
  </tr>
  <tr><td colspan=2>
 '.fontset_js_tag().'
-   <input type="checkbox" name="enter_enable" value="true"'.$enter_enable.' /><span class="small">'.$_btn_enter_enable.'</span> 
-   <input type="checkbox" name="auto_bra_enable" value="true"'.$auto_bra_enable.' /><span class="small">'.$_btn_autobracket_enable.'</span>
+   <input type="checkbox" id="enter_enable" name="enter_enable" value="true"'.$enter_enable.' /><label for="enter_enable"><span class="small">'.$_btn_enter_enable.'</span></label>
+   <input type="checkbox" id="auto_bra_enable" name="auto_bra_enable" value="true"'.$auto_bra_enable.' /><label for="auto_bra_enable"><span class="small">'.$_btn_autobracket_enable.'</span></label>
  </td></tr>
  <tr>
   <td align="left" colspan=2>
@@ -863,7 +863,7 @@ function file_attache_form() {
 	$ret.= "<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($vars["page"])."\">\n";
 	$ret.= "<input type=\"hidden\" name=\"max_file_size\" value=\"".MAX_FILESIZE."\" />\n";
 	$ret.= "<b>".$_msg_attachfile."</b>:<input type=\"file\" name=\"attach_file\" />";
-	$ret .= "<span class=\"small\"><input type=\"checkbox\" name=\"copyright\" value=\"1\" />{$_attach_messages['msg_copyright_s']}|";
+	$ret .= "<span class=\"small\"><input type=\"checkbox\" id=\"copyright\" name=\"copyright\" value=\"1\" /><label for=\"copyright\">{$_attach_messages['msg_copyright_s']}</label>|";
 	$ret.= "Max[$max_size]</span>\n";
 
 	return $ret;

@@ -36,6 +36,14 @@ function plugin_painter_action()
 function plugin_painter_convert()
 {
 	global $script,$vars;
+	static $load = array();
+	
+	$pgid = get_pgid_by_name($vars['page']);
+	if (isset($load[$pgid]))
+		return "<p>'#painter' は、1ページ中に設置できるのは、1個までです。</p>";
+	else
+		$load[$pgid] = TRUE;
+	
 	list ($picw,$pich,$defmode,$template) = func_get_args();
 	$picw = ($picw)? (int)$picw : WIKI_PAINTER_MAX_WIDTH_PLUGIN ;
 	$pich = ($pich)? (int)$pich : WIKI_PAINTER_MAX_HEIGHT_PLUGIN ;
@@ -43,6 +51,8 @@ function plugin_painter_convert()
 	$pich = ($pich < 20)? 20 : $pich;
 	$picw = min($picw,WIKI_PAINTER_MAX_WIDTH_PLUGIN);
 	$pich = min($pich,WIKI_PAINTER_MAX_HEIGHT_PLUGIN);
+	
+	
 	
 	$template_tag = '';
 	$templates = array();
@@ -78,7 +88,7 @@ function plugin_painter_convert()
 			$template_tag .= '<input type="hidden" name="fitimage" value="ture" />';
 		}
 	}
-	$template_tag .= '&nbsp;<input type=checkbox value="true" name="anime" />動画記録&nbsp;(しぃペインター & Pro のみ)<br />';
+	$template_tag .= '&nbsp;<input type=checkbox id="_p_anime_'.$pgid.'" value="true" name="anime" /><label for="_p_anime_'.$pgid.'">動画記録&nbsp;(しぃペインター & Pro のみ)</label><br />';
 	
 	$def_select = array('','','');
 	switch ($defmode)
@@ -322,7 +332,7 @@ function plugin_painter_add($files,$upload=false)
 タイトル: <input type="text" name="title" size="60" /><br />
 メッセージ:'.$fontset_js_tag.'<br />
 <textarea name="msg" cols="80" rows="10"></textarea><br />
-<input type="checkbox" name="add_comment" value="1" />コメントを受け付ける';
+<input type="checkbox" id="add_comment" name="add_comment" value="1" /><label for="add_comment">コメントを受け付ける</label>';
 	}
 	$title = "<h2>".str_replace('$1',make_pagelink($refer),'$1へお絵かきデータを登録')."</h2>";
 	$body =<<<EOD

@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.67 2005/03/10 13:25:21 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.68 2005/03/11 15:00:39 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する
 if (
@@ -783,8 +783,8 @@ else if(arg_check("search"))
 	$body .= "<form action=\"$script?cmd=search\" method=\"post\">\n"
 		."<div>\n"
 		."<input type=\"text\" name=\"word\" size=\"20\" value=\"".htmlspecialchars($vars["word"])."\" />\n"
-		."<input type=\"radio\" name=\"type\" value=\"AND\" $and_check />$_btn_and\n"
-		."<input type=\"radio\" name=\"type\" value=\"OR\" $or_check />$_btn_or\n"
+		."<input type=\"radio\" id=\"type_and\" name=\"type\" value=\"AND\" $and_check /><label for=\"type_and\">$_btn_and</label>\n"
+		."<input type=\"radio\" id=\"type_or\" name=\"type\" value=\"OR\" $or_check /><label for=\"type_or\">$_btn_or</label>\n"
 		."&nbsp;<input type=\"submit\" value=\"$_btn_search\" />\n"
 		."</div>\n"
 		."</form>\n";

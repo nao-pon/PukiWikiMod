@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rename.inc.php,v 1.6 2005/02/23 14:59:39 nao-pon Exp $
+// $Id: rename.inc.php,v 1.7 2005/03/11 15:00:39 nao-pon Exp $
 //
 
 /*
@@ -43,6 +43,7 @@ function plugin_rename_init() {
 	'msg_exist_overwrite' => 'そのファイルを上書きする',
 	'msg_confirm' => '以下のファイルをリネームします。',
 	'msg_result' => '以下のファイルを上書きしました。',
+	'msg_otherpage' => 'このほかのページのリネーム',
 	'btn_submit' => '実行',
 	'btn_next' => '次へ',
 	));
@@ -168,10 +169,10 @@ $msg
 <form action="$script" method="post">
  <div>
   <input type="hidden" name="plugin" value="rename" />
-  <input type="radio" name="method" value="page"$radio_page />
-  {$_rename_messages['msg_page']}:$select_refer<br />
-  <input type="radio" name="method" value="regex"$radio_regex />
-  {$_rename_messages['msg_regex']}:<br />
+  <input type="radio" id="method_0" name="method" value="page"$radio_page />
+  <label for="method_0">{$_rename_messages['msg_page']}</label>:$select_refer<br />
+  <input type="radio" id="method_1" name="method" value="regex"$radio_regex />
+  <label for="method_1">{$_rename_messages['msg_regex']}</label>:<br />
   From:<br />
   <input type="text" name="src" size="80" value="$s_src" /><br />
   To:<br />
@@ -199,8 +200,8 @@ function rename_phase2($err='')
 	$msg_related = '';
 	if (count($related) > 0)
 	{
-		$msg_related = $_rename_messages['msg_do_related'].
-			'<input type="checkbox" name="related" value="1" checked="checked" /><br />';
+		$msg_related = '<label for="related">'.$_rename_messages['msg_do_related'].'</label>'.
+			'<input type="checkbox" id="related" name="related" value="1" checked="checked" /><br />';
 	}
 	$msg_rename = sprintf($_rename_messages['msg_rename'],make_pagelink($refer,strip_bracket($refer)));
 	
@@ -217,7 +218,8 @@ $msg
   $msg_rename<br />
   {$_rename_messages['msg_newname']}:<input type="text" name="page" size="80" value="$s_page" /><br />
   $rename_related
-  <input type="submit" value="{$_rename_messages['btn_next']}" /><br />
+  <input type="submit" value="{$_rename_messages['btn_next']}" /><hr />
+  <a href="{$script}?plugin=rename">{$_rename_messages['msg_otherpage']}</a>
  </div>
 </form>
 EOD;
@@ -346,8 +348,8 @@ function rename_phase3($pages)
 		}
 		$msg .= "</ul><hr />\n";
 	
-		$input .= '<input type="radio" name="exist" value="0" checked />'.$_rename_messages['msg_exist_none'].'<br />';
-		$input .= '<input type="radio" name="exist" value="1" />'.$_rename_messages['msg_exist_overwrite'].'<br />';
+		$input .= '<input id="exist_0" type="radio" name="exist" value="0" checked /><label for="exist_0">'.$_rename_messages['msg_exist_none'].'</label><br />';
+		$input .= '<input id="exist_1" type="radio" name="exist" value="1" /><label for="exist_1">'.$_rename_messages['msg_exist_overwrite'].'</label><br />';
 	}
 	$ret_btn = ($X_admin)? "<input type=\"submit\" value=\"{$_rename_messages['btn_submit']}\" />":rename_err('adminpass');
 	$ret['msg'] = $_rename_messages['msg_title'];
@@ -507,6 +509,10 @@ function rename_proceed($pages,$files,$exists)
 		//  -page_name
 		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_tb")." SET page_name='$db_new',tb_id='".md5($new)."' WHERE page_name = '$db_old';";
 		$result=$xoopsDB->queryF($query);
+		
+		// ページスタイルシート
+		$oldcss = CACHE_DIR.encode(strip_bracket($old)).".css";
+		if (file_exists($oldcss)) rename($oldcss,CACHE_DIR.encode(strip_bracket($new)).".css");
 		
 		// 送信済みPING
 		// [md5値(ブラケットなし)].ping

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.30 2005/03/09 12:14:51 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.31 2005/03/11 15:00:39 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -520,8 +520,15 @@ function attach_form($page)
 {
 	global $script,$vars;
 	global $_attach_messages,$X_admin,$X_uid;
+	static $load = array();
 	
 	exist_plugin('attach');
+	
+	if (isset($load[$page]))
+		$load[$page]++;
+	else
+		$load[$page] = 0;
+	$pgid = get_pgid_by_name($page);
 	
 	$r_page = rawurlencode($page);
 	$s_page = htmlspecialchars($page);
@@ -550,18 +557,19 @@ EOD;
 <hr />
 <a href="'.$script.'?plugin=painter&amp;pmode=upload&amp;refer='.encode($page).'">'.$_attach_messages['msg_search_updata'].'</a><br />
 <form action="'.$script.'" method=POST>
-'.$_attach_messages['msg_paint_tool'].':<select name="tools">
+<label for="_p_attach_tools_'.$pgid.'_'.$load[$page].'">'.$_attach_messages['msg_paint_tool'].'</label>:<select id="_p_attach_tools_'.$pgid.'_'.$load[$page].'" name="tools">
 <option value="normal">'.$_attach_messages['msg_shi'].'</option>
 <option value="pro">'.$_attach_messages['msg_shipro'].'</option>
 </select>
 '.$_attach_messages['msg_width'].'<input type=text name=picw value='.$picw.' size=3> x '.$_attach_messages['msg_height'].'<input type=text name=pich value='.$pich.' size=3>
 '.$_attach_messages['msg_max'].'('.WIKI_PAINTER_MAX_WIDTH_UPLOAD.' x '.WIKI_PAINTER_MAX_HEIGHT_UPLOAD.')
 <input type=submit value="'.$_attach_messages['msg_do_paint'].'" />
-<input type=checkbox value="true" name="anime" checked="true" />'.$_attach_messages['msg_save_movie'].'<br />
+<input type=checkbox id="_p_attach_anime_'.$pgid.'_'.$load[$page].'" value="true" name="anime" checked="true" />
+<label for="_p_attach_anime_'.$pgid.'_'.$load[$page].'">'.$_attach_messages['msg_save_movie'].'</label><br />
 <br />'.$_attach_messages['msg_adv_setting'].'<br />
-'.$_attach_messages['msg_init_image'].': <input type=text size=20 name="image_canvas" />
-<input type="checkbox" name="fitimage" value="1" checked="true" />
-'.$_attach_messages['msg_fit_size'].'
+<label for="_p_attach_image_canvas_'.$pgid.'_'.$load[$page].'">'.$_attach_messages['msg_init_image'].'</label>: <input type="text" size="20" id="_p_attach_image_canvas_'.$pgid.'_'.$load[$page].'" name="image_canvas" />
+<input type="checkbox" id="_p_attach_fitimage_'.$pgid.'_'.$load[$page].'" name="fitimage" value="1" checked="true" />
+<label for="_p_attach_fitimage_'.$pgid.'_'.$load[$page].'">'.$_attach_messages['msg_fit_size'].'</label>
 <input type=hidden name="pmode" value="paint" />
 <input type=hidden name="plugin" value="painter" />
 <input type=hidden name="refer" value="'.$page.'" />
@@ -600,11 +608,11 @@ EOD;
    $msg_maxsize
   </span><br />
   $allow_extensions
-  {$_attach_messages['msg_file']}: <input type="file" name="attach_file" />
+  <label for="_p_attach_attach_fil_{$pgid}_{$load[$page]}">{$_attach_messages['msg_file']}</label>: <input type="file" id="_p_attach_attach_fil_{$pgid}_{$load[$page]}" name="attach_file" />
   $pass
   <input type="submit" class="upload_btn" value="{$_attach_messages['btn_upload']}" />
-  ({$_attach_messages['msg_untar']}:<input type="checkbox" name="untar_mode">)<br />
-  <input type="checkbox" name="copyright" value="1" /> {$_attach_messages['msg_copyright']}
+  (<label for="_p_attach_untar_mode_{$pgid}_{$load[$page]}">{$_attach_messages['msg_untar']}</label>:<input type="checkbox" id="_p_attach_untar_mode_{$pgid}_{$load[$page]}" name="untar_mode">)<br />
+  <input type="checkbox" id="_p_attach_copyright_{$pgid}_{$load[$page]}" name="copyright" value="1" /> <label for="_p_attach_copyright_{$pgid}_{$load[$page]}">{$_attach_messages['msg_copyright']}</label>
 
  </div>
 </form>
@@ -768,7 +776,7 @@ class AttachFile
 		if ($this->age)
 		{
 			$msg_freezed = '';
-			$msg_delete  = '<input type="radio" name="pcmd" value="delete" />'.$_attach_messages['msg_delete'];
+			$msg_delete  = '<input type="radio" id="pcmd_d" name="pcmd" value="delete" /><label for="pcmd_d">'.$_attach_messages['msg_delete'].'</label>';
 			$msg_delete .= $_attach_messages['msg_require'];
 			$msg_delete .= '<br />';
 			$msg_freeze  = '';
@@ -780,19 +788,19 @@ class AttachFile
 			{
 				$msg_freezed = "<dd>{$_attach_messages['msg_isfreeze']}</dd>";
 				$msg_delete = '';
-				$msg_freeze  = '<input type="radio" name="pcmd" value="unfreeze" />'.$_attach_messages['msg_unfreeze'];
+				$msg_freeze  = '<input type="radio" id="pcmd_u" name="pcmd" value="unfreeze" /><label for="pcmd_u">'.$_attach_messages['msg_unfreeze'].'</label>';
 				$msg_freeze .= $_attach_messages['msg_require'].'<br />';
 			}
 			else
 			{
 				$msg_freezed = '';
-				$msg_delete = '<input type="radio" name="pcmd" value="delete" />'.$_attach_messages['msg_delete'];
+				$msg_delete = '<input type="radio" id="pcmd_d" name="pcmd" value="delete" /><label for="pcmd_d">'.$_attach_messages['msg_delete'].'</label>';
 				if (ATTACH_DELETE_ADMIN_ONLY or $this->age)
 				{
 					$msg_delete .= $_attach_messages['msg_require'];
 				}
 				$msg_delete .= '<br />';
-				$msg_freeze  = '<input type="radio" name="pcmd" value="freeze" />'.$_attach_messages['msg_freeze'];
+				$msg_freeze  = '<input type="radio" id="pcmd_f" name="pcmd" value="freeze" /><label for="pcmd_f">'.$_attach_messages['msg_freeze'].'</label>';
 				$msg_freeze .= "{$_attach_messages['msg_require']}<br />";
 			}
 		}
@@ -857,7 +865,7 @@ EOD;
   <input type="hidden" name="file" value="$s_file" />
   <input type="hidden" name="age" value="{$this->age}" />
   <input type="hidden" name="pcmd" value="copyright" />
-  <input type="checkbox" name="copyright" value="1"{$copyright} /> {$_attach_messages['msg_copyright']}
+  <input type="checkbox" id="copyright" name="copyright" value="1"{$copyright} /> <label for="copyright">{$_attach_messages['msg_copyright']}</label>
   $pass
   <input type="submit" value="{$_attach_messages['btn_submit']}" />
  </div>

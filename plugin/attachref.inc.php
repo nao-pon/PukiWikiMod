@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: attachref.inc.php,v 1.8 2005/02/23 15:00:53 nao-pon Exp $
+// $Id: attachref.inc.php,v 1.9 2005/03/11 15:00:39 nao-pon Exp $
 // ORG: attachref.inc.php,v0.5 2003/07/31 14:15:29 sha Exp $
 //
 
@@ -420,11 +420,11 @@ function attachref_form($page)
 '.$_attach_messages['msg_width'].'<input type=text name=picw value='.$picw.' size=3> x '.$_attach_messages['msg_height'].'<input type=text name=pich value='.$pich.' size=3>
 '.$_attach_messages['msg_max'].'('.WIKI_PAINTER_MAX_WIDTH_UPLOAD.' x '.WIKI_PAINTER_MAX_HEIGHT_UPLOAD.')
 <input type=submit value="'.$_attach_messages['msg_do_paint'].'" />
-<input type=checkbox value="true" name="anime" checked="true" />'.$_attach_messages['msg_save_movie'].'<br />
+<input type=checkbox id="anime" value="true" name="anime" checked="true" /><label for="anime">'.$_attach_messages['msg_save_movie'].'</label><br />
 <br />'.$_attach_messages['msg_adv_setting'].'<br />
 '.$_attach_messages['msg_init_image'].': <input type=text size=20 name="image_canvas" />
-<input type="checkbox" name="fitimage" value="1" checked="true" />
-'.$_attach_messages['msg_fit_size'].'
+<input type="checkbox" id="fitimage" name="fitimage" value="1" checked="true" />
+<label for="fitimage">'.$_attach_messages['msg_fit_size'].'</label>
 <input type="hidden" name="pmode" value="paint" />
 <input type="hidden" name="plugin" value="painter" />
 <input type="hidden" name="refer" value="'.$s_page.'" />
@@ -449,7 +449,7 @@ $title
   <input type="hidden" name="refer" value="$s_page" />
   <input type="hidden" name="max_file_size" value="$maxsize" />
   <h3>{$_attachref_messages['msg_attach_file']}</h3>
-  <input type="checkbox" name="copyright" value="1" /> &uarr; {$_attach_messages['msg_copyright']}
+  <input type="checkbox" id="copyright" name="copyright" value="1" /> &uarr; <label for="copyright">{$_attach_messages['msg_copyright']}</label>
   <h5>{$_attachref_messages['msg_from_pc']}</h5>
   <span class="small">
    $msg_maxsize

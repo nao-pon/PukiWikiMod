@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.21 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.22 2005/03/11 15:00:39 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -192,7 +192,7 @@ function plugin_pcomment_convert() {
   <input type="hidden" name="page" value="$f_page" />
   <input type="hidden" name="nodate" value="$f_nodate" />
   <input type="hidden" name="dir" value="$dir" />
-  <input type="hidden" name="count" value="$count" />
+  <input type="hidden" name="count" value="$s_count" />
   $areaedit <table style="width:auto;"><tr><td style="vertical-align:bottom;white-space:nowrap;"> $radio $title $name </td><td style="vertical-align: bottom;">$fontset_js_tag<br />$comment
   <input type="submit" value="$btn_text" /></td></tr></table>
   </div>
@@ -438,12 +438,14 @@ function pcmt_check_arg($val, $key, &$params) {
 	$params['arg'][] = $val;
 }
 function pcmt_get_comments($data,$count,$dir,$reply) {
-	global $script;
+	global $script,$vars;
 	
 	if (!is_array($data)) { return array('',0); }
 
 	$digest = md5(join('',$data));
-
+	
+	$pgid = get_pgid_by_name($vars['page']);
+	
 	//コメントを指定された件数だけ切り取る
 	if ($dir) { $data = array_reverse($data); }
 	$num = $cnt = 0;
@@ -454,7 +456,7 @@ function pcmt_get_comments($data,$count,$dir,$reply) {
 			if ($count > 0 and strlen($matches[1]) == 1 and ++$cnt > $count) { break; }
 			if ($reply) {
 				++$num;
-				$cmts[] = "$matches[1]\x01$num\x02$matches[2]\n";
+				$cmts[] = "$matches[1]\x01$num\x02$matches[2]\x03\n";
 			} else {
 				$cmts[] = $line;
 			}
@@ -470,8 +472,7 @@ function pcmt_get_comments($data,$count,$dir,$reply) {
 	while (count($data) > 0 and (substr($data[0],0,1) != '-')) { array_shift($data); }
 	
 	//areaedit用スタートマーカーセット
-	//echo $data[0]."<br />";
-	$start = md5(rtrim(preg_replace("/\x01\d+\x02/","",$data[0])));
+	$start = md5(rtrim(str_replace("\x03","",preg_replace("/\x01\d+\x02/","",$data[0]))));
 
 	//html変換
 	$comments = convert_html($data);
@@ -482,8 +483,8 @@ function pcmt_get_comments($data,$count,$dir,$reply) {
 
 	//コメントにラジオボタンの印をつける
 	if ($reply) {
-		//$comments = preg_replace("/\x01(\d+)\x02/",'<input class="wiki_radio" type="radio" name="reply" value="$1" />', $comments);
-		$comments = preg_replace("/<li>\x01(\d+)\x02/",'<li class="pcmt"><input class="pcmt" type="radio" name="reply" value="$1" />', $comments);
+		$comments = preg_replace("/<li>\x01(\d+)\x02/",'<li class="pcmt"><input id="_p_pcomment_reply_$1_'.$pgid.'" class="pcmt" type="radio" name="reply" value="$1" /><label for="_p_pcomment_reply_$1_'.$pgid.'">', $comments);
+		$comments =str_replace("\x03","</label>",$comments);
 
 	}
 	return array($comments,$digest);

@@ -5,7 +5,7 @@
 // newpage.inc.php の改造版です。 
 //     modified by XZR rev.5 (2004030401)
 // Based on
-// $Id: newpage2.inc.php,v 1.3 2004/10/31 23:27:46 nao-pon Exp $
+// $Id: newpage2.inc.php,v 1.4 2005/03/11 15:00:38 nao-pon Exp $
 //////////////////////////////////////////////////////////////////////
 // 引数：
 // #newpage2(表示名,ディレクトリ,......)
@@ -44,7 +44,14 @@ function plugin_newpage2_retMsg($lang) {
 function plugin_newpage2_convert()
 {
 	global $script,$vars,$_btn_edit,$_msg_newpage2, $_msg_newpage2_args_err, $_msg_newpage2_this_page, $_msg_newpage2_under_this;
-
+	static $load = array();
+	
+	$pgid = get_pgid_by_name($vars['page']);
+	if (isset($load[$pgid]))
+		$load[$pgid]++;
+	else
+		$load[$pgid] = 0;
+	
 	$num = func_num_args();
 	$tags = func_get_args();
 
@@ -66,7 +73,11 @@ function plugin_newpage2_convert()
 			//$value = htmlspecialchars(trim(strip_tags($tags[$i])));
 			$label = trim(strip_tags($tags[$i++]));
 			$value = trim(strip_tags($tags[$i]));
+			
+			$ret .= "<input type=\"hidden\" name=\"args[]\" value=\"".htmlspecialchars($label)."\" />\n";
+			$ret .= "<input type=\"hidden\" name=\"args[]\" value=\"".htmlspecialchars($value)."\" />\n";
 
+			
 			if($label == "this") {
 				$label = $_msg_newpage2_this_page;
 				$value = $vars['page'];
@@ -77,14 +88,15 @@ function plugin_newpage2_convert()
 			}
 			
 			$value = strip_bracket($value);
-			$label = htmlspecialchars($label);
 			$value = htmlspecialchars($value);
+			$id = md5($value)."_{$load[$pgid]}_{$pgid}";
+			$label = "<label for=\"_p_newpage2_prefix_{$id}\">".htmlspecialchars($label)."</label>";
 			
 			if($i == 1) {
-				$ret.= "<input type=\"radio\" name=\"prefix\" value=\"".$value."\" checked />".$label."\n";
+				$ret.= "<input type=\"radio\" id=\"_p_newpage2_prefix_{$id}\" name=\"prefix\" value=\"".$value."\" checked />".$label."\n";
 			}
 			else {
-				$ret.= "<input type=\"radio\" name=\"prefix\" value=\"".$value."\" />".$label."\n";
+				$ret.= "<input type=\"radio\" id=\"_p_newpage2_prefix_{$id}\" name=\"prefix\" value=\"".$value."\" />".$label."\n";
 			}
 		}
 		if(LANG == 'ja') {
@@ -107,8 +119,8 @@ function plugin_newpage2_action()
 	global $script,$vars,$_btn_edit,$_msg_newpage2, $_msg_newpage2_args_err, $_msg_newpage2_this_page, $_msg_newpage2_under_this;
 
 	if(!$vars["page"]) {
-		$num = func_num_args();
-		$tags = func_get_args();
+		$tags = $vars['args'];
+		$num = count($tags);
 
 		if($num%2 != 0) {
 			return($_msg_newpage2_args_err);
@@ -125,15 +137,20 @@ function plugin_newpage2_action()
 			if(LANG != 'ja') {
 				$retvars["body"] = $_msg_newpage2_under_this.$retvars["body"];
 			}
-			for($i = 0 ; $i < $num ; $i++) {
+			for($i = 0 ; $i < $num ; $i++)
+			{
 				$label = htmlspecialchars(trim(strip_tags($tags[$i++])));
 				$value = htmlspecialchars(trim(strip_tags($tags[$i])));
+				$retvars["body"] .= "<input type=\"hidden\" name=\"args[]\" value=\"".htmlspecialchars($label)."\" />\n";
+				$retvars["body"] .= "<input type=\"hidden\" name=\"args[]\" value=\"".htmlspecialchars($value)."\" />\n";
+				$id = md5($value);
+				$label = "<label for=\"prefix_{$id}\">".$label."</label>";
 
 				if($i == 1) {
-					$retvars["body"] .= "<input type=\"radio\" name=\"prefix\" value=\"".$value."\" checked/>".$label."\n";
+					$retvars["body"] .= "<input type=\"radio\" id=\"prefix_{$id}\" name=\"prefix\" value=\"".$value."\" checked/>".$label."\n";
 				}
 				else {
-					$retvars["body"] .= "<input type=\"radio\" name=\"prefix\" value=\"".$value."\" />".$label."\n";
+					$retvars["body"] .= "<input type=\"radio\" id=\"prefix_{$id}\" name=\"prefix\" value=\"".$value."\" />".$label."\n";
 				}
 			}
 			if(LANG == 'ja') {

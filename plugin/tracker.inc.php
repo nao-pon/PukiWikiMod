@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.16 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.17 2005/03/11 15:00:39 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -270,11 +270,14 @@ class Tracker_field
 	var $config;
 	var $data;
 	var $sort_type = SORT_REGULAR;
+	var $id = 0;
 	
 	function Tracker_field($field,$page,&$config)
 	{
 		global $post;
+		static $id = 0;
 		
+		$this->id = ++$id."_".get_pgid_by_name($page);
 		$this->name = $field[0];
 		$this->title = $field[1];
 		$this->values = explode(',',$field[3]);
@@ -363,7 +366,9 @@ class Tracker_field_textarea extends Tracker_field
 		$s_rows = htmlspecialchars($this->values[1]);
 		$s_value = htmlspecialchars($this->default_value);
 		$auto_bra_enable = ($autolink)? "":" checked";
-		return "<input type=\"checkbox\" name=\"enter_enable[$s_name]\" value=\"true\" checked /><span class=\"small\">$_btn_enter_enable</span> <input type=\"checkbox\" name=\"auto_bra_enable[$s_name]\" value=\"true\"".$auto_bra_enable." /><span class=\"small\">$_btn_autobracket_enable</span><br />".fontset_js_tag()."<br /><textarea name=\"$s_name\" cols=\"$s_cols\" rows=\"$s_rows\">$s_value</textarea>";
+		$s_id = '_p_tracker_' . $s_name . '_' . $this->id;
+		
+		return "<input type=\"checkbox\" id=\"{$s_id}_ee\" name=\"enter_enable[$s_name]\" value=\"true\" checked /><label for=\"{$s_id}_ee\"><span class=\"small\">$_btn_enter_enable</span></label> <input type=\"checkbox\" id=\"{$s_id}_be\" name=\"auto_bra_enable[$s_name]\" value=\"true\"".$auto_bra_enable." /><label for=\"{$s_id}_be\"><span class=\"small\">$_btn_autobracket_enable</span></label><br />".fontset_js_tag()."<br /><textarea name=\"$s_name\" cols=\"$s_cols\" rows=\"$s_rows\">$s_value</textarea>";
 	}
 	function format_cell($str)
 	{
@@ -433,7 +438,9 @@ class Tracker_field_file extends Tracker_field_format
 		global $_attach_messages;
 		$s_name = htmlspecialchars($this->name);
 		$s_size = htmlspecialchars($this->values[0]);
-		return "<input type=\"file\" name=\"$s_name\" size=\"$s_size\" /> <input type=\"checkbox\" name=\"{$s_name}_copyright\" value=\"1\" /> {$_attach_messages['msg_copyright']}";
+		$s_id = '_p_tracker_' . $s_name . '_' . $this->id;
+		
+		return "<input type=\"file\" name=\"$s_name\" size=\"$s_size\" /> <input type=\"checkbox\" id=\"{$s_id}_copyright\" name=\"{$s_name}_copyright\" value=\"1\" /> <label for=\"{$s_id}_copyright\">{$_attach_messages['msg_copyright']}</label>";
 	}
 	function format_value($str)
 	{
@@ -459,11 +466,14 @@ class Tracker_field_radio extends Tracker_field_format
 	{
 		$s_name = htmlspecialchars($this->name);
 		$retval = '';
+		$id = 0;
 		foreach ($this->config->get($this->name) as $option)
 		{
 			$s_option = htmlspecialchars($option[0]);
 			$checked = trim($option[0]) == trim($this->default_value) ? ' checked="checked"' : '';
-			$retval .= "<input type=\"radio\" name=\"$s_name\" value=\"$s_option\"$checked />$s_option\n";
+			++$id;
+			$s_id = '_p_tracker_' . $s_name . '_' . $this->id . '_' . $id;
+			$retval .= "<input type=\"radio\" id=\"{$s_id}\" name=\"$s_name\" value=\"$s_option\"$checked /><label for=\"{$s_id}\">$s_option</label>\n";
 		}
 		
 		return $retval;
@@ -519,12 +529,14 @@ class Tracker_field_checkbox extends Tracker_field_radio
 		$s_name = htmlspecialchars($this->name);
 		$defaults = array_flip(preg_split('/\s*,\s*/',$this->default_value,-1,PREG_SPLIT_NO_EMPTY));
 		$retval = '';
+		$id = 0;
 		foreach ($this->config->get($this->name) as $option)
 		{
 			$s_option = htmlspecialchars($option[0]);
-			$checked = array_key_exists(trim($option[0]),$defaults) ?
-				' checked="checked"' : '';
-			$retval .= "<input type=\"checkbox\" name=\"{$s_name}[]\" value=\"$s_option\"$checked />$s_option\n";
+			$checked = array_key_exists(trim($option[0]),$defaults) ? ' checked="checked"' : '';
+			++$id;
+			$s_id = '_p_tracker_' . $s_name . '_' . $this->id . '_' . $id;
+			$retval .= "<input type=\"checkbox\" id=\"{$s_id}\" name=\"{$s_name}[]\" value=\"$s_option\"$checked /><label for=\"{$s_id}\">$s_option</label>\n";
 		}
 		
 		return $retval;

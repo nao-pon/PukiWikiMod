@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.11 2004/11/28 06:53:55 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.12 2005/03/11 15:00:39 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -742,7 +742,7 @@ function areaedit_form($page, $postdata_input, $headdata, $taildata, $digest = 0
 	$btn_preview = $b_preview ? $_btn_repreview : $_btn_preview;
 	$fontset_js_tag = fontset_js_tag();
 	$timestamp_tag = ($X_admin || (($X_uid == get_pg_auther($vars['page'])) && $X_uid))?
-		'<input type="checkbox" name="notimestamp" value="true"'.$checked_time.' /><span style="small">'.$_btn_notchangetimestamp.'</span>'
+		'<input type="checkbox" id="notimestamp" name="notimestamp" value="true"'.$checked_time.' /><label for="notimestamp"><span style="small">'.$_btn_notchangetimestamp.'</span></label>'
 		:'';
 	if ($b_preview)
 		$enter_enable = (!empty($vars['enter_enable']))? " checked=\"true\"" : "";
@@ -761,7 +761,7 @@ function areaedit_form($page, $postdata_input, $headdata, $taildata, $digest = 0
   <input type="hidden" name="areaedit_no"   value="{$vars['areaedit_no']}" />
   <input type="hidden" name="areaedit_start_no" value="{$vars['areaedit_start_no']}" />
   $fontset_js_tag
-  <input type="checkbox" name="enter_enable" value="true"{$enter_enable} /><span class="small">{$_btn_enter_enable}</span> 
+  <input type="checkbox" id="enter_enable" name="enter_enable" value="true"{$enter_enable} /><label for="enter_enable"><span class="small">{$_btn_enter_enable}</span></label>
   <br />
   <textarea name="areaedit_msg" rows="$rows" cols="$cols">$s_postdata_input</textarea>
   <br />
