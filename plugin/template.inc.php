@@ -1,5 +1,5 @@
 <?php
-// $Id: template.inc.php,v 1.6 2004/05/27 14:07:54 nao-pon Exp $
+// $Id: template.inc.php,v 1.7 2004/06/20 13:40:06 nao-pon Exp $
 
 define("MAX_LEN",60);
 function plugin_template_action()
@@ -8,7 +8,7 @@ function plugin_template_action()
 	
 	global $script,$rows,$cols,$hr,$vars,$function_freeze,$WikiName,$BracketName;
 	global $_btn_addtop,$_btn_preview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp;
-	global $whatsnew,$_btn_template,$_btn_load,$non_list,$load_template_func;
+	global $whatsnew,$_btn_template,$_btn_load,$non_list,$load_template_func,$_title_invalidwn;
 
 	$ret = "";
 	
@@ -18,10 +18,18 @@ function plugin_template_action()
 		// ページ名がWikiNameでなく、BracketNameでなければBracketNameとして解釈
 		if(!preg_match("/^(($WikiName)|($BracketName))$/",$vars["refer"]))
 		{
-			$vars["refer"] = "[[$vars[refer]]]";
+			$vars["refer"] = "[[".$vars["refer"]."]]";
 		}
 		
 		$page = $vars["refer"];
+		
+		// 無効なページ名のチェック
+		if (!is_pagename($page))
+		{
+			$ret['body'] = $ret['msg'] = str_replace('$1',htmlspecialchars(strip_bracket($page)),$_title_invalidwn);
+			$vars["page"] = "";
+			return $ret;
+		}
 		
 		// ページ作成権限チェック
 		$up_freeze_info = get_freezed_uppage($page);
@@ -113,6 +121,13 @@ function plugin_template_action()
 		$retvar["body"] = $ret;
 		
 		return $retvar;
+	}
+	else
+	{
+		// ページ名が指定されていない
+		$ret['body'] = $ret['msg'] = str_replace('$1',htmlspecialchars(strip_bracket($page)),$_title_invalidwn);
+		$vars["page"] = "";
+		return $ret;
 	}
 
 }
