@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
+// $Id: init.php,v 1.3 2003/07/07 06:09:01 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -82,7 +82,13 @@ if(get_magic_quotes_gpc())
 		$get[$key] = stripslashes($HTTP_GET_VARS[$key]);
 	}
 	foreach($HTTP_POST_VARS as $key => $value) {
-		$post[$key] = stripslashes($HTTP_POST_VARS[$key]);
+		if (is_array($HTTP_POST_VARS[$key])){
+			foreach($HTTP_POST_VARS[$key] as $key2 => $value2){
+				$post[$key][$key2] =stripslashes($HTTP_POST_VARS[$key][$key2]);
+			}
+		} else {
+			$post[$key] = stripslashes($HTTP_POST_VARS[$key]);
+		}
 	}
 	foreach($HTTP_COOKIE_VARS as $key => $value) {
 		$cookie[$key] = stripslashes($HTTP_COOKIE_VARS[$key]);
