@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.28 2004/08/04 13:58:56 nao-pon Exp $
+// $Id: func.php,v 1.29 2004/08/18 23:19:17 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -887,80 +887,73 @@ function drop_submit($str)
 
 // AutoLinkのパターンを生成する
 // thx for hirofummy
-function get_autolink_pattern(&$pages)
+function get_autolink_pattern(& $pages)
 {
-	global $WikiName,$autolink,$nowikiname;
-	
+	global $WikiName, $autolink, $nowikiname;
+
 	$config = &new Config('AutoLink');
 	$config->read();
 	$ignorepages = $config->get('IgnoreList');
 	$forceignorepages = $config->get('ForceIgnoreList');
 	unset($config);
-	$auto_pages = array_merge($ignorepages,$forceignorepages);
-	
-	foreach ($pages as $page)
-	{
-		if (preg_match("/^$WikiName$/",$page) ?
-			$nowikiname : strlen($page) >= $autolink)
-		{
+	$auto_pages = array_merge($ignorepages, $forceignorepages);
+
+	foreach ($pages as $page) {
+		if (preg_match("/^$WikiName$/", $page) ?
+		    $nowikiname : strlen($page) >= $autolink)
 			$auto_pages[] = strip_bracket($page);
-		}
 	}
 
-	if (count($auto_pages) == 0)
-	{
+	if (count($auto_pages) == 0) {
 		return $nowikiname ? '(?!)' : $WikiName;
 	}
-	
+
 	$auto_pages = array_unique($auto_pages);
-	sort($auto_pages,SORT_STRING);
-	
-	$result = get_autolink_pattern_sub($auto_pages,0,count($auto_pages),0);
-	
-	return array($result,$forceignorepages);
+	sort($auto_pages, SORT_STRING);
+
+	$auto_pages_a = array_values(preg_grep('/^[A-Z]+$/i', $auto_pages));
+	$auto_pages   = array_values(array_diff($auto_pages, $auto_pages_a));
+
+	$result   = get_autolink_pattern_sub($auto_pages,   0, count($auto_pages),   0);
+	$result_a = get_autolink_pattern_sub($auto_pages_a, 0, count($auto_pages_a), 0);
+
+	return array($result, $result_a, $forceignorepages);
 }
-function get_autolink_pattern_sub(&$pages,$start,$end,$pos)
+
+function get_autolink_pattern_sub(& $pages, $start, $end, $pos)
 {
+	if ($end == 0) return '(?!)';
+
 	$result = '';
 	$count = 0;
 	$x = (mb_strlen($pages[$start]) <= $pos);
-	
-	if ($x)
-	{
-		$start++;
+
+	if ($x) {
+		++$start;
 	}
-	for ($i = $start; $i < $end; $i = $j)
+
+	for ($i = $start; $i < $end; $i = $j) // What is the initial state of $j?
 	{
-		$char = mb_substr($pages[$i],$pos,1);
-		for ($j = $i; $j < $end; $j++)
-		{
-			if (mb_substr($pages[$j],$pos,1) != $char)
-			{
+		$char = mb_substr($pages[$i], $pos, 1);
+		for ($j = $i; $j < $end; $j++) {
+			if (mb_substr($pages[$j], $pos, 1) != $char)
 				break;
-			}
 		}
-		if ($i != $start)
-		{
+		if ($i != $start) {
 			$result .= '|';
 		}
-		if ($i >= ($j - 1))
-		{
-			$result .= preg_quote(mb_substr($pages[$i],$pos),'/'); 
+		if ($i >= ($j - 1)) {
+			$result .= str_replace(' ', '\\ ', preg_quote(mb_substr($pages[$i], $pos), '/'));
+		} else {
+			$result .= str_replace(' ', '\\ ', preg_quote($char, '/')) .
+				get_autolink_pattern_sub($pages, $i, $j, $pos + 1);
 		}
-		else
-		{
-			$result .=
-				preg_quote($char,'/').
-				get_autolink_pattern_sub($pages,$i,$j,$pos + 1);
-		}
-		$count++;
+		++$count;
 	}
-	if ($x or $count > 1)
-	{
-		$result = '(?:'.$result.')';
+	if ($x or $count > 1) {
+		$result = '(?:' . $result . ')';
 	}
-	if ($x)
-	{
+	if ($x) {
 		$result .= '?';
 	}
 	return $result;
