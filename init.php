@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.39 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: init.php,v 1.40 2005/02/23 00:16:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -15,7 +15,23 @@ define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."
 //文字エンコード
 define('SOURCE_ENCODING','EUC-JP');
 
+// ini_set
+ini_set('mbstring.substitute_character','');
 ini_set('error_reporting', 5);
+
+// PATH_INFO の 処理
+if (!empty($_SERVER['PATH_INFO']))
+{
+	$_val = explode("/",$_SERVER['PATH_INFO']);
+	if ($_val[1] == "rss" || $_val[1] == "rss10")
+	{
+		$_GET['cmd'] = $_val[1];
+		$_GET['content'] = $_val[2];
+		$_GET['p'] = $_val[3];
+	}
+	unset($_val);
+}
+
 define("S_VERSION","1.3.3");
 define("S_COPYRIGHT","Based on \"PukiWiki\" by <a href=\"http://pukiwiki.org/\">PukiWiki Developers Team</a>");
 define("UTIME",time());

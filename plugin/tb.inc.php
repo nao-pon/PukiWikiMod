@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.5 2005/01/29 03:13:54 nao-pon Exp $
+// $Id: tb.inc.php,v 1.6 2005/02/23 00:16:41 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -28,6 +28,9 @@ function plugin_tb_action()
 		tb_delete_url($del_urls,$vars['tb_id']);
 	}
 	
+	// POST: TrackBack Ping を保存する
+	if (!empty($vars['url']) && !empty($vars['tb_id'])) tb_save();
+	
 	if ($trackback and !empty($vars['__mode']) and !empty($vars['tb_id']))
 	{
 		switch ($vars['__mode'])
@@ -40,13 +43,10 @@ function plugin_tb_action()
 				break;
 		}
 	}
-	else
-	{
-		// POST: TrackBack Ping を保存する
-		tb_save();
-	}
 	
-	return array('msg'=>'','body'=>'','redirect'=>XOOPS_URL."/");
+	tb_save();
+	exit;
+	//return array('msg'=>'','body'=>'','redirect'=>XOOPS_URL."/");
 }
 
 // TrackBack Ping データ保存(更新)
@@ -101,15 +101,15 @@ function tb_save()
 	$url = $title = $excerpt = $blog_name = "";
 	
 	// TrackBack Ping のデータを更新
-	$filename = TRACKBACK_DIR.$tb_id.'.txt';
-	$data = tb_get($filename);
+	//$filename = TRACKBACK_DIR.$tb_id.'.txt';
+	//$data = tb_get($filename);
 	
 	$items = array(UTIME);
 	foreach ($fields as $field)
 	{
 		$value = array_key_exists($field,$vars) ? $vars[$field] : '';
 		$value = preg_replace("/[ \t\r\n]+/",' ',$value);
-		$$field = addslashes(mb_convert_encoding(trim($value), SOURCE_ENCODING, "AUTO"));
+		$$field = addslashes(trim($value));
 	}
 	
 	// DBを更新
@@ -141,6 +141,13 @@ function tb_save()
 // XML 結果出力
 function tb_xml_msg($rc,$msg)
 {
+	/*
+	$fp = fopen(TRACKBACK_DIR."recive.log", 'a');
+	$data = "Date: ".date("Y/m/d H:i:s")."\nRC: $rc\nMSG: $msg\n";
+	fwrite($fp, $data."\n");
+	fclose($fp);
+	*/
+	
 	header('Content-Type: text/xml');
 	echo '<?xml version="1.0" encoding="iso-8859-1"?>';
 	echo <<<EOD
@@ -156,7 +163,7 @@ EOD;
 // ?__mode=rss 処理
 function tb_mode_rss($tb_id)
 {
-	global $script,$vars,$entity_pattern;
+	global $script,$vars,$entity_pattern,$use_static_url;
 	
 	$page = tb_id2page($tb_id);
 	if ($page === FALSE)
@@ -165,6 +172,7 @@ function tb_mode_rss($tb_id)
 	}
 	
 	$items = '';
+	
 	foreach (tb_get(TRACKBACK_DIR.$tb_id.'.txt') as $arr)
 	{
 		$utime = array_shift($arr);
@@ -181,9 +189,13 @@ EOD;
 	}
 	
 	$title = htmlspecialchars($page);
-	$link = "$script?".rawurlencode($page);
+	if ($use_static_url)
+		$link = XOOPS_WIKI_URL."/".$tb_id.".html";
+	else
+		$link = $script."?".rawurlencode($page);
 	$vars['page'] = $page;
-	$excerpt = strip_htmltag(convert_html(join('',get_source($page))));
+	$content = convert_html($page,false,true,true);
+	$excerpt = strip_htmltag($content);
 	$excerpt = preg_replace("/&$entity_pattern;/",'',$excerpt);
 	$excerpt = mb_strimwidth(preg_replace("/[\r\n]/",' ',$excerpt),0,255,'...');
 
@@ -214,7 +226,7 @@ function tb_mode_view($tb_id)
 	global $script,$page_title,$vars;
 	global $_tb_title,$_tb_header,$_tb_entry,$_tb_refer,$_tb_date;
 	global $_tb_header_Excerpt,$_tb_header_Weblog,$_tb_header_Tracked;
-	global $X_admin;
+	global $X_admin, $use_static_url;
 	
 	// TrackBack ID からページ名を取得
 	$page = tb_id2page($tb_id);
@@ -222,12 +234,16 @@ function tb_mode_view($tb_id)
 	{
 		return FALSE;
 	}
-	$r_page = rawurlencode($page);
+	if ($use_static_url)
+		$r_page = XOOPS_WIKI_URL."/".$tb_id.".html";
+	else
+		$r_page = $script."?".rawurlencode($page);
 	
 	$tb_title = sprintf($_tb_title,$page);
-	$tb_refer = sprintf($_tb_refer,"<a href=\"$script?$r_page\">'$page'</a>","<a href=\"$script\">$page_title</a>");
+	$tb_refer = sprintf($_tb_refer,"<a href=\"$r_page\">'$page'</a>","<a href=\"$script\">$page_title</a>");
 	
 	$tb_body = tb_get_tb_body($tb_id);
+	$tb_url = tb_get_my_tb_url($tb_id);
 	
 	if (!$tb_body) $tb_body = <<<EOD
 <div class="trackback-body">
@@ -242,7 +258,7 @@ EOD;
 	$sended_ping_num = $sended_info['count'];
 	
 	$tb_form = <<<EOD
-  <form method="post" action="$script?plugin=tb&amp;__mode=view&amp;tb_id=$tb_id">
+  <form method="post" action="$tb_url">
    <input type="hidden" name="plugin" value="tb" />
    <input type="hidden" name="__mode" value="view" />
    <input type="hidden" name="tb_id" value="$tb_id" />
@@ -262,7 +278,7 @@ EOD;
                     </tr>
                     <tr>
                       <td bgcolor="#bfcfaf"><font size="-1" color="#3D3832"><b>ping送信先URL</b></font></td>
-                      <td bgcolor="#FFFFFF">$script?pwm_ping=$tb_id</td>
+                      <td bgcolor="#FFFFFF">$tb_url</td>
                     </tr>
                     <tr>
                       <td bgcolor="#bfcfaf"><font size="-1" color="#3D3832"><b>blog名 (blog_name)</b></font></td>
@@ -281,7 +297,7 @@ EOD;
                       <td bgcolor="#FFFFFF"><textarea name="excerpt" rows="5" cols="40" wrap="VIRTUAL"></textarea><br></td>
                     </tr>
                     <tr>
-                      <td colspan=2><div class="trackback-post">「<a href="$script?{$r_page}">{$page}</a>」の記事内容に言及して頂いた時に、このフォームからそのことを、通知することができます。<br />TrackBack の Ping 自動送信機能がない場合にご利用ください。</div>
+                      <td colspan=2><div class="trackback-post">「<a href="{$r_page}">{$page}</a>」の記事内容に言及して頂いた時に、このフォームからそのことを、通知することができます。<br />TrackBack の Ping 自動送信機能がない場合にご利用ください。</div>
                       </td>
                     <tr/>
                   </table>
@@ -294,20 +310,21 @@ EOD;
     </table>
 	</form>
 EOD;
+	$css = '<link rel="stylesheet" href="'.XOOPS_WIKI_URL.'/skin/trackback.css" type="text/css" />';
 	$msg = <<<EOD
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
 <head>
  <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
  <title>$tb_title</title>
- <link rel="stylesheet" href="skin/trackback.css" type="text/css" />
+ $css
 </head>
 <body>
  <div id="banner-commentspop">$_tb_header</div>
  <div class="blog">
   <div class="trackback-url">
    $_tb_entry<br />
-   $script?pwm_ping=$tb_id<br /><br />
+   $tb_url<br /><br />
    $tb_refer
   </div>
   $tb_body

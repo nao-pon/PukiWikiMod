@@ -1,7 +1,20 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.39 2004/12/23 13:41:43 nao-pon Exp $
+// $Id: convert_html.php,v 1.40 2005/02/23 00:16:41 nao-pon Exp $
 /////////////////////////////////////////////////
+class pukiwiki_converter
+{
+	function convert_str(&$str)
+	{
+		return convert_html($str);
+	}
+	
+	function convert_page(&$page)
+	{
+		return convert_html($page,false,true);
+	}
+}
+
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
 	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id,$wiki_strong_words,$wiki_head_keywords;
@@ -42,7 +55,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		}
 		else
 		{
-			$string = join("",get_source($page));
+			$string = get_source($page);
 		}
 	}
 	$string = preg_replace("/(^|\n)#newfreeze(\n|$)/","$1",$string);
@@ -90,10 +103,13 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 	//整形済み指定の" "を削除 nao-pon
 	$str = preg_replace("/(^|\n) /", "$1", $str);
 	
-	//キーワード強調
-	$wiki_strong_words = array_unique($wiki_strong_words);
-	keyword_to_strong($str,$wiki_strong_words);
-	$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
+	if ($convert_load === 1)
+	{
+		//キーワード強調
+		$wiki_strong_words = array_unique($wiki_strong_words);
+		keyword_to_strong($str,$wiki_strong_words);
+		$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
+	}
 	
 	//ゲストアカウントでページコンバート指定時
 	if (!$X_uid && $page_cvt && !$cache && empty($vars['xoops_block']))

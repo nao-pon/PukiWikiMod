@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.31 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.32 2005/02/23 00:16:41 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -147,12 +147,15 @@ if (!defined('DATA_DIR')) exit;
 	</tr>
 	<tr>
 	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">最終更新:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo $pginfo['lastediter'] ?>"><?php echo $last_editer ?></a></td><td style="margin:0px;padding:0px;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) . get_pg_passage($vars["page"]); ?></td>
+	</tr>
+	<tr>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">編集可:</td><td style="margin:0px;padding:0px;white-space:nowrap;" colspan="2"><?php echo $allow_edit_groups.$allow_editers ?></td>
+	</tr>
 	<?php if($related) { ?>
 		<tr>
 		 <td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">リンクページ:<td style="margin:0px;padding:0px;" colspan="2"><?php echo $related ?></td>
 		</tr>
 	<?php } ?>
-	</tr>
 	</table>
 	<?php } ?>
 	<?php if(!$use_xoops_tpl){ ?>
@@ -169,9 +172,4 @@ if (!defined('DATA_DIR')) exit;
   </td>
  </tr>
 </table>
-<script type="text/javascript">
-<!--
-pukiwiki_initTexts();
-//-->
-</script>
 <!-- /pukiwikimod -->

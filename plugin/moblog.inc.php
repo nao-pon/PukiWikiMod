@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.6 2004/08/20 14:39:02 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.7 2005/02/23 00:16:41 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -251,6 +251,7 @@ function plugin_moblog_action()
 }
 function plugin_moblog_convert()
 {
+	global $script;
 	//POPサーバーにアクセスするためのイメージタグを生成
 	return "<div style=\"float:left\"><img src=\"$script?plugin=moblog\" width=1 height=1 /></div>\n";
 }

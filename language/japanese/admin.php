@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.17 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: admin.php,v 1.18 2005/02/23 00:16:41 nao-pon Exp $
 
 define("_AM_WIKI_TITLE0", "PukiWiki 初期設定");
 define("_AM_WIKI_INFO0", "初期設定を完了するために次の２つのリンク先にアクセスして処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
@@ -81,4 +81,7 @@ define("_AM_WIKI_SYNC_MSG","<p>XOOPSの基本機能の投稿数を再カウントします。<br />
 
 // ver 1.1.0
 define("_AM_WIKI_USE_XOOPS_COMMENTS","ページコメント(XOOPSのコメント機能)を有効にする");
+
+// ver 1.2.1
+define("_AM_WIKI_ERROR02","トラックバックデータの変換が必要です、ここをクリックして、変換を行ってください。");
 ?>

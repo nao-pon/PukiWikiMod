@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.14 2004/11/01 09:03:55 nao-pon Exp $
+// $Id: trackback.php,v 1.15 2005/02/23 00:16:41 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -30,12 +30,17 @@ if (!defined('TRACKBACK_DIR'))
 // TrackBack Ping IDを取得
 function tb_get_id($page)
 {
-	return md5(strip_bracket($page));
+	return get_pgid_by_name($page);
+	//return md5(strip_bracket($page));
 }
 
 // TrackBack Ping ID からページ名を取得
 function tb_id2page($tb_id)
 {
+	$page = strip_bracket(get_pgname_by_id($tb_id));
+	
+	return ($page)? $page : FALSE;
+/*	
 	static $pages,$cache = array();
 	
 	if (array_key_exists($tb_id,$cache))
@@ -58,6 +63,7 @@ function tb_id2page($tb_id)
 		}
 	}
 	return FALSE; // 見つからない場合
+*/
 }
 
 // TrackBack Ping データファイル名を取得
@@ -91,7 +97,7 @@ function tb_count($page,$ext='.txt')
 function tb_send($page,$data="")
 {
 	global $script,$trackback,$update_ping_to,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$use_static_url,$update_ping_to,$defaultpage;
-	global $trackback_encoding;
+	global $trackback_encoding,$vars;
 	
 	$page = strip_bracket($page);
 
@@ -109,13 +115,29 @@ function tb_send($page,$data="")
 	{
 		// ファイルに一時保管
 		$filename = CACHE_DIR.encode($page).".tbf";
-		if (!($fp = fopen($filename,'w')))
+		if (!($fp = fopen($filename,'wb')))
 		{
 			return;
 		}
+		fputs($fp,XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']);
 		fclose($fp);
+		
+		// 非同期モードで別スレッド処理 Blokking=0,Retry=5
+		$ret = http_request(
+		XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']
+		,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5);
+		
+		/*
+		$filename = CACHE_DIR."debug.txt";
+		$fp = fopen($filename,'a+');
+		fputs($fp,$ret['query']."\n");
+		fclose($fp);
+		*/
+		
 		return;
 	}
+	
+	//error_reporting(E_ALL);
 	
 	// 送信済みエントリーを取得
 	$ping_filename = TRACKBACK_DIR.tb_get_id($page).".ping";
@@ -125,15 +147,17 @@ function tb_send($page,$data="")
 	foreach(@file($ping_filename) as $line)
 	{
 		//Pukiwikiはスタックされないので送信済みに加えない
-		if (strpos($line,"?plugin=tb&tb_id=") === false || //PukiWiki
-			strpos($line,"?pwm_ping=") === false)          //PukiWikiMod Ver 0.08b4以降
-			$sended[] = trim($line);
-		else
+		if (strpos($line,"?plugin=tb&tb_id=") !== false || //PukiWiki
+			strpos($line,"/modules/pukiwiki/") !== false   //PukiWikiMod 全般
+			)
 			$to_pukiwiki[] = trim($line);
+		else
+			$sended[] = trim($line);
+		
 		$sended_count++;
 	}
 	
-	set_time_limit(0); // 処理実行時間制限(php.ini オプション max_execution_time )
+	//set_time_limit(0); // 処理実行時間制限(php.ini オプション max_execution_time )
 	
 	// convert_html() 変換結果の <a> タグから URL 抽出
 	preg_match_all('#href="(https?://[^"]+)"#',$data,$links,PREG_PATTERN_ORDER);
@@ -219,17 +243,18 @@ function tb_send($page,$data="")
 		{
 			foreach ($links as $link)
 			{
+				set_time_limit(120); // 処理実行時間を長めに再設定
 				// URL から TrackBack ID を取得する
 				$tb_id = trim(str_replace("&amp;","&",tb_get_url($link)));
-				if (empty($tb_id) || in_array($tb_id,$sended)) // TrackBack に対応していない
+				if (empty($tb_id) || in_array($tb_id,$sended)) // TrackBack に対応していないか送信済み
 				{
 					continue;
 				}
-				$result = http_request($tb_id,'POST','',$putdata);
-				//echo htmlspecialchars($tb_id).":auto<hr />";
+				$result = http_request($tb_id,'POST','',$putdata,3,TRUE,5,30,60);
 				if ($result['rc'] === 200 || strpos($result['data'],"<error>0</error>") !== false)
+				{
 					$sended[] = $tb_id;
-
+				}
 				// FIXME: エラー処理を行っても、じゃ、どうする？だしなぁ...
 			}
 		}
@@ -252,29 +277,28 @@ function tb_send($page,$data="")
 		// Ping 指定先へ送信
 		foreach ($pings as $tb_id)
 		{
+			set_time_limit(120); // 処理実行時間を長めに再設定
 			$done = false;
-			//echo $tb_id."<hr />";
 			// XML RPC Ping を打ってみる
-			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata);
+			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,5,30,60);
 			// 超手抜きなチェック
 			if (strpos($result['data'],"<boolean>0</boolean>") !== false)
 				$done = true;
 			else
 			{
 				//Track Back Ping
-				$result = http_request($tb_id,'POST','',$putdata);
-				/*
-				echo htmlspecialchars($tb_id).":ping<hr />";
-				echo $result['query']."<hr />";
-				echo $result['rc']."<hr />";
-				echo $result['header']."<hr />";
-				echo $result['data']."<hr />";
-				*/
+				$result = http_request($tb_id,'POST','',$putdata,HTTP_REQUEST_URL_REDIRECT_MAX,1,5);
 				// 超手抜きなチェック
 				if (strpos($result['data'],"<error>0</error>") !== false)
 					$done = true;
 			}
-			
+			/*
+			echo htmlspecialchars($tb_id).":ping<hr />";
+			echo $result['query']."<hr />";
+			echo $result['rc']."<hr />";
+			echo $result['header']."<hr />";
+			echo $result['data']."<hr />";
+			*/
 			if ($done)
 				$sended[] = $tb_id;
 		}
@@ -283,7 +307,7 @@ function tb_send($page,$data="")
 	if ($sended){
 		// 送信済みエントリを記録
 		$sended = array_unique($sended);
-		$fp = fopen($ping_filename,'w');
+		$fp = fopen($ping_filename,'wb');
 		flock($fp,LOCK_EX);
 		foreach ($sended as $entry)
 		{
@@ -304,14 +328,6 @@ function tb_delete($page)
 	
 	$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_tb")." $where;";
 	$results=$xoopsDB->queryF($query);
-
-/*
-	$filename = tb_get_filename($page);
-	if (file_exists($filename))
-	{
-		@unlink($filename);
-	}
-*/
 }
 
 // TrackBack Ping データ入力
@@ -338,25 +354,6 @@ function tb_get($file,$key=1)
 	$tb_id = str_replace(TRACKBACK_DIR,"",$file);
 	$tb_id = str_replace(".txt","",$tb_id);
 	return tb_get_db($tb_id,$key);
-/*
-	if (!file_exists($file))
-	{
-		return array();
-	}
-	
-	$result = array();
-	$fp = @fopen($file,'r');
-	flock($fp,LOCK_EX);
-	while ($data = @fgetcsv($fp,8192,','))
-	{
-		// $data[$key] = URL
-		$result[$data[$key]] = $data;
-	}
-	flock($fp,LOCK_UN);
-	fclose ($fp);
-	
-	return $result;
-*/
 }
 
 // 文章中に trackback:ping を埋め込むためのデータを生成
@@ -375,6 +372,7 @@ function tb_get_rdf($page)
 	//$self = (getenv('SERVER_PORT')==443?'https://':('http://')).getenv('SERVER_NAME').(getenv('SERVER_PORT')==80?'':(':'.getenv('SERVER_PORT'))).getenv('SERVER_NAME').getenv('REQUEST_URI');
 	$self = (getenv('SERVER_PORT')==443?'https://':('http://')).getenv('SERVER_NAME').(getenv('SERVER_PORT')==80?'':(':'.getenv('SERVER_PORT'))).getenv('REQUEST_URI');
 	$dcdate = substr_replace(get_date('Y-m-d\TH:i:sO',$time),':',-2,0);
+	$tb_url = tb_get_my_tb_url($tb_id);
 	// dc:date="$dcdate"
 	
 	return <<<EOD
@@ -383,15 +381,24 @@ function tb_get_rdf($page)
   xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:trackback="http://madskills.com/public/xml/rss/module/trackback/">
  <rdf:Description
-   rdf:about="$script?$r_page"
+   rdf:about="$self"
    dc:identifier="$self"
    dc:title="$page"
-   trackback:ping="$script?pwm_ping=$tb_id"
+   trackback:ping="$tb_url"
    dc:creator="$creator"
    dc:date="$dcdate" />
 </rdf:RDF>
 -->
 EOD;
+}
+
+function tb_get_my_tb_url($pid)
+{
+	global $use_static_url;
+	if ($use_static_url)
+		return XOOPS_WIKI_URL."/tb/".$pid;
+	else
+		return XOOPS_WIKI_URL."/?pwm_ping=".$pid;
 }
 
 // 文書をGETし、埋め込まれたTrackBack Ping urlを取得

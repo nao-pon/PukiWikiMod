@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.34 2005/01/13 13:57:51 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.35 2005/02/23 00:16:41 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -183,7 +183,7 @@ $show_passage = 1;
 
 /////////////////////////////////////////////////
 // Last-Modified ヘッダを出力する
-$lastmod = 0;
+$lastmod = 1;
 
 /////////////////////////////////////////////////
 // 日付フォーマット
@@ -233,7 +233,7 @@ $auto_template_rules[] = array('\[\[((.+)\/([^\/]+))\]\]' => '[[:'.$auto_templat
 /////////////////////////////////////////////////
 // TrackBackでのPing先URL抽出時に除外するプラグイン
 // カンマ区切りで、#をつけずに記述
-$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,aws,blogs,google,gimage,newsclip";
+$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,aws,blogs,google,gimage,newsclip,xoopsblock";
 
 /////////////////////////////////////////////////
 // 検索用Plainソース作成時に除外するプラグイン
@@ -293,6 +293,7 @@ $str_rules = array(
 // ユーザ定義ルール(コンバート時に置換、直接しない)
 $line_rules = array(
 //"/!([A-Z][a-z]+(?:[A-Z][a-z]+)+)/" => "$1",
+"((氏|死)(ね|ネ)|うんこ|つんぼ|ちん(ば|こ)|まんこ|ウンコ|ツンボ|チン(バ|コ)|マンコ)" => "<span style=\"color:white;background-color:white;\">$0</span>", //禁止ワード
 );
 
 /////////////////////////////////////////////////

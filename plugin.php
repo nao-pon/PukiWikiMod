@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: plugin.php,v 1.10 2004/11/24 14:19:59 nao-pon Exp $
+// $Id: plugin.php,v 1.11 2005/02/23 00:16:41 nao-pon Exp $
 //
 
 // プラグイン用に未定義の変数を設定
@@ -100,7 +100,7 @@ function do_plugin_action($name)
 {
 	if(!exist_plugin_action($name))
 	{
-		return array();
+		return FALSE;
 	}
 	
 	do_plugin_init($name);

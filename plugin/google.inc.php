@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.8 2004/10/07 03:12:15 nao-pon Exp $
+// $Id: google.inc.php,v 1.9 2005/02/23 00:16:41 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -87,6 +87,8 @@ function plugin_google_action()
 			{
 				// plane_text DB を更新
 				need_update_plaindb($page);
+				// ページHTMLキャッシュを削除
+				delete_page_html($page,"html");
 			}
 			else
 			{
@@ -139,8 +141,10 @@ function plugin_google_search_google_result($query,$max=10)
 
 	@list($ret,$refresh) = plugin_google_get_result_by_google($query,$max);
 	
-	// リフレッシュ用のイメージタグ付加
-	$refresh = ($refresh)? "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=google&amp;pmode=refresh&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;q=".rawurlencode($query)."&amp;m=".rawurlencode($max)."\" width=\"1\" height=\"1\" /></div>" : "";
+	if ($refresh)
+	{
+		$vars['mc_refresh'][] = "?plugin=google&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&q=".rawurlencode($query)."&m=".rawurlencode($max);
+	}
 	
 	if ($ret !== false)
 	{
@@ -156,7 +160,7 @@ function plugin_google_search_google_result($query,$max=10)
 			$result = "\n<ul class=\"recent_list\">\n".$result."</ul>\n";
 			$result .= "<p><a href='http://www.google.co.jp/search?num=".$max."&lr=lang_ja&ie=euc_jp&q=".rawurlencode($query)."'>".$plugin_google_dataset['research']."</a></p>\n";
 			//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
-			return $result.$refresh;
+			return $result;
 		}
 		else
 			return $plugin_google_dataset['err_noresult'];

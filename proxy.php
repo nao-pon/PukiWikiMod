@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: proxy.php,v 1.9 2004/11/24 14:19:59 nao-pon Exp $
+// $Id: proxy.php,v 1.10 2005/02/23 00:16:41 nao-pon Exp $
 //
 
 /*
@@ -19,8 +19,18 @@
 // リダイレクト回数制限の初期値
 define('HTTP_REQUEST_URL_REDIRECT_MAX',10);
 
-function http_request($url,$method='GET',$headers='',$post=array(),
-	$redirect_max=HTTP_REQUEST_URL_REDIRECT_MAX)
+function http_request
+	(
+		$url,
+		$method='GET',
+		$headers='',
+		$post=array(),
+		$redirect_max=HTTP_REQUEST_URL_REDIRECT_MAX,
+		$blocking=TRUE,
+		$retry=1,
+		$c_timeout=30,
+		$r_timeout=10
+	)
 {
 	global $use_proxy,$proxy_host,$proxy_port;
 	global $need_proxy_auth,$proxy_auth_user,$proxy_auth_pass;
@@ -42,7 +52,7 @@ function http_request($url,$method='GET',$headers='',$post=array(),
 	
 	$query = $method.' '.$url." HTTP/1.0\r\n";
 	$query .= "Host: ".$arr['host']."\r\n";
-	$query .= "User-Agent: PukiWiki/".S_VERSION."\r\n";
+	$query .= "User-Agent: PukiWikiMod/"._XOOPS_WIKI_VERSION."\r\n";
 	
 	// proxyのBasic認証 
 	if ($need_proxy_auth and isset($proxy_auth_user) and isset($proxy_auth_pass)) 
@@ -65,12 +75,12 @@ function http_request($url,$method='GET',$headers='',$post=array(),
 	{
 		if (is_array($post))
 		{
-			$POST = array();
+			$_send = array();
 			foreach ($post as $name=>$val)
 			{
-				$POST[] = $name.'='.urlencode($val);
+				$_send[] = $name.'='.urlencode($val);
 			}
-			$data = join('&',$POST);
+			$data = join('&',$_send);
 			$query .= "Content-Type: application/x-www-form-urlencoded\r\n";
 			$query .= 'Content-Length: '.strlen($data)."\r\n";
 			$query .= "\r\n";
@@ -88,10 +98,17 @@ function http_request($url,$method='GET',$headers='',$post=array(),
 		$query .= "\r\n";
 	}
 	
-	$fp = fsockopen(
-		$via_proxy ? $proxy_host : $arr['host'],
-		$via_proxy ? $proxy_port : $arr['port'],
-		$errno,$errstr,30);
+	$fp = $retry_count = 0;
+	while( !$fp && $retry_count < $retry )
+	{
+		$fp = fsockopen(
+			$via_proxy ? $proxy_host : $arr['host'],
+			$via_proxy ? $proxy_port : $arr['port'],
+			$errno,$errstr,$c_timeout);
+		if ($fp) break;
+		$retry_count++;
+		sleep(2); //2秒待つ
+	}
 	if (!$fp)
 	{
 		return array(
@@ -101,14 +118,25 @@ function http_request($url,$method='GET',$headers='',$post=array(),
 			'data'   => $errstr // エラーメッセージ
 		);
 	}
-
-	socket_set_timeout($fp, 30);
 	
 	fputs($fp, $query);
+	
+	// 非同期モード
+	if (!$blocking)
+	{
+		fclose($fp);
+		return array(
+			'query'  => $query, // Query String
+			'rc'     => 200, // エラー番号
+			'header' => '',     // Header
+			'data'   => 'Blocking mode is FALSE.' // エラーメッセージ
+		);
+	}
 	
 	$response = '';
 	while (!feof($fp))
 	{
+		socket_set_timeout($fp, $r_timeout);
 		$_response = fread($fp,4096);
 		$_status = socket_get_status($fp);
 		if ($_status['timed_out'] === false)

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.48 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: html.php,v 1.49 2005/02/23 00:16:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -31,6 +31,7 @@ function catbody($title,$page,$body)
 	
 	global $_msg_pagecomment,$_msg_trackback,$_msg_pings;
 	
+	
 	//名前欄置換
 	if (empty($vars['xoops_block']))
 		$body = str_replace(WIKI_NAME_DEF,$X_uname,$body);
@@ -45,6 +46,9 @@ function catbody($title,$page,$body)
 	// ページが存在するか
 	$is_page = is_page($_page);
 	
+	//ページID
+	$pid = get_pgid_by_name($_page);
+	
 	// 通常のページ表示モード?
 	$is_read = ($is_page && arg_check("read") && empty($vars["preview"]));
 	
@@ -53,11 +57,13 @@ function catbody($title,$page,$body)
 	
 	if ($use_static_url)
 	{
-		$link_page = XOOPS_WIKI_URL."/".get_pgid_by_name($_page).".html";
+		$link_page = XOOPS_WIKI_URL."/".$pid.".html";
+		$con_str = "?";
 	}
 	else
 	{
 		$link_page = "$script?".rawurlencode(strip_bracket($_page));
+		$con_str = "&amp;";
  	}
 	
 	$link_top = XOOPS_WIKI_URL."/";
@@ -82,11 +88,13 @@ function catbody($title,$page,$body)
 	{
 		$fmt = @filemtime(get_filename(encode($_page)));
 		
+		$tb_url = tb_get_my_tb_url($pid);
+		
 		$comments_tag = ($use_xoops_comments)? " [ ".get_pagecomment_count($pgid,'#page_comments',$_msg_pagecomment.'($1)')." ]" : "";
 		$tb_count = $_msg_trackback."(".tb_count($vars['page']).")";
-		$tb_tag = ($trackback)? " [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\" name=\"tb_body\">{$tb_count}</a> ]" : "";
+		$tb_tag = ($trackback)? " [ <a href=\"".$tb_url.$con_str."__mode=view\" name=\"tb_body\">{$tb_count}</a> ]" : "";
 		
-		$sended_ping_tag = ($trackback)? "[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."#sended_ping\">$_msg_pings(".tb_count($vars['page'],".ping").")</a> ]" : "";
+		$sended_ping_tag = ($trackback)? "[ <a href=\"".$tb_url.$con_str."__mode=view#sended_ping\">$_msg_pings(".tb_count($vars['page'],".ping").")</a> ]" : "";
 		
 		if (strip_bracket($_page) != $defaultpage) {
 			require_once(PLUGIN_DIR.'where.inc.php');
@@ -110,6 +118,7 @@ function catbody($title,$page,$body)
 			$trackback_body = <<<EOT
 	<div class="outer">
 	  <div class="head"><a name="tb_body"></a>{$_msg_trackback}{$tb_tag}</div>
+	  <div class="tburl">{$_msg_trackback} URL: {$tb_url}</div>
 	  <div class="blog">
 	   {$trackback_body}
 	  </div>
@@ -123,11 +132,41 @@ EOT;
 	if ($is_page)
 	{
 		global $no_name;
-		$pg_auther_name=get_pg_auther_name($_page);
+		global $defvalue_gids,$defvalue_aids;
+		
+		//$pg_auther_name=get_pg_auther_name($_page);
 		$pginfo = get_pg_info_db($_page);
-		$user = new XoopsUser($pginfo['lastediter']);
-		$last_editer = $pginfo['lastediter']? $user->getVar("uname"):$no_name;
-		//$last_editer = $user->getVar("uname");
+		$user = new XoopsUser();
+		$pg_auther_name= $user->getUnameFromId($pginfo['uid']);
+		$last_editer = $user->getUnameFromId($pginfo['lastediter']);
+		
+		//編集者
+		$allows = get_pg_allow_editer($_page);
+		$allow_groups = ($allows['group'])? explode(",",$allows['group']) : explode(",",$defvalue_gids,",");
+		$allow_users = ($allows['user'])? explode(",",$allows['user']) : explode(",",$defvalue_aids.",");
+		
+		$groups = X_get_group_list();
+		$allow_edit_groups = array();
+		foreach($allow_groups as $_gid)
+		{
+			if ($_gid) $allow_edit_groups[] = $groups[$_gid];
+		}
+		$allow_edit_groups = join(', ',$allow_edit_groups);
+		
+		$allow_editers = array();
+		if (!in_array(2,$allow_groups))
+		{
+			$allow_users = array_merge(array($pginfo['uid']),$allow_users);
+			foreach($allow_users as $_uid)
+			{
+				if ($_uid) $allow_editers[] = "<a href=\"".XOOPS_URL."/userinfo.php?uid=".$_uid."\">".$user->getUnameFromId($_uid)."</a>";
+			}
+		}
+		$allow_editers = join(', ',$allow_editers);
+		
+		if ($allow_edit_groups && $allow_editers) $allow_edit_groups .= " :: ";
+		if (!$allow_edit_groups && !$allow_editers) $allow_edit_groups = $groups[1];
+		
 		unset($user);
 	}
 
@@ -833,40 +872,7 @@ function file_attache_form() {
 // フォント指定JavaScript
 function fontset_js_tag()
 {
-	static $loaded = 0;
-	$map = "";
-	if (!$loaded) $map =<<<EOD
-<map name="map_button">
-<area shape="rect" coords="0,0,22,16" title="URL" alt="URL" href="#" onClick="javascript:pukiwiki_linkPrompt('url'); return false;">
-<area shape="rect" coords="24,0,40,16" title="B" alt="B" href="#" onClick="javascript:pukiwiki_tag('b'); return false;">
-<area shape="rect" coords="43,0,59,16" title="I" alt="I" href="#" onClick="javascript:pukiwiki_tag('i'); return false;">
-<area shape="rect" coords="62,0,79,16" title="U" alt="U" href="#" onClick="javascript:pukiwiki_tag('u'); return false;">
-<area shape="rect" coords="81,0,103,16" title="SIZE" alt="SIZE" href="#" onClick="javascript:pukiwiki_tag('size'); return false;">
-</map>
-<map name="map_color">
-<area shape="rect" coords="0,0,8,8" title="Black" alt="Black" href="#" onClick="javascript:pukiwiki_tag('Black'); return false;">
-<area shape="rect" coords="8,0,16,8" title="Maroon" alt="Maroon" href="#" onClick="javascript:pukiwiki_tag('Maroon'); return false;">
-<area shape="rect" coords="16,0,24,8" title="Green" alt="Green" href="#" onClick="javascript:pukiwiki_tag('Green'); return false;">
-<area shape="rect" coords="24,0,32,8" title="Olive" alt="Olive" href="#" onClick="javascript:pukiwiki_tag('Olive'); return false;">
-<area shape="rect" coords="32,0,40,8" title="Navy" alt="Navy" href="#" onClick="javascript:pukiwiki_tag('Navy'); return false;">
-<area shape="rect" coords="40,0,48,8" title="Purple" alt="Purple" href="#" onClick="javascript:pukiwiki_tag('Purple'); return false;">
-<area shape="rect" coords="48,0,55,8" title="Teal" alt="Teal" href="#" onClick="javascript:pukiwiki_tag('Teal'); return false;">
-<area shape="rect" coords="56,0,64,8" title="Gray" alt="Gray" href="#" onClick="javascript:pukiwiki_tag('Gray'); return false;">
-<area shape="rect" coords="0,8,8,16" title="Silver" alt="Silver" href="#" onClick="javascript:pukiwiki_tag('Silver'); return false;">
-<area shape="rect" coords="8,8,16,16" title="Red" alt="Red" href="#" onClick="javascript:pukiwiki_tag('Red'); return false;">
-<area shape="rect" coords="16,8,24,16" title="Lime" alt="Lime" href="#" onClick="javascript:pukiwiki_tag('Lime'); return false;">
-<area shape="rect" coords="24,8,32,16" title="Yellow" alt="Yellow" href="#" onClick="javascript:pukiwiki_tag('Yellow'); return false;">
-<area shape="rect" coords="32,8,40,16" title="Blue" alt="Blue" href="#" onClick="javascript:pukiwiki_tag('Blue'); return false;">
-<area shape="rect" coords="40,8,48,16" title="Fuchsia" alt="Fuchsia" href="#" onClick="javascript:pukiwiki_tag('Fuchsia'); return false;">
-<area shape="rect" coords="48,8,56,16" title="Aqua" alt="Aqua" href="#" onClick="javascript:pukiwiki_tag('Aqua'); return false;">
-<area shape="rect" coords="56,8,64,16" title="White" alt="White" href="#" onClick="javascript:pukiwiki_tag('White'); return false;">
-</map>
-EOD;
-
-	$loaded ++;
-	
 	return <<<EOD
-$map
 <script type="text/javascript">
 <!--
 	pukiwiki_show_fontset_img();

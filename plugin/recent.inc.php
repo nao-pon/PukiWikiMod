@@ -97,16 +97,12 @@ function plugin_recent_convert()
 					$date = date("Y-n-j",$data[3]);
 					$items .= "<div class=\"recent_date\">".$date."</div><ul class=\"recent_list\"{$_style}>";
 			}
-			$pg_link = make_pagelink($data[1]);
+			
 			if ($prefix)
-			{
-				$page_regs = "";
-				foreach(explode("/",$prefix) as $page_reg)
-				{
-					$page_regs .= "<a[^>]+>".preg_quote($page_reg,'/')."<\/a>\/";
-				}
-				$pg_link = preg_replace("/$page_regs/","",$pg_link);
-			}
+				$pg_link = make_pagelink($data[1],preg_replace("/^".preg_quote($prefix,"/")."\//","",strip_bracket($data[1])));
+			else
+				$pg_link = make_pagelink($data[1]);
+			
 			$items .="<li>".$pg_link."</li>\n";
 			$cnt++;
 		}

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.45 2005/01/13 13:35:12 nao-pon Exp $
+// $Id: file.php,v 1.46 2005/02/23 00:16:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -52,6 +52,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	global $do_backup,$del_backup;
 	global $X_uid,$X_admin,$X_uname,$wiki_mail_sw,$xoopsConfig;
 	global $pagereading_config_page,$use_static_url;
+	global $post,$pgid;
 	
 	$s_page = strip_bracket($page);
 	
@@ -75,7 +76,30 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	$oldpostdata = is_page($page) ? join('',get_source($page)) : '';
 	$diffdata = do_diff($oldpostdata,$postdata);
 	file_write(DIFF_DIR,$page,$diffdata);
-
+	
+	// 差分データの作成
+	$mail_add = $mail_del = "";
+	$diffdata_ar = array();
+	$diffdata_ar=split("\n",$diffdata);
+	foreach($diffdata_ar as $diffdata_line){
+		if (ereg("^\+ (.*)",$diffdata_line,$regs)){
+			$mail_add .= $regs[1]."\n";
+		}
+		if (ereg("^\- (.*)",$diffdata_line,$regs)){
+			$mail_del .= $regs[1]."\n";
+		}
+	}
+	
+	// 追加データファイル保存
+	// pcomment 動作時は親ページ
+	$_pgid = (!empty($post['refer']))? get_pgid_by_name($post['refer']) : $pgid;
+	$add_file = DIFF_DIR."add_".$_pgid.".cgi";
+	if ($fp = @fopen($add_file,"wb"))
+	{
+		fputs($fp,convert_html($mail_add));
+		fclose($fp);
+	}
+	
 	// バックアップの作成
 	// 日付はバックアップを作成した日時
 	$oldposttime = time();
@@ -129,23 +153,11 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			}
 		}
 	}
-
+	
 	if ($pukiwiki_send_mails) {
 		// メール送信 by nao-pon
 		global $xoopsConfig;
-
-		 //- メール用差分データの作成
-		$mail_add = $mail_del = "";
-		$diffdata_ar = array();
-		$diffdata_ar=split("\n",$diffdata);
-		foreach($diffdata_ar as $diffdata_line){
-			if (ereg("^\+(.*)",$diffdata_line,$regs)){
-				$mail_add .= $regs[1]."\n";
-			}
-			if (ereg("^\-(.*)",$diffdata_line,$regs)){
-				$mail_del .= $regs[1]."\n";
-			}
-		}
+		
 		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
 		if ($use_static_url)
 			$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html";
@@ -186,6 +198,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		}
 		//メール送信ここまで by nao-pon
 	}
+	
 }
 
 // ファイルへの出力
@@ -293,17 +306,15 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		
 		// ページHTMLキャッシュとRSSキャッシュを削除
 		delete_page_html($page);
-
 		
-		if (!$notimestamp && !$unvisible)
+		if (!$notimestamp && !$unvisible && $action != "delete")
 		{
 			// TrackBack Ping用ファイル作成
 			// pcomment用：親ページ名をセット
 			$page = ($post['refer'])? $post['refer'] : $page;
 			$s_page = strip_bracket($page);
 			// : で始まるページはPingを打たない
-			if ($s_page[0] !== ":")
-				tb_send($page);
+			if ($s_page[0] !== ":") tb_send($page);
 		}
 	}	
 }
@@ -361,16 +372,23 @@ function get_filename($pagename)
 // ページが存在するかしないか
 function is_page($page,$reload=FALSE)
 {
+	static $ret = array();
 	if ($reload) clearstatcache();
-	return file_exists(get_filename(encode(add_bracket($page))));
+	
+	if ($reload || !isset($ret[$page]))
+		$ret[$page] = file_exists(get_filename(encode(add_bracket($page))));
+	
+	return $ret[$page];
 }
 
 // ページが編集可能か
 function is_editable($page)
 {
 	global $BracketName,$WikiName,$InterWikiName,$cantedit,$_editable;
-
-	if($_editable === true || $_editable === false) return $_editable;
+	static $ret = array();
+	
+	if (isset($ret[$page])) return $ret[$page];
+	//if($_editable === true || $_editable === false) return $_editable;
 
 	if(preg_match("/^$InterWikiName$/",$page))
 		$_editable = false;
@@ -379,7 +397,9 @@ function is_editable($page)
 	elseif(in_array($page,$cantedit))
 		$_editable = false;
 	else
-		$_editable = true;
+		$_editable = !is_freeze($page);
+	
+	$ret[$page] = $_editable;
 	
 	return $_editable;
 }
@@ -476,7 +496,8 @@ function header_lastmod($page)
 	
 	if($lastmod && is_page($page))
 	{
-		header("Last-Modified: ".gmdate("D, d M Y H:i:s", filemtime(get_filename(encode($page))))." GMT");
+		//header("Last-Modified: ".gmdate("D, d M Y H:i:s", filemtime(get_filename(encode($page))))." GMT");
+		$GLOBALS['_xoops_lmtime'] = gmdate("D, d M Y H:i:s", filemtime(get_filename(encode($page))));
 	}
 }
 
@@ -1078,45 +1099,57 @@ function get_heading_init($page)
 }
 
 // 指定ページのコンバート後のHTMLキャッシュファイルとRSSキャッシュを削除
-function delete_page_html($page)
+function delete_page_html($page,$mode="html+rss")
 {
 	global $defaultpage, $post;
 	$pages = array();
-	$rsss = array();
+	$rss = array();
+	
 	// 削除するページ
 	$pages[] = $page;
+	$rss[] = $page;
 	$pages[] = $defaultpage; //トップページ
-	$rss[] = '';//デフォルト
+	$rss[] = '';//PukiWikiトップ
 	$_page = strip_bracket($page);
+	
 	while(preg_match("/(.+)\/[^\/]+/",$_page,$match))
 	{
 		//上階層のページ
-		$_page = $match[1];
-		$pages[] = add_bracket($_page);
+		$_page = add_bracket($match[1]);
+		$pages[] = $_page;
 		$rss[] = $_page;
 	}
+	
 	//呼び出しもとのページ
 	$pages[] = add_bracket($post['refer']);
+	$rss[] = add_bracket($post['refer']);
 	
-	foreach($pages as $del_page)
+	if (strpos($mode,"html") !== FALSE)
 	{
-		//echo $del_page."<br>";
-		$filename = PAGE_CACHE_DIR.encode($del_page).".txt";
-		//echo $filename."<br>";
-		if (file_exists($filename)) unlink($filename);
+		//HTMLキャッシュ
+		foreach($pages as $del_page)
+		{
+			$filename = PAGE_CACHE_DIR.encode($del_page).".txt";
+			if (file_exists($filename)) unlink($filename);
+		}
 	}
 	
-	//RSSキャッシュ
-	foreach($rss as $del_page)
+	if (strpos($mode,"rss") !== FALSE)
 	{
-		$filename = CACHE_DIR.encode($del_page).".rss10";
-		if (file_exists($filename)) unlink($filename);
-		$filename = CACHE_DIR.encode($del_page).".rss20";
-		if (file_exists($filename)) unlink($filename);
-		$filename = CACHE_DIR.encode($del_page).".rss21";
-		if (file_exists($filename)) unlink($filename);
+		//RSSキャッシュ
+		foreach($rss as $del_page)
+		{
+			$base = CACHE_DIR.get_pgid_by_name($del_page);
+			$filename = $base.".rss10";
+			if (file_exists($filename)) unlink($filename);
+			$filename = $base.".rss20";
+			if (file_exists($filename)) unlink($filename);
+			$filename = $base.".rss2l";
+			if (file_exists($filename)) unlink($filename);
+			$filename = $base.".rss2s";
+			if (file_exists($filename)) unlink($filename);
+		}
 	}
-	
 }
 
 //EXIFデータを得る
@@ -1168,5 +1201,4 @@ function get_pagename_aliases()
 	}
 	return $_aliases;
 }
-
 ?>

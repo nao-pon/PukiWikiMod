@@ -1,6 +1,6 @@
 <?php
 //
-// $Id: category.inc.php,v 1.1 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: category.inc.php,v 1.2 2005/02/23 00:16:41 nao-pon Exp $
 //
 
 function plugin_category_convert()

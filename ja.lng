@@ -169,6 +169,8 @@ $_attach_messages = array(
 	'msg_deleted'  => '$1 からファイルを削除しました',
 	'msg_freezed'  => '添付ファイルを凍結しました。',
 	'msg_unfreezed'=> '添付ファイルを凍結解除しました。',
+	'msg_copyrighted'  => '添付ファイルを著作権保護しました。',
+	'msg_uncopyrighted'=> '添付ファイルの著作権保護を解除しました。',
 	'msg_upload'   => '$1 への添付',
 	'msg_info'     => '添付ファイルの情報',
 	'msg_confirm'  => '<p>%s を削除します。</p>',
@@ -203,6 +205,7 @@ $_attach_messages = array(
 	'err_password' => 'パスワードが一致しません。',
 	'err_adminpass'=> '管理者パスワードが一致しません。',
 	'err_copyright'=> 'このファイルは著作権で保護されているため 表示・ダウンロード はできません。',
+	'err_extension'=> 'このページの編集権限がないため、拡張子が $1 のファイルは添付できません。',
 	'btn_upload'   => 'アップロード',
 	'btn_info'     => '詳細',
 	'btn_submit'   => '実行',
@@ -221,6 +224,7 @@ $_attach_messages = array(
 	'msg_adv_setting'=> '---　拡張指定　---',
 	'msg_init_image'=> 'キャンバスに読み込む画像ファイル(JPEG or GIF)',
 	'msg_fit_size' => 'キャンバスサイズをこの画像に合わせる',
+	'msg_extensions' => '添付可能なファイルの拡張子( $1 )',
 );
 
 

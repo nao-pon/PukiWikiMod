@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.30 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: index.php,v 1.31 2005/02/23 00:16:41 nao-pon Exp $
 
 
 define("UTIME",time());
@@ -249,6 +249,22 @@ function checkPermit(){
 //		echo "<img src='$_alert_icon' height='15' width='50'>&nbsp;$er_msg<br />";
 		echo "$_alert_icon$er_msg<br />";
 	}
+	
+	// need trackBack data convert
+	$need_trackBack_data_convert = 0;
+	if ($dir = @opendir(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/trackback/")) {
+		while($file = readdir($dir)) {
+			if($file == ".." || $file == ".") continue;
+			if (preg_match("/[a-f0-9]{32}\.(ping|txt)/",$file))
+			{
+				$need_trackBack_data_convert = 1;
+				break;
+			}
+		}
+		closedir($dir);
+	}
+	if ($need_trackBack_data_convert)
+		echo "<p>$_alert_icon<a href='".XOOPS_URL."/modules/".PUKIWIKI_DIR_NAME."/?plugin=tb_sendedping_conv'><span style='color:red;font-weight:bold;font-size:160%;'>"._AM_WIKI_ERROR02."</span><a></p>";
 }
 
 function displayForm(){

@@ -22,7 +22,7 @@
  *
  * 避難所       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.18 2004/12/06 13:51:09 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.19 2005/02/23 00:16:41 nao-pon Exp $
  *
  */
 
@@ -55,6 +55,8 @@ function plugin_showrss_action()
 			{
 				// plane_text DB を更新
 				need_update_plaindb($page);
+				// ページHTMLキャッシュを削除
+				delete_page_html($page,"html");
 			}
 			else
 			{
@@ -146,8 +148,7 @@ function plugin_showrss_convert()
 	
 	if ($refresh)
 	{
-		// リフレッシュ用のイメージタグ付加
-		$timestamp .= "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=showrss&amp;pmode=refresh&amp;uc={$usecache}&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;tgt=".rawurlencode($rssurl)."\" width=\"1\" height=\"1\" /></div>";
+		$vars['mc_refresh'][] = "?plugin=showrss&pmode=refresh&uc={$usecache}&ref=".rawurlencode(strip_bracket($vars["page"]))."&tgt=".rawurlencode($rssurl);
 	}
 	
 	if ($usetimestamp > 0)
@@ -250,11 +251,9 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 {
 	$buf = '';
 	$time = NULL;
-	$refresh = FALSE;
+	$refresh = 0;
 	
 	$filename = P_CACHE_DIR . md5($target) . '.srs';
-	
-	//if ($target == "http://inoue-waka.blog.ocn.ne.jp/kimochi/index.rdf") echo $filename;
 	
 	if ($usecache && !$do_refresh)
 	{
@@ -264,7 +263,7 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 			if (time() - filemtime($filename) > $usecache * 60 * 60)
 			{
 				// 更新が必要
-				$refresh = true;
+				$refresh = 1;
 			}
 			$buf = join('',file($filename));
 			$time = filemtime($filename) - LOCALZONE;

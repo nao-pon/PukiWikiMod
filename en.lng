@@ -152,6 +152,8 @@ $_attach_messages = array(
 	'msg_deleted'  => 'Deleted file in $1',
 	'msg_freezed'  => 'File freezed.',
 	'msg_unfreezed'=> 'File unfreezed',
+	'msg_copyrighted'  => 'The attached file was copyrighting protected.',
+	'msg_uncopyrighted'=> 'The copyright protection of the attached file was released.',
 	'msg_upload'   => 'Upload to $1',
 	'msg_info'     => 'File information',
 	'msg_confirm'  => '<p>Delete %s.</p>',
@@ -182,6 +184,8 @@ $_attach_messages = array(
 	'err_delete'   => 'Cannot delete file in $1',
 	'err_password' => 'Wrong password.',
 	'err_adminpass'=> 'Wrong administrator password',
+	'err_copyright'=> 'This file cannot not be displayed and be downloaded because it is not protected by the copyright.',
+	'err_extension'=> 'The extension cannot append the file of $1 because there is no edit authority on this page.',
 	'btn_upload'   => 'Upload',
 	'btn_info'     => 'Information',
 	'btn_submit'   => 'Submit',
@@ -200,6 +204,7 @@ $_attach_messages = array(
 	'msg_adv_setting'=> '--- Extended specification ---',
 	'msg_init_image'=> 'The picture file read into canvas (JPEG or GIF)',
 	'msg_fit_size' => 'Canvas size is united with this picture.',
+	'msg_extensions' => 'Extension of file that can be appended ( $1 )',
 );
 
 ///////////////////////////////////////

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tenki.inc.php,v 1.8 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: tenki.inc.php,v 1.9 2005/02/23 00:16:41 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //	&tenki([pic],[w:width])[{now?}];
@@ -44,7 +44,7 @@ function plugin_tenki_inline()
 		$id = str_replace(" ","",$id);
 		$id = encode($id);
 		$img_arg = plugin_tenki_cache_image_fetch($url, CACHE_DIR, $id);
-		$url = $img_arg[0];
+		$url = str_replace(XOOPS_WIKI_PATH,".",$img_arg[0]);
 		$size = $img_arg[1];
 	} else {
 		$size = @getimagesize($url);

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.27 2005/01/29 03:13:54 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.28 2005/02/23 00:16:41 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -15,6 +15,12 @@
 
 // 管理者だけが添付ファイルをアップロードできるようにする
 define('ATTACH_UPLOAD_ADMIN_ONLY',FALSE); // FALSE or TRUE
+// ページ編集権限がある人のみ添付ファイルをアップロードできるようにする
+define('ATTACH_UPLOAD_EDITER_ONLY',FALSE); // FALSE or TRUE
+// ページ編集権限がない場合にアップロードできる拡張子(カンマ区切り)
+// ATTACH_UPLOAD_EDITER_ONLY = FALSE のときに使用
+define('ATTACH_UPLOAD_EXTENSION','jpg, jpeg, gif, png, txt, css, zip, lzh, tar, taz, tgz, gz, z');
+
 // 管理者とページ作成者だけが添付ファイルを削除できるようにする
 define('ATTACH_DELETE_ADMIN_ONLY',FALSE); // FALSE or TRUE
 // 管理者とページ作成者が添付ファイルを削除するときは、バックアップを作らない
@@ -49,6 +55,14 @@ define('TAR_HDR_SIZE_OFFSET',124);	// サイズへのオフセット
 define('TAR_HDR_SIZE_LEN',12);		// サイズの長さ
 define('TAR_HDR_TYPE_OFFSET',156);	// ファイルタイプへのオフセット
 define('TAR_HDR_TYPE_LEN',1);		// ファイルタイプの長さ
+
+// 添付可能な拡張子を配列化
+if (!ATTACH_UPLOAD_ADMIN_ONLY && !ATTACH_UPLOAD_EDITER_ONLY && ATTACH_UPLOAD_EXTENSION)
+{
+	$GLOBALS['pukiwiki_allow_extensions'] = explode(",",str_replace(" ","",ATTACH_UPLOAD_EXTENSION));
+}
+else
+	$GLOBALS['pukiwiki_allow_extensions'] = array();
 
 //-------- convert
 function plugin_attach_convert()
@@ -104,8 +118,11 @@ function plugin_attach_action()
 	}
 	if (empty($vars['refer'])) $vars['refer'] = $vars['page'];
 	
+	$age = array_key_exists('age',$vars) ? $vars['age'] : 0;
+	$pcmd = array_key_exists('pcmd',$vars) ? $vars['pcmd'] : '';
+	
 	// リファラチェック
-	if (($vars['pcmd'] == 'open' || $vars['pcmd'] == 'delete') && !xoops_refcheck())
+	if (($vars['pcmd'] == 'open' || $vars['pcmd'] == 'delete' || !$pcmd) && !xoops_refcheck())
 	{
 		//redirect_header(XOOPS_WIKI_URL,0,"Access denied!");
 		//echo "Access Denied!";
@@ -113,15 +130,13 @@ function plugin_attach_action()
 		exit;
 	}
 	
-	$age = array_key_exists('age',$vars) ? $vars['age'] : 0;
-	$pcmd = array_key_exists('pcmd',$vars) ? $vars['pcmd'] : '';
 	
 	// Authentication
 	if (array_key_exists('refer',$vars) and is_pagename($vars['refer']))
 	{
 		$read_cmds = array('info','open','list','imglist');
-		$check = in_array($pcmd,$read_cmds) ? 
-		check_readable($vars['refer']) : check_editable($vars['refer']);
+		$check = (ATTACH_UPLOAD_EDITER_ONLY && !in_array($pcmd,$read_cmds)) ? 
+		check_editable($vars['refer']) : check_readable($vars['refer']);
 		if (!$check) return array('result'=>FALSE,'msg'=>$_attach_messages['err_noparm']);
 	}
 	
@@ -133,17 +148,18 @@ function plugin_attach_action()
 		return attach_upload($_FILES['attach_file'],$vars['refer'],$pass,$copyright);
 	}
 	
+	$pass = array_key_exists('pass',$vars) ? $vars['pass'] : NULL;
 	switch ($pcmd)
 	{
 		case 'info':    return attach_info();
-		case 'delete':  return attach_delete();
+		case 'delete':  return attach_delete($pass);
 		case 'open':    return attach_open();
 		case 'list':    return attach_list();
 		case 'imglist':return attach_list('imglist');
-		case 'freeze':  return attach_freeze(TRUE);
-		case 'unfreeze':return attach_freeze(FALSE);
+		case 'freeze':  return attach_freeze(TRUE,$pass);
+		case 'unfreeze':return attach_freeze(FALSE,$pass);
 		case 'upload':  return attach_showform();
-		case 'copyright':  return attach_copyright();
+		case 'copyright':  return attach_copyright($pass);
 	}
 	if ($vars['page'] == '' or !is_page($vars['page']))
 	{
@@ -174,7 +190,7 @@ function attach_upload($file,$page,$pass=NULL,$copyright=FALSE)
 {
 // $pass=NULL : パスワードが指定されていない
 // $pass=TRUE : アップロード許可
-	global $adminpass,$_attach_messages,$post;
+	global $adminpass,$_attach_messages,$post,$X_admin;
 	
 	if ($file['tmp_name'] == '' or !is_uploaded_file($file['tmp_name']) or !$file['size'])
 	{
@@ -184,12 +200,11 @@ function attach_upload($file,$page,$pass=NULL,$copyright=FALSE)
 	{
 		return array('result'=>FALSE,'msg'=>$_attach_messages['err_exceed']);
 	}
-	if (!is_pagename($page) or ($pass !== TRUE and !is_editable($page)))
+	if (!is_pagename($page) or ($pass !== TRUE and ATTACH_UPLOAD_EDITER_ONLY and !is_editable($page)))
 	{
 		return array('result'=>FALSE,'msg'=>$_attach_messages['err_noparm']);
 	}
-	if (ATTACH_UPLOAD_ADMIN_ONLY and $pass !== TRUE
-		and ($pass === NULL or $pass != $adminpass))
+	if (ATTACH_UPLOAD_ADMIN_ONLY and $pass !== TRUE and !$X_admin)
 	{
 		return array('result'=>FALSE,'msg'=>$_attach_messages['err_adminpass']);
 	}
@@ -249,6 +264,14 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL)
 		}
 	}
 	
+	// ページ編集権限がない場合は拡張子をチェック
+	if ($GLOBALS['pukiwiki_allow_extensions'] && !is_editable($page)
+		 && !preg_match("/\.(".join("|",$GLOBALS['pukiwiki_allow_extensions']).")$/i",$fname))
+	{
+		unlink($tmpname);
+		return array('result'=>FALSE,'msg'=>str_replace('$1',preg_replace('/.*\.([^.]*)$/',"$1",$fname),$_attach_messages['err_extension']));
+	}
+	
 	$obj = &new AttachFile($page,$fname);
 	
 	if ($obj->exist)
@@ -300,7 +323,7 @@ function attach_info($err='')
 	return $obj->getstatus() ? $obj->info($err) : array('msg'=>$_attach_messages['err_notfound']);
 }
 //削除
-function attach_delete()
+function attach_delete($pass)
 {
 	global $vars,$_attach_messages;
 	
@@ -309,7 +332,7 @@ function attach_delete()
 		$$var = array_key_exists($var,$vars) ? $vars[$var] : '';
 	}
 	
-	if (is_freeze($refer) or !is_editable($refer))
+	if (ATTACH_UPLOAD_EDITER_ONLY and !is_editable($refer))
 	{
 		return array('msg'=>$_attach_messages['err_noparm']);
 	}
@@ -318,7 +341,7 @@ function attach_delete()
 	return $obj->getstatus() ? $obj->delete($pass) : array('msg'=>$_attach_messages['err_notfound']);
 }
 //凍結
-function attach_freeze($freeze)
+function attach_freeze($freeze,$pass)
 {
 	global $vars,$_attach_messages;
 	
@@ -327,7 +350,7 @@ function attach_freeze($freeze)
 		$$var = array_key_exists($var,$vars) ? $vars[$var] : '';
 	}
 	
-	if (is_freeze($refer) or !is_editable($refer))
+	if (ATTACH_UPLOAD_EDITER_ONLY and !is_editable($refer))
 	{
 		return array('msg'=>$_attach_messages['err_noparm']);
 	}
@@ -336,7 +359,7 @@ function attach_freeze($freeze)
 	return $obj->getstatus() ? $obj->freeze($freeze,$pass) : array('msg'=>$_attach_messages['err_notfound']);
 }
 //著作権設定
-function attach_copyright()
+function attach_copyright($pass)
 {
 	global $vars,$_attach_messages;
 	foreach (array('refer','file','age','pass','copyright') as $var)
@@ -344,7 +367,7 @@ function attach_copyright()
 		$$var = array_key_exists($var,$vars) ? $vars[$var] : '';
 	}
 	
-	if (is_freeze($refer) or !is_editable($refer))
+	if (ATTACH_UPLOAD_EDITER_ONLY and !is_editable($refer))
 	{
 		return array('msg'=>$_attach_messages['err_noparm']);
 	}
@@ -383,8 +406,6 @@ function attach_list($mode="")
 	$noattach = 1;
 	
 	$msg = $_attach_messages[$refer == '' ? 'msg_listall' : 'msg_listpage'];
-	
-	//if (!$X_uid && !$refer) return array('msg'=>$msg,'body'=>"サーバ負荷軽減のため、登録ユーザー以外には全ページの添付ファイル一覧を休止させて頂いています。");
 	
 	$max = ($refer)? 50 : 20;
 	$max = (isset($vars['max']))? (int)$vars['max'] : $max;
@@ -474,9 +495,13 @@ function attach_form($page)
 	global $script,$vars;
 	global $_attach_messages,$X_admin,$X_uid;
 	
+	exist_plugin('attach');
+	
 	$r_page = rawurlencode($page);
 	$s_page = htmlspecialchars($page);
+	$header = "<h3>".str_replace('$1',make_pagelink($page),$_attach_messages['msg_upload'])."</h3>";
 	$navi = <<<EOD
+  $header
   <span class="small">
    [<a href="$script?plugin=attach&amp;pcmd=list&amp;refer=$r_page">{$_attach_messages['msg_list']}</a>]
    [<a href="$script?plugin=attach&amp;pcmd=list">{$_attach_messages['msg_listall']}</a>]
@@ -528,6 +553,12 @@ EOD;
 		$title = $_attach_messages[ATTACH_UPLOAD_ADMIN_ONLY ? 'msg_adminpass' : 'msg_password'];
 		$pass = '<br />'.$title.': <input type="password" name="pass" size="8" />';
 	}
+	
+	$allow_extensions = '';
+	if ($GLOBALS['pukiwiki_allow_extensions'] && !is_editable($page))
+	{
+		$allow_extensions = str_replace('$1',join(", ",$GLOBALS['pukiwiki_allow_extensions']),$_attach_messages['msg_extensions'])."<br />";
+	}
 	return <<<EOD
 <form enctype="multipart/form-data" action="$script" method="post">
  <div>
@@ -539,9 +570,10 @@ EOD;
   <span class="small">
    $msg_maxsize
   </span><br />
+  $allow_extensions
   {$_attach_messages['msg_file']}: <input type="file" name="attach_file" />
   $pass
-  <input type="submit" value="{$_attach_messages['btn_upload']}" />
+  <input type="submit" class="upload_btn" value="{$_attach_messages['btn_upload']}" />
   ({$_attach_messages['msg_untar']}:<input type="checkbox" name="untar_mode">)<br />
   <input type="checkbox" name="copyright" value="1" /> {$_attach_messages['msg_copyright']}
 
@@ -772,7 +804,8 @@ class AttachFile
 $s_err
 EOD;
 		$uid = get_pg_auther($this->page);
-		if (check_editable($this->page,false,false) && ((!ATTACH_DELETE_ADMIN_ONLY && $X_uid == $this->status['owner']) || (($X_admin || $X_uid == $uid) && $X_uid != 0))){
+		//if (check_editable($this->page,false,false) && ((!ATTACH_DELETE_ADMIN_ONLY && $X_uid == $this->status['owner']) || (($X_admin || $X_uid == $uid) && $X_uid != 0))){
+		if ($X_admin || ( $X_uid == $this->status['owner']) || (!ATTACH_DELETE_ADMIN_ONLY && !$this->status['owner'])){
 			$retval['body'] .= <<< EOD
 <form action="$script" method="post">
  <div>
@@ -805,7 +838,7 @@ EOD;
 	}
 	function delete($pass)
 	{
-		global $adminpass,$_attach_messages,$vars,$X_admin,$X_uid;
+		global $adminpass,$_attach_messages,$vars,$X_admin,$X_uid,$script;
 				
 		if ($this->status['freeze'])
 		{
@@ -859,11 +892,11 @@ EOD;
 			touch(get_filename($this->page));
 		}
 		
-		return array('msg'=>$_attach_messages['msg_deleted'],'redirect'=>$script."?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($this->page));
+		return array('msg'=>$_attach_messages['msg_deleted'],'redirect'=>$script."?plugin=attach&pcmd=upload&page=".rawurlencode($this->page));
 	}
 	function freeze($freeze,$pass)
 	{
-		global $adminpass,$vars,$X_admin,$X_uid,$_attach_messages;
+		global $adminpass,$vars,$X_admin,$X_uid,$_attach_messages,$script;
 		
 		$uid = get_pg_auther($vars['page']);
 		if ((!$X_admin && $X_uid !== $uid && $X_uid != $this->status['owner']) || $X_uid == 0)
@@ -876,11 +909,15 @@ EOD;
 		$this->status['freeze'] = $freeze;
 		$this->putstatus();
 		
-		return array('msg'=>$_attach_messages[$freeze ? 'msg_freezed' : 'msg_unfreezed']);
+		$param  = '&file='.rawurlencode($this->file).'&refer='.rawurlencode($this->page).
+			($this->age ? '&age='.$this->age : '');
+		$redirect = "$script?plugin=attach&pcmd=info$param";
+		
+		return array('msg'=>$_attach_messages[$freeze ? 'msg_freezed' : 'msg_unfreezed'],'redirect'=>$redirect);
 	}
 	function copyright($copyright,$pass)
 	{
-		global $adminpass,$vars,$X_admin,$X_uid;
+		global $adminpass,$vars,$X_admin,$X_uid,$_attach_messages,$script;
 		
 		$uid = get_pg_auther($vars['page']);
 		if ((!$X_admin && $X_uid !== $uid && $X_uid != $this->status['owner']) || $X_uid == 0)
@@ -894,7 +931,11 @@ EOD;
 		$this->status['copyright'] = $copyright;
 		$this->putstatus();
 		
-		return array('msg'=>$_attach_messages[$copyright ? 'msg_freezed' : 'msg_unfreezed']);
+		$param  = '&file='.rawurlencode($this->file).'&refer='.rawurlencode($this->page).
+			($this->age ? '&age='.$this->age : '');
+		$redirect = "$script?plugin=attach&pcmd=info$param";
+		
+		return array('msg'=>$_attach_messages[$copyright ? 'msg_copyrighted' : 'msg_uncopyrighted'],'redirect'=>$redirect);
 	}
 	function open()
 	{

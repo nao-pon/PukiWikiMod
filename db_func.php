@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.19 2005/01/29 03:13:54 nao-pon Exp $
+// $Id: db_func.php,v 1.20 2005/02/23 00:16:41 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -103,10 +103,13 @@ function get_pg_info_db($page)
 function get_pgname_by_id($id)
 {
 	global $xoopsDB;
+	static $page_name = array();
+	if (isset($page_name[$id])) return $page_name[$id];
 	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id=$id LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return "";
 	$ret = mysql_fetch_row($res);
+	$page_name[$id] = $ret[1];
 	return $ret[1];
 }
 
@@ -474,13 +477,35 @@ function plain_db_write($page,$action)
 	$data = join('',get_source($page));
 	delete_page_info($data);
 	
-	//処理しないプラグインを削除
+	//処理しないプラグインを削除 $no_plugins = GLOBAL
 	$no_plugins = split(',',$noplain_plugin);
 	
 	// ページ読みのデータページはコンバート処理しない(過負荷対策)
 	if (strip_bracket($page) != $pagereading_config_page)
 	{
-		$data = str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),strip_tags(convert_html($data,false)));
+		$spc = array
+		(
+			array
+			(
+				'&lt;',
+				'&gt;',
+				'&amp;',
+				'&quote;',
+				'&#039;',
+				'&nbsp;',
+			)
+			,
+			array
+			(
+				'<',
+				'>',
+				'&',
+				'"',
+				"'",
+				" ",
+			)
+		);
+		$data = str_replace($spc[0],$spc[1],strip_tags(convert_html($data,false)));
 	}
 	$data = addslashes(preg_replace("/[\s]+/","",$data));
 	//echo $data."<hr>";

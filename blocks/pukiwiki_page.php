@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.11 2004/12/16 13:15:20 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.12 2005/02/23 00:16:41 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -24,12 +24,23 @@ function b_pukiwiki_page_show($options)
 			$url = $wiki_url.'index.php?xoops_block=1&cmd=read&page='.rawurlencode($show_page);
 			include_once(XOOPS_ROOT_PATH."/class/snoopy.php");
 			$snoopy = new Snoopy;
-			$snoopy->fetch($url);
 			
-			if (isset($snoopy->error) && !empty($snoopy->error))
-				$data = $error_str = $snoopy->error;
+			$snoopy->read_timeout = 10;
+			$snoopy->fetch($url);
+			if (strpos($snoopy->response_code,"200") === FALSE)
+			{
+				if (file_exists($cache_file))
+					$data = join('',@file($cache_file));
+				else
+					$data = $error_str = $snoopy->response_code;
+			}
 			else
-				$data = $snoopy->results;
+			{
+				if (isset($snoopy->error) && !empty($snoopy->error))
+					$data = $error_str = $snoopy->error;
+				else
+					$data = $snoopy->results;
+			}
 			
 		}
 		

@@ -1,4 +1,4 @@
-<?php // $Id: xoops_block.skin.ja.php,v 1.11 2004/12/04 16:04:40 nao-pon Exp $
+<?php // $Id: xoops_block.skin.ja.php,v 1.12 2005/02/23 00:16:41 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -31,10 +31,4 @@ var pukiwiki_root_url = "<?php echo $pukiwiki_url ?>";
   </td>
  </tr>
 </table>
-<script type="text/javascript">
-<!--
-pukiwiki_initTexts();
-//-->
-</script>
 <!-- /PukiWiki Block -->
-

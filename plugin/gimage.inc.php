@@ -39,6 +39,8 @@ function plugin_gimage_action()
 			{
 				// plane_text DB を更新
 				need_update_plaindb($page);
+				// ページHTMLキャッシュを削除
+				delete_page_html($page,"html");
 			}
 			else
 			{
@@ -84,11 +86,13 @@ function plugin_gimage_convert()
 	
 	@list($ret,$refresh) = plugin_gimage_search($query,$qmode);
 	
-	// リフレッシュ用のイメージタグ付加
-	$refresh = ($refresh)? "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=gimage&amp;pmode=refresh&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;q=".rawurlencode($query)."&amp;m=".rawurlencode($qmode)."\" width=\"1\" height=\"1\" /></div>" : "";
+	if ($refresh)
+	{
+		$vars['mc_refresh'][] = "?plugin=gimage&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&q=".rawurlencode($query)."&m=".rawurlencode($qmode);
+	}
 	
 	//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
-	return "<div>".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>".$refresh;
+	return "<div>".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>";
 }
 
 function plugin_gimage_search($q,$qmode,$do_refresh=FALSE)

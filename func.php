@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.34 2004/12/10 13:30:41 nao-pon Exp $
+// $Id: func.php,v 1.35 2005/02/23 00:16:41 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -1008,11 +1008,18 @@ function include_page($page)
 			$body = $match[1];
 		$body .= "\n\nRIGHT:[[$_msg_read_more>$page]]";
 		$body = convert_html($body);
+		//$pcon = new pukiwiki_converter();
+		//$body = $pcon->convert_str($body);
 	}
 	else
 	{
 		$body = convert_html($page,false,true);
+		//$pcon = new pukiwiki_converter();
+		//$body = $pcon->convert_page($page);
+
 	}
+	
+	//unset($pcon);
 	
 	//退避変数値戻し
 	$vars["page"] = $post["page"] = $get["page"] = $tmppage;
@@ -1042,6 +1049,32 @@ function get_page_css_tag($page)
 		}
 	}
 	return $ret;
+}
+
+//ページIDからURLを求める
+function get_url_by_id($id=0)
+{
+	global $use_static_url;
+	
+	if (!$id) return XOOPS_WIKI_URL."/";
+	
+	if ($use_static_url)
+		return XOOPS_WIKI_URL."/".$id.".html";
+	else
+		return XOOPS_WIKI_URL."/?".rawurlencode(strip_bracket(get_pgname_by_id($id)));
+}
+
+//ページ名からURLを求める
+function get_url_by_name($name="")
+{
+	global $use_static_url;
+	
+	if (!$name || !is_page($name)) return XOOPS_WIKI_URL."/";
+	
+	if ($use_static_url)
+		return XOOPS_WIKI_URL."/".get_pgid_by_name($name).".html";
+	else
+		return XOOPS_WIKI_URL."/?".rawurlencode(strip_bracket($name));
 }
 
 //////////////////////////////////////////////////////

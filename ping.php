@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ping.php,v 1.3 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: ping.php,v 1.4 2005/02/23 00:16:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 //XOOPS設定読み込み
@@ -28,16 +28,47 @@ require("init.php");
 /////////////////////////////
 $h_excerpt = "";
 
-$page = strip_bracket(mb_convert_encoding(trim($arg),SOURCE_ENCODING,"AUTO"));
-
+$page = strip_bracket($get['p']);
 $vars["page"] = add_bracket($page);
 $get["page"] = $post["page"] = $vars["page"];
+
+$is_rsstop = (empty($get['t']))? 0 : 1;
+
+if ($vars['is_rsstop'])
+	$up_page = strip_bracket($vars["page"]);
+else
+{
+	if (strpos($vars["page"],"/") === FALSE)
+		$up_page = "";
+	else
+		$up_page = preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($vars["page"]));
+}
+$up_page = ($up_page && is_page($up_page))? "&p=".get_pgid_by_name($up_page) : "";
+
+$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php?cmd=rss10&content=s'.$up_page;
 
 $filename = CACHE_DIR.encode($page).".tbf";
 
 if (file_exists($filename))
 {
 	unlink($filename);
+	
+	// 実行時間を長めに設定
+	set_time_limit(120);
+	
+	sleep(mt_rand(40,60)); //適当に遅延させる
+	
+	
+	//常にゲストモード
+	$X_admin = $X_uid = 0;
+	
+	//キャッシュ作成 (ページ)
+	convert_html($page,false,true);
+	
+	//キャッシュ作成 (RSS)
+	http_request($rss_url);
+	
+	sleep(10);
 	
 	//ソースを取得
 	$data = get_source($page);
@@ -61,8 +92,8 @@ if (file_exists($filename))
 	tb_send($page,$data);
 }
 
-header("Content-Type: image/gif");
-readfile('image/transparent.gif');
+//header("Content-Type: image/gif");
+//readfile('image/transparent.gif');
 
 exit;
 ?>

@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.21 2004/12/23 14:46:41 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.22 2005/02/23 00:16:41 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -63,7 +63,7 @@ function plugin_calendar_viewer_init() {
 }
 
 
-function plugin_calendar_viewer_convert()
+function plugin_calendar_viewer_convert($func_vars_array="")
 {
   global $_calendar_viewer_msg_arg2, $_calendar_viewer_msg_noargs, $_calendar_viewer_msg_edit, $_calendar_viewer_read_more;
   global $WikiName,$BracketName,$vars,$get,$post,$hr,$script,$trackback;
@@ -94,8 +94,9 @@ function plugin_calendar_viewer_convert()
 
 //echo "this!";
   //*引数の確認
-  if(func_num_args()>=2){
-    $func_vars_array = func_get_args();
+  if(func_num_args()>=2 || is_array($func_vars_array))
+  {
+  	if (!is_array($func_vars_array)) $func_vars_array = func_get_args();
     $_options = array();
 	foreach($func_vars_array as $option)
 	{
@@ -142,7 +143,7 @@ function plugin_calendar_viewer_convert()
       $limit_base = $reg_array[1];
       $page_YM = "";
     }else{
-      return $_calendar_viewer_msg_arg2;
+      return $_calendar_viewer_msg_arg2."($func_vars_array[1])";
     }
     if (isset($func_vars_array[2])&&preg_match("/past|view|future/si",$func_vars_array[2])){
       //モード指定

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.15 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.16 2005/02/23 00:16:41 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -102,7 +102,7 @@ function plugin_isbn_inline() {
 	$tmpary = plugin_isbn_get_isbn_title($isbn);
 	if ($tmpary[2]) $price = "<div style=\"text-align:right;\">$tmpary[2]円</div>";
 	$title = $tmpary[0];
-	$text = htmlspecialchars(preg_replace('#</?a[^>]*>#i','',$option));
+	$text = htmlspecialchars(preg_replace('#</?(a|span)[^>]*>#i','',$option));
 	$alt = plugin_isbn_get_caption($tmpary);
 	$amazon_a = '<a href="'.str_replace('_ISBN_',$isbn,ISBN_AMAZON_SHOP).'" target="_blank" title="'.$alt.'">';
 	if (!preg_match("/(s|l|m)?ima?ge?/i",$option,$match)){

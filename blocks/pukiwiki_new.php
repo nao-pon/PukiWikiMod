@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.16 2005/01/29 03:13:54 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.17 2005/02/23 00:16:41 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -60,7 +60,7 @@ function b_pukiwiki_new_show($option) {
 	}
 
 	$block['title'] = _MI_PUKIWIKI_BTITLE;
-	$block['content'] = "<div style=\"word-break: break-all;\">$items</div>";
+	$block['content'] = "<div style=\"word-wrap:break-word; word-break:break-all;\">$items</div>";
 
 	return $block;
 }
@@ -88,13 +88,13 @@ function b_pukiwiki_newtb_show($option) {
 				$items .= "<strong>".$date."</strong>\n<ul>\n";
 				$close = TRUE;
 			}
-			$items .="<li><a href=\"{$data[1]}\" target=\"_blank\">{$data[2]}</a>({$data[4]})<br />to: ".xb_make_link($data[6])."</li>\n";
+			$items .="<li><a href=\"{$data[1]}\" target=\"_blank\">{$data[2]}</a>({$data[4]})<br />to: ".xb_make_link($data[6],$data[6])."</li>\n";
 		}
 		if ($close) $items .= "</ul>";
 	}
 
 	$block['title'] = _MI_PUKIWIKI_BTITLE2;
-	$block['content'] = "<div style=\"word-break: break-all;\">$items</div>";
+	$block['content'] = "<div style=\"word-wrap:break-word; word-break:break-all;\">$items</div>";
 
 	return $block;
 }

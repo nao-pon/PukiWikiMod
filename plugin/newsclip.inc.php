@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: newsclip.inc.php,v 1.5 2004/12/08 01:46:33 nao-pon Exp $
+// $Id: newsclip.inc.php,v 1.6 2005/02/23 00:16:41 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -59,6 +59,8 @@ function plugin_newsclip_action()
 			{
 				// plane_text DB を更新
 				need_update_plaindb($page);
+				// ページHTMLキャッシュを削除
+				delete_page_html($page,"html");
 			}
 			else
 			{
@@ -101,11 +103,13 @@ function plugin_newsclip_convert()
 	// 指定件数切り出し
 	$data = join("</li>\n",(array_slice(explode("</li>",$data),0,$max)));
 	
-	// リフレッシュ用のイメージタグ付加
-	$refresh = ($refresh)? "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=newsclip&amp;pmode=refresh&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;q=".rawurlencode($word)."\" width=\"1\" height=\"1\" /></div>" : "";
+	if ($refresh)
+	{
+		$vars['mc_refresh'][] = "?plugin=newsclip&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&q=".rawurlencode($word);
+	}
 
 	//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
-	return "<div>".sprintf($plugin_newsclip_dataset['head_msg'],htmlspecialchars($word)).$data."</div>".$refresh;
+	return "<div>".sprintf($plugin_newsclip_dataset['head_msg'],htmlspecialchars($word)).$data."</div>";
 }
 
 function plugin_newsclip_get($word,$do_refresh=FALSE)

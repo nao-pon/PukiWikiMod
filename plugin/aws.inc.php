@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.8 2005/01/29 03:13:54 nao-pon Exp $
+// $Id: aws.inc.php,v 1.9 2005/02/23 00:16:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -84,6 +84,8 @@ function plugin_aws_action()
 			{
 				// plane_text DB を更新
 				need_update_plaindb($page);
+				// ページHTMLキャッシュを削除
+				delete_page_html($page,"html");
 			}
 			else
 			{
@@ -119,11 +121,14 @@ function plugin_aws_convert()
 		$more = "<h4><a href=\"{$more_link}\" target=\"_blank\">「".htmlspecialchars($k)."」をAmazonで探す...</a></h4>";
 		
 	}
-	// リフレッシュ用のイメージタグ付加
-	$refresh = ($refresh)? "<div style=\"float:right;width:1px;height:1px;\"><img src=\"".$script."?plugin=aws&amp;pmode=refresh&amp;t=".time()."&amp;ref=".rawurlencode(strip_bracket($vars["page"]))."&amp;f=".rawurlencode($f)."&amp;m=".rawurlencode($m)."&amp;k=".rawurlencode($k)."&amp;b=".rawurlencode($b)."&amp;s=".rawurlencode($s)."\" width=\"1\" height=\"1\" /></div>" : "";
+	// リフレッシュが必要
+	if ($refresh)
+	{
+		$vars['mc_refresh'][] = "?plugin=aws&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&f=".rawurlencode($f)."&m=".rawurlencode($m)."&k=".rawurlencode($k)."&b=".rawurlencode($b)."&s=".rawurlencode($s);
+	}
 	
 	//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
-	return "{$more}<div{$style}>{$ret}</div>{$refresh}{$clear}";
+	return "{$more}<div{$style}>{$ret}</div>{$clear}";
 
 }
 function plugin_aws_add_imgsize_tag($tag)

@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.20 2004/11/24 12:32:54 nao-pon Exp $
+// $Id: ref.inc.php,v 1.21 2005/02/23 00:16:41 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -159,7 +159,7 @@ function plugin_ref_convert() {
 		$align = 'center';
 	else
 		$align = REF_DEFAULT_ALIGN;
-
+	
 	if ((REF_WRAP_TABLE and !$params['nowrap']) or $params['wrap']) {
 		$ret = wrap_table($ret, $align, $params['around']);
 	}
@@ -203,7 +203,8 @@ function wrap_div($text, $align, $around) {
 	} else {
 		$style = "text-align:$align";
 	}
-	return "<div class=\"img_margin\" style=\"$style\">$text</div>\n";
+	return "<div style=\"$style\"><div class=\"img_margin\">$text</div></div>\n";
+	//return "<div style=\"$style\">$text</div>\n";
 }
 // 枠で包む
 // margin:auto Moz1=x(wrap,aroundが効かない),op6=oNN6=x(wrap,aroundが効かない)IE6=x(wrap,aroundが効かない)
@@ -223,7 +224,7 @@ function ref_check_arg($val, $_key, &$params) {
 				return;
 			}
 		}
-		$params['_done'] = TRUE;
+		//$params['_done'] = TRUE;
 	}
 	$params['_args'][] = $val;
 }
@@ -245,7 +246,7 @@ function plugin_ref_body($name,$args,$params){
 	global $WikiName, $BracketName;
 
 	if (is_url($name)) { //URL
-		$url = $ext = $info = htmlspecialchars($name);
+		$l_url = $url = $ext = $info = htmlspecialchars($name);
 		$icon = $size = '';
 		$page = $vars['page'];
 		if (preg_match('/([^\/]+)$/', $name, $match)) { $ext = $match[1]; }
@@ -317,6 +318,8 @@ function plugin_ref_body($name,$args,$params){
 	if ($is_picture) { // 画像
 		$info = "";
 		$width=$height=0;
+		$class = " class=\"img_margin\"";
+
 		//URLの場合キャッシュ判定
 		if (is_url($url)){
 			$parse = parse_url($url);
@@ -405,16 +408,16 @@ function plugin_ref_body($name,$args,$params){
 				}
 			}
 			$info = "width=\"$width\" height=\"$height\" ";
-			$ret .= "<a href=\"$l_url\" title=\"$title\"><img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info/></a>";
+			$ret .= "<a href=\"$l_url\" title=\"$title\"><img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info /></a>";
 		} else {
 			if ($org_w and $org_h) $info = "width=\"$org_w\" height=\"$org_h\" ";
 			if (!$params['nocache'])
 			{
 				$url = preg_replace("#^\./#","",$url);
-				$ret .= "<img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info/>";
+				$ret .= "<img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info />";
 			}
 			else
-				$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info/>";
+				$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info />";
 		}
 	} else if ($is_flash) { //	Flashファイル
 		//初期化

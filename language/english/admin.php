@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.9 2004/12/23 15:34:42 nao-pon Exp $
+// $Id: admin.php,v 1.10 2005/02/23 00:16:41 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE0", "PukiWikiMod initial setting.");
@@ -78,4 +78,7 @@ define("_AM_WIKI_SYNC_MSG","<p>The number of contribution of the basic function 
 
 // ver 1.1.0
 define("_AM_WIKI_USE_XOOPS_COMMENTS","A page comment (comment function of XOOPS) is confirmed.");
+
+// ver 1.2.1
+define("_AM_WIKI_ERROR02","The conversion of the track back data is necessary, and convert here, please click.");
 ?>

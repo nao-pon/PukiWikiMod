@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.20 2004/12/23 14:07:14 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.21 2005/02/23 00:16:41 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -168,7 +168,7 @@ function plugin_pcomment_convert() {
 	//フォームを表示
 	if($params['noname']) {
 		$title = $_pcmt_msg_comment;
-		$name = '';
+		$name = '<input type="hidden" name="noname" value="1" />';
 	} else {
 		$title = $_pcmt_btn_name;
 		$name = '<input type="text" name="name" size="'.PCMT_COLS_NAME.'" value="'.WIKI_NAME_DEF.'" />';
@@ -235,14 +235,19 @@ function pcmt_insert($page) {
 	//コメントフォーマットを適用
 	$msg = sprintf(PCMT_FORMAT_MSG, rtrim($post['msg']));
 	
-	// 名前をクッキーに保存
-	setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
+	$name = "";
+	if (!empty($post['name']))
+	{
+		// 名前をクッキーに保存
+		setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
+		
+		$name = ($post['name'] == '') ? $no_name : $post['name'];
+		if (WIKI_USER_DIR)
+			make_user_link($name);
+		else
+			$name = sprintf(PCMT_FORMAT_NAME, $name);
+	}
 	
-	$name = ($post['name'] == '') ? $no_name : $post['name'];
-	if (WIKI_USER_DIR)
-		make_user_link($name);
-	else
-		$name = sprintf(PCMT_FORMAT_NAME, $name);
 	$date = ($post['nodate'] == '1') ? '' : sprintf(PCMT_FORMAT_DATE, $now);
 	if ($date != '' or $name != '') { 
 		$msg = str_replace("\x08MSG\x08", $msg,  PCMT_FORMAT);
@@ -469,7 +474,7 @@ function pcmt_get_comments($data,$count,$dir,$reply) {
 	$start = md5(rtrim(preg_replace("/\x01\d+\x02/","",$data[0])));
 
 	//html変換
-	$comments = convert_html(join('', $data));
+	$comments = convert_html($data);
 
 	//areaedit用スタートマーカー付加
 	$comments = str_replace("<a href=\"".$script."?plugin=areaedit","<a href=\"".$script."?plugin=areaedit&amp;start=$start",$comments);

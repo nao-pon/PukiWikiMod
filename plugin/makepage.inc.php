@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.3 2004/09/07 12:09:32 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.4 2005/02/23 00:16:41 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -107,7 +107,9 @@ function plugin_makepage_action()
 		return $retvars;
 	}
 	
-	$post['new_page'] = str_replace(array(' ','¡¡'),'',$post['new_page']);
+	//$post['new_page'] = str_replace(array(' ','¡¡'),'',$post['new_page']);
+	if (function_exists("mb_convert_kana")) $post['new_page'] = mb_convert_kana($post['new_page'], "KVs");
+	$post['new_page'] = str_replace(' ','',$post['new_page']);
 	$page = add_bracket($post['prefix'].strip_bracket($post['new_page']));
 	
 	if (!is_pagename($page))

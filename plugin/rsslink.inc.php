@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rsslink.inc.php,v 1.4 2004/09/20 12:37:43 nao-pon Exp $
+// $Id: rsslink.inc.php,v 1.5 2005/02/23 00:16:41 nao-pon Exp $
 //
 
 function plugin_rsslink_inline()
@@ -20,7 +20,7 @@ function plugin_rsslink_inline()
 	elseif (func_num_args() == 3)
 	{
 		list($page,$type,$body) = func_get_args();
-		$with_content="false";
+		$with_content="";
 	}
 	elseif (func_num_args() == 2)
 	{
@@ -38,7 +38,7 @@ function plugin_rsslink_inline()
 
 	if (is_page($page))
 	{
-		$s_page = "&amp;page=".rawurlencode($page);
+		$s_page = "&amp;p=".get_pgid_by_name($page);
 		$page = " of ".htmlspecialchars($page);
 	}
 	else
@@ -49,9 +49,13 @@ function plugin_rsslink_inline()
 	}
 	if ($type == "rss10")
 	{
-		if ($with_content=="true") 
+		$with_content = strtolower($with_content);
+		if ($with_content)
 		{
-			$s_content = "&amp;content=true";
+			if ($with_content == "s")
+				$s_content = "&amp;content=s";
+			else
+				$s_content = "&amp;content=l";
 		}
 		else
 		{

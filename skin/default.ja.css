@@ -208,6 +208,7 @@ li
 	background-color: #FFFFFF;
 	padding: 0.2em;
 	margin: 1px;
+	margin-bottom: 10px;
 	text-align: left;
 
 }
@@ -224,7 +225,7 @@ li
 	background-color: #FFFFFF;
 	padding: 0.2em;
 	margin: 1px;
-	margin-bottom: 3px;
+	margin-bottom: 10px;
 	text-align: left;
 
 }
@@ -240,7 +241,7 @@ li
 	padding: 0.2em;
 	padding-left: 0.4em;
 	margin: 1px;
-	margin-bottom: 3px;
+	margin-bottom: 10px;
 	font-family: verdana, arial, helvetica, Sans-Serif;
 	text-align: left;
 
@@ -253,7 +254,7 @@ li
 	padding: 0.1em;
 	padding-left: 0.4em;
 	margin: 1px;
-	margin-bottom: 1px;
+	margin-bottom: 10px;
 	font-family: verdana, arial, helvetica, Sans-Serif;
 	text-align: left;
 }
@@ -265,6 +266,7 @@ li
 	background-color: #DDEEFF;
 	padding: .3em;
 	text-align: left;
+	margin-bottom: 10px;
 }
 
 .pukiwiki_body dt {
@@ -325,6 +327,8 @@ input.copyButton {
 .pukiwiki_body img {
 	border: none;
 	vertical-align: middle;
+	padding: 0px;
+	margin: 0px;
 }
 
 .pukiwiki_body em {
@@ -365,6 +369,7 @@ input.copyButton {
 	padding: 5px;
 	margin: 1px;
 	color: black;
+	text-align:left;
 }
 
 .style_th {
@@ -788,7 +793,10 @@ div.wiki_source
 /* ref.inc.php */
 div.img_margin
 {
-	margin: 5px,10px;
+	margin-top: 5px;
+	margin-bottom : 5px;
+	margin-left: 10px;
+	margin-right: 10px;
 }
 /* areaedit.inc.php */
 span.area_on
@@ -798,4 +806,23 @@ span.area_on
 span.area_off
 {
 	background-color: transparent;
+}
+/* ruby.inc.php */
+.pukiwiki_body rt, .pukiwiki_body rp
+{
+	font-size:10px;
+	font-weight:normal;
+}
+/* attach.inc.php */
+.pukiwiki_body input.upload_btn
+{
+	font-size:16px;
+	font-weight:bold;
+	padding-left:16px;
+	padding-top:2px;
+	cursor: hand;
+	background-image:url("/xoops/modules/pukiwiki/image/upload.png");
+	background-repeat: no-repeat;
+	background-color: #ffffef;
+
 }

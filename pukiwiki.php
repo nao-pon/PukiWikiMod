@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.64 2005/01/29 03:13:54 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.65 2005/02/23 00:16:41 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する
 if (
@@ -36,7 +36,7 @@ if (
 	(isset($_GET['plugin']) && $_GET['plugin']=='gimage' && isset($_GET['pmode']) && $_GET['pmode']=='refresh')
 	)
 {
-	unset($_SERVER['REMOTE_ADDR']);
+	$_SERVER['REMOTE_ADDR'] = "";
 }
 
 //XOOPS設定読み込み
@@ -86,14 +86,15 @@ elseif ($arg === $whatsnew)
 }
 
 // Plug-in action
-if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
+if(!empty($vars["plugin"]))
 {
-	$retvars = do_plugin_action($vars["plugin"]);
+	if (!$retvars = do_plugin_action($vars["plugin"]))
+		$retvars = array('msg'=>"Action plugin '{$vars['plugin']}' is not installed.",'body'=>"Action plugin '{$vars['plugin']}' is not installed.");;
 	
 	$title = strip_bracket($vars["refer"]);
 	$page = make_search($vars["refer"]);
 	
-	if($retvars["msg"])
+	if(!empty($retvars["msg"]))
 	{
 		$title =  str_replace("$1",$title,$retvars["msg"]);
 		$page =  str_replace("$1",$page,$retvars["msg"]);
@@ -944,6 +945,10 @@ else if($vars["md5"])
 }
 else if(arg_check("rss"))
 {
+	if(empty($vars['page']) && !empty($vars['p']))
+	{
+		$vars['page'] = get_pgname_by_id($vars['p']);
+	}
 	if(!arg_check("rss10"))
 		catrss(1,$vars['page'],false,$vars['count']);
 	else
@@ -971,26 +976,40 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 				$page_comment_mode = "*ページコメント表示モード\n\n-ページコメント表示モードのため本文(ページ内容)を表示していません。\n-本文を表示するには、[[こちら>__PAGE__]]へアクセスしてください。";
 				
 				$postdata = convert_html(str_replace("__PAGE__",strip_bracket($vars['page']),$page_comment_mode));
+				
 			}
 			else
 				$postdata = convert_html($get["page"],false,true);
+				//$pcon = new pukiwiki_converter();
+				//$postdata = $pcon->convert_page($get["page"]);
+
+				//$postdata ="The server is being maintained now. Please access it after a while.<br>現在サーバーをメンテナンス中です。しばらくしてからアクセスしてください。";
 
 			$title = htmlspecialchars(strip_bracket($get["page"]));
 			$page = make_search($get["page"]);
 			$body = tb_get_rdf($vars['page'])."\n";
 			
-			$r_page = rawurlencode(strip_bracket($get["page"]));
-			//ping送出データーがあればランチャー起動
-			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".tbf"))
-				$body .= "<img style=\"float:left\" src=\"".XOOPS_URL."/modules/pukiwiki/ping.php?$r_page\" width=1 height=1/>";
-				
 			//PlainTXT DB 更新の必要がある場合
 			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".udp"))
-				$body .= "<img style=\"float:left\" src=\"".XOOPS_URL."/modules/pukiwiki/ud_plain.php?$r_page\" width=1 height=1/>";
+			{
+				// 非同期でモードでデータ更新
+				http_request(
+				XOOPS_URL."/modules/pukiwiki/ud_plain.php?".rawurlencode(strip_bracket($vars["page"]))
+				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
+			}
+			
+			//モジュール用キャッシュデータの更新
+			if (!empty($vars['mc_refresh']))
+			{
+				$vars['mc_refresh'] = join(" ",array_values($vars['mc_refresh']));
+				// 非同期でモードでデータ更新
+				http_request(
+				XOOPS_WIKI_URL."/mc_refrash.php"
+				,'POST','',array('mc_refresh'=>$vars['mc_refresh'],'tgt_page'=>$vars['page']),HTTP_REQUEST_URL_REDIRECT_MAX,0,3);
+			}
 			
 			$body .= $postdata;
 			header_lastmod($vars["page"]);
-			//echo $pgid;;
 			$show_comments = true;
 		}
 		else
@@ -1127,16 +1146,22 @@ if (empty($vars['xoops_block']))
 	if (is_page($vars["page"]))
 	{
 		if ($vars['is_rsstop'])
-			$up_page ="&page=".rawurlencode(strip_bracket($vars["page"]));
+			$up_page = strip_bracket($vars["page"]);
 		else
-			$up_page = (strpos($vars["page"],"/")) ? "&page=".rawurlencode(preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($vars["page"]))) :"";
+		{
+			if (strpos($vars["page"],"/") === FALSE)
+				$up_page = "";
+			else
+				$up_page = preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($vars["page"]));
+		}
+		$up_page = ($up_page && is_page($up_page))? "/".get_pgid_by_name($up_page) : "";
 		
-		$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php?cmd=rss10&content=true'.$up_page;
+		$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php/rss10/s'.$up_page;
 		
 		$xoops_mod_add_header = '
-	<link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list">
-	<link rel="contents" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?plugin=map">
-	<link rel="alternate" type="application/rss+xml" title="RSS" href="'.$rss_url.'" />
+<link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list" />
+<link rel="contents" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?plugin=map" />
+<link rel="alternate" type="application/rss+xml" title="RSS" href="'.$rss_url.'" />
 	';
 		$xoops_mod_add_header .= get_header_link_tag_by_name($vars["page"]);
 	}
