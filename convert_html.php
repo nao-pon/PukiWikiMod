@@ -1,10 +1,10 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.21 2004/05/15 02:55:10 nao-pon Exp $
+// $Id: convert_html.php,v 1.22 2004/05/15 11:37:07 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
-	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown;
+	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id;
 	
 	if ($page_cvt)
 	{
@@ -77,7 +77,13 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		//マルチドメイン対応
 		$str = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$str);
 		
-		$html = $related_link."\t".$noattach."\t".$noheader."\t".$h_excerpt."\t".$wiki_ads_shown."\t".$vars['is_rsstop']."\t".preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain))."\n".$str;
+		//toprssはインクルードページは常に0
+		//#toprssを記述したページがインクルードされた場合問題も少し残るが
+		//calendar_viewer などでインクルードされたページに元ページの値がセット
+		//されてしまう問題のほうが大きいので、とりあえずこうする。
+		$rsstop_set = ($content_id === 1)? $vars['is_rsstop'] : 0;
+		
+		$html = $related_link."\t".$noattach."\t".$noheader."\t".$h_excerpt."\t".$wiki_ads_shown."\t".$rsstop_set."\t".preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain))."\n".$str;
 		
 		//キャッシュ書き込み
 		if ($fp = @fopen($filename,"w"))
