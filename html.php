@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.9 2003/07/09 09:04:55 nao-pon Exp $
+// $Id: html.php,v 1.10 2003/07/11 14:09:02 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -121,6 +121,9 @@ function convert_html($string)
 
 	//$string = preg_replace("/^#freeze\n/","",$string);
 	$string = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$string);
+
+	//整形済みの行末~は、スペースを付加して行連結を防ぐ
+	$string = preg_replace("/((^|\n)( [^\n]*))~\n/","$1~ \n",$string);
 
 	//~\nは&br;に変換して1行として処理 nao-pon 03/06/25
 	// 改行を挟んででURLなどが列挙してあると上手く切り分けられないので\tを挿入 03/06/29
@@ -658,23 +661,14 @@ function inline2($str)
 			$cnts_plain[] = $cnt;
 		}
 	}
-	// インラインプラグイン前処理(インラインのパラメータはmake_linkを抑制)
-	//$str = preg_replace("/(&amp;[^(){}; ]+\()([^(){};]*)(\)([^;]*)?;)/","$1[[$2]]$3",$str);
-	$str = preg_replace("/(&amp;[^(){}; ]+\()((?:(?!\)[;{]).)*)(\)([^;]*)?;)/","$1[[$2]]$3",$str);
-	
-	// リンク処理
-	$str = make_link($str);
-
-	// インラインプラグイン後処理(元に戻す)
-	//$str = preg_replace("/(&amp;[^(){}; ]+\()([^(){}]*)(\)([^;]*)?;)/e","'$1'.inline_after('$2').'$3'",$str);
-	$str = preg_replace("/(&amp;[^(){}; ]+\()((?:(?!\)[;{]).)*)(\)([^;]*)?;)/e","'$1'.inline_after('$2').'$3'",$str);
 
 	// インラインプラグイン
-
-	//foreach($str as $tmp) echo htmlspecialchars($tmp)."<br>";
-
-	//$str = preg_replace("/&amp;([^(){};]+)(\(([^(){}]*)\))?(\{(.*)\})?;/ex","inline3('$1','$3','$5','$0')",$str);
 	$str = preg_replace("/&amp;([^(){};]+)(\(((?:(?!\)[;{]).)*)\))?(\{(.*)\})?;/ex","inline3('$1','$3','$5','$0')",$str);
+
+	// リンク処理
+	$str = make_link($str);
+	$str = str_replace(array("\x1c","\x1d"),"",$str);
+	//$str = str_replace("\x1d","",$str);
 	
 	$str = preg_replace("/#related/e",'make_related($vars["page"],TRUE)',$str);
 	$str = make_user_rules($str);
@@ -702,6 +696,10 @@ function inline_after($text)
 // インラインプラグインの処理
 function inline3($name,$arg,$body,$all)
 {
+	$name = stripslashes($name);
+	$arg = stripslashes($arg);
+	$body = stripslashes($body);
+	$all = stripslashes($all);
 	//&hoge(){...}; &fuga(){...}; のbodyが'...}; &fuga(){...'となるので、前後に分ける
 	$after = '';
 	//if (preg_match("/^ ((?!};).*?) }; (.*?) &amp; (\w+) (?: \( ( [^()]          *) \) )? { (.+)$/x",$body,$matches))
@@ -720,7 +718,9 @@ function inline3($name,$arg,$body,$all)
 		//echo htmlspecialchars("$name:$arg:$body")."<br>";
 		$str = do_plugin_inline($name,$arg,$body);
 		if ($str !== FALSE){ //成功
-			return $str.$after;
+			//echo "\x1c".$str."\x1d".$after;
+			return "\x1c".$str."\x1d".$after;
+			//return "\x08[[".$str."]]\x08".$after;
 		}
 	}
 	// プラグインが存在しないか、変換に失敗
