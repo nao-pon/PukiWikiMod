@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.6 2003/08/06 14:40:44 nao-pon Exp $
+// $Id: convert_html.php,v 1.7 2003/09/02 14:01:12 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string)
 {
@@ -642,7 +642,7 @@ function make_note($str)
 	$str = make_user_rules($str);
 
 	$foot_explain[] = "<a name=\"notefoot_$note_id\" href=\"#notetext_$note_id\" class=\"note_super\">*$note_id</a> <span class=\"small\">$str</span><br />\n";
-	$note =  "<a name=\"notetext_$note_id\" href=\"#notefoot_$note_id\" class=\"note_super\">*$note_id</a>";
+	$note =  "<a name=\"notetext_$note_id\" href=\"#notefoot_$note_id\" class=\"note_super\" title=\"\x1c".str_replace(array("[[","]]"),"",strip_tags($str))."\x1d\">*$note_id</a>";
 	$note_id++;
 
 	return $note;
