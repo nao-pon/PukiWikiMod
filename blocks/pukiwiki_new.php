@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.8 2004/01/12 13:12:55 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -105,7 +105,10 @@ function xb_make_link($page,$alias="#/#")
 			$_name = xb_get_heading($page);
 		}
 		$pgp = xb_get_pg_passage($page,FALSE);
-		$retval = "<a href=\"".$pukiwiki_path."?$url\" title=\"".$name.$pgp."\">".$_name."</a>";
+		if ($pgp)
+			$retval = "<a href=\"".$pukiwiki_path."?$url\" title=\"".$name.$pgp."\">".$_name."</a>";
+		else
+			$retval = "$_name";
 	}
 	
 	$linktag[$page.$alias] = $retval;
