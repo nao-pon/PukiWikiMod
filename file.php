@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.44 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: file.php,v 1.45 2005/01/13 13:35:12 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -53,6 +53,8 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	global $X_uid,$X_admin,$X_uname,$wiki_mail_sw,$xoopsConfig;
 	global $pagereading_config_page,$use_static_url;
 	
+	$s_page = strip_bracket($page);
+	
 	// メールオプション抽出
 	if ($mail_op == "nomail")
 		$wiki_mail_sw = 0;
@@ -66,7 +68,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	if ($postdata) $postdata = rtrim($postdata)."\n";
 
 	$page = add_bracket($page);
-
+	
 	$postdata = user_rules_str($postdata);
 	
 	// 差分ファイルの作成
@@ -84,7 +86,6 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	else if($do_backup && is_page($page))
 		make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
 
-
 	// ファイルの書き込み
 	file_write(DATA_DIR,$page,$postdata,$notimestamp,$aids,$gids,$vaids,$agids,$freeze,$unvisible);
 	
@@ -92,7 +93,6 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	$pukiwiki_send_mails = "";
 	$pukiwiki_pg_auther_mail = get_pg_auther_mail($page);
 	
-	$s_page = strip_bracket($page);
 	
 	// メールを送信しないページ
 	if ($s_page == $pagereading_config_page)
@@ -603,10 +603,11 @@ function put_reading($page,$reading)
 	global $pagereading_config_page;
 	if (!is_page($page)) return;
 	
+	$readings = array();
 	foreach (get_source($pagereading_config_page) as $line) {
 		$line = preg_replace('/[\s\r\n]+$/', '', $line);
-		if(preg_match('/^-\[\[([^]]+)\]\]\s(.+)$/', $line, $matches)
-		   and isset($readings[$matches[1]])) {
+		if(preg_match('/^-\[\[([^]]+)\]\]\s(.+)$/', $line, $matches))
+		{
 			$readings[$matches[1]] = $matches[2];
 		}
 	}

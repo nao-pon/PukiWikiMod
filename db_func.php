@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.17 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: db_func.php,v 1.18 2005/01/13 13:35:12 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -466,6 +466,7 @@ function plain_db_write($page,$action)
 {
 	global $xoopsDB,$noplain_plugin,$post,$get,$vars;
 	global $no_plugins;
+	global $pagereading_config_page;
 	
 	if (!$pgid = get_pgid_by_name($page)) return false;
 	
@@ -476,7 +477,11 @@ function plain_db_write($page,$action)
 	//処理しないプラグインを削除
 	$no_plugins = split(',',$noplain_plugin);
 	
-	$data = str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),strip_tags(convert_html($data,false)));
+	// ページ読みのデータページはコンバート処理しない(過負荷対策)
+	if (strip_bracket($page) != $pagereading_config_page)
+	{
+		$data = str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),strip_tags(convert_html($data,false)));
+	}
 	$data = addslashes(preg_replace("/[\s]+/","",$data));
 	//echo $data."<hr>";
 	// 新規作成
