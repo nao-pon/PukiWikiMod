@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.41 2004/10/11 14:03:30 nao-pon Exp $
+// $Id: html.php,v 1.42 2004/10/14 13:04:39 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -435,9 +435,10 @@ function user_rules_str($str)
 
 	$arystr = split("\n",$str);
 
-	// 日付・時刻置換処理
+	$pre = 0;
 	foreach($arystr as $str)
 	{
+		// 日付・時刻など置換処理
 		if(substr($str,0,1) != " ")
 		{
 			foreach($str_rules as $rule => $replace)
@@ -446,8 +447,11 @@ function user_rules_str($str)
 			}
 		}
 		
+		if ($str == "<<<") $pre ++;
+		if ($pre && $str == ">>>") $pre --;
 		// 見出しに固有IDを付与する
 		if ($fixed_heading_anchor and
+			!$pre and
 			preg_match('/^(\|.*?)?(\*{1,6}(.(?!\[#[A-Za-z][\w-]+\]))+?)(\||->)?$/', $str, $matches))
 		{
 			if ($matches[1] || $matches[4])
