@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.18 2005/02/23 14:51:16 nao-pon Exp $
+// $Id: trackback.php,v 1.19 2005/03/09 12:33:51 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -409,7 +409,7 @@ function tb_get_my_tb_url($pid)
 	if ($use_static_url)
 		return XOOPS_WIKI_URL."/tb/".$pid;
 	else
-		return XOOPS_WIKI_URL."/?pwm_ping=".$pid;
+		return XOOPS_WIKI_URL."/index.php?pwm_ping=".$pid;
 }
 
 // 文書をGETし、埋め込まれたTrackBack Ping urlを取得
