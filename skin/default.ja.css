@@ -29,7 +29,45 @@ div.wiki_body_block
 {
 	background-color: #F5F5F5;
 	margin-bottom: 8px;
+	text-align:left;
+}
 
+div.wiki_body_block_tate
+{
+	width:600px;
+	height:430px;
+	background-color: #F5F5F5;
+	margin-bottom:20px;
+	direction:rtl;
+	unicode-bidi:bidi-override;
+	overflow-x:auto;
+	overflow-y:hidden;
+	border:1px solid silver;
+	text-align:left;
+}
+
+div.tate
+{
+	width:100%;
+	height:100%;
+	padding-top:10px;
+	padding-bottom:10px;
+	padding-left:5px;
+	padding-right:5px;
+	direction:ltr;
+	unicode-bidi:bidi-override;
+	writing-mode:tb-rl;
+	line-height:2em;
+	font-family:'ÇlÇr ÉSÉVÉbÉN',serif;
+	text-align:left;
+	overflow: auto;
+	word-break: break-all;
+	-moz-box-sizing:border-box;
+}
+
+div.tate p
+{
+	margin:10px 10px 5px 0px;
 }
 
 div.wiki_page_title
@@ -52,7 +90,7 @@ div.wiki_page_navi
 	margin-bottom:  5px;
 	margin-top:     5px;
 }
-pre, dl, ol, ul, p, blockquote { line-height:1.5; }
+pre, dl, ol, ul, blockquote, td { line-height:1.5; }
 
 p
 {
