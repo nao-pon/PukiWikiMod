@@ -348,11 +348,10 @@ address {
 
 .note_hr {
 	width:90%;
-	border-style:ridge;
-	border-color:#CCCCFF;
+	border-style:dotted;
+	border-color:#AAAAFF;
 	border-width:1px 0px;
 	text-align:center;
-	margin:1em auto 0em auto;
 }
 
 .side_label {
