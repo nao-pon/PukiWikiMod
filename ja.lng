@@ -6,7 +6,7 @@
 // page titles
 $_title_list = 'ページの一覧';
 $_title_filelist = 'ページファイルの一覧';
-$_title_cannotedit = '$1 は凍結されているため編集できません。';
+$_title_cannotedit = '$1 を編集するための権限がありません。';
 $_title_add = '$1 への追加';
 $_title_edit = '$1 の編集';
 $_title_preview = '$1 のプレビュー';
