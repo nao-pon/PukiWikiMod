@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.8 2003/07/09 07:15:30 nao-pon Exp $
+// $Id: func.php,v 1.9 2003/07/11 14:10:24 nao-pon Exp $
 /////////////////////////////////////////////////
 // 検索語を展開する
 function get_search_words($words,$special=FALSE)
@@ -552,24 +552,31 @@ function auto_braket($msg,$tgt_name){
 		$msg = eregi_replace($mail_ADR_regex, "[[\\1]]", $msg);
 	}
 	// #で始まるプラグイン行、//で始まるメッセージ行を処理しない為の前処理
-	$msg=ereg_replace("(^|[\n])( |#|\/\/)","\\1\\2[[",$msg);
-
+	$msg=preg_replace("/(^|[\n])( |#|\/\/)(.*)(\n|$)/","\\1\\2[[\\3]]\\4",$msg);
+	// インラインプラグイン エスケープ
+	$msg = preg_replace("/(&.*?;)/","[[$1]]",$msg);
 	
 	//前処理制御文字へ置換
 	$msg = str_replace("[[",chr(28),$msg);
 	$msg = str_replace("]]",chr(29),$msg);
 
+	//本処理
 	foreach (get_page_name() as $page_name){
 		if(!preg_match("/^".$WikiName_ORG."$/",$page_name)){ //WikiName以外
-			$page_name =  preg_quote ($page_name, "/");
-			$msg = preg_replace("/(^|\x1d)([^\x1c\x1d]*?)(".$page_name.")([^\x1c\x1d]*?)(\x1c|$)/","\\1\\2".chr(28)."\\3".chr(29)."\\4\\5",$msg);
+			//$page_name =  preg_quote ($page_name, "/");
+			$page_name = addslashes($page_name);
+			$msg = preg_replace("/(^|\x1d)([^\x1c\x1d]*?)(\x1c|$)/e","auto_br_replace('$1','$2','$3','$page_name')","$msg");
 		}
 	}
+
 	//後処理制御文字から置換
 	$msg = str_replace(chr(28),"[[",$msg);
 	$msg = str_replace(chr(29),"]]",$msg);
+
+	// インラインプラグイン アンエスケープ
+	$msg = preg_replace("/\[\[(&.*?;)\]\]/","$1",$msg);
 	// #で始まるプラグイン行、//で始まるメッセージ行を処理しない為の後処理
-	$msg = ereg_replace("(^|[\n])( |#|\/\/)\[\[","\\1\\2",$msg);
+	$msg = preg_replace("/(^|[\n])( |#|\/\/)\[\[(.*)\]\](\n|$)/","\\1\\2\\3\\4",$msg);
 	// エスケープを元に戻す
 	if ($tgt_name == "InterWikiName"){
 		$msg = preg_replace("/\[\[(\[[^[\]]+\])\]\]/","$1",$msg);
@@ -581,7 +588,14 @@ function auto_braket($msg,$tgt_name){
 	
 	return $msg;
 }
-
+// オートブラケット用サブ関数
+function auto_br_replace($front,$tgt,$back,$page_name){
+	$front = stripslashes($front);
+	$tgt = stripslashes($tgt);
+	$back = stripslashes($back);
+	$page_name = stripslashes($page_name);
+	return $front.str_replace($page_name,chr(28).$page_name.chr(29),$tgt).$back;
+}
 //////////////////////////////////////////////////////
 //
 // XOOPS用　関数
