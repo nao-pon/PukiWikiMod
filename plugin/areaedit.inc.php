@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.10 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.11 2004/11/28 06:53:55 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -212,6 +212,9 @@ function plugin_areaedit_action()
 	}
 	
 	if (!empty($vars['areaedit_msg'])) $vars['areaedit_msg'] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$vars['areaedit_msg']);
+	
+	if ($_SERVER['REQUEST_METHOD'] == "POST" && !array_key_exists('preview',$vars))
+		$vars['write'] = TRUE;
 	
 	if ( array_key_exists('inline_plugin', $vars) ) {
 		if ( $vars['inline_plugin'] == 1 ) {
@@ -763,7 +766,7 @@ function areaedit_form($page, $postdata_input, $headdata, $taildata, $digest = 0
   <textarea name="areaedit_msg" rows="$rows" cols="$cols">$s_postdata_input</textarea>
   <br />
   <input type="submit" name="preview" value="$btn_preview" accesskey="p" />
-  <input type="submit" name="write"   value="$_btn_update" accesskey="s" />
+  <input type="submit"                value="$_btn_update" accesskey="s" />
   {$timestamp_tag}
   <textarea name="original" rows="1" cols="1" style="display:none">$s_original</textarea>
   <textarea name="headdata" rows="1" cols="1" style="display:none">$s_headdata</textarea>
