@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.10 2004/05/14 14:20:51 nao-pon Exp $
+// $Id: rss.php,v 1.11 2004/05/18 12:04:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -107,7 +107,7 @@ function catrss($rss,$page,$with_content="false",$list_count=0)
 			{
 //				$content = ereg_replace("\<form.*\/form\>","",$content);
 //				$content = mb_ereg_replace("(\<form action=\")http://.*(\" method)","\\1#\\2",$content);
-				$content = preg_replace("/<script.*?<\/script>/is","",$content);
+				$content = preg_replace("/<(script|meta|embed|object).*?<\/\\1>/is","",$content);
 				$content = preg_replace("/\s*onMouseO(ver|ut)=\"[^\"]*\"/i","",$content);
 				$content = mb_convert_encoding($content,"UTF-8",SOURCE_ENCODING);
 				$items.= "<content:encoded>\n<![CDATA[\n";
