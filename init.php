@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.9 2003/08/06 14:40:44 nao-pon Exp $
+// $Id: init.php,v 1.10 2003/09/14 13:04:15 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -114,11 +114,21 @@ if($post["msg"])
 {
 	$post["msg"] = preg_replace("/((\x0D\x0A)|(\x0D)|(\x0A))/","\n",$post["msg"]);
 }
-if($get["page"]) $get["page"] = rawurldecode($get["page"]);
-if($post["word"]) $post["word"] = rawurldecode($post["word"]);
-if($get["word"]) $get["word"] = rawurldecode($get["word"]);
+//if($get["page"]) $get["page"] = add_bracket(rawurldecode($get["page"]));
+//if($post["page"]) $post["page"] = add_bracket(rawurldecode($post["page"]));
+if(isset($get["page"])) $get["page"] = rawurldecode($get["page"]);
+if(isset($post["page"])) $post["page"] = rawurldecode($post["page"]);
+if(isset($post["word"])) $post["word"] = rawurldecode($post["word"]);
+if(isset($get["word"])) $get["word"] = rawurldecode($get["word"]);
 
 $vars = array_merge($post,$get);
+
+if ($vars['cmd'] == "edit"){
+	if(isset($get["page"])) $get["page"] = add_bracket($get["page"]);
+	if(isset($post["page"])) $post["page"] = add_bracket($post["page"]);
+	if(isset($vars["page"])) $vars["page"] = add_bracket($vars["page"]);
+}
+
 $arg = rawurldecode((getenv('QUERY_STRING') != '')?
 		    getenv('QUERY_STRING') :
 		    $HTTP_SERVER_VARS["argv"][0]);
