@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.27 2004/10/26 14:39:33 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.28 2004/11/01 13:43:21 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -14,8 +14,12 @@ if (!defined('DATA_DIR')) exit;
 <?php if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css")){ ?>
 	<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">
 <?php } ?>
-	<script language=javascript src="skin/default.ja.js"></script>
-
+	<script type="text/javascript">
+	<!--
+	var pukiwiki_root_url = "";
+	//-->
+	</script>
+	<script type="text/javascript" src="skin/default.ja.js"></script>
 <table border=0 cellspacing="5" style="width:100%;" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()>
  <tr>
   <td class="pukiwiki_body">
