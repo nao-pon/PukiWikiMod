@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.22 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: html.php,v 1.23 2003/11/06 12:39:33 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -115,7 +115,7 @@ function get_page_name(){
 }
 
 // 編集フォームの表示
-function edit_form($postdata,$page,$add=0)
+function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
 {
 	global $script,$rows,$cols,$hr,$vars,$function_freeze;
 	global $_btn_addtop,$_btn_preview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp,$_btn_enter_enable,$_btn_autobracket_enable,$_btn_freeze_enable,$_btn_auther_id;
@@ -148,7 +148,7 @@ function edit_form($postdata,$page,$add=0)
 				$enable_user = _MD_PUKIWIKI_ALL;
 			}
 			$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.sprintf($_btn_freeze_enable,$enable_user).'</span>';
-			$allow_edit_tag = allow_edit_form();
+			$allow_edit_tag = allow_edit_form($allow_groups,$allow_users);
 		}
 	}
 	

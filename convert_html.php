@@ -1,10 +1,12 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.11 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: convert_html.php,v 1.12 2003/11/06 12:39:33 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false)
 {
 	global $vars,$related_link,$noattach,$noheader,$h_excerpt;
+
+	$string = preg_replace("/(^|\n)#newfreeze(\n|$)/","$1",$string);
 	
 	if (is_array($string)) $string = join('',$string);
 	$body = new convert();
