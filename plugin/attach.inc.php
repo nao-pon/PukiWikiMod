@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.15 2004/04/03 14:16:58 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.16 2004/05/13 14:36:01 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -296,8 +296,8 @@ function attach_open()
 	$obj = &new AttachFile($refer,$file,$age);
 	
 	//画像ファイルへの直リンクを禁止
-	if (getimagesize($obj->filename) && 
-		strpos($_SERVER['HTTP_REFERER'],XOOPS_URL) === false) return array('msg'=>$_attach_messages['err_notfound']);
+	//if (getimagesize($obj->filename) && 
+	//	strpos($_SERVER['HTTP_REFERER'],XOOPS_URL) === false) return array('msg'=>$_attach_messages['err_notfound']);
 	
 	return $obj->getstatus() ? $obj->open() : array('msg'=>$_attach_messages['err_notfound']);
 }
