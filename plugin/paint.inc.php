@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.12 2004/08/19 13:00:42 nao-pon Exp $
+// $Id: paint.inc.php,v 1.13 2004/08/20 14:47:04 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -173,7 +173,7 @@ function plugin_paint_action()
  <div>
  $link
  $message
- <applet codebase="." archive="BBSPainter.jar" code="Main.class" width="$w" height="$h">
+ <applet codebase="." archive="./plugin_data/paint/BBSPainter.jar" code="Main.class" width="$w" height="$h">
  <param name="size" value="$f_w,$f_h" />
  <param name="action" value="$script" />
  <param name="image" value="attach_file" />
