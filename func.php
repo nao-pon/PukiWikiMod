@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.35 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: func.php,v 1.36 2005/02/23 14:53:11 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -225,7 +225,7 @@ function open_interwikiname_list()
 function strip_bracket($str)
 {
 	global $strip_link_wall;
-	
+	if ($str === "") return "";
 	if($strip_link_wall)
 	{
 	  if(preg_match("/^\[\[(.*)\]\]$/",$str,$match)) {
@@ -236,8 +236,10 @@ function strip_bracket($str)
 }
 
 // [[ ]] を付加する
-function add_bracket($str){
+function add_bracket($str)
+{
 	global $WikiName;
+	if ($str === "") return "";
 	if (!preg_match("/^".$WikiName."$/",$str)){
 		if (!preg_match("/\[\[.*\]\]/",$str)) $str = "[[".$str."]]";
 	}
