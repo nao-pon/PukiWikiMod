@@ -22,7 +22,7 @@
  *
  * 避難所       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.16 2004/11/24 13:15:35 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.17 2004/12/04 14:59:34 nao-pon Exp $
  *
  */
 
@@ -102,9 +102,12 @@ function plugin_showrss_convert()
 	$rssurl = $usetimestamp = $show_description = '';
 	$usecache = 1;
 	$tmplname = "menubar";
+	$max = 10;
 
 	switch (func_num_args())
 	{
+		case 6:
+			$max = trim($array[5]);
 		case 5:
 			$show_description = trim($array[4]);
 		case 4:
@@ -137,7 +140,7 @@ function plugin_showrss_convert()
 		return "<p><a href=\"{$rssurl}\" target=\"_blank\">showrss: cannot get rss from server.</a></p>\n";
 	}
 	
-	$obj = new $class($rss,$show_description);
+	$obj = new $class($rss,$show_description,$max);
 
 	$timestamp = '';
 	
@@ -162,12 +165,17 @@ class ShowRSS_html
 	var $items = array();
 	var $class = '';
 
-	function ShowRSS_html($rss,$show_description="")
+	function ShowRSS_html($rss,$show_description="",$max=10)
 	{
+		$count = 1;
 		foreach ($rss as $date=>$items)
 		{
+			if ($count > $max) break;
 			foreach ($items as $item)
 			{
+				if ($count > $max) break;
+				$count ++;
+				
 				$link = $item['LINK'];
 				$title = $item['TITLE'];
 				$passage = get_passage($item['_TIMESTAMP']);
@@ -283,7 +291,10 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 			// <content:encoded> を削除
 			$buf = preg_replace("#<content:encoded>(.*)</content:encoded>#isU","",$buf);
 			// 余分な文字文字を削除
-			$buf = preg_replace("/\x0b/"," ",$buf);
+			$buf = preg_replace("/[\x01-\x08\x0b\x0c\x0e-\x1f\x7f]+/","",$buf);
+			$buf = str_replace("\0","",$buf);
+			// &amp; でない & を置換
+			$buf = preg_replace("/&(?!amp;)/","&amp;",$buf);
 
 			$time = UTIME;
 			// キャッシュを保存
@@ -301,11 +312,16 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 		}
 		
 	}
-	// 余分な文字コードを削除
-	$buf = preg_replace("/\x0b/"," ",$buf);
+	
+	// 余分な文字文字を削除
+	//$buf = preg_replace("/[\x01-\x08\x0b\x0c\x0e-\x1f\x7f]+/","",$buf);
+	//$buf = str_replace("\0","",$buf);
+	// &amp; でない & を置換
+	//$buf = preg_replace("/&(?!amp;)/","&amp;",$buf);	
 	
 	// parse
 	$obj = new ShowRSS_XML();
+
 	return array($obj->parse($buf),$time,$refresh);
 }
 // 期限切れのキャッシュをクリア
