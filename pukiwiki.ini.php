@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.21 2004/01/15 13:39:17 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.22 2004/01/24 14:40:33 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -29,7 +29,7 @@ define("PAGE_CACHE_DIR","./pagehtml/");
 /////////////////////////////////////////////////
 // ページHTMLキャッシュ期限（分）0 でキャッシュしない
 // ゲストユーザーのみキャッシュ機能が有効になります。
-define("PAGE_CACHE_MIN",10);
+define("PAGE_CACHE_MIN",0);
 
 /////////////////////////////////////////////////
 // Language
@@ -74,6 +74,11 @@ $script = XOOPS_WIKI_URL.'/index.php';
 /////////////////////////////////////////////////
 // 更新履歴ページの名前
 $whatsnew = "RecentChanges";
+
+///////////////////////////////////////////////// 
+// 削除履歴ページの名前 
+$whatsdeleted = 'RecentDeleted'; 
+
 /////////////////////////////////////////////////
 // InterWikiNameページの名前
 $interwiki = "InterWikiName";
@@ -82,6 +87,14 @@ $interwiki = "InterWikiName";
 /////////////////////////////////////////////////
 // 更新履歴を表示するときの最大件数
 $maxshow = 80;
+
+///////////////////////////////////////////////// 
+// 削除履歴の最大件数(0で記録しない) 
+$maxshow_deleted = 80;
+///////////////////////////////////////////////// 
+// 削除履歴を管理者以外は閲覧禁止にする(Yes:1, No:0)
+$unvisible_deleted = 0;
+
 /////////////////////////////////////////////////
 // 編集することのできないページの名前 , で区切る
 $cantedit = array( $whatsnew, );
@@ -282,6 +295,7 @@ $facemark_rules = array(
 '&amp;(wink;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/wink.png" alt="&$1" />',
 '&amp;(sad;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/sad.png" alt="&$1" />',
 '&amp;(heart;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/heart.gif" alt="&$1" />',
+'&amp;(hammer;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/hammer.gif" alt="&$1" />',
 );
 
 ////////以下の設定はXOOPSの管理画面での設定で上書きされます///////
