@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.1 2003/06/28 06:01:51 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.2 2003/06/28 06:06:17 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS¥Ø¥Ã¥À
 //include("header.php");
