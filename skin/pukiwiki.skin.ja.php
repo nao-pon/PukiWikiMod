@@ -1,8 +1,8 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.8 2003/07/08 14:20:03 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.9 2003/08/06 14:40:44 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
-global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $_freeze, $wiki_allow_newpage, $X_admin;
+global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $_freeze, $wiki_allow_newpage, $X_admin,$noattach,$noheader;
 
 $_freeze = is_freeze($vars[page]);
 if($_freeze){
@@ -22,7 +22,7 @@ if($_freeze){
 	<?php } ?>
 	<script language=javascript src="skin/default.js"></script>
 <table border=0 width="100%" cellspacing="5"><tr><td>
-	<?php if(!$hide_navi){ ?>
+	<?php if(!$hide_navi && !$noheader){ // header ?>
 		<center><div style="width:80%;text-align:center;font-size:14px;font-weight:bold;border: #6699FF thick ridge 2px;background-color:#FFFFEE;padding:2px;"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
 		[ <a href="<?php echo "$script?".rawurlencode($vars['page']) ?>">リロード</a> ]
@@ -73,6 +73,8 @@ if($_freeze){
 	| <a href="<?php echo "$script?".rawurlencode("[[ヘルプ]]") ?>">ヘルプ</a>
 	]<br /></center>
 
+	<?php } // header ?>
+
 	<?php echo $hr ?>
 
 	<?php
@@ -87,7 +89,6 @@ if($_freeze){
 	}
 	?>
 	
-	<?php } ?>
 	<?php if($is_page) { ?>
 		<table cellspacing="1" cellpadding="0" border="0" width="100%">
 			<tr>
@@ -101,7 +102,7 @@ if($_freeze){
 	<?php } ?>
 	<?php echo $hr ?>
 	<?php
-		if(file_exists(PLUGIN_DIR."attach.inc.php") && $is_read)
+		if(!$noattach && file_exists(PLUGIN_DIR."attach.inc.php") && $is_read)
 		{
 			require_once(PLUGIN_DIR."attach.inc.php");
 			$attaches = attach_filelist();

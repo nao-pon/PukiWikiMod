@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.5 2003/08/03 13:39:37 nao-pon Exp $
+// $Id: convert_html.php,v 1.6 2003/08/06 14:40:44 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string)
 {
@@ -561,7 +561,7 @@ class convert
 	// インライン要素のパース (リンク、関連一覧、見出し一覧)
 	function inline2($str)
 	{
-		global $WikiName,$BracketName,$InterWikiName,$vars,$related,$related_link,$script;
+		global $WikiName,$BracketName,$InterWikiName,$vars,$related,$related_link,$script,$noattach,$noheader;
 
 		// リンク処理
 		$str = make_link($str);
@@ -572,8 +572,15 @@ class convert
 
 		$tmp = $str;
 		$str = preg_replace("/^#norelated$/","",$str);
-		if($tmp != $str)
-			$related_link = 0;
+		if($tmp != $str) $related_link = 0;
+
+		$tmp = $str;
+		$str = preg_replace("/^#noattach$/","",$str);
+		if($tmp != $str) $noattach = 1;
+
+		$tmp = $str;
+		$str = preg_replace("/^#noheader$/","",$str);
+		if($tmp != $str) $noheader = 1;
 
 		return $str;
 	}

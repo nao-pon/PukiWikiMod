@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.8 2003/07/30 14:51:29 nao-pon Exp $
+// $Id: init.php,v 1.9 2003/08/06 14:40:44 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -128,6 +128,9 @@ $arg = sanitize_null_character($arg);
 //** 初期処理 **
 $update_exec = "";
 $content_id = 0;
+$noattach = 0;
+$noheader = 0;
+
 
 // 設定ファイルの読込
 if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
