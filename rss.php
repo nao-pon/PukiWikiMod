@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.16 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: rss.php,v 1.17 2005/03/08 15:22:26 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -67,6 +67,8 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 	$items = "";
 	$rdf_li = "";
 	$size_over = 0;
+	$user = new XoopsUser();
+	
 	foreach($lines as $line)
 	{
 		$title = strip_bracket($line);
@@ -165,7 +167,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 			
 			//author
 			$pginfo = get_pg_info_db($line);
-			$user = new XoopsUser();
+			//$user = new XoopsUser();
 			$pg_auther_name= mb_convert_encoding(htmlspecialchars($user->getUnameFromId($pginfo['uid'])),"UTF-8",SOURCE_ENCODING);
 			$last_editer = mb_convert_encoding(htmlspecialchars($user->getUnameFromId($pginfo['lastediter'])),"UTF-8",SOURCE_ENCODING);
 			if ($pg_auther_name != $last_editer)
