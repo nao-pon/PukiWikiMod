@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.20 2004/06/06 12:51:59 nao-pon Exp $
+// $Id: index.php,v 1.21 2004/06/11 12:59:58 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -128,6 +128,8 @@ function checkPermit(){
 		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/",
 		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/counter/",
 		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/diff/",
+		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/pagehtml/",
+		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/trackback/",
 		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/wiki/");
 
 	if ($dir = @opendir(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/wiki/")) {
@@ -429,6 +431,8 @@ function displayForm(){
 			<option value='cache'>cache/*</option>
 			<option value='counter'>counter/*</option>
 			<option value='diff'>diff/*</option>
+			<option value='diff'>pagehtml/*</option>
+			<option value='diff'>trackback/*</option>
 			<option value='wiki'>wiki/*</option>
 		</select>
 	</td></tr>
