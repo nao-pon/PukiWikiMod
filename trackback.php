@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.8 2004/05/15 02:55:10 nao-pon Exp $
+// $Id: trackback.php,v 1.9 2004/05/15 03:05:55 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -232,8 +232,9 @@ function tb_send($page,$data="")
 		$pings = $to_pukiwiki;
 	}
 	
-	// 更新通知Ping送信指定先
+	// 更新通知Ping送信指定先追加
 	$pings = array_merge($pings,preg_split("/\s+/",trim($update_ping_to)));
+	$pings = array_unique($pings);
 
 	if (is_array($pings) && count($pings) != 0)
 	{
