@@ -1,3 +1,4 @@
+#freeze
 |TCENTER:100% RIGHT:|LEFT:|c
 |Åê¹Æ¼Ô|[name]|
 |¥«¥Æ¥´¥ê¡¼|[category]|

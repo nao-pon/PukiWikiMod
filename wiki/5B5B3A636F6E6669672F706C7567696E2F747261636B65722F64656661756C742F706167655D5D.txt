@@ -1,3 +1,4 @@
+#freeze
 * [summary]
 -ページ: [_refer]
 -投稿者: [name]
