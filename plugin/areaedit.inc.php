@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.4 2004/08/19 04:00:32 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.5 2004/10/09 06:59:48 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -33,6 +33,7 @@ function plugin_areaedit_init()
 //			'msg_cannotedit_inline' => '[x]',
 			'msg_cannotedit_inline' => '',
 			'msg_unfreeze_inline' => '[uf]',
+			'msg__collided' => 'あなたがこのエリアを編集している間に、他の人が「$1」を更新してしまったようです。<br />編集エリアを特定できませんので、もう一度編集をし直しをしてください。',
 			'title_auth'     => '$1には編集権限がありません。',
 			'title_edit'     => '\'$1\' の第$2 areaeditの編集',
 			'title_preview'  => '\'$1\' の第$2 areaeditのプレビュー',
@@ -208,6 +209,7 @@ function plugin_areaedit_action()
 			'body' => $error,
 		);
 	}
+	
 	if ( array_key_exists('inline_plugin', $vars) ) {
 		if ( $vars['inline_plugin'] == 1 ) {
 			return plugin_areaedit_action_inline();
@@ -647,7 +649,7 @@ function plugin_areaedit_strip_link($str){
 function plugin_areaedit_write($refer, $postdata_input, $postdata)
 {
 	global $script,$vars;
-	global $_title_collided,$_msg_collided_auto,$_msg_collided,$_title_deleted;
+	global $_title_collided,$_msg_collided_auto,$_msg_collided,$_title_updated,$_title_deleted,$_areaedit_messages;
 	
 	$retvars = array();
 	
@@ -656,10 +658,14 @@ function plugin_areaedit_write($refer, $postdata_input, $postdata)
 	
 	$oldpagesrc = join('',get_source($refer));
 	$oldpagemd5 = md5($oldpagesrc);
+	delete_page_info($oldpagesrc);
 	
 	if ($oldpagemd5 != $vars['digest']) {
-		$retvars['msg'] = $_title_collided;
+		$retvars['msg'] = str_replace('$1',htmlspecialchars(strip_bracket($vars['page'])),$_title_collided);
+		$retvars['body'] = str_replace('$1',make_pagelink($vars['page']),$_areaedit_messages['msg__collided']);
+		$retvars['body'] .= "<p>|--> ".make_pagelink($vars['page'])."</p>";
 		
+		/*
 		$vars['digest'] = $oldpagemd5;
 		list($postdata,$auto) = do_update_diff($oldpagesrc,$postdata,$vars['original']);
 		
@@ -669,15 +675,24 @@ function plugin_areaedit_write($refer, $postdata_input, $postdata)
 			$retvars['body'] .= $do_update_diff_table;
 		}
 		$retvars['body'] .= areaedit_form($refer,$postdata_input,$postdata,$oldpagemd5);
-	}
+		*/
+ 	}
 	else {
 		$notimestamp = !empty($vars['notimestamp']);
 		if ( TRUE ){
-			page_write($refer,$postdata,$notimestamp);
+			page_write($refer,$postdata,$notimestamp,"","","","","","",array('plugin'=>'areaedit','mode'=>'del&add'));
+			
+			$retvars["msg"] =  $_title_updated;
+			$retvars["body"] = "";
+			$vars["refer"] = $vars["page"];
+			
+			return $retvars;
+			/*
 			if ($postdata != '') {
 				header("Location: $script?".rawurlencode($refer));
 				exit;
 			}
+			*/
 		}
 		else if ( $postdata != '' ) {
 //echo 'postdata=',$postdata;
