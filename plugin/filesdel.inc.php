@@ -16,6 +16,12 @@ function plugin_filesdel_init()
 
 function plugin_filesdel_action()
 {
+	// 実行時間を制限しない
+	set_time_limit(0);
+	// 出力をバッファリングしない
+	//ob_end_clean();
+	//echo str_pad('',256);//for IE
+	
 	global $script,$post,$vars,$adminpass,$foot_explain;
 	global $_filesdel_messages,$X_admin;
 	
