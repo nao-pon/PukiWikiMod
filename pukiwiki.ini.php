@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.20 2004/01/15 13:03:45 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.21 2004/01/15 13:39:17 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -275,13 +275,13 @@ $facemark_rules = array(
 "\s(;(?:-)?\()" => " <img src=\"".XOOPS_WIKI_URL."/face/sad.gif\" alt=\"\\1\" />",
 "\s(\:(?:-)?\()" => " <img src=\"".XOOPS_WIKI_URL."/face/sad.gif\" alt=\"\\1\" />",
 "\s(\:(?:-)?\?)" => " <img src=\"".XOOPS_WIKI_URL."/face/confused.gif\" alt=\"\\1\" />",
-'&amp;(smile);' => ' <img src="".XOOPS_WIKI_URL."/face/smile.png" alt="$1" />',
-'&amp;(bigsmile);' => ' <img src="".XOOPS_WIKI_URL."/face/bigsmile.png" alt="$1" />',
-'&amp;(huh);' => ' <img src="".XOOPS_WIKI_URL."/face/huh.png" alt="$1" />',
-'&amp;(oh);' => ' <img src="".XOOPS_WIKI_URL."/face/oh.png" alt="$1" />',
-'&amp;(wink);' => ' <img src="".XOOPS_WIKI_URL."/face/wink.png" alt="$1" />',
-'&amp;(sad);' => ' <img src="".XOOPS_WIKI_URL."/face/sad.png" alt="$1" />',
-"&amp;(heart);" => ' <img src="".XOOPS_WIKI_URL."/face/heart.gif" alt="$1" />',
+'&amp;(smile;)' => ' <img src="'.XOOPS_WIKI_URL.'"/face/smile.png" alt="&$1" />',
+'&amp;(bigsmile;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/bigsmile.png" alt="&$1" />',
+'&amp;(huh;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/huh.png" alt="&$1" />',
+'&amp;(oh;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/oh.png" alt="&$1" />',
+'&amp;(wink;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/wink.png" alt="&$1" />',
+'&amp;(sad;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/sad.png" alt="&$1" />',
+'&amp;(heart;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/heart.gif" alt="&$1" />',
 );
 
 ////////以下の設定はXOOPSの管理画面での設定で上書きされます///////
