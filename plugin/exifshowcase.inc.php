@@ -4,7 +4,7 @@
 //
 //
 // ref.inc.php,v 1.20をベースに作成
-// $Id: exifshowcase.inc.php,v 1.3 2004/05/13 14:32:37 nao-pon Exp $
+// $Id: exifshowcase.inc.php,v 1.4 2004/08/24 12:51:45 nao-pon Exp $
 // ORG: exifshowcase.inc.php,v 1.20 2004/01/17 12:52:01 m-arai Exp $
 //
 
@@ -164,7 +164,7 @@ function plugin_exifshowcase_body($args,$page)
 		return $params;
 	}
 	
-	$_files = plugin_exifshowcase_glob( UPLOAD_DIR.encode($page).'_*'."(".encode(".jpg")."|".encode(".JPG")."|".encode(".jpeg")."|".encode(".JPEG").")");
+	$_files = plugin_exifshowcase_glob( UPLOAD_DIR.encode($page).'_*'."(".encode(".jpg")."|".encode(".JPG")."|".encode(".jpeg")."|".encode(".JPEG").encode(".png")."|".encode(".PNG").")");
 	$dlen = strlen( UPLOAD_DIR.encode($page).'_' );
 	$files = $aname = array();
 	
