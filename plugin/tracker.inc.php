@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.3 2003/07/30 14:56:00 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.4 2003/08/05 23:46:04 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.6 2003/07/29 06:21:12 arino Exp $
 //
 
@@ -343,7 +343,8 @@ class Tracker_field_format extends Tracker_field
 		
 		foreach ($this->config->get($this->name) as $option)
 		{
-			list($key,$style,$format) = array_map(create_function('$a','return trim($a);'),$option);
+			//list($key,$style,$format) = array_map(create_function('$a','return trim($a);'),$option);
+			list($key,$style,$format) = array_pad(array_map(create_function('$a','return trim($a);'),$option),3,'');
 			if ($style != '')
 			{
 				$this->styles[$key] = $style;
