@@ -68,6 +68,10 @@ $_msg_month = array(1 => "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
 $_msg_week = array("Sun","Mon","Tue","Wed","Thu","Fri","Sat");
 $_msg_content_back_to_top = '<span class="super_index">[back to top]</span>';
 
+///////////////////////////////////////
+// symbols
+$_symbol_anchor = '&dagger;';
+$_symbol_noexists = '?';
 
 ///////////////////////////////////////
 // form buttons
@@ -215,6 +219,14 @@ $_tracker_messages = array(
 );
 
 ///////////////////////////////////////
+// pcomment.inc.php
+// Default page name (replace %s to $vars['page'])
+$pcmt_page_name = '[[Comments/%s]]';
+
+// Category of page (inserted when creating a new page.)
+define('PCMT_CATEGORY','[[:Comment]]');
+
+///////////////////////////////////////
 // PukiWikiMod (Use Define)
 // define("_MD_PUKIWIKI_","");
 define("_MD_PUKIWIKI_MAIL_FIRST","Following contribution to PukiWiki.");
@@ -228,6 +240,7 @@ define("_MD_PUKIWIKI_MAIL_ALL_LINES","----------All Lines----------");
 define("_MD_PUKIWIKI_MAIL_HEAD","----------Added lines by %s------------");
 define("_MD_PUKIWIKI_MAIL_FOOT","-------------------END--------------------");
 define("_MD_PUKIWIKI_NO_AUTH","There is no authority to create the specified page [$1].");
+define("_MD_PUKIWIKI_NO_VISIBLE","There is no authority to read the that page.");
 define("_MD_PUKIWIKI_ALL", "All users");
 define("_MD_PUKIWIKI_REGIST", "All registered users");
 define("_MD_PUKIWIKI_ADMIN", "Webmasters only");

@@ -1,5 +1,5 @@
 <?php
-// $Id: map.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
+// $Id: map.inc.php,v 1.3 2003/10/13 12:23:28 nao-pon Exp $
 /*
 Last-Update:2002-11-29 rev.12
  http://home.arino.jp/?map.inc.php
@@ -96,7 +96,9 @@ function plugin_map_action() {
 		$data = $obj->get_link(join('',preg_grep('/^[^\s#]/',get_source($page))));
 		$pages[$page]->_count = count($data);
 		foreach ($data as $link) {
-			if ($link->type == 'WikiName' or $link->type == 'BracketName') {
+			//if ($link->type == 'WikiName' or $link->type == 'BracketName') {
+			// ＋閲覧権限チェック
+			if (($link->type == 'WikiName' or $link->type == 'BracketName') && check_readable($link->name,false,false)) {
 				if (array_key_exists($link->name,$pages)) {
 					$pages[$page]->_links['WikiName'][$link->name] =& $pages[$link->name];
 				} else {

@@ -5,7 +5,7 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: ls.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+ * $Id: ls.inc.php,v 1.3 2003/10/13 12:23:28 nao-pon Exp $
  */
 
 function plugin_ls_convert()
@@ -31,6 +31,8 @@ function plugin_ls_convert()
 			if($file == ".." || $file == ".") continue;
 			if(substr($file,0,$filepattern_len)!=$filepattern) continue; 
 			$page = decode(trim(preg_replace("/\.txt$/"," ",$file)));
+			// 閲覧権限チェック
+			if (!check_readable($page,false,false)) continue;
 			if($with_title) {
 			  $comment = '';
 			  $fd = fopen(DATA_DIR . $file,'r');

@@ -1,5 +1,5 @@
 <?php
-// $Id: countdown.inc.php,v 1.6 2003/10/08 15:32:14 nao-pon Exp $
+// $Id: countdown.inc.php,v 1.7 2003/10/13 12:23:28 nao-pon Exp $
 
 /*
  * countdown.inc.php

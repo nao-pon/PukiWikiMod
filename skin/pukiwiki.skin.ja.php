@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.10 2003/09/14 13:09:04 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.11 2003/10/13 12:23:28 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -140,7 +140,7 @@ if($_freeze){
 	</div>
 	<?php $pg_auther_name=get_pg_auther_name($vars["page"]);
 	if ($pg_auther_name){ ?>
-	<span class="small">ページ作成:<a href="<?=XOOPS_URL?>/userinfo.php?uid=<?=get_pg_auther($vars["page"])?>"><?=$pg_auther_name?></a> - </span>
+	<span class="small">ページ作成:<a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a> - </span>
 	<?php } ?>
 	<?php if($fmt) { ?>
 		 <span class="small">最終更新: <?php echo date("Y/m/d H:i:s T",$fmt) ?></span> <?php echo get_pg_passage($vars["page"]) ?><br />

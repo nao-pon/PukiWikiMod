@@ -30,7 +30,7 @@ function plugin_recent_init()
 function plugin_recent_convert()
 {
 	global $_recent_plugin_frame;
-	global $WikiName,$BracketName,$script,$whatsnew;
+	global $WikiName,$BracketName,$script,$whatsnew,$X_admin;
 	
 	$recent_lines = 10;
 	if(func_num_args()>0) {
@@ -38,37 +38,48 @@ function plugin_recent_convert()
 		$recent_lines = $array[0];
 	}
 	
-	$lines = file(get_filename(encode($whatsnew)));
+	//$lines = file(get_filename(encode($whatsnew)));
+	$lines = get_source($whatsnew);
 	$date = $items = "";
 	$cnt = 0;
-	foreach($lines as $line)
+	$i = 1;
+	//foreach($lines as $line)
+	while (isset($lines[$i]))
 	{
 		if($cnt > $recent_lines - 1) break;
-		if(preg_match("/(($WikiName)|($BracketName))/",$line,$match))
+		
+		list($auth['owner'],$auth['user'],$auth['group']) = split("\t",substr($lines[$i],3));
+		$auth = preg_replace("/^.*:/","",$auth);
+		
+		if ($X_admin || get_readable($auth))
 		{
-			$name = $match[1];
-			if($match[2])
+			if(preg_match("/(($WikiName)|($BracketName))/",$lines[$i+1],$match))
 			{
-				$title = $match[1];
-			}
-			else
-			{
-				$title = strip_bracket($match[1]);
- 			}
-			if(preg_match("/([0-9]{4}-[0-9]{2}-[0-9]{2})/",$line,$match)) {
-				if($date != $match[0]) {
-					if($date != '') {
-						$items .= "</ul>";
-					}
-					$items .= "<div class=\"recent_date\">".$match[0]."</div><ul class=\"recent_list\">";
-					$date = $match[0];
+				$name = $match[1];
+				if($match[2])
+				{
+					$title = $match[1];
 				}
+				else
+				{
+					$title = strip_bracket($match[1]);
+	 			}
+				if(preg_match("/([0-9]{4}-[0-9]{2}-[0-9]{2})/",$lines[$i+1],$match)) {
+					if($date != $match[0]) {
+						if($date != '') {
+							$items .= "</ul>";
+						}
+						$items .= "<div class=\"recent_date\">".$match[0]."</div><ul class=\"recent_list\">";
+						$date = $match[0];
+					}
+				}
+				$title = htmlspecialchars($title);
+				//$items .="<li><a href=\"".$script."?".rawurlencode($name)."\" title=\"$title ".get_pg_passage($name,false)."\">".$title."</a></li>\n";
+				$items .="<li>".make_pagelink($name)."</a></li>\n";
+				$cnt++;
 			}
-			$title = htmlspecialchars($title);
-			//$items .="<li><a href=\"".$script."?".rawurlencode($name)."\" title=\"$title ".get_pg_passage($name,false)."\">".$title."</a></li>\n";
-			$items .="<li>".make_pagelink($name)."</a></li>\n";
-			$cnt++;
 		}
+		$i = $i + 2;
 	}
 	$items .="</ul>";
 	return sprintf($_recent_plugin_frame,$cnt,$items);

@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.8 2003/07/23 23:54:08 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.9 2003/10/13 12:23:28 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -236,7 +236,7 @@ function plugin_calendar2_convert()
 		if($cmd == "edit") $refer = "&amp;refer=$page_url";
 		else               $refer = "";
 		
-		if($cmd == "read" && !is_page($page)){
+		if(($cmd == "read" && !is_page($page)) || (is_page($page) && !check_readable($page,false,false))){
 			$td_style = "";
 			$link = "<a href=\"$script?plugin=calendar2&amp;&amp;file=$prefix_&amp;date=$linkdt\" title=\"$title_tag\" class=\"small\"><span class=\"_DAY_STYLE_\">$day</span></a>";
 		}else{
@@ -301,7 +301,8 @@ function plugin_calendar2_convert()
   if ($today_view == true){
 		$page = sprintf("[[%s%4d-%02d-%02d]]", $prefix, $today[year], $today[mon], $today[mday]);
 		$page_url = rawurlencode($page);
-		if (is_page($page)) {
+		// 閲覧権限チェック＋
+		if (is_page($page) && check_readable($page,false,false)) {
 			$page_ = $vars['page'];
 			$get['page'] = $post['page'] = $vars['page'] = $page;
 			$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
@@ -314,7 +315,7 @@ function plugin_calendar2_convert()
 			$str = "<h4>".sprintf($_calendar2_msg_detail, sprintf('%s%4d-%02d-%02d',$prefix, $today[year], $today[mon], $today[mday]))."</h4><br />";
 			//$str .= sprintf($_calendar2_plugin_empty,make_link($today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day));
 			$str .= sprintf($_calendar2_plugin_empty,$today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day);
-			if ($anon_writable) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" title=\"$name\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
+			if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" title=\"$name\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
 		} else {
 			$str = "";
 		}

@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.4 2003/09/14 13:09:04 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -191,7 +191,7 @@ function ls2_get_child_pages($prefix) {
 	
 	$pages = array();
 	foreach (get_existpages() as $_page){
-		if (strpos($_page,$pattern) === 0){
+		if (strpos($_page,$pattern) === 0 && (check_readable($_page,false,false))){
 			$pages[$_page] = strip_bracket($_page);
 		}
 	}

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: backup.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
+// $Id: backup.php,v 1.3 2003/10/13 12:23:28 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // バックアップデータを作成する
@@ -144,7 +144,7 @@ function get_backup_list($_page="")
 
 			if($file == ".." || $file == ".") continue;
 			$page = decode(trim(preg_replace("/(\.txt)|(\.gz)$/"," ",$file)));
-			if(in_array($page,$cantedit)) continue;
+			if(in_array($page,$cantedit) || !check_readable($page,false,false)) continue;
 			$page_url = rawurlencode($page);
 			$name = strip_bracket($page);
 			$s_name = htmlspecialchars($name);

@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.6 2003/07/09 07:13:52 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.7 2003/10/13 12:23:28 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -165,10 +165,14 @@ function plugin_bugtrack_template($base, $summary, $name, $priority, $state, $ca
   global $_bugtrack_plugin_body, $_bugtrack_plugin_version;
   global $script, $WikiName;
 
-  if(!preg_match("/^$WikiName$$/",$name)) {
-    $name = "[[$name]]";
-  }
-  
+	if (WIKI_USER_DIR)
+		make_user_link($name);
+	else
+	{
+	  if(!preg_match("/^$WikiName$$/",$name)) {
+	    $name = "[[$name]]";
+	  }
+	}
   if(!preg_match("/^$WikiName$$/",$base)) {
     $base = "[[$base]]";
   }
@@ -271,7 +275,8 @@ function plugin_bugtrack_pageinfo($page) {
 		$itemname = '_bugtrack_plugin_'.$item;
 		global $$itemname;
 		$itemname = $$itemname;
-		if(preg_match("/-\s*$itemname\s*:\s*(.*)\s*/",$body,$matches)) {
+		//if(preg_match("/-\s*$itemname\s*:\s*(.*)\s*/",$body,$matches)) {
+		if(preg_match("/-[ \t\r\f]*".$itemname."[ \t]*:[ \t]*(.*)[ \t]*/",$body,$matches)) {
 			if($item == "name" || $item == "summary") {
 				$$item = htmlspecialchars(strip_bracket($matches[1]));
 			}else {
@@ -319,6 +324,8 @@ function plugin_bugtrack_list_convert()
 	  if($file == ".." || $file == ".") continue;
 	  if(substr($file,0,$filepattern_len)!=$filepattern) continue; 
 	  $page = decode(trim(preg_replace("/\.txt$/"," ",$file)));
+	  // 閲覧権限
+	  if (!check_readable($page,false,false)) continue;
 	  $line = plugin_bugtrack_pageinfo($page);
 	  list($page, $summary, $name, $priority, $state, $category) = $line;
 	  if ($category != "\x08") {

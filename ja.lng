@@ -74,6 +74,11 @@ $_msg_content_back_to_top = '<span class="super_index">↑</span>';
 $_msg_word = 'これらのキーワードがハイライトされています： ';
 
 ///////////////////////////////////////
+// symbols
+$_symbol_anchor = '&dagger;';
+$_symbol_noexists = '?';
+
+///////////////////////////////////////
 // form buttons
 $_btn_preview = 'プレビュー';
 $_btn_repreview = '再度プレビュー';
@@ -103,6 +108,17 @@ $_btn_allow_memo = '
 <li>グループの「_LOGDINUSER_」を選択すると、すべてのログインユーザーが編集できます。</li>
 <li>グループ・ユーザー、共に「許可しない」に設定すると、管理者とページ作成者以外は編集できません。</li>
 <li>グループを許可するとそのグループに属するすべての人が編集できます。</li>
+<li>個人を特定して許可する場合は、グループを「許可しない」に設定して、ユーザーでその個人を選択して設定します。</li>
+</ul>';
+
+$_btn_unvisible_enable = ' このページの閲覧許可設定を有効にする。(チェックしないと、上位ページの設定が適用されます。)<br />　　※　このページが未設定の場合、上位ページの設定が下記に表示されています。';
+$_btn_v_allow_memo = '
+<ul>
+<li>グループ・ユーザー、共に複数の選択肢を設定できます。</li>
+<li>グループの「_GUREST_」を選択すると、他の設定に関わらず、すべての訪問者が閲覧できます。</li>
+<li>グループの「_LOGDINUSER_」を選択すると、すべてのログインユーザーが閲覧できます。</li>
+<li>グループ・ユーザー、共に「許可しない」に設定すると、管理者とページ作成者以外は閲覧できません。</li>
+<li>グループを許可するとそのグループに属するすべての人が閲覧できます。</li>
 <li>個人を特定して許可する場合は、グループを「許可しない」に設定して、ユーザーでその個人を選択して設定します。</li>
 </ul>';
 
@@ -225,6 +241,14 @@ $_tracker_messages = array(
 );
 
 ///////////////////////////////////////
+// pcomment.inc.php
+// ページ名のデフォルト(%sに$vars['page']が入る)
+$pcmt_page_name = '[[コメント/%s]]';
+
+// ページのカテゴリ(新規作成時に挿入)
+define('PCMT_CATEGORY','[[:Comment]]');
+
+///////////////////////////////////////
 // PukiWikiMod (Use Define)
 // define("_MD_PUKIWIKI_","");
 define("_MD_PUKIWIKI_MAIL_FIRST","PukiWikiへ以下の投稿がありました。");
@@ -238,6 +262,7 @@ define("_MD_PUKIWIKI_MAIL_ALL_LINES","----------全　文------------------");
 define("_MD_PUKIWIKI_MAIL_HEAD","----------%sで追加された行------------");
 define("_MD_PUKIWIKI_MAIL_FOOT","-------------------以上--------------------");
 define("_MD_PUKIWIKI_NO_AUTH","指定されたページ[ $1 ]を作成する権限がありません。");
+define("_MD_PUKIWIKI_NO_VISIBLE","指定されたページを閲覧する権限がないので表示されません。");
 define("_MD_PUKIWIKI_ALL", "すべての訪問者");
 define("_MD_PUKIWIKI_REGIST", "登録ユーザーのみ");
 define("_MD_PUKIWIKI_ADMIN", "管理者のみ");

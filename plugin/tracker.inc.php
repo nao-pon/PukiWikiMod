@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.5 2003/09/29 12:24:08 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.6 2003/10/13 12:23:28 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -897,8 +897,9 @@ function plugin_tracker_get_source($page)
 	$source = get_source($page);
 	// 見出しの固有ID部を削除
 	$source = preg_replace('/^(\*{1,3}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
-	// #freezeを削除
+	// #freezeなどを削除
 	$source = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",'',$source);
+	$source = preg_replace("/^#unvisible(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+|all))?(?:\tgid:([0-9,]+))?\n/",'',$source);
 	$source = preg_replace("/^\/\/ author:([0-9]+)\n/","",$source);
 	return $source;
 }

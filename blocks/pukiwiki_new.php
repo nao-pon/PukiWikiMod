@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.4 2003/09/14 13:09:04 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -17,13 +17,26 @@ function b_pukiwiki_new_show($option) {
 	$block['title'] = _MI_PUKIWIKI_BTITLE;
 	$block['content'] = "<small>";
 	$d = '';
-	for ($i = 0; $i < $show_num; $i++){
-		$show_line = split(" ",$postdata[$i]);
-		if($d != substr($show_line[0],1)){
-			$block['content'] .= "&nbsp;<strong>".substr($show_line[0],1)."</strong><br />";
-			$d = substr($show_line[0],1);
+	$count = 0;
+	$i = 1;
+	while ($count < $show_num){
+		if (!isset($postdata[$i]))
+			break;
+
+		list($auth['owner'],$auth['user'],$auth['group']) = split("\t",substr($postdata[$i],3));
+		$auth = preg_replace("/^.*:/","",$auth);
+
+		if (xb_get_readable($auth)) //チェック関数
+		{
+			$show_line = split(" ",$postdata[$i+1]);
+			if($d != substr($show_line[0],1)){
+				$block['content'] .= "&nbsp;<strong>".substr($show_line[0],1)."</strong><br />";
+				$d = substr($show_line[0],1);
+			}
+			$block['content'] .= "&nbsp;&nbsp;<strong><big>&middot;</big></strong>&nbsp;".xb_make_link(trim($show_line[4]))."<br />";
+			$count++;
 		}
-		$block['content'] .= "&nbsp;&nbsp;<strong><big>&middot;</big></strong>&nbsp;".xb_make_link(trim($show_line[4]))."<br />";
+		$i = $i + 2;
 	}
 	$block['content'] .= "</small>";
 	return $block;
@@ -126,4 +139,76 @@ function xb_get_pg_passage($page,$sw=true)
 		return $_pg_passage[$page]["label"];
 }
 
+//閲覧権限を得る
+function xb_get_readable(&$auth)
+{
+	static $_X_uid,$_X_admin,$_X_gids;
+	
+	if (!isset($_X_admin))
+	{
+		global $xoopsUser;
+		if ( $xoopsUser )
+		{
+			$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+			if ( $xoopsUser->isAdmin($xoopsModule->mid()) )
+				$_X_admin = 1;
+			else
+				$_X_admin = 0;
+		
+			$_X_uid = $xoopsUser->uid();
+		}
+		else
+		{
+			$_X_admin = $_X_uid = 0;
+		}
+		// ユーザーが所属するグループIDを得る
+		if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
+			// XOOPS 2
+			global $xoopsDB;
+			$X_M = new XoopsMemberHandler($xoopsDB);
+			$_X_gids = $X_M->getGroupsByUser($_X_uid);
+		} else {
+			// XOOPS 1
+			$_X_gids = XoopsGroup::getByUser($xoopsUser);
+		}
+	}
+	
+	if ($_X_admin) return true;
+
+
+	$ret = false;
+	
+	$aids = explode(",",$auth['user']);
+	$gids = explode(",",$auth['group']);
+	
+	// 閲覧制限されていない
+	if ($auth['owner'] === "" || $auth['user'] == "all") $ret = true;
+	
+	// 非ログインユーザー
+	elseif (!$_X_uid) $ret = (in_array("3",$gids))? true : false;
+	
+	//ログインユーザーは権限チェック
+	
+	// 自分で制限したページ
+	elseif ($auth['owner'] == $_X_uid) $ret = true;
+	
+	// ユーザー権限があるか
+	elseif (in_array($_X_uid,$aids)) $ret = true;
+	
+	else
+	{
+		// グループ権限があるか？
+		$gid_match = false;
+		foreach ($_X_gids as $gid)
+		{
+			if (in_array($gid,$gids))
+			{
+				$gid_match = true;
+				break;
+			}
+		}
+		if ($gid_match) $ret = true;
+	}
+	return $ret;
+}
 ?>

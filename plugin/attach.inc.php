@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.11 2003/09/29 12:23:27 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.12 2003/10/13 12:23:28 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -752,6 +752,10 @@ class AttachPages
 				continue;
 			}
 			$_page = decode($matches[1]);
+			
+			// 閲覧権限チェック
+			if (!check_readable($_page,false,false)) continue;
+			
 			$_file = decode($matches[2]);
 			$_age = array_key_exists(3,$matches) ? $matches[3] : 0;
 			if (!array_key_exists($_page,$this->pages))

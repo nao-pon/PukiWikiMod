@@ -1,5 +1,5 @@
 <?php
-// $Id: navi.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: navi.inc.php,v 1.3 2003/10/13 12:23:28 nao-pon Exp $
 /*
 Last-Update:2002-12-05 rev.3
 
@@ -57,7 +57,9 @@ function plugin_navi_convert() {
 			while ($name = readdir($dir)) {
 				if ($name == '..' || $name == '.') { continue; }
 				if (strpos($name, $pattern) === 0) {
-					$pages[] = strip_bracket(decode(trim(preg_replace('/\.txt$/',' ',$name))));
+					$_pages = strip_bracket(decode(trim(preg_replace('/\.txt$/',' ',$name))));
+					// ±ÜÍ÷¸¢¸Â
+					if (check_readable($_pages,false,false)) $pages[] = $_pages;
 				}
 			}
 			closedir($dir);

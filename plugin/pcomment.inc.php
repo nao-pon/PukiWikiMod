@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.8 2003/07/15 13:21:48 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.9 2003/10/13 12:23:28 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -51,36 +51,26 @@ define("PCMT_FORMAT","\x08MSG\x08 -- \x08NAME\x08 \x08DATE\x08");
 function plugin_pcomment_init() {
 	
 	if (LANG == "ja") {
-		// ページ名のデフォルト(%sに$vars['page']が入る)
-		if (!defined('PCMT_PAGE')) define('PCMT_PAGE','[[コメント/%s]]');
-		
-		// ページのカテゴリ(新規作成時に挿入)
-		if (!defined('PCMT_CATEGORY')) define('PCMT_CATEGORY','[[:Comment]]');
-		
 		$_plugin_pcmt_messages = array(
 			'_pcmt_btn_name' => 'お名前: ',
 			'_pcmt_btn_comment' => 'コメントの挿入',
 			'_pcmt_msg_comment' => 'コメント: ',
 			'_pcmt_msg_recent' => '最新の%d件を表示しています。',
 			'_pcmt_msg_all' => 'コメントページを参照',
+			'_pcmt_msg_edit' => '編集',
 			'_pcmt_msg_none' => 'コメントはありません。',
 			'_title_pcmt_collided' => '$1 で【更新の衝突】が起きました',
 			'_msg_pcmt_collided' => 'あなたがこのページを編集している間に、他の人が同じページを更新してしまったようです。<br />
 			コメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
 		);
 	} else {
-		// Default page name (replace %s to $vars['page'])
-		if (!defined('PCMT_PAGE')) define('PCMT_PAGE','[[Comments/%s]]');
-		
-		// Category of page (inserted when creating a new page.)
-		if (!defined('PCMT_CATEGORY')) define('PCMT_CATEGORY','[[:Comment]]');
-		
 		$_plugin_pcmt_messages = array(
 			'_pcmt_btn_name' => 'Name:',
 			'_pcmt_btn_comment' => 'Post comment',
 			'_pcmt_msg_comment' => 'Comment: ',
 			'_pcmt_msg_recent' => 'The newest %d comments',
 			'_pcmt_msg_all' => 'See comment page',
+			'_pcmt_msg_edit' => 'Edit',
 			'_pcmt_msg_none' => 'No comments yet',
 			'_title_pcmt_collided' => 'Conflicts found in $1',
 			'_msg_pcmt_collided' => 'Other user has updated the page you are editing.<br />
@@ -99,7 +89,7 @@ function plugin_pcomment_action() {
 
 function plugin_pcomment_convert() {
 	global $script,$vars,$BracketName,$WikiName;
-	global $_pcmt_btn_name, $_pcmt_btn_comment, $_pcmt_msg_comment, $_pcmt_msg_all, $_pcmt_msg_recent;
+	global $_pcmt_btn_name, $_pcmt_btn_comment, $_pcmt_msg_comment, $_pcmt_msg_all, $_pcmt_msg_edit, $_pcmt_msg_recent;
 
 	//戻り値
 	$ret = '';
@@ -138,6 +128,10 @@ function plugin_pcomment_convert() {
 	$_page = get_fullname($page,$vars['page']);
 	if (!preg_match("/^$BracketName$/",$_page))
 		return 'invalid page name.';
+	
+	// 閲覧権限
+	if (!check_readable($_page,false,false))
+		return str_replace('$1',strip_bracket($_page),_MD_PUKIWIKI_NO_VISIBLE);;
 
 	if ($count == 0 and $count !== '0') { $count = PCMT_NUM_COMMENTS; }
 
@@ -196,10 +190,11 @@ EOD;
 			$link = preg_replace('/^(\[\[)?/',"$1$_pcmt_msg_all>[[","$_page]]");
 		$recent = '';
 		if ($count > 0) { $recent = sprintf($_pcmt_msg_recent,$count); }
+		$edit_tag =  (is_freeze($_page,false))? "" : " | <a href=\"$script?cmd=edit&amp;page=$_page\">$_pcmt_msg_edit</a>";
 	}
 	$link = make_link($link);
 	return $dir ?
-		"<div><p>$recent $link</p>\n<form action=\"$script\" method=\"post\">$comments$form</form></div>" :
+		"<div><p>$recent $link$edit_tag</p>\n<form action=\"$script\" method=\"post\">$comments$form</form></div>" :
 		"<div><form action=\"$script\" method=\"post\">$form$comments</form>\n<p>$recent $link</p></div>";
 }
 
@@ -221,7 +216,10 @@ function pcmt_insert($page) {
 	//コメントフォーマットを適用
 	$msg = sprintf(PCMT_FORMAT_MSG, rtrim($post['msg']));
 	$name = ($post['name'] == '') ? $no_name : $post['name'];
-	$name = sprintf(PCMT_FORMAT_NAME, $name);
+	if (WIKI_USER_DIR)
+		make_user_link($name);
+	else
+		$name = sprintf(PCMT_FORMAT_NAME, $name);
 	$date = ($post['nodate'] == '1') ? '' : sprintf(PCMT_FORMAT_DATE, $now);
 	if ($date != '' or $name != '') { 
 		$msg = str_replace("\x08MSG\x08", $msg,  PCMT_FORMAT);

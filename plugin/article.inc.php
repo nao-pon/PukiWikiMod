@@ -19,7 +19,7 @@
  -投稿内容のメール自動配信先
  を設定の上、ご使用ください。
 
- $Id: article.inc.php,v 1.4 2003/07/03 13:54:03 nao-pon Exp $
+ $Id: article.inc.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
  
  */
 
@@ -93,11 +93,15 @@ function plugin_article_action()
 	if ($post["msg"])
 	{
 		$postdata = "";
-		$postdata_old  = file(get_filename(encode($post["refer"])));
+		//$postdata_old  = file(get_filename(encode($post["refer"])));
+		$postdata_old  = get_source($post["refer"]);
 		$article_no = 0;
 
 		$name = ($post['name'])? $post['name'] : $no_name;
-		$name = str_replace('$name',$name,$name_format);
+		if (WIKI_USER_DIR)
+			make_user_link($name);
+		else
+			$name = str_replace('$name',$name,$name_format);
 		
 		
 		if($post['subject'])
@@ -158,7 +162,7 @@ function plugin_article_action()
 	else
 		return;
 
-	if(md5(@join("",@file(get_filename(encode($post["refer"]))))) != $post["digest"])
+	if(md5(@join("",get_source($post["refer"]))) != $post["digest"])
 	{
 		$title = $_title_collided;
 

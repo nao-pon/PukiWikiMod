@@ -1,40 +1,16 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.8 2003/09/29 12:19:50 nao-pon Exp $
+// $Id: convert_html.php,v 1.9 2003/10/13 12:23:28 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string)
 {
 	if (is_array($string)) $string = join('',$string);
 	$body = new convert();
 	$result_last = $body->to_html($string);
-	
-	// インライン処理しない行を退避
-	$cnts_plain = array();
-	$arykeep = array();
-	for($cnt=0;$cnt<count($result_last);$cnt++)
-	{
-		if(preg_match("/^(\s)/",$result_last[$cnt]))
-		{
-			$arykeep[$cnt] = $result_last[$cnt];
-			$result_last[$cnt] = "";
-			$cnts_plain[] = $cnt;
-		}
-	}
 
-	//インクルードされたページが ref(インライン)だけだとApacheがこける
-	//なんでか知らんけど一度ブラケットネームを変換するとこけない。
-	$tmp = $body->inline2("[[a]]");
-	unset ($tmp);
-	
-	// インラインプラグイン
-	$result_last = preg_replace("/&amp;(\w+)(\(((?:(?!\)[;{]).)*)\))?(\{(.*)\})?;/ex","\$body->inline3('$1','$3','$5','$0')",$result_last);
 	
 	// インライン処理(リンク付加など)
 	$result_last = $body->inline2($result_last);
-	
-	// インライン処理しなかった行を戻す
-	foreach($cnts_plain as $cnt)
-		$result_last[$cnt] = $arykeep[$cnt];
 	
 	// 配列から戻す
 	$str = join("\n", $result_last);
@@ -73,7 +49,6 @@ class convert
 		
 		//if (is_array($sting)) $string = join('',$string);
 
-		$string = rtrim($string);
 		$string = preg_replace("/((\x0D\x0A)|(\x0D)|(\x0A))/","\n",$string);
 
 		$start_mtime = getmicrotime();
@@ -85,7 +60,10 @@ class convert
 		$arycontents = array();
 
 		//$string = preg_replace("/^#freeze\n/","",$string);
-		$string = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$string);
+		//$string = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$string);
+		
+		// ページ情報削除
+		delete_page_info($string);
 
 
 		//これはなんだったけ？必要ないのとおもうのでとりあえずコメントアウト 03/06/29
@@ -261,7 +239,7 @@ class convert
 					}
 					array_push($result, ltrim(inline($out[2])));
 				}
-				else if(preg_match("/^(\s+.*)/",$line,$out))
+				else if(preg_match("/^([ \t]+.*)/",$line,$out))
 				{
 					$headform[$_cnt] = ' ';
 					back_push($result,$saved,'pre', 1);
@@ -576,12 +554,27 @@ class convert
 	function inline2($str)
 	{
 		global $WikiName,$BracketName,$InterWikiName,$vars,$related,$related_link,$script,$noattach,$noheader;
-
+		
 		// リンク処理
-		$str = make_link($str);
-		$str = str_replace(array("\x1c","\x1d"),"",$str);
+		if (is_array($str))
+		{
+			$_str = array();
+			foreach ($str as $line)
+			{
+				//echo htmlspecialchars($line)."<hr />";
+				if (!strip_tags($line) || preg_match("/^[ #\s\t]/",$line))
+					$_str[] = $line;
+				else
+					$_str[] = make_link($line);
+			}
+			$str = $_str;
+			unlink($_str);
+		}
+		else
+			$str = make_link($str);
 		
 		$str = preg_replace("/#related/e",'make_related($vars["page"],TRUE)',$str);
+
 		$str = make_user_rules($str);
 
 		$tmp = $str;
@@ -595,71 +588,21 @@ class convert
 		$tmp = $str;
 		$str = preg_replace("/^#noheader$/","",$str);
 		if($tmp != $str) $noheader = 1;
+		
+		unlink($tmp);
 
 		return $str;
 	}
-	// インラインプラグインの処理
-	function inline3($name,$arg,$body,$all)
-	{
-		$name = stripslashes($name);
-		$arg = stripslashes($arg);
-		$body = stripslashes($body);
-		$all = stripslashes($all);
-		//&hoge(){...}; &fuga(){...}; のbodyが'...}; &fuga(){...'となるので、前後に分ける
-		$after = '';
-		//if (preg_match("/^ ((?!};).*?) }; (.*?) &amp; (\w+) (?: \( ( [^()]          *) \) )? { (.+)$/x",$body,$matches))
-		if (preg_match("/^ ((?!};).*?) }; (.*?) &amp; (\w+) (?: \( ( (?:(?!\)[;{]).)*) \) )? { (.+)$/x",$body,$matches))
-		{
-			$body = $matches[1];
-			$after = $this->inline3($matches[3],$matches[4],$matches[5],$matches[0]);
-			$after = $matches[2].$after;
-			if ($arg) {
-				$all = "&amp;".$name."(".$arg."){".$body."};".$after;
-			} else {
-				$all = "&amp;".$name."{".$body."};".$after;
-			}
-		}
-		if(exist_plugin_inline($name)) {
-			$str = do_plugin_inline($name,$arg,$body);
-			if ($str !== FALSE){ //成功
-				return "\x1c".$str."\x1d".$after;
-			}
-		}
-		// プラグインが存在しないか、変換に失敗
-		return $all;
-	}
-
 }
 
 //////////////////////////////////////////////
 
 // インライン要素のパース (注釈)
-function inline($line,$remove=FALSE)
+function inline($line)
 {
-	$line = htmlspecialchars($line);
-	
-	$replace = $remove ? '' : 'make_note(\'$1\')';
-	$line = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/ex",$replace,$line);
-
+	$line = htmlspecialchars($line,$remove = FALSE);
+	if ($remove) $line = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$line);
 	return $line;
-}
-
-// 注釈処理
-function make_note($str)
-{
-	global $note_id,$foot_explain;
-	$str = preg_replace("/^\(\(/","",$str);
-	$str = preg_replace("/\s*\)\)$/","",$str);
-
-	$str= str_replace("\\'","'",$str);
-
-	$str = make_user_rules($str);
-
-	$foot_explain[] = "<a name=\"notefoot_$note_id\" href=\"#notetext_$note_id\" class=\"note_super\">*$note_id</a> <span class=\"small\">$str</span><br />\n";
-	$note =  "<a name=\"notetext_$note_id\" href=\"#notefoot_$note_id\" class=\"note_super\" title=\"\x1c".str_replace(array("[[","]]"),"",strip_tags($str))."\x1d\">*$note_id</a>";
-	$note_id++;
-
-	return $note;
 }
 
 // $tagのタグを$levelレベルまで詰める。

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: source.inc.php,v 1.6 2003/07/30 14:56:00 nao-pon Exp $
+// $Id: source.inc.php,v 1.7 2003/10/13 12:23:28 nao-pon Exp $
 //
 // ページソースを表示
 
@@ -32,9 +32,18 @@ function plugin_source_action()
 			'body'=>$_source_messages['err_notfound']
 		);
 	}
+	
+	if (!check_readable($vars['page'],false,false))
+	{
+		// 閲覧権限なし
+		return array(
+			'msg'=>htmlspecialchars(strip_bracket($vars["page"])),
+			'body'=>str_replace('$1',make_search($vars["page"]),_MD_PUKIWIKI_NO_VISIBLE)
+		);
+	}
+	
 	$source = join('',get_source($vars['page']));
-	$source = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$source);
-	$source = preg_replace("/^\/\/ author:([0-9]+)\n/","",$source);
+	delete_page_info($source);
 	$source = nl2br(str_replace(" ","&nbsp;",htmlspecialchars($source)));
 	
 	return array(

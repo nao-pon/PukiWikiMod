@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.20 2003/09/25 13:14:43 nao-pon Exp $
+// $Id: html.php,v 1.21 2003/10/13 12:23:28 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -47,14 +47,14 @@ function catbody($title,$page,$body)
 		$fmt = @filemtime(get_filename(encode($vars["page"])));
 	}
 
-	if(is_page($vars["page"]) && $related_link && $is_page && !arg_check("edit") && !arg_check("freeze") && !arg_check("unfreeze"))
-	{
-		$related = make_related($vars["page"],FALSE);
-	}
-
 	if(is_page($vars["page"]) && !in_array($vars["page"],$cantedit) && !arg_check("backup") && !arg_check("edit") && !$vars["preview"])
 	{
 		$is_read = TRUE;
+	}
+
+	if(is_page($vars["page"]) && $related_link && $is_page && !arg_check("edit") && !arg_check("freeze") && !arg_check("unfreeze"))
+	{
+		$related = make_related($vars["page"]);
 	}
 
 	//単語検索
@@ -89,7 +89,8 @@ function catbody($title,$page,$body)
 	$taketime = sprintf("%01.03f",$longtaketime);
 
 	if ($foot_explain)
-		$body .= "\n$note_hr\n".join("\n",convert::inline2($foot_explain));
+		//$body .= "\n$note_hr\n".join("\n",convert::inline2($foot_explain));
+		$body .= "\n$note_hr\n".join("\n",$foot_explain);
 
 	if(!file_exists(SKIN_FILE)||!is_readable(SKIN_FILE))
 	  die_message(SKIN_FILE."(skin file) is not found.");
@@ -102,7 +103,7 @@ function get_page_name(){
 	
 	$tmpnames = array();
 	$retval = array();
-	$files = get_existpages();	
+	$files = get_existpages();	// 閲覧権限を無視して取り込む場合は get_existpages(true) を使用
 	foreach($files as $page) {
 		if(preg_match("/$non_list/",$page)) continue;
 		if($page == $whatsnew) continue;
@@ -120,6 +121,7 @@ function edit_form($postdata,$page,$add=0)
 	global $_btn_addtop,$_btn_preview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp,$_btn_enter_enable,$_btn_autobracket_enable,$_btn_freeze_enable,$_btn_auther_id;
 	global $whatsnew,$_btn_template,$_btn_load,$non_list,$load_template_func;
 	global $freeze_check,$create_uid,$author_uid,$X_admin,$X_uid,$freeze_tag,$wiki_writable;
+	global $unvisible_tag,$_btn_unvisible_enable,$_btn_v_allow_memo,$read_auth;
 	
 	$digest = md5(@join("",get_source($page)));
 	$create_uid = (isset($create_uid))? $create_uid : $X_uid ;
@@ -135,9 +137,8 @@ function edit_form($postdata,$page,$add=0)
 	else
  		$help = "<br />\n<ul><li><a href=\"$script?cmd=edit&amp;help=true&amp;page=".rawurlencode($page)."\">$_msg_help</a></ul></li>\n";
 
-	$allow_edit_tag = $freeze_tag = '';
+	$allow_edit_tag = $freeze_tag = $unvisible_tag = '';
 	if($function_freeze){
-		//$str_freeze = '<input type="submit" name="freeze" value="'.$_btn_freeze.'" accesskey="f" />';
 		if (($X_uid && $X_uid == $author_uid) || $X_admin) {
 			if ($wiki_writable === 2){
 				$enable_user = _MD_PUKIWIKI_ADMIN;
@@ -150,6 +151,21 @@ function edit_form($postdata,$page,$add=0)
 			$allow_edit_tag = allow_edit_form();
 		}
 	}
+	
+	// 閲覧制限フォーム
+	if ($read_auth)
+	{
+		if (($X_uid && $X_uid == $author_uid) || $X_admin) {
+			$auth_viewer = get_pg_allow_viewer($page,false);
+			$unvisible_check = ($auth_viewer['owner'])? "checked" : "";
+			$unvisible_tag = ($function_freeze)? '' : '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" />';
+			$unvisible_tag .= '<input type="checkbox" name="unvisible" value="true" '.$unvisible_check.'/><span class="small">'.sprintf($_btn_unvisible_enable).'</span>';
+			$allow_view_tag = allow_view_form();
+		}
+	}
+
+
+
 	if ($X_admin){
 		$auther_tag = '  [ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($author_uid).'" /> ]';
 	} else {
@@ -214,7 +230,7 @@ return '
   </td>
  </tr>
 </table>
-'.$allow_edit_tag.'
+'.$allow_edit_tag.$allow_view_tag.'
 </form>
 <!--
 <form action="'.$script.'?cmd=freeze" method="post">
@@ -228,72 +244,64 @@ return '
 }
 
 // 関連するページ
-function make_related($page,$_isrule)
+function make_related($page,$tag='')
 {
-
-	global $related_str,$rule_related_str,$related,$_make_related,$vars;
-
-	$page_name = strip_bracket($vars["page"]);
-	$new_arylerated = array();
-	if(!is_array($_make_related))
-	{
-		$aryrelated = do_search($page,"OR",1);
-
-		if(is_array($aryrelated))
-		{
-			foreach($aryrelated as $key => $val)
-			{
-				//$new_arylerated[$key.md5($val)] = $val;
-				$new_arylerated[$val] = $key;
-			}
-		}
-
-		if(is_array($related))
-		{
-			foreach($related as $key => $val)
-			{
-				//$new_arylerated[$key.md5($val)] = $val;
-				$new_arylerated[$val] = $key;
-			}
-		}
-
-		//@krsort($new_arylerated);
-		//$_make_related = @array_unique($new_arylerated);
-		$_make_related = $new_arylerated;
-		@arsort($_make_related);
+	global $script,$vars,$related,$rule_related_str,$related_str,$non_list;
+	global $_ul_left_margin, $_ul_margin, $_list_pad_str;
+	$page = strip_bracket($page);
+	$links = links_get_related($page);
+	
+	if ($tag) {
+		ksort($links);
 	}
-
-	if($_isrule)
+	else {
+		arsort($links);
+	}
+	$_links = array();
+	foreach ($links as $page=>$lastmod)
 	{
-		if(is_array($_make_related))
+		if (preg_match("/$non_list/",$page))
+		//if (preg_match("/$non_list/",$page))
 		{
-			foreach($_make_related as $str => $val)
-			{
-				preg_match("/<a\shref=\"([^\"]+)\">([^<]+)<\/a>(.*)/",$str,$out);
-				
-				if($out[3]) $title = " title=\"$out[2] $out[3]\"";
-				
-				$aryret[$out[2]] = "<a href=\"$out[1]\"$title>$out[2]</a>";
-			}
-			@ksort($aryret);
+			continue;
 		}
+		$r_page = rawurlencode($page);
+		$s_page = htmlspecialchars($page);
+		$passage = get_passage(($lastmod));
+		$_links[] = $tag ?
+			"<a href=\"$script?$r_page\" title=\"$s_page $passage\">$s_page</a>" :
+			"<a href=\"$script?$r_page\">$s_page</a>$passage";
+	}
+	
+	if (count($_links) == 0)
+	{
+		return '';
+	}
+	
+	if ($tag == 'p') // 行頭から
+	{
+		$margin = $_ul_left_margin + $_ul_margin;
+		$style = sprintf($_list_pad_str,1,$margin,$margin);
+		$retval =  "\n<ul$style>\n<li>".join($rule_related_str,$_links)."</li>\n</ul>\n";
+	}
+	else if ($tag)
+	{
+		$retval = join($rule_related_str,$_links);
 	}
 	else
 	{
-		$aryret = array_keys($_make_related);
+		$retval = join($related_str,$_links);
 	}
-	if($_isrule) $str = $rule_related_str;
-	else         $str = $related_str;
-
-	return @join($str,$aryret);
+	return $retval;
 }
 
+/*
 // リンクを付加する
 function make_link($name,$page = '')
 {
 	return p_make_link($name,$page);
 }
-
+*/
 // ユーザ定義ルール(ソースを置換する)
 function user_rules_str($str)
 {
@@ -328,6 +336,21 @@ function make_user_rules($str)
 		$pattern = array_map(create_function('$a','return "/$a/";'),array_keys($user_rules));
 		$replace = array_values($user_rules);
 		unset($user_rules);
+	}
+	return preg_replace($pattern,$replace,$str);
+}
+
+// ユーザ定義ルール(ソースは置換せずコンバート)
+function make_line_rules($str)
+{
+	global $line_rules;
+	static $pattern,$replace;
+	
+	if (!isset($pattern))
+	{
+		$pattern = array_map(create_function('$a','return "/$a/";'),array_keys($line_rules));
+		$replace = array_values($line_rules);
+		unset($line_rules);
 	}
 	return preg_replace($pattern,$replace,$str);
 }
@@ -484,6 +507,78 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	return $ret;
 
 }
+
+//閲覧制限フォーム
+function allow_view_form($allow_groups=NULL,$allow_users=NULL) {
+	//global $xoopsUser;
+	global $wiki_writable,$X_uid,$vars;
+	global $_btn_allow_header,$_btn_allow_group,$_btn_allow_user,$_btn_allow_deny;
+	global $unvisible_tag,$_btn_unvisible_enable,$_btn_allow_memo_t,$_btn_v_allow_memo;
+	//global $defvalue_gids,$defvalue_aids;
+
+	//ページの閲覧権限を得る
+	if (is_null($allow_groups) || is_null($allow_users)) $allows = get_pg_allow_viewer(strip_bracket($vars['page']),true);
+	if (is_null($allow_groups)) $allow_groups = explode(",",$allows['group']);
+	if (is_null($allow_users)) $allow_users = explode(",",$allows['user']);
+	//ゲストが投稿不可の設定の場合「ゲスト」グループのメッセージを表示しない
+	//$_btn_allow_guest = ($wiki_writable === 0)? $_btn_allow_guest : "";
+	
+	$ret = "<hr>";
+	$ret .= "<table class='style_table'><tr><th colspan='3'>$unvisible_tag</th></tr>";
+	$ret .= "<tr><th class='style_th'>$_btn_allow_group</th><th class='style_th'>$_btn_allow_user</th><th class='style_th'>$_btn_allow_memo_t</th></tr>";
+	$ret .= "<tr><td class='style_td'>";
+
+	//if ($wiki_writable !== 2){
+		$groups = X_get_group_list();
+		$mygroups = X_get_groups();
+	//}
+
+	// グループの名前をサイトの設定に書き換え
+	//$_btn_allow_memo = str_replace("_GUEST_ALLOW_",$_btn_allow_guest,$_btn_allow_memo);
+	$_btn_v_allow_memo = str_replace("_LOGDINUSER_",$groups[2],$_btn_v_allow_memo);
+	$_btn_v_allow_memo = str_replace("_GUREST_",$groups[3],$_btn_v_allow_memo);
+
+	// グループ一覧表示
+	$ret .= "<select  size='10' name='v_gids[]' id='v_gids[]' multiple='multiple'>";
+	if (!is_array($allow_groups)){
+		$sel = " selected";
+	} else {
+		$sel = (in_array("0",$allow_groups))? " selected" : "";
+	}
+	$ret .= "<option value='0'$sel>$_btn_allow_deny</option>";
+	foreach ($groups as $gid => $gname){
+		//if ($gid !== 1 && $gid !== 3 && in_array($gid,$mygroups)){
+		if ($gid !== 1 && in_array($gid,$mygroups) || $gid == 3){
+			$sel = (in_array($gid,$allow_groups))? " selected" : "";
+			$ret .= "<option value='".$gid."'".$sel.">$gname</option>";
+		}
+	}
+	$ret .= "</select></td>";
+	$ret .= "<td class='style_td'>";
+	
+	//if ($wiki_writable !== 2){
+		$allusers = X_get_users();
+		asort($allusers);
+	//}
+
+	// ユーザ一覧表示
+	$ret .= "<select  size='10' name='v_aids[]' id='v_aids[]' multiple='multiple'>";
+	if (!is_array($allow_users)){
+		$sel = " selected";
+	} else {
+		$sel = (in_array("0",$allow_users))? " selected" : "";
+	}
+	$ret .= "<option value='0' $sel>$_btn_allow_deny</option>";
+	foreach ($allusers as $uid => $uname){
+			$sel = (in_array($uid,$allow_users) || in_array("all",$allow_users))? " selected" : "";
+			if ($uid != $X_uid) $ret .= "<option value='".$uid."'$sel>$uname</option>";
+	}
+	$ret .= "</select></td><td class='style_td'>".$_btn_v_allow_memo."</td></tr></table>";
+	
+	return $ret;
+
+}
+
 // 添付ファイルアップロードフォーム
 function file_attache_form() {
 	global $_msg_attach_filelist,$max_size,$_msg_maxsize,$_msg_attachfile,$vars;

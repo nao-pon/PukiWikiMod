@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.4 2003/09/14 13:09:04 nao-pon Exp $
+// $Id: rss.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -19,58 +19,65 @@ function catrss($rss)
 	$item = "";
 	$rdf_li = "";
 	$cnt = 0;
-	foreach($lines as $line)
+	$i = 1;
+	//foreach($lines as $line)
+	while (isset($lines[$i]))
 	{
 		if($cnt > $rss_max - 1) break;
+		
+		list($auth['owner'],$auth['user'],$auth['group']) = split("\t",substr($lines[$i],3));
+		$auth = preg_replace("/^.*:/","",$auth);
 
-		if(preg_match("/(($WikiName)|($BracketName))/",$line,$match))
+		if ($auth['user'] == "all" || $auth['group'] == "3,")
 		{
-			if($match[2])
+			if(preg_match("/(($WikiName)|($BracketName))/",$lines[$i+1],$match))
 			{
-				$title = $url = $match[1];
-			}
-			else
-			{
-				if(function_exists("mb_convert_encoding")){
-					$title = strip_bracket($match[1]);
-					if (preg_match("/^(.*\/)?[0-9\-]+$/",$title,$reg_title)){
-						$_body = get_source(add_bracket($title));
-						foreach($_body as $line){
-							if (preg_match("/^\*{1,3}(.*)/",$line,$reg)){
-								$title = $reg_title[1].str_replace(array("[[","]]"),"",$reg[1]);
-								break;
+				if($match[2])
+				{
+					$title = $url = $match[1];
+				}
+				else
+				{
+					if(function_exists("mb_convert_encoding")){
+						$title = strip_bracket($match[1]);
+						if (preg_match("/^(.*\/)?[0-9\-]+$/",$title,$reg_title)){
+							$_body = get_source(add_bracket($title));
+							foreach($_body as $line){
+								if (preg_match("/^\*{1,3}(.*)/",$line,$reg)){
+									$title = $reg_title[1].str_replace(array("[[","]]"),"",$reg[1]);
+									break;
+								}
 							}
 						}
+						$title = mb_convert_encoding($title,"UTF-8","auto");
+					} else {
+						$title = strip_bracket($match[1]);
 					}
-					$title = mb_convert_encoding($title,"UTF-8","auto");
-				} else {
-					$title = strip_bracket($match[1]);
+					$url = strip_bracket($match[1]);
 				}
-				$url = strip_bracket($match[1]);
-			}
-			
-			$title = htmlspecialchars($title);
+				
+				$title = htmlspecialchars($title);
 
-			$dcdate = substr_replace(date("Y-m-d\TH:i:sO"),':',-2,0);
-			$desc = date("D, d M Y H:i:s T",filemtime(get_filename(encode($match[1]))));
-			
-			if($rss==2)
-				$items.= "<item rdf:about=\"http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."\">\n";
-			else
-				$items.= "<item>\n";
-			$items.= " <title>$title</title>\n";
-			$items.= " <link>http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."</link>\n";
-			if($rss==2)
-			{
-				$items.= " <dc:date>$dcdate</dc:date>\n";
+				$dcdate = substr_replace(date("Y-m-d\TH:i:sO"),':',-2,0);
+				$desc = date("D, d M Y H:i:s T",filemtime(get_filename(encode($match[1]))));
+				
+				if($rss==2)
+					$items.= "<item rdf:about=\"http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."\">\n";
+				else
+					$items.= "<item>\n";
+				$items.= " <title>$title</title>\n";
+				$items.= " <link>http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."</link>\n";
+				if($rss==2)
+				{
+					$items.= " <dc:date>$dcdate</dc:date>\n";
+				}
+				$items.= " <description>$desc</description>\n";
+				$items.= "</item>\n\n";
+				$rdf_li.= "    <rdf:li rdf:resource=\"http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."\" />\n";
 			}
-			$items.= " <description>$desc</description>\n";
-			$items.= "</item>\n\n";
-			$rdf_li.= "    <rdf:li rdf:resource=\"http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."\" />\n";
-
+			$cnt++;
 		}
-
-		$cnt++;
+		$i = $i + 2;
 	}
 
 	if($rss==1)

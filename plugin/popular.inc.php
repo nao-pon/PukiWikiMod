@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.3 2003/09/02 14:06:55 nao-pon Exp $
+// $Id: popular.inc.php,v 1.4 2003/10/13 12:23:28 nao-pon Exp $
 //
 
 /*
@@ -75,6 +75,8 @@ function plugin_popular_convert()
 		if ($page == $whatsnew or preg_match("/$non_list/",$page) or !is_page($page)) {
 			continue;
 		}
+		// ±ÜÍ÷¸¢¸Â
+		if (!check_readable($page,false,false)) continue;
 		
 		$array = file(COUNTER_DIR.encode($page).'.count');
 		$count = rtrim($array[0]);

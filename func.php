@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.18 2003/10/02 12:17:04 nao-pon Exp $
+// $Id: func.php,v 1.19 2003/10/13 12:23:28 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -288,10 +288,10 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE)
 	$list = array();
 	foreach($pages as $file=>$page)
 	{
+		$passage = get_pg_passage($page);
 		$page = strip_bracket($page);
 		$r_page = rawurlencode($page);
 		$s_page = htmlspecialchars($page,ENT_QUOTES);
-		$passage = get_pg_passage($page);
 		
 		$str = "   <li><a href=\"$script?cmd=$cmd&amp;page=$r_page\">$s_page</a>$passage";
 		
@@ -742,6 +742,32 @@ function auto_br_replace($front,$tgt,$back,$page_name){
 	$page_name = stripslashes($page_name);
 	return $front.str_replace($page_name,chr(28).$page_name.chr(29),$tgt).$back;
 }
+
+// テーブルセルのフォーマート指定子を削除する
+function cell_format_tag_del ($td) {
+	// カラーネームの正規表現
+	$colors_reg = "aqua|navy|black|olive|blue|purple|fuchsia|red|gray|silver|green|teal|lime|white|maroon|yellow|transparent";
+	// 背景色指定削除
+	$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","SC:$2",$td);
+	$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
+	// 背景画指定削除
+	$td = preg_replace("/SC:\(([^),]*)(,once|,1)?\)/i","",$td);
+	// 文字揃え指定削除
+	if (preg_match("/^(LEFT|CENTER|RIGHT)?(:)(TOP|MIDDLE|BOTTOM)?/i",$td,$tmp)) {
+		$td = (!$tmp[1] && !$tmp[3])? $tmp[2] : "";
+	}
+	return $td;
+}
+
+// ユーザーページへのリンクを作成する
+function make_user_link (&$name)
+{
+	if (!WIKI_USER_DIR) return;
+	$name = sprintf(WIKI_USER_DIR,$name);
+	$name = add_bracket(strip_bracket($name));
+	return;
+}
+
 //////////////////////////////////////////////////////
 //
 // XOOPS用　関数
@@ -785,22 +811,6 @@ function X_get_users(){
 		// XOOPS 1
 		return XoopsUser::getAllUsersList();
 	}
-}
-
-// テーブルセルのフォーマート指定子を削除する
-function cell_format_tag_del ($td) {
-	// カラーネームの正規表現
-	$colors_reg = "aqua|navy|black|olive|blue|purple|fuchsia|red|gray|silver|green|teal|lime|white|maroon|yellow|transparent";
-	// 背景色指定削除
-	$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","SC:$2",$td);
-	$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
-	// 背景画指定削除
-	$td = preg_replace("/SC:\(([^),]*)(,once|,1)?\)/i","",$td);
-	// 文字揃え指定削除
-	if (preg_match("/^(LEFT|CENTER|RIGHT)?(:)(TOP|MIDDLE|BOTTOM)?/i",$td,$tmp)) {
-		$td = (!$tmp[1] && !$tmp[3])? $tmp[2] : "";
-	}
-	return $td;
 }
 
 ?>

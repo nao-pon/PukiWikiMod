@@ -22,7 +22,17 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.4 2003/07/14 08:58:05 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
+
+$_cache_file = XOOPS_ROOT_PATH."/modules/pukiwiki/cache/config.php";
+if(file_exists($_cache_file) && is_readable($_cache_file)){
+	require($_cache_file);
+}
+// pcomment のコメントページ名
+define ("PCMT_PAGE",$pcmt_page_name);
+// 閲覧制限を使用するか
+define("PUKIWIKI_READ_AUTH",$read_auth);
+
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	$files = get_existpages();
 	if (!isset($vars["page"])) $vars["page"]="";
@@ -141,7 +151,7 @@ function get_existpages()
 			if($file == ".." || $file == "." || strstr($file,".txt")===FALSE) continue;
 			$page = decode(trim(preg_replace("/\.txt$/"," ",$file)));
 			//array_push($aryret[$page],get_pg_passage($page,false));
-			$aryret[$page]=get_pg_passage($page);
+			if (check_readable($page,false,false)) $aryret[$page]=get_pg_passage($page);
 		}
 		closedir($dir);
 	}
@@ -161,12 +171,27 @@ function decode($key)
 	return $dekey;
 }
 
-function get_source($page)
-{
-  if(page_exists($page)) {
-     return file(get_filename(encode($page)));
+function get_source($page,$row=0)
+{	
+	$page = add_bracket($page);
+	if(page_exists($page)) {
+		if ($row){
+			$ret = array();
+			$f_name = get_filename(encode($page));
+			$fp = fopen($f_name,"r");
+			if (!$fp) return file(get_filename(encode($page)));
+			while (!feof($fp)) {
+				$ret[] = fgets($fp, 4096);
+				$row--;
+				if ($row < 1) break;
+			}
+			fclose($fp);
+		} else {
+			$ret = file(get_filename(encode($page)));
+		}
+		$ret = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$ret);
+		return $ret;
   }
-
   return array();
 }
 
@@ -204,6 +229,14 @@ function strip_bracket($str)
 	    $str = $match[1];
 	  }
 	//}
+	return $str;
+}
+
+function add_bracket($str){
+	$WikiName = '(?<!(!|\w))[A-Z][a-z]+(?:[A-Z][a-z]+)+';
+	if (!preg_match("/^".$WikiName."$/",$str)){
+		if (!preg_match("/\[\[.*\]\]/",$str)) $str = "[[".$str."]]";
+	}
 	return $str;
 }
 
@@ -250,6 +283,168 @@ return $pgdt;
 		return $_pg_passage[$page]["str"];
 	else
 		return $_pg_passage[$page]["label"];
+}
+
+//ページの閲覧権限を得る
+function get_pg_allow_viewer($page, $uppage=true, $clr=false){
+	static $cache_page_info = array();
+	
+	// キャッシュクリアー
+	if ($clr)
+	{
+		$cache_page_info = array();
+		return;
+	}
+	
+	// pcoment のコメントページ調整
+	if (preg_match("/^\[\[(.*\/)%s\]\]/",PCMT_PAGE,$arg))
+	{
+		$page = str_replace($arg[1],"",$page);
+	}
+	
+	// キャッシュがあればキャッシュを返す
+	if (isset($cache_page_info[$page])) 
+		return $cache_page_info[$page];
+
+	$lines = get_source($page,2);
+
+	$allows['owner'] = "";
+	$allows['group'] = "3,";
+	$allows['user'] = "all";
+	foreach($lines as $line)
+	{
+		if (preg_match("/^#unvisible(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+|all))?(?:\tgid:([0-9,]+))?\n/",$line,$arg)){
+			if (!$arg[2]) $arg[2]=0;
+			if (!$arg[3]) $arg[3]=0;
+			$allows['owner'] = $arg[1];
+			if ($arg[2] !== "all") $allows['user'] = $arg[2].",";
+			$allows['group'] = $arg[3].",";
+			break;
+		}
+	}
+	if (!$allows['owner'] && $uppage)
+	//このページに設定がないので上位ページをみる
+	{
+		// 上位ページ名を得る
+		if (preg_match("/^(.*)\/[^\/]*$/",$page,$arg))
+			$uppage_name = $arg[1];
+		else
+			$uppage_name = "";
+
+		// 上位ページがあればその権限を得る(再帰処理)キャッシュチェックする
+		if ($uppage_name)
+		{
+			if (isset($cache_page_info[$uppage_name]))
+				$allows = $cache_page_info[$uppage_name];
+			else
+				$allows = get_pg_allow_viewer($uppage_name,true);
+		}
+	}
+	// キャッシュを保存
+	$cache_page_info[$page] = $allows;
+	return $allows;
+	
+}
+
+//閲覧権限を得る
+function get_readable(&$auth)
+{
+	static $_X_uid, $_X_gids;
+	if (!isset($_X_uid))
+	{
+		global $xoopsUser;
+		if ( $xoopsUser ) {
+			$X_uid = $xoopsUser->uid();
+		} else {
+			$X_uid = 0;
+		}
+		$_X_uid = $X_uid;
+	}
+	if (!isset($_X_gids)) $_X_gids = X_get_groups();
+
+	$ret = false;
+	
+	$aids = explode(",",$auth['user']);
+	$gids = explode(",",$auth['group']);
+	
+	// 閲覧制限されていない
+	if ($auth['owner'] === "" || $auth['user'] == "all") $ret = true;
+	
+	// 非ログインユーザー
+	elseif (!$_X_uid) $ret = (in_array("3",$gids))? true : false;
+	
+	//ログインユーザーは権限チェック
+	
+	// 自分で制限したページ
+	elseif ($auth['owner'] == $_X_uid) $ret = true;
+	
+	// ユーザー権限があるか
+	elseif (in_array($_X_uid,$aids)) $ret = true;
+	
+	else
+	{
+		// グループ権限があるか？
+		$gid_match = false;
+		foreach ($_X_gids as $gid)
+		{
+			if (in_array($gid,$gids))
+			{
+				$gid_match = true;
+				break;
+			}
+		}
+		if ($gid_match) $ret = true;
+	}
+	return $ret;
+}
+
+//閲覧することができるかチェックする。
+function check_readable($page, $auth_flag=true, $exit_flag=true){
+
+	static $_X_admin,$_read_auth;
+	
+	if (!isset($_X_admin))
+	{
+		global $xoopsUser;
+		$X_admin = 0;
+		if ( $xoopsUser ) {
+			$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+			if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
+				$X_admin = 1;
+			}
+		}
+		$_X_admin = $X_admin;
+	}
+	if (!isset($_read_auth)) $_read_auth = PUKIWIKI_READ_AUTH;
+	
+	if (!$_read_auth) return true;
+	
+	$ret = false;
+	
+	// 管理者はすべてOK
+	if ($_X_admin) $ret = true;
+	
+	else
+	{
+		$auth = get_pg_allow_viewer(strip_bracket($page),true);
+		$ret = get_readable($auth);
+	}
+	
+	return $ret;
+
+}
+// ユーザーが所属するグループIDを得る
+function X_get_groups(){
+	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
+		// XOOPS 2
+		global $X_uid,$xoopsDB;
+		$X_M = new XoopsMemberHandler($xoopsDB);
+		return $X_M->getGroupsByUser($X_uid);
+	} else {
+		// XOOPS 1
+		global $xoopsUser;
+		return XoopsGroup::getByUser($xoopsUser);
+	}
 }
 
 ?>

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.10 2003/09/02 14:09:11 nao-pon Exp $
+// $Id: file.php,v 1.11 2003/10/13 12:23:28 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -38,7 +38,7 @@ function page_exists($page)
 // ページの更新時刻を得る
 function get_filetime($page)
 {
-	return filemtime(get_filename(encode($page))) - LOCALZONE;
+	return filemtime(get_filename(encode(add_bracket($page)))) - LOCALZONE;
 }
 
 // ページの出力
@@ -69,9 +69,6 @@ function page_write($page,$postdata,$notimestamp=NULL)
 
 	// ファイルの書き込み
 	file_write(DATA_DIR,$page,$postdata,$notimestamp);
-	
-	// is_pageのキャッシュをクリアする。
-	is_page($page,TRUE);
 	
 }
 
@@ -106,6 +103,9 @@ function file_write($dir,$page,$str,$notimestamp=NULL)
 		if($timestamp)
 			touch($dir.encode($page).".txt",$timestamp);
 	}
+
+	// is_pageのキャッシュをクリアする。
+	is_page($page,true);
 	
 	if(!$timestamp)
 		put_lastmodified();
@@ -114,14 +114,20 @@ function file_write($dir,$page,$str,$notimestamp=NULL)
 	{
 		system($update_exec." > /dev/null &");
 	}
+	// linkデータベースを更新
+	if ($dir === DATA_DIR)
+		links_update($page);
 }
 
 // 最終更新ページの更新
 function put_lastmodified()
 {
 	global $script,$maxshow,$whatsnew,$date_format,$time_format,$weeklabels,$post,$non_list;
+	
+	// ページ閲覧権限のキャッシュをクリアー
+	get_pg_allow_viewer("",false,true);
 
-	$files = get_existpages();
+	$files = get_existpages(true);
 	foreach($files as $page) {
 		if($page == $whatsnew) continue;
 		if(preg_match("/$non_list/",$page)) continue;
@@ -133,7 +139,11 @@ function put_lastmodified()
 			$lastmod = date($date_format,$lastmodtime)
 				 . " (" . $weeklabels[date("w",$lastmodtime)] . ") "
 				 . date($time_format,$lastmodtime);
-			$putval[$lastmodtime][] = "-$lastmod - $page";
+
+			$page_auths = get_pg_allow_viewer(strip_bracket($page));
+			$page_auth = "//uid:".$page_auths['owner']."\taid:".$page_auths['user']."\tgid:".$page_auths['group'];
+
+			$putval[$lastmodtime][] = "$page_auth\n-$lastmod - $page";
 		}
 	}
 	
@@ -142,6 +152,8 @@ function put_lastmodified()
 	$fp = fopen(get_filename(encode($whatsnew)),"w");
 	if($fp===FALSE) die_message("cannot write page file ".htmlspecialchars($whatsnew)."<br>maybe permission is not writable or filename is too long");
 	flock($fp,LOCK_EX);
+	// 閲覧制限する
+	fputs($fp,"#unvisible	uid:1	aid:0	gid:0\n");
 	foreach($putval as $pages)
 	{
 		foreach($pages as $page)
@@ -200,13 +212,17 @@ function is_editable($page)
 }
 
 // ページが凍結されているか
-function is_freeze($page)
+function is_freeze($page,$cache=true)
 {
-	global $_freeze,$X_uid,$X_admin;
+	if ($cache) global $_freeze;
+	global $X_uid,$X_admin,$anon_writable;
 
 	if(!is_page($page)) return false;
 	if($_freeze === true || $_freeze === false) return $_freeze;
-
+	
+	// 閲覧権限をチェック
+	if (!check_readable($page,false,false)) return true;
+	
 	$lines = get_source($page,1);
 
 	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
@@ -242,7 +258,7 @@ function is_freeze($page)
 		// 編集権限なし
 		$_freeze = true;
 	} else {
-		$_freeze = false;
+		$_freeze = ($anon_writable)? false : true;
 	}
 	return $_freeze;
 }
@@ -303,7 +319,7 @@ function get_readings()
 	global $pagereading_kanji2kana_encoding, $pagereading_chasen_path;
 	global $pagereading_kakasi_path, $pagereading_config_page;
 
-	$pages = get_existpages();
+	$pages = get_existpages(true);
 
 	$readings = array();
 	foreach ($pages as $page) {
@@ -413,7 +429,7 @@ function get_readings()
 
 
 // 全ページ名を配列に
-function get_existpages()
+function get_existpages($nocheck=false)
 {
 	$aryret = array();
 
@@ -423,7 +439,9 @@ function get_existpages()
 		{
 			if($file == ".." || $file == "." || strstr($file,".txt")===FALSE) continue;
 			$page = decode(trim(preg_replace("/\.txt$/"," ",$file)));
-			array_push($aryret,$page);
+			// 閲覧権限
+			if ($nocheck || check_readable($page,false,false))
+				array_push($aryret,$page);
 		}
 		closedir($dir);
 	}
@@ -431,19 +449,58 @@ function get_existpages()
 	return $aryret;
 }
 
+//ファイル名の一覧を配列に(エンコード済み、拡張子を指定)
+function get_existfiles($dir,$ext)
+{
+	$aryret = array();
+	
+	$pattern = '^(?:[0-9A-F]{2})+'.preg_quote($ext,'/').'$';
+	$dp = @opendir($dir)
+		or die_message($dir. ' is not found or not readable.');
+	while ($file = readdir($dp)) {
+		if (preg_match("/$pattern/",$file)) {
+			$aryret[] = $dir.$file;
+		}
+	}
+	closedir($dp);
+	return $aryret;
+}
+
+//あるページの関連ページを得る
+function links_get_related($page)
+{
+	global $vars,$related;
+	static $links = array();
+	$page = strip_bracket($page);
+	
+	if (array_key_exists($page,$links))
+	{
+		return $links[$page];
+	}
+	
+	if (!$related) $related = array();
+	// 可能ならmake_link()で生成した関連ページを取り込む
+	$links[$page] = ($page == strip_bracket($vars['page'])) ? $related : array();
+	
+	// データベースから関連ページを得る
+	$links[$page] += links_get_related_db(strip_bracket($vars['page']));
+	
+	return $links[$page];
+}
+
 //ページ作成者IDを得る
 function get_pg_auther($page)
 {
-	$lines = get_source($page,2);
-	
 	$author_uid = 0;
-	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
-		if (preg_match("/^\/\/ author:([0-9]+)\n/",$lines[1],$arg))
-			$author_uid = $arg[1];
-	} else {
-		if (preg_match("/^\/\/ author:([0-9]+)\n/",$lines[0],$arg))
-			$author_uid = $arg[1];
-	}
+	if (!is_page($page)) return $author_uid;
+	
+	$string = join('',get_source($page,3));
+	$string = preg_replace("/(^|\n)#(freeze|unvisible)([^\n]*)?/","",$string);
+	$string = trim($string);
+	
+	
+	if (preg_match("/^\/\/ author:([0-9]+)($|\n)/",$string,$arg))
+		$author_uid = $arg[1];
 
 	return $author_uid;
 }
@@ -459,20 +516,176 @@ function get_pg_auther_name($page)
 
 //ページの編集権限を得る
 function get_pg_allow_editer($page){
-	$lines = get_source($page,1);
+	$lines = get_source($page,2);
 
 	$allows['group'] = $allows['user']= "";
-	
-	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
-		if (!$arg[2]) $arg[2]=0;
-		if (!$arg[3]) $arg[3]=0;
-		$allows['user'] = $arg[2].",";
-		$allows['group'] = $arg[3].",";
-		//echo "this!".$arg[3];
+	foreach($lines as $line)
+	{
+		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$line,$arg)){
+			if (!$arg[2]) $arg[2]=0;
+			if (!$arg[3]) $arg[3]=0;
+			$allows['user'] = $arg[2].",";
+			$allows['group'] = $arg[3].",";
+			break;
+		}
 	}
 	
 	return $allows;
 	
+}
+
+//ページの閲覧権限を得る
+function get_pg_allow_viewer($page, $uppage=true, $clr=false){
+	static $cache_page_info = array();
+	
+	// キャッシュクリアー
+	if ($clr)
+	{
+		$cache_page_info = array();
+		return;
+	}
+	
+	// pcoment のコメントページ調整
+	if (preg_match("/^\[\[(.*\/)%s\]\]/",PCMT_PAGE,$arg))
+	{
+		$page = str_replace($arg[1],"",$page);
+	}
+	
+	// キャッシュがあればキャッシュを返す
+	if (isset($cache_page_info[$page])) 
+		return $cache_page_info[$page];
+
+	$lines = get_source($page,2);
+
+	$allows['owner'] = "";
+	$allows['group'] = "3,";
+	$allows['user'] = "all";
+	foreach($lines as $line)
+	{
+		if (preg_match("/^#unvisible(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+|all))?(?:\tgid:([0-9,]+))?\n/",$line,$arg)){
+			if (!$arg[2]) $arg[2]=0;
+			if (!$arg[3]) $arg[3]=0;
+			$allows['owner'] = $arg[1];
+			if ($arg[2] !== "all") $allows['user'] = $arg[2].",";
+			$allows['group'] = $arg[3].",";
+			break;
+		}
+	}
+	if (!$allows['owner'] && $uppage)
+	//このページに設定がないので上位ページをみる
+	{
+		// 上位ページ名を得る
+		if (preg_match("/^(.*)\/[^\/]*$/",$page,$arg))
+			$uppage_name = $arg[1];
+		else
+			$uppage_name = "";
+
+		// 上位ページがあればその権限を得る(再帰処理)キャッシュチェックする
+		if ($uppage_name)
+		{
+			if (isset($cache_page_info[$uppage_name]))
+				$allows = $cache_page_info[$uppage_name];
+			else
+				$allows = get_pg_allow_viewer($uppage_name,true);
+		}
+	}
+	// キャッシュを保存
+	$cache_page_info[$page] = $allows;
+	return $allows;
+	
+}
+
+//閲覧権限があるかチェックする。
+function read_auth($page, $auth_flag=true, $exit_flag=true){
+	return check_readable($page, $auth_flag, $exit_flag);
+}
+
+//閲覧権限を得る
+function get_readable(&$auth)
+{
+	static $_X_uid, $_X_gids;
+	if (!isset($_X_uid))
+	{
+		global $X_uid;
+		$_X_uid = $X_uid;
+	}
+	if (!isset($_X_gids)) $_X_gids = X_get_groups();
+
+	$ret = false;
+	
+	$aids = explode(",",$auth['user']);
+	$gids = explode(",",$auth['group']);
+	
+	// 閲覧制限されていない
+	if ($auth['owner'] === "" || $auth['user'] == "all") $ret = true;
+	
+	// 非ログインユーザー
+	elseif (!$_X_uid) $ret = (in_array("3",$gids))? true : false;
+	
+	//ログインユーザーは権限チェック
+	
+	// 自分で制限したページ
+	elseif ($auth['owner'] == $_X_uid) $ret = true;
+	
+	// ユーザー権限があるか
+	elseif (in_array($_X_uid,$aids)) $ret = true;
+	
+	else
+	{
+		// グループ権限があるか？
+		$gid_match = false;
+		foreach ($_X_gids as $gid)
+		{
+			if (in_array($gid,$gids))
+			{
+				$gid_match = true;
+				break;
+			}
+		}
+		if ($gid_match) $ret = true;
+	}
+	return $ret;
+}
+
+//閲覧することができるかチェックする。
+function check_readable($page, $auth_flag=true, $exit_flag=true){
+	global $X_admin,$read_auth;
+	static $_X_admin,$_read_auth;
+	
+	if (!isset($_X_admin))
+	{
+		global $X_admin;
+		$_X_admin = $X_admin;
+	}
+	if (!isset($_read_auth))
+	{
+		global $read_auth;
+		$_read_auth = $read_auth;
+	}
+	if (!$_read_auth) return true;
+	
+	$ret = false;
+	
+	// 管理者はすべてOK
+	if ($_X_admin) $ret = true;
+	
+	else
+	{
+		$auth = get_pg_allow_viewer(strip_bracket($page),true);
+		$ret = get_readable($auth);
+	}
+	
+	return $ret;
+
+}
+
+// ページ情報を削除する
+function delete_page_info(&$str)
+{
+	$str = preg_replace("/(^|\n)(#freeze|#unvisible|\/\/ author:)([^\n]*)?/","",$str);
+	$str = preg_replace("/^\n+/","",$str);
+	//$str = trim($str);
+	return;
 }
 
 //EXIFデータを得る

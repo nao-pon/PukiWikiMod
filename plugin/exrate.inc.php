@@ -1,7 +1,7 @@
 <?php
 // exrate.inc.php
 // by nao-pon 
-// $Id: exrate.inc.php,v 1.2 2003/08/03 13:44:03 nao-pon Exp $
+// $Id: exrate.inc.php,v 1.3 2003/10/13 12:23:28 nao-pon Exp $
 // License: GNU/GPL
 
 function plugin_exrate_init() {
@@ -13,9 +13,9 @@ function plugin_exrate_inline() {
 	$money = implode('',$money);
 	//$url = "http://finance.www.infoseek.co.jp/Frx?pg=2201_forex.html&sv=FI";
 	$url = "http://money.www.infoseek.co.jp/MnForex?sv=MN&pg=mn_fxrate.html";
-	$notes = "[[インフォシークファイナンス:$url]]より引用。&br;　　・万一、この情報に基づいて被ったいかなる損害についても、当サイトでは一切の責任を負いかねますのでご了承ください。";
+	$notes = "[[インフォシークファイナンス:$url]]より引用。万一、この情報に基づいて被ったいかなる損害についても、当サイトでは一切の責任を負いかねますのでご了承ください。";
 	
-	if ($money == "notes") return inline("(($notes))");
+	if ($money == "notes") return make_link("(($notes))");
 
 	if (!$money) $money = "usd";
 

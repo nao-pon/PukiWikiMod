@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.12 2003/07/22 13:41:44 nao-pon Exp $
+// $Id: index.php,v 1.13 2003/10/13 12:23:28 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -37,7 +37,31 @@ function writeConfig(){
 	$file = fopen($filename, "w");
 	$gids = implode(",",$gids);
 	$aids = implode(",",$aids);
-	$freeze = ($freeze)? 1 : 0 ;
+	$freeze = (isset($freeze))? 1 : 0 ;
+	$f_cycle = (int)$f_cycle;
+	$f_maxage = (int)$f_maxage;
+	$f_jp_pagereading = (int)$f_jp_pagereading;
+	if ($f_jp_pagereading == 2)
+	{
+		$f_pagereading_kanji2kana_converter = 'kakasi';
+		$f_jp_pagereading = 1;
+	}
+	elseif ($f_jp_pagereading == 1)
+	{
+		$f_pagereading_kanji2kana_converter = 'chasen';
+		$f_jp_pagereading = 1;
+	}
+	else
+	{
+		$f_pagereading_kanji2kana_converter = 'kakasi';
+		$f_jp_pagereading = 0;
+	}
+	if ($f_kanji2kana_encoding == 0)
+		$f_kanji2kana_encoding = 'EUC';
+	else
+		$f_kanji2kana_encoding = 'SJIS';
+	
+	
 	$content = "";
 	$content .= "<?php";
 	$content .= "
@@ -52,8 +76,18 @@ function writeConfig(){
 	\$defvalue_gids = \"$gids\";
 	\$defvalue_aids = \"$aids\";
 	\$wiki_allow_new = $wiki_allow_new;
-	\n";
-
+	\$read_auth = $wiki_function_unvisible;
+	\$cycle = $f_cycle;
+	\$maxage = $f_maxage;
+	\$wiki_user_dir = '$f_wiki_user_dir';
+	\$pcmt_page_name = '$f_pcmt_page_name';
+	\$pagereading_enable = $f_jp_pagereading;
+	\$pagereading_kanji2kana_converter = '$f_pagereading_kanji2kana_converter';
+	\$pagereading_kanji2kana_encoding = '$f_kanji2kana_encoding';
+	\$pagereading_chasen_path = '$f_pagereading_chasen_path';
+	\$pagereading_kakasi_path = '$f_pagereading_kakasi_path';
+	\$pagereading_config_page = '$f_pagereading_config_page';
+	";
 	$content .= "\n?>";
 
 	fwrite($file, $content);
@@ -111,7 +145,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page;
 	xoops_cp_header();
 	OpenTable();
 	checkPermit();
@@ -139,6 +173,7 @@ function displayForm(){
 	} else {
 		$_mail_sw_[1] = " checked";
 	}
+	if(!isset($wiki_writable)) $wiki_writable = 0;
 	if($wiki_writable === 0){
 		$_anon_writable_all = " checked";
 		$_anon_writable_regist = "";
@@ -159,6 +194,22 @@ function displayForm(){
 		$_ff_disable = " checked";
 		$_ff_enable = "";
 	}
+	$pcmt_page_name = strip_bracket($pcmt_page_name);
+	$_jp_pagereading = array("","","");
+	if (!$pagereading_enable)
+		$_jp_pagereading[0] = " checked";
+	elseif ($pagereading_kanji2kana_converter == "chasen")
+		$_jp_pagereading[1] = " checked";
+	else
+		$_jp_pagereading[2] = " checked";
+	$_kanji2kana_encoding = array("","");
+	if ($pagereading_kanji2kana_encoding == "EUC")
+		$_kanji2kana_encoding[0] = " checked";
+	else
+		$_kanji2kana_encoding[1] = " checked";
+	$_unvisible_sw_ = array("","");
+	$_unvisible_sw_[$read_auth] = " checked";
+
 	$_wiki_css_file = @file(_AM_WIKI_CSS_FILE);
 	$wiki_css = "";
 	foreach($_wiki_css_file as $__wiki){
@@ -209,10 +260,36 @@ function displayForm(){
 	</td><td>
 		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='wiki_adminpass' value=''>
 	</td></tr>
+	<tr><td>
+		"._AM_WIKI_FUNCTION_UNVISIBLE."
+	</td><td>
+		<input type='radio' name='wiki_function_unvisible' value='1'".$_unvisible_sw_[1].">"._AM_WIKI_ENABLE."
+		<input type='radio' name='wiki_function_unvisible' value='0'".$_unvisible_sw_[0].">"._AM_WIKI_DISABLE."
+	</td></tr>
 	<tr><td valign='top'>
 		"._AM_WIKI_CSS."
 	</td><td>
 		<textarea name='wiki_css' cols='70' rows='10'>".$wiki_css."</textarea>
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_BACKUP_TIME."
+	</td><td>
+		<input type='text' size='2' name='f_cycle' value='".$cycle."'> h
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_BACKUP_AGE."
+	</td><td>
+		<input type='text' size='2' name='f_maxage' value='".$maxage."'> ages
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_USER_DIR."
+	</td><td>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_wiki_user_dir' value='".$wiki_user_dir."'>
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_PCMT_PAGE."
+	</td><td>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pcmt_page_name' value='".$pcmt_page_name."'>
 	</td></tr>
 	<tr><td valign='top'>
 		"._AM_WIKI_HIDE_NAVI."
@@ -220,6 +297,36 @@ function displayForm(){
 		<input type='radio' name='wiki_hide_navi' value='1'".$_hide_navi_1.">"._AM_WIKI_NONAVI."
 		<input type='radio' name='wiki_hide_navi' value='0'".$_hide_navi_0.">"._AM_WIKI_NAVI."
 	</td></tr>
+	<tr><td colspan=2><hr /></td></tr>
+	<tr><td valign='top'>
+		"._AM_WIKI_FUNCTION_JPREADING."
+	</td><td>
+		<input type='radio' name='f_jp_pagereading' value='0'".$_jp_pagereading[0].">"._AM_WIKI_DISABLE."
+		<input type='radio' name='f_jp_pagereading' value='1'".$_jp_pagereading[1].">ChaSen
+		<input type='radio' name='f_jp_pagereading' value='2'".$_jp_pagereading[2].">KAKASI
+	</td></tr>
+	<tr><td valign='top'>
+		"._AM_WIKI_KANJI2KANA_ENCODING."
+	</td><td>
+		<input type='radio' name='f_kanji2kana_encoding' value='0'".$_kanji2kana_encoding[0].">EUC-JP
+		<input type='radio' name='f_kanji2kana_encoding' value='1'".$_kanji2kana_encoding[1].">S-JIS
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_PAGEREADING_CHASEN_PATH."
+	</td><td>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pagereading_chasen_path' value='".$pagereading_chasen_path."'>
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_PAGEREADING_KAKASI_PATH."
+	</td><td>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pagereading_kakasi_path' value='".$pagereading_kakasi_path."'>
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_PAGEREADING_CONFIG_PAGE."
+	</td><td>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pagereading_config_page' value='".$pagereading_config_page."'>
+	</td></tr>
+	<tr><td colspan=2><hr /></td></tr>
 	<tr><td valign='top'>
 		"._AM_WIKI_MAIL_SW."
 	</td><td>

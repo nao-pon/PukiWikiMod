@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.6 2003/07/30 14:56:00 nao-pon Exp $
+// $Id: comment.inc.php,v 1.7 2003/10/13 12:23:28 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -70,7 +70,12 @@ function plugin_comment_action()
 			
 			$_msg  = str_replace('$msg', $post['msg'], $msg_format);
 			$_name = ($post['name'] == '')? $no_name : $post['name'];
-			$_name = str_replace('$name',$_name,$name_format);
+
+			if (WIKI_USER_DIR)
+				make_user_link($_name);
+			else
+				$_name = str_replace('$name',$_name,$name_format);
+
 			$_now  = ($post['nodate'] == '1') ? '' : str_replace('$now',$now,$now_format);
 			
 			$comment = str_replace("\x08MSG\x08", $_msg, $comment_format);

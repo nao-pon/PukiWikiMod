@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.4 2003/07/09 14:45:51 wellwine Exp $
+ *$Id: calendar_viewer.inc.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -156,6 +156,8 @@ function plugin_calendar_viewer_convert()
           if(substr($file,0,$filepattern_len)!=$filepattern) continue;
           //echo "OK";
           $page = decode(trim(preg_replace("/\.txt$/"," ",$file)));
+          // 閲覧権限
+          if (!check_readable($page,false,false)) continue;
           //$pageがカレンダー形式なのかチェック デフォルトでは、 yyyy-mm-dd
           $page = strip_bracket($page);
           if (plugin_calendar_viewer_isValidDate(substr($page,$pagepattern_len),$date_sep) == false) continue;
@@ -293,7 +295,7 @@ if ($cal2 == 1){
   $tmp = $limit_base;
   $kensu = 0;
   while ($tmp < $limit_page){
-    if (empty($pagelist[$tmp])) break;
+    if (!isset($pagelist[$tmp])) break;
     $page = "[[" . $pagelist[$tmp] .  "]]";
 
     $get["page"] = $page;
@@ -310,7 +312,6 @@ if ($cal2 == 1){
     //$head = "<h1>$link</h1>\n";
     $head = "<h4>$link</h4>\n";
     $return_body .= $head . $body;
-
     $tmp++;
     $kensu++;
   }

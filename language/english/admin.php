@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.3 2003/07/02 15:17:49 wellwine Exp $
+// $Id: admin.php,v 1.4 2003/10/13 12:23:28 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE1", "Preferences");
@@ -34,5 +34,15 @@ define("_AM_WIKI_MAIL_ALL", "All users");
 define("_AM_WIKI_MAIL_NOADMIN", "All users except Webmasters");
 define("_AM_WIKI_MAIL_NONE", "Nobody");
 
-?>
+define("_AM_WIKI_FUNCTION_UNVISIBLE", "Enable perusal authority for every page.");
+define("_AM_WIKI_BACKUP_TIME", "The interval of fixed backup.(hour) [every updating at 0]");
+define("_AM_WIKI_BACKUP_AGE", "Maximum generations of backup.");
+define("_AM_WIKI_PCMT_PAGE", 'The default of the new creation page name in pcomment plug-in.(Installation page name is set to %s.)');
+define("_AM_WIKI_USER_DIR", 'The format at the time of the name input in form.<br />(Name at the time of contribution goes into %1$s)<br />ex. <b>[[%1$s>user/%1$s]]</b><br />When not setting up here, a setup with each plug-in is applied.');
+define("_AM_WIKI_FUNCTION_JPREADING", "Is kana reading acquisition of the page name by ChaSen and KAKASI confirmed?");
+define("_AM_WIKI_KANJI2KANA_ENCODING", "The kanji code used for delivery with ChaSen/KAKASI (UNIX systems EUC-JP and Win systems S-JIS is foundations.)");
+define("_AM_WIKI_PAGEREADING_CHASEN_PATH", "Execution file path of ChaSen (it sets up according to each one of environment);
+define("_AM_WIKI_PAGEREADING_KAKASI_PATH", "Execution file path of KAKASI (it sets up according to each one of environment)");
+define("_AM_WIKI_PAGEREADING_CONFIG_PAGE", "The name of the page which stored page name reading.");
 
+?>

@@ -1,5 +1,5 @@
 <?php
-// $Id: include.inc.php,v 1.3 2003/08/23 07:23:52 wellwine Exp $
+// $Id: include.inc.php,v 1.4 2003/10/13 12:23:28 nao-pon Exp $
 // internationalization
 function plugin_include_init() {
 	if (LANG=='ja') {
@@ -33,6 +33,10 @@ function plugin_include_convert()
 	
 	if (!is_page($page))
 		return '';
+
+	// ±ÜÍ÷¸¢¸Â
+	if (!check_readable($page,false,false))
+		return str_replace('$1',strip_bracket($page),_MD_PUKIWIKI_NO_VISIBLE);
 	
 	if (isset($include_list[$page]))
 		return '';

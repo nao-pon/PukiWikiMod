@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.11 2003/10/02 12:17:46 nao-pon Exp $
+// $Id: init.php,v 1.12 2003/10/13 12:23:28 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -8,14 +8,14 @@ define("INI_FILE","./pukiwiki.ini.php");
 
 //** 初期設定 **
 
-define("_XOOPS_WIKI_VERSION", "0.06");
-define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003 <a href=\"http://ishii.s26.xrea.com/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.<BR>Based on \"PukiWiki\" 1.3.3 by <a href=\"http://pukiwiki.org/\">PukiWiki Developers Team</a>");
+define("_XOOPS_WIKI_VERSION", "0.07");
+define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003 <a href=\"http://ishii.s26.xrea.com/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.");
 //文字エンコード
 define('SOURCE_ENCODING','EUC-JP');
 
 ini_set('error_reporting', 5);
 define("S_VERSION","1.3.3");
-define("S_COPYRIGHT","<strong>\"PukiWiki\" ".S_VERSION."</strong> Copyright &copy; 2001,2002,2003 <a href=\"http://pukiwiki.org\">PukiWiki Developers Team</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.<BR>Based on \"PukiWiki\" 1.3 by <a href=\"http://factage.com/sng/\">sng</a>");
+define("S_COPYRIGHT","Based on \"PukiWiki\" by <a href=\"http://pukiwiki.org/\">PukiWiki Developers Team</a>");
 define("UTIME",time());
 define("HTTP_USER_AGENT",$HTTP_SERVER_VARS["HTTP_USER_AGENT"]);
 define("PHP_SELF",$HTTP_SERVER_VARS["PHP_SELF"]);
@@ -30,11 +30,10 @@ if($script == "") {
 
 //$WikiName = '[A-Z][a-z]+(?:[A-Z][a-z]+)+';
 $WikiName = '(?<!(!|\w))[A-Z][a-z]+(?:[A-Z][a-z]+)+';
-//$BracketName = '\[\[(:?[^\s\]#&<>":]+:?)\]\]';
-//$BracketName = '\[\[(?!\/|\.\/|\.\.\/)(:?[^\s\]#&<>":]+:?)(?<!\/)\]\]';
 $BracketName = '\[\[(?!\/|\.\/|\.\.\/)(:?[^\s\]#&<>":]+:?)\]\](?<!\/\]\])';
 $InterWikiName = "\[\[(\[*[^\s\]]+?\]*):(\[*[^>\]]+?\]*)\]\]";
 
+/**************
 $LinkPattern = "/( (?# <1>:all)
 	(?# url )
 	(?:\[\[([^\]]+):)?           (?#<2>:alias)
@@ -77,6 +76,7 @@ $LinkPattern = "/( (?# <1>:all)
 	(?# escape)
 	(\x1c[^\x1c\x1d]*\x1d)       (?#<20>:all)
 	)/x";
+****************/
 
 //** 入力値の整形 **
 
@@ -221,5 +221,9 @@ $ins_time = date($time_format,UTIME);
 $ins_week = "(".$weeklabels[date("w",UTIME)].")";
 
 $now = "$ins_date $ins_week $ins_time";
+
+// catch/config の設定を定数に
+define('WIKI_USER_DIR',$wiki_user_dir);
+define('PCMT_PAGE',$pcmt_page_name);
 
 ?>

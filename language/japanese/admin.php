@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.7 2003/07/09 07:51:50 nao-pon Exp $
+// $Id: admin.php,v 1.8 2003/10/13 12:23:28 nao-pon Exp $
 
 define("_AM_WIKI_TITLE1", "PukiWiki 基本設定");
 define("_AM_WIKI_TITLE2", "パーミッションの変更");
@@ -37,4 +37,14 @@ define("_AM_WIKI_WRITABLE", "上記設定の<b>編集を許可するユーザー</b>");
 define("_AM_WIKI_ANONWRITABLE_MSG", "<dl><dt>(説明) 編集を許可するユーザー</dt><dd>不許可において下の「<b>ページごとの編集権限</b>」より優先します。<br />例えば・・・<br />「<b>管理者のみ</b>」を選択した場合、「<b>ページごとの編集権限</b>」に関わらず、すべてのページが管理者のみしか編集できません。<br />「<b>すべての訪問者</b>」を選択すると、「<b>ページごとの編集権限</b>」で各ページの編集権限をコントロールできるようになります。</dd></dl>");
 define("_AM_WIKI_ALLOW_NEW", "ページの新規作成を許可するユーザー");
 
+define("_AM_WIKI_FUNCTION_UNVISIBLE", "ページごとの閲覧制限を有効にしますか");
+define("_AM_WIKI_BACKUP_TIME", "定期バックアップの間隔(時間(hour)で指定[0で更新毎])");
+define("_AM_WIKI_BACKUP_AGE", "バックアップの最大世代数");
+define("_AM_WIKI_PCMT_PAGE", 'pcommentプラグインでの新規作成ページ名のデフォルト (%sに設置ページ名が入る)');
+define("_AM_WIKI_USER_DIR", 'フォームでの名前入力時のフォーマット<br />(%1$sに投稿時のNameが入る)<br />例: <b>[[%1$s>user/%1$s]]</b><br />ここで設定しない場合は各プラグインでの設定が適用されます。');
+define("_AM_WIKI_FUNCTION_JPREADING", "ChaSen, KAKASI による、ページ名の読み取得を有効にしますか");
+define("_AM_WIKI_KANJI2KANA_ENCODING", "ChaSen/KAKASI との受け渡しに使う漢字コード (UNIX系は EUC-JP、Win系は S-JIS が基本)");
+define("_AM_WIKI_PAGEREADING_CHASEN_PATH", "ChaSen の実行ファイルパス (各自の環境に合わせて設定)");
+define("_AM_WIKI_PAGEREADING_KAKASI_PATH", "KAKASI の実行ファイルパス (各自の環境に合わせて設定)");
+define("_AM_WIKI_PAGEREADING_CONFIG_PAGE", "ページ名読みを格納したページの名前");
 ?>

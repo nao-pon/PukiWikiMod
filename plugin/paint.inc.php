@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.5 2003/07/30 14:56:00 nao-pon Exp $
+// $Id: paint.inc.php,v 1.6 2003/10/13 12:23:28 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -249,17 +249,26 @@ function paint_insert_ref($filename)
 	global $_paint_messages;
 	
 	$ret['msg'] = $_paint_messages['msg_title'];
+
+	$vars['msg'] = mb_convert_encoding($vars['msg'],SOURCE_ENCODING,'auto');
+	$vars['yourname'] = mb_convert_encoding($vars['yourname'],SOURCE_ENCODING,'auto');
 	
 	$msg = sprintf(PAINT_FORMAT_MSG, rtrim($vars['msg']));
 	
 	if ($vars['yourname'] != '')
 	{
-		$name = sprintf(PAINT_FORMAT_NAME, $vars['yourname']);
+		if (WIKI_USER_DIR)
+		{
+			$name = $vars['yourname'];
+			make_user_link($name);
+		}
+		else
+		{
+			$name = sprintf(PAINT_FORMAT_NAME, $vars['yourname']);
+		}
 	}
 	$date = sprintf(PAINT_FORMAT_DATE, $now);
 	
-	$msg = mb_convert_encoding($msg,SOURCE_ENCODING,'auto');
-	$name = mb_convert_encoding($name,SOURCE_ENCODING,'auto');
 	
 	$msg = trim($msg);
 	$msg = ($msg == '') ?
