@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: proxy.php,v 1.2 2003/11/06 12:41:08 nao-pon Exp $
+// $Id: proxy.php,v 1.3 2004/01/15 12:59:40 nao-pon Exp $
 //
 
 /*
@@ -48,16 +48,25 @@ function http_request($url,$method='GET',$headers='',$post=array())
 	// POST 時は、urlencode したデータとする
 	if (strtoupper($method) == 'POST')
 	{
-		$POST = array();
-		foreach ($post as $name=>$val)
+		if (is_array($post))
 		{
-			$POST[] = $name.'='.urlencode($val);
+			$POST = array();
+			foreach ($post as $name=>$val)
+			{
+				$POST[] = $name.'='.urlencode($val);
+			}
+			$data = join('&',$POST);
+			$query .= "Content-Type: application/x-www-form-urlencoded\r\n";
+			$query .= 'Content-Length: '.strlen($data)."\r\n";
+			$query .= "\r\n";
+			$query .= $data;
 		}
-		$data = join('&',$POST);
-		$query .= "Content-Type: application/x-www-form-urlencoded\r\n";
-		$query .= 'Content-Length: '.strlen($data)."\r\n";
-		$query .= "\r\n";
-		$query .= $data;
+		else
+		{
+			$query .= 'Content-Length: '.strlen($post)."\r\n";
+			$query .= "\r\n";
+			$query .= $post;
+		}
 	}
 	else
 	{

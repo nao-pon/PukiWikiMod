@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.3 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: trackback.php,v 1.4 2004/01/15 12:59:40 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -96,7 +96,7 @@ function tb_send($page,$data="")
 	
 	if (!$trackback || 
 		($page == $interwiki) || 
-		(preg_match("/".preg_quote("/$auto_template_name","/")."$/",$page))
+		(preg_match("/".preg_quote("/$auto_template_name","/")."(_m)?$/",$page))
 		)
 	{
 		return;
@@ -147,13 +147,30 @@ function tb_send($page,$data="")
 	$pings = str_replace("&amp;","&",$pings);
 	$pings = array_unique($pings);
 	
-	$title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
+	$xml_title = $title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
 	if ($h_excerpt) $title .= "/".$h_excerpt;
 	
 	$myurl = $script."?pgid=".get_pgid_by_name($page);
+	$xml_myurl = $script."?".rawurlencode($xml_title);
+	$xml_title = $page_title."/".$xml_title;
 	
 	$data = trim(strip_htmltag($data));
 	$data = preg_replace("/^".preg_quote($h_excerpt,"/")."/","",$data);
+	
+	// RPC Ping のデーター
+	$rpcdata = '<?xml version="1.0"?>
+<methodCall>
+  <methodName>weblogUpdates.ping</methodName>
+  <params>
+    <param>
+      <value>'.mb_convert_encoding($xml_title,"UTF-8",SOURCE_ENCODING).'</value>
+    </param>
+    <param>
+      <value>'.$xml_myurl.'</value>
+    </param>
+  </params>
+</methodCall>';
+	
 	// 自文書の情報
 	$putdata = array(
 		'title'     => $title,
@@ -200,14 +217,27 @@ function tb_send($page,$data="")
 		foreach ($pings as $tb_id)
 		{
 			$result = http_request($tb_id,'POST','',$putdata);
-/*********
+/*
 			echo htmlspecialchars($tb_id).":ping<hr />";
 			echo $result['query']."<hr />";
 			echo $result['rc']."<hr />";
 			echo $result['header']."<hr />";
 			echo $result['data']."<hr />";
-**********/
-			if ($result['rc'] === 200)
+*/
+			$done = false;
+			// 超手抜きなチェック
+			if (strpos($result['data'],"<error>0</error>") !== false)
+				$done = true;
+			else
+			{
+				// XML RPC Ping を打ってみる
+				$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata);
+				// 超手抜きなチェック
+				if (strpos($result['data'],"<boolean>0</boolean>") !== false)
+					$done = true;
+			}
+			
+			if ($done)
 				$sended[] = $tb_id;
 		}
 	}
@@ -527,5 +557,4 @@ function get_sended_pings($tb_id)
 	}
 	return $ret;
 }
-
 ?>
