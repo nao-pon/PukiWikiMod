@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.12 2004/03/20 07:21:18 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.13 2004/08/23 13:47:31 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -8,6 +8,7 @@ function b_pukiwiki_new_show($option) {
 	global $xoopsUser,$xoopsDB;
 	if ( $xoopsUser )
 	{
+		include_once XOOPS_ROOT_PATH.'/class/xoopsmodule.php';
 		$xoopsModule = XoopsModule::getByDirname("pukiwiki");
 		if ( $xoopsUser->isAdmin($xoopsModule->mid()) )
 			$X_admin = 1;
@@ -54,7 +55,7 @@ function b_pukiwiki_new_show($option) {
 	}
 
 	$block['title'] = _MI_PUKIWIKI_BTITLE;
-	$block['content'] = "<div style=\"word-break: break-all;\"><small>$items</small></div>";
+	$block['content'] = "<div style=\"word-break: break-all;\">$items</div>";
 
 	return $block;
 }

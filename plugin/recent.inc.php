@@ -22,7 +22,7 @@ function plugin_recent_init()
     '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%sºÇ¿·¤Î%d·ï</h5><div class="small" style="margin-left:.8em;margin-right:.8em">%s</div>');
   } else {
 		$_plugin_recent_messages = array(
-    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%sRecent(%d)</h5><div class="small" style="margin-left:.8em;margin-right:.8em">%s</div>');
+    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%sRecent(%d)</h5><div style="margin-left:.8em;margin-right:.8em">%s</div>');
 	}
   set_plugin_messages($_plugin_recent_messages);
 }
