@@ -1,4 +1,4 @@
-<?php // $Id: xoops_block.skin.ja.php,v 1.7 2004/11/01 13:43:21 nao-pon Exp $
+<?php // $Id: xoops_block.skin.ja.php,v 1.8 2004/11/11 23:34:00 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -27,3 +27,8 @@ $body = preg_replace("/(<img[^>]+src=('|\")?)\.\//","$1".$pukiwiki_url,$body);
 	<div class="wiki_content" onmouseup="pukiwiki_pos();" onkeyup="pukiwiki_pos();">
 	<?php echo $body ?>
 	</div>
+	<script type="text/javascript">
+	<!--
+	pukiwiki_initTexts();
+	//-->
+	</script>

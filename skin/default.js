@@ -1,19 +1,11 @@
 
+// Set masseges.
 var pukiwiki_msg_copyed = "It copied to the clip board.";
 var pukiwiki_msg_select = "Please choose the object range.";
 var pukiwiki_msg_fontsize = "Size of a character ( % or pt ): ";
+var pukiwiki_msg_hint = "Tips";
+var pukiwiki_msg_winie_hint_text = "In the first color selection, a text color and the next selection become a background color.";
+var pukiwiki_msg_gecko_hint_text =  pukiwiki_msg_winie_hint_text + "\n" + "Please push the [ESC] key, when the display range returns to a head and the processed range disappears.";
 
-var pukiwiki_WinIE=(document.all&&!window.opera&&navigator.platform=="Win32");
-
-function open_mini(URL,width,height){
-	aWindow = window.open(URL, "mini", "toolbar=0,location=0,directories=0,status=0,menubar=0,scrollbars=yes,resizable=no,width="+width+",height="+height);
-}
-
-if (pukiwiki_WinIE)
-{
-	document.write ('<script type="text/javascript" src="' + pukiwiki_root_url + 'skin/winie.js"></script>');
-}
-else
-{
-	document.write ('<script type="text/javascript" src="' + pukiwiki_root_url + 'skin/other.js"></script>');
-}
+// Include main script.
+document.write ('<scr'+'ipt type="text/javascr'+'ipt" src="' + pukiwiki_root_url + 'skin/main.js"></scr'+'ipt>');

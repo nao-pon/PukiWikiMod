@@ -10,3 +10,8 @@ function pukiwiki_show_fontset_img()
 {
 	document.write("");
 }
+
+function pukiwiki_initTexts()
+{
+	return;
+}

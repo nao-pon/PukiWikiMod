@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.en.php,v 1.7 2004/11/01 13:43:21 nao-pon Exp $
+// $Id: pukiwiki.skin.en.php,v 1.8 2004/11/11 23:34:00 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -171,5 +171,9 @@ if (!defined('DATA_DIR')) exit;
   </td>
  </tr>
 </table>
- 
+<script type="text/javascript">
+<!--
+pukiwiki_initTexts();
+//-->
+</script>
 <!-- /pukiwikimod -->

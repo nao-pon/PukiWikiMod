@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.45 2004/11/01 14:13:19 nao-pon Exp $
+// $Id: html.php,v 1.46 2004/11/11 23:34:00 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -792,41 +792,39 @@ function fontset_js_tag()
 	$map = "";
 	if (!$loaded) $map =<<<EOD
 <map name="map_button">
-<area shape="rect" coords="0,0,22,16" alt="URL" href="#" onClick="javascript:pukiwiki_linkPrompt('url'); return false;">
-<area shape="rect" coords="24,0,40,16" alt="B" href="#" onClick="javascript:pukiwiki_tag('b'); return false;">
-<area shape="rect" coords="43,0,59,16" alt="I" href="#" onClick="javascript:pukiwiki_tag('i'); return false;">
-<area shape="rect" coords="62,0,79,16" alt="U" href="#" onClick="javascript:pukiwiki_tag('u'); return false;">
-<area shape="rect" coords="81,0,103,16" alt="SIZE" href="#" onClick="javascript:pukiwiki_tag('size'); return false;">
+<area shape="rect" coords="0,0,22,16" title="URL" alt="URL" href="#" onClick="javascript:pukiwiki_linkPrompt('url'); return false;">
+<area shape="rect" coords="24,0,40,16" title="B" alt="B" href="#" onClick="javascript:pukiwiki_tag('b'); return false;">
+<area shape="rect" coords="43,0,59,16" title="I" alt="I" href="#" onClick="javascript:pukiwiki_tag('i'); return false;">
+<area shape="rect" coords="62,0,79,16" title="U" alt="U" href="#" onClick="javascript:pukiwiki_tag('u'); return false;">
+<area shape="rect" coords="81,0,103,16" title="SIZE" alt="SIZE" href="#" onClick="javascript:pukiwiki_tag('size'); return false;">
 </map>
 <map name="map_color">
-<area shape="rect" coords="0,0,8,8" alt="Black" href="#" onClick="javascript:pukiwiki_tag('Black'); return false;">
-<area shape="rect" coords="8,0,16,8" alt="Maroon" href="#" onClick="javascript:pukiwiki_tag('Maroon'); return false;">
-<area shape="rect" coords="16,0,24,8" alt="Green" href="#" onClick="javascript:pukiwiki_tag('Green'); return false;">
-<area shape="rect" coords="24,0,32,8" alt="Olive" href="#" onClick="javascript:pukiwiki_tag('Olive'); return false;">
-<area shape="rect" coords="32,0,40,8" alt="Navy" href="#" onClick="javascript:pukiwiki_tag('Navy'); return false;">
-<area shape="rect" coords="40,0,48,8" alt="Purple" href="#" onClick="javascript:pukiwiki_tag('Purple'); return false;">
-<area shape="rect" coords="48,0,55,8" alt="Teal" href="#" onClick="javascript:pukiwiki_tag('Teal'); return false;">
-<area shape="rect" coords="56,0,64,8" alt="Gray" href="#" onClick="javascript:pukiwiki_tag('Gray'); return false;">
-<area shape="rect" coords="0,8,8,16" alt="Silver" href="#" onClick="javascript:pukiwiki_tag('Silver'); return false;">
-<area shape="rect" coords="8,8,16,16" alt="Red" href="#" onClick="javascript:pukiwiki_tag('Red'); return false;">
-<area shape="rect" coords="16,8,24,16" alt="Lime" href="#" onClick="javascript:pukiwiki_tag('Lime'); return false;">
-<area shape="rect" coords="24,8,32,16" alt="Yellow" href="#" onClick="javascript:pukiwiki_tag('Yellow'); return false;">
-<area shape="rect" coords="32,8,40,16" alt="Blue" href="#" onClick="javascript:pukiwiki_tag('Blue'); return false;">
-<area shape="rect" coords="40,8,48,16" alt="Fuchsia" href="#" onClick="javascript:pukiwiki_tag('Fuchsia'); return false;">
-<area shape="rect" coords="48,8,56,16" alt="Aqua" href="#" onClick="javascript:pukiwiki_tag('Aqua'); return false;">
-<area shape="rect" coords="56,8,64,16" alt="White" href="#" onClick="javascript:pukiwiki_tag('White'); return false;">
+<area shape="rect" coords="0,0,8,8" title="Black" alt="Black" href="#" onClick="javascript:pukiwiki_tag('Black'); return false;">
+<area shape="rect" coords="8,0,16,8" title="Maroon" alt="Maroon" href="#" onClick="javascript:pukiwiki_tag('Maroon'); return false;">
+<area shape="rect" coords="16,0,24,8" title="Green" alt="Green" href="#" onClick="javascript:pukiwiki_tag('Green'); return false;">
+<area shape="rect" coords="24,0,32,8" title="Olive" alt="Olive" href="#" onClick="javascript:pukiwiki_tag('Olive'); return false;">
+<area shape="rect" coords="32,0,40,8" title="Navy" alt="Navy" href="#" onClick="javascript:pukiwiki_tag('Navy'); return false;">
+<area shape="rect" coords="40,0,48,8" title="Purple" alt="Purple" href="#" onClick="javascript:pukiwiki_tag('Purple'); return false;">
+<area shape="rect" coords="48,0,55,8" title="Teal" alt="Teal" href="#" onClick="javascript:pukiwiki_tag('Teal'); return false;">
+<area shape="rect" coords="56,0,64,8" title="Gray" alt="Gray" href="#" onClick="javascript:pukiwiki_tag('Gray'); return false;">
+<area shape="rect" coords="0,8,8,16" title="Silver" alt="Silver" href="#" onClick="javascript:pukiwiki_tag('Silver'); return false;">
+<area shape="rect" coords="8,8,16,16" title="Red" alt="Red" href="#" onClick="javascript:pukiwiki_tag('Red'); return false;">
+<area shape="rect" coords="16,8,24,16" title="Lime" alt="Lime" href="#" onClick="javascript:pukiwiki_tag('Lime'); return false;">
+<area shape="rect" coords="24,8,32,16" title="Yellow" alt="Yellow" href="#" onClick="javascript:pukiwiki_tag('Yellow'); return false;">
+<area shape="rect" coords="32,8,40,16" title="Blue" alt="Blue" href="#" onClick="javascript:pukiwiki_tag('Blue'); return false;">
+<area shape="rect" coords="40,8,48,16" title="Fuchsia" alt="Fuchsia" href="#" onClick="javascript:pukiwiki_tag('Fuchsia'); return false;">
+<area shape="rect" coords="48,8,56,16" title="Aqua" alt="Aqua" href="#" onClick="javascript:pukiwiki_tag('Aqua'); return false;">
+<area shape="rect" coords="56,8,64,16" title="White" alt="White" href="#" onClick="javascript:pukiwiki_tag('White'); return false;">
 </map>
 EOD;
 
 	$loaded ++;
 	
-	$url = XOOPS_WIKI_URL; //Add for XOOPS Block
-	
 	return <<<EOD
 $map
 <script type="text/javascript">
 <!--
-	pukiwiki_show_fontset_img("$url");
+	pukiwiki_show_fontset_img();
 -->
 </script>
 EOD;

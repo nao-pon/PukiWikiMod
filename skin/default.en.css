@@ -1,11 +1,61 @@
 @charset "shift_jis";
 /* this @charset is for mozilla's bug */
 
-pre, dl, ol, p, blockquote { line-height:130%; }
+.pukiwiki_body
+{
+	background-color: #F5F5F5;
+	border: 1px solid #CCD5DD;
+	padding: 10px;
+	word-break:normal;
+	line-height:1.5;
+}
+
+.wiki_content
+{
+	line-height:1.5;
+}
+.wiki_content a
+{
+	border-bottom: 1px dotted #6699FF;
+}
+
+.wiki_content a:hover
+{
+	text-decoration: none;
+	border-bottom: 1px solid #FF0000;
+}
+
+div.wiki_body_block
+{
+	background-color: #F5F5F5;
+	margin-bottom: 8px;
+
+}
+
+div.wiki_page_title
+{
+	width:80%;
+	text-align:center;
+	font-size:14px;
+	font-weight:bold;
+	border: 2px ridge #6699FF;
+	background-color:#FFFFEE;
+	padding:2px;
+}
+
+div.wiki_page_navi
+{
+	text-align:center;
+	background-color:white;
+	border-bottom:  1px solid #6699FF;
+	border-top:     1px solid #6699FF;
+	margin-bottom:  5px;
+	margin-top:     5px;
+}
+pre, dl, ol, ul, p, blockquote { line-height:1.3; }
 
 li
 {
-	margin-bottom:5px;
 }
 
 h1
@@ -20,7 +70,6 @@ h1
 	background-color: #FFFFFF;
 	padding: 0.2em;
 	margin: 1px;
-	margin-bottom: 3px;
 	text-align: left;
 
 }
@@ -90,12 +139,48 @@ pre {
 	border-bottom: #888899 1px solid;
 	border-left:   #DDDDEE 1px solid;
 	border-right:  #888899 1px solid;
-	padding: .5em;
-	margin-left: 1em;
-	margin-right: 2em;
+	line-height:1.5;
+	padding:5px 0px 5px 10px;
+	margin: 5px 0px 5px 30px;
 	white-space: pre;
 	background-color: #F0F8FF;
 	color: black;
+	font-size:12px;
+}
+
+pre.multi {
+	border: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+div.multi {
+	border-top:    #DDDDEE 1px solid;
+	border-bottom: #888899 1px solid;
+	border-left:   #DDDDEE 1px solid;
+	border-right:  #888899 1px solid;
+	line-height:1.5;
+	padding:5px 0px 5px 10px;
+	margin: 5px 0px 5px 30px;
+	white-space: pre;
+	background-color: #F0F8FF;
+	color: black;
+	font-size:12px;
+	width: 700px;
+	overflow: auto;
+	margin-bottom: 0px;
+}
+
+
+
+input.copyButton {
+	border: 1px solid #5E5D63;
+	margin: 0px 0px 0px 30px;
+	color: #000000;
+	font-family: verdana, tahoma, arial, helvetica, sans-serif;
+	font-size: 10px;
+	text-align:center;
+	background-color:EEF8FD;
 }
 
 img {
@@ -103,14 +188,12 @@ img {
 	vertical-align: middle;
 }
 
-ul {
-	margin-top: .5em;
-	margin-bottom: .5em;
-	line-height:130%;
-}
-
 em {
 	font-style:italic;
+}
+
+rt {
+	font-weight:100;
 }
 
 strong {
@@ -154,6 +237,7 @@ address {
 	border: 0px;
 	background-color: #CCD5DD;
 	padding: 0px;
+	width:168px;
 }
 
 .style_calendar_navi {
@@ -199,6 +283,7 @@ address {
 	margin: 1px;
 	width:24px;
 	height:24px;
+	vertical-align: middle;
 }
 
 .style_td_sat {
@@ -207,6 +292,7 @@ address {
 	margin: 1px;
 	width:24px;
 	height:24px;
+	vertical-align: middle;
 }
 
 .style_td_sun {
@@ -215,6 +301,7 @@ address {
 	margin: 1px;
 	width:24px;
 	height:24px;
+	vertical-align: middle;
 }
 .style_td_day {
 	background-color: #FFFFFF;
@@ -222,6 +309,7 @@ address {
 	margin: 1px;
 	width:24px;
 	height:24px;
+	vertical-align: middle;
 }
 .style_td_blank {
 	background-color: #EEEEEE;
@@ -281,11 +369,10 @@ address {
 
 .note_hr {
 	width:90%;
-	border-style:ridge;
-	border-color:#CCCCFF;
+	border-style:dotted;
+	border-color:#AAAAFF;
 	border-width:1px 0px;
 	text-align:center;
-	margin:1em auto 0em auto;
 }
 
 .side_label {
@@ -338,41 +425,35 @@ span.diff_removed {
 
 .size1{
 	font-size:xx-small;
-	line-height:130%;
 	text-indent:0px;
 	display:inline-block;
 }
 
 .size2{
 	font-size:x-small;
-	line-height:130%;
 	text-indent:0px;
 	display:inline-block;
 }
 
 .size3{
 	font-size:small;
-	line-height:130%;
 	text-indent:0px;
 	display:inline-block;
 }
 .size4{
 	font-size:medium;
-	line-height:130%;
 	text-indent:0px;
 	display:inline-block;
 }
 
 .size5{
 	font-size:large;
-	line-height:130%;
 	text-indent:0px;
 	display:inline-block;
 }
 
 .size6{
 	font-size:x-large;
-	line-height:130%;
 	text-indent:0px;
 	display:inline-block;
 }
@@ -419,6 +500,28 @@ div.p_right{
 .clear{
 	margin:0px;
 	clear:both;
+}
+
+div.page_list_word {
+	border-top:1px solid;
+	border-bottom:1px dotted;
+	width:80px;
+	text-align:center;
+}
+
+div.wiki_filelist_page {
+	border-top:1px solid maroon;
+	border-bottom:1px dotted;
+	padding: 5px;
+	text-align: left;
+	font-weight: bold;
+	background-color: white;
+}
+
+strong.page_list_word {
+	color:maroon;
+	font-size:120%;
+	padding-top:10px;
 }
 
 strong.word0 {
@@ -508,7 +611,17 @@ input.pcmt
 	margin-right:.5em;
 	border:none;
 }
-
+p.quotation
+{
+	border: #888899 2px dotted;
+	padding: .5em;
+	margin-left: 1em;
+	margin-right: 2em;
+	background-color: #FFFFFF;
+	font-size:85%;
+	line-height:1.5;
+	word-break: break-all;
+}
 /* source.inc.php */
 div.wiki_source
 {
@@ -521,5 +634,10 @@ div.wiki_source
 	margin-right: 2em;
 	background-color: #F0F8FF;
 	color: black;
-	line-height:150%;
+	line-height:1.5;
+}
+/* ref.inc.php */
+div.img_margin
+{
+	margin: 5px,10px;
 }
