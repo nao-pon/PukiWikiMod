@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.13 2004/08/20 14:47:04 nao-pon Exp $
+// $Id: paint.inc.php,v 1.14 2004/10/04 14:20:21 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -259,9 +259,9 @@ function paint_insert_ref($filename)
 	$ret['msg'] = $_paint_messages['msg_title'];
 	$ret['body'] = "";
 
-	$vars['msg'] = mb_convert_encoding($vars['msg'],SOURCE_ENCODING,'auto');
-	$vars['yourname'] = mb_convert_encoding($vars['yourname'],SOURCE_ENCODING,'auto');
-	$vars['title'] = mb_convert_encoding($vars['title'],SOURCE_ENCODING,'auto');
+	//$vars['msg'] = mb_convert_encoding($vars['msg'],SOURCE_ENCODING,'auto');
+	//$vars['yourname'] = mb_convert_encoding($vars['yourname'],SOURCE_ENCODING,'auto');
+	//$vars['title'] = mb_convert_encoding($vars['title'],SOURCE_ENCODING,'auto');
 	
 	// 名前をクッキーに保存
 	setcookie("pukiwiki_un", $vars['yourname'], time()+86400*365);//1年間
