@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.8 2004/10/14 13:00:15 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.9 2004/11/17 13:49:56 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -146,10 +146,11 @@ function plugin_areaedit_inline()
 	$args = func_get_args();
 	$str = array_pop($args);
 	$string = "";
+	$id = "area".substr(md5($page.$areaedit_no), mt_rand(0, 24), 7);
+	$js_tag = "";
 	if ( $str != '' ){
-		$string =<<<EOD
-<span onmouseover="javascript:this.style.backgroundColor='#ffe4e1';" onmouseout="javascript:this.style.backgroundColor='transparent';">$str</span>
-EOD;
+		$string = '<span id="'.$id.'">'.$str.'</span>';
+		$js_tag = ' onmouseover="pukiwiki_area_highlite(\''.$id.'\',1);" onmouseout="pukiwiki_area_highlite(\''.$id.'\',0);"';
 	}
 	$ndigest = $digest;
 	$nofreeze = $noauth = $inline_preview = 0;
@@ -194,7 +195,7 @@ EOD;
 	$btn_name = $_areaedit_messages['btn_name_inline'];
 	
 	return <<<EOD
-$string<a href="$script?plugin=areaedit&amp;areaedit_no=$areaedit_no&amp;page=$f_page&amp;inline_plugin=1&amp;inline_preview=$inline_preview&amp;digest=$f_digest" title="{$_areaedit_messages['btn_name']}:$areaedit_no">$btn_name</a>
+$string<a href="$script?plugin=areaedit&amp;areaedit_no=$areaedit_no&amp;page=$f_page&amp;inline_plugin=1&amp;inline_preview=$inline_preview&amp;digest=$f_digest" title="{$_areaedit_messages['btn_name']}:$areaedit_no"{$js_tag}>$btn_name</a>
 EOD;
 }
 //========================================================
