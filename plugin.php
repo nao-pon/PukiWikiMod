@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: plugin.php,v 1.3 2003/07/30 14:52:16 nao-pon Exp $
+// $Id: plugin.php,v 1.4 2003/08/03 13:39:14 nao-pon Exp $
 //
 
 // プラグイン用に未定義の変数を設定
@@ -96,7 +96,28 @@ function do_plugin_action($name)
 //プラグイン(convert)を実行
 function do_plugin_convert($name,$args)
 {
+	// "と"で囲んだパラメータは、,を含む事ができるように
+	//最初の文字は , ?
+	$first_text = (substr($args,0,1) == ",")? "," : "";
+	// 制御文字へ置換
+	$args = str_replace("&quot;,&quot;","\x1d\x1c",$args);
+	$args = str_replace(",&quot;","\x1c",$args);
+	$args = str_replace("&quot;,","\x1d",$args);
+	$args = preg_replace("/^&quot;/","\x1c",$args);
+	$args = preg_replace("/&quot;$/","\x1d",$args);
+	// , を \x08 に変換
+	$args = preg_replace("/(\x1c.*\x1d)/e","str_replace(',','\x08','$1')",$args);
+	// 制御文字を戻す
+	$args = str_replace("\x1d\x1c",",",$args);
+	$args = str_replace("\x1c",",",$args);
+	$args = str_replace("\x1d",",",$args);
+	$args = $first_text.preg_replace("/^,?(.*),?$/","$1",$args);
+
+	// 配列に格納
 	$aryargs = ($args !== '') ? explode(',',$args) : array();
+
+	// \x08 を , に戻す
+	$aryargs = str_replace("\x08",",",$aryargs);
 
 	do_plugin_init($name);
 	$retvar = call_user_func_array('plugin_'.$name.'_convert',$aryargs);
@@ -114,8 +135,29 @@ function do_plugin_convert($name,$args)
 //プラグイン(inline)を実行
 function do_plugin_inline($name,$args,$body)
 {
+	// "と"で囲んだパラメータは、,を含む事ができるように
+	//最初の文字は , ?
+	$first_text = (substr($args,0,1) == ",")? "," : "";
+	// 制御文字へ置換
+	$args = str_replace("&quot;,&quot;","\x1d\x1c",$args);
+	$args = str_replace(",&quot;","\x1c",$args);
+	$args = str_replace("&quot;,","\x1d",$args);
+	$args = preg_replace("/^&quot;/","\x1c",$args);
+	$args = preg_replace("/&quot;$/","\x1d",$args);
+	// , を \x08 に変換
+	$args = preg_replace("/(\x1c.*\x1d)/e","str_replace(',','\x08','$1')",$args);
+	// 制御文字を戻す
+	$args = str_replace("\x1d\x1c",",",$args);
+	$args = str_replace("\x1c",",",$args);
+	$args = str_replace("\x1d",",",$args);
+	$args = $first_text.preg_replace("/^,?(.*),?$/","$1",$args);
+
+	// 配列に格納
 	$aryargs = ($args !== '') ? explode(',',$args) : array();
-	//echo "$body<br>";
+
+	// \x08 を , に戻す
+	$aryargs = str_replace("\x08",",",$aryargs);
+	
 	if ($body) $aryargs[] =& $body;
 
 	do_plugin_init($name);
