@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.5 2003/07/14 09:00:20 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.6 2003/09/14 13:05:36 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //       Thanks to reimy.
@@ -169,35 +169,47 @@ function plugin_isbn_cache_fetch($target, $dir) {
 function plugin_isbn_cache_image_fetch($target, $dir) {
 	global $vars;
 
-  $filename = $dir.encode($vars["page"])."_".encode("ISBN".$target.".jpg");
+	$filename = $dir.encode($vars["page"])."_".encode("ISBN".$target.".jpg");
 
-  if (!is_readable($filename)) {
-    $url = "http://images-jp.amazon.com/images/P/" . $target . ".09.MZZZZZZZ.jpg";
-    if (!is_url($url)) return false; // URL 形式チェック
-    $file = fopen($url, "rb"); // たぶん size 取得よりこちらが原始的だからやや速い
-    if (! $file) {
-      fclose($file);
-      $url = NOIMAGE;
-    } else {
-      $data = fread($file, 100000); 
-      fclose ($file);
-      $size = @getimagesize($url); // あったら、size を取得、通常は1が返るが念のため0の場合も(reimy)
-      if ($size[0] <= 1)
-        $url = NOIMAGE;
-      else
-        $url = $filename;
-    }
-    // キャッシュを NOIMAGE のコピーとする
-    if ($url == NOIMAGE) {
-      $file = fopen($url, "rb");
-      if (! $file) return false;
-      $data = fread($file, 100000); 
-      fclose ($file);
-    }
-    plugin_isbn_cache_image_save($data, $target, UPLOAD_DIR);
-    return $filename;
-  } else
-    return $filename;
+	if (!is_readable($filename)) {
+		$url = "http://images-jp.amazon.com/images/P/" . $target . ".09.MZZZZZZZ.jpg";
+		if (!is_url($url)) return false; // URL 形式チェック
+		$size = @getimagesize($url);
+		if ($size[0] <= 1) {
+			$url = "http://images-jp.amazon.com/images/P/" . $target . ".01.MZZZZZZZ.jpg";
+			$size = @getimagesize($url);
+			if ($size[0] <= 1) $url = NOIMAGE;
+		}
+
+		if ($url != NOIMAGE){
+			$file = fopen($url, "rb");
+			// リモートファイルのパケット有効後対策
+			// http://search.net-newbie.com/php/function.fread.html
+			$contents = "";
+			do {
+				$data = fread($file, 8192);
+				if (strlen($data) == 0) {
+					break;
+				}
+				$contents .= $data;
+			} while(true);
+			
+			fclose ($file);
+			
+			$data = $contents;
+			unset ($contents);
+			$url = $filename;
+		} else {
+			// キャッシュを NOIMAGE のコピーとする
+			$file = fopen($url, "rb");
+			if (! $file) return false;
+			$data = fread($file, 100000); 
+			fclose ($file);
+		}
+		plugin_isbn_cache_image_save($data, $target, UPLOAD_DIR);
+		return $filename;
+	} else
+		return $filename;
 }
 
 // キャッシュを保存
