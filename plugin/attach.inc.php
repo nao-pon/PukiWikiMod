@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.7 2003/07/30 14:56:00 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.8 2003/08/03 13:44:31 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -380,7 +380,7 @@ class AttachFile
 	function AttachFile($page,$file,$age=0)
 	{
 		$this->page = $page;
-		$this->file = basename($file);
+		$this->file = basename(str_replace("\\","/",$file));
 		$this->age = is_numeric($age) ? $age : 0;
 		
 		$this->basename = UPLOAD_DIR.encode($page).'_'.encode($this->file);
@@ -501,6 +501,14 @@ class AttachFile
 		
 		$retval = array('msg'=>sprintf($_attach_messages['msg_info'],htmlspecialchars($this->file)));
 		$page_link = make_pagelink($s_page);
+		//EXIF DATA
+		$exif_data = get_exif_data($this->filename);
+		if ($exif_data){
+			$exif_tags = "<hr>".$exif_data['title'];
+			foreach($exif_data as $key => $value){
+				if ($key != "title") $exif_tags .= "<br />$key: $value";
+			}
+		}
 		$retval['body'] = <<< EOD
 <p class="small">
  [<a href="$script?plugin=attach&amp;pcmd=list&amp;refer=$r_page">{$_attach_messages['msg_list']}</a>]
@@ -515,6 +523,7 @@ class AttachFile
  <dd>Content-type:{$this->type}</dd>
  <dd>{$_attach_messages['msg_date']}:{$this->time_str}</dd>
  <dd>{$_attach_messages['msg_dlcount']}:{$this->status['count'][$this->age]}</dd>
+ $exif_tags
  $msg_freezed
 </dl>
 EOD;
