@@ -1,9 +1,9 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: template.php,v 1.7 2004/06/20 13:48:34 nao-pon Exp $
+// $Id: template.php,v 1.8 2004/09/07 12:12:39 nao-pon Exp $
 /////////////////////////////////////////////////
 
-function auto_template($page,$this=false)
+function auto_template($page,$this=false,$matches=array())
 {
 	global $auto_template_rules,$auto_template_func,$vars;
 	if(!$auto_template_func) return '';
@@ -40,7 +40,6 @@ function auto_template($page,$this=false)
 		if (is_page($page) && check_readable($page,false,false))
 		{
 			$body = join('',get_source($page));
-			$body = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$body);
 			delete_page_info($body);
 			for($i=0; $i<count($matches); ++$i)
 			{
