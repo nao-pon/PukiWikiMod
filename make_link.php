@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.32 2005/02/23 14:55:15 nao-pon Exp $
+// $Id: make_link.php,v 1.33 2005/03/07 16:21:33 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -827,10 +827,18 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	global $_symbol_noexists,$use_static_url,$_title_search;
 	
 	static $linktag = array();
+	$compact = FALSE;
 	
 	$page = add_bracket($page);
 	
 	if ($not_where && isset($linktag[$page.$alias])) return $linktag[$page.$alias];
+	
+	$compact = 0;
+	if ($alias == "#compact#")
+	{
+		$compact = TRUE;
+		$alias = "";
+	} 
 	
 	$s_page = htmlspecialchars(strip_bracket($page));
 	$s_alias = ($alias == '') ? $s_page : $alias;
@@ -879,6 +887,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	}
 	elseif (is_page($page))
 	{
+		if ($compact) $s_alias = preg_replace("#^.+/([^/]+)$#","$1",$s_alias);
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 		if ($not_where && !$alias && preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name))
 			$s_alias = $f_name[1].get_heading($page);
