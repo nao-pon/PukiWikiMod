@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.10 2003/08/05 23:46:29 nao-pon Exp $
+// $Id: ref.inc.php,v 1.11 2003/09/02 14:01:49 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -143,6 +143,12 @@ function is_picture($text) {
 		return false;
 	}
 }
+// Flashかどうか
+function plugin_ref_is_flash($text) {
+	$filename = preg_replace("/.*\//","",$text);
+	$filename = decode(preg_replace("/.*_/","",$text));
+	return preg_match("/.*\.swf/i",$filename);
+}
 // divで包む
 function wrap_div($text, $align, $around) {
 	if ($around) {
@@ -232,6 +238,7 @@ function plugin_ref_body($name,$args,$params){
 		$fsize = sprintf('%01.1f',round(filesize($file)/1000,1)).'KB';
 
 		$is_picture = is_picture($file);
+		$is_flash = ($is_picture)? false : plugin_ref_is_flash($file);
 
 		if ($is_picture) {
 			$url = $file;
@@ -344,6 +351,78 @@ function plugin_ref_body($name,$args,$params){
 			if ($org_w and $org_h) $info = "width=\"$org_w\" height=\"$org_h\" ";
 			$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info/>";
 		}
+	} else if ($is_flash) { //	Flashファイル
+		//初期化
+		$params['_qp']  =
+		$params['_q']   =
+		$params['_pp']  =
+		$params['_p']   =
+		$params['_lp']  =
+		$params['_l']   =
+		$params['_w']   =
+		$params['_h']   =
+		$params['_a']   =
+		$params['_bp']  =
+		$params['_b']   =
+		$params['_scp'] =
+		$params['_sc']  =
+		$params['_sap'] =
+		$params['_sa']  =
+		$params['_mp']  =
+		$params['_m']   =
+		$params['_wmp'] = "";
+		
+		foreach ($params['_args'] as $arg){
+			if (preg_match("/^q(?:uality)?:((auto)?(high|low|best|medium))$/i",$arg,$m)){
+				$params['_qp'] = "<param name=\"quality\" value=\"{$m[1]}\">";
+				$params['_q']  = " quality=\"{$m[1]}\"";
+			}
+			if (preg_match("/^p(?:lay)?:(true|false)$/i",$arg,$m)){
+				$params['_pp'] = "<param name=\"play\" value=\"{$m[1]}\">";
+				$params['_p']  = " play=\"{$m[1]}\"";
+			}
+			if (preg_match("/^l(?:oop)?:(true|false)$/i",$arg,$m)){
+				$params['_lp'] = "<param name=\"loop\" value=\"{$m[1]}\">";
+				$params['_l']  = " loop=\"{$m[1]}\"";
+			}
+			if (preg_match("/^w(?:idth)?:([0-9]+)$/i",$arg,$m)){
+				$params['_w'] = " width=".$m[1];
+			}
+			if (preg_match("/^h(?:eight)?:([0-9]+)$/i",$arg,$m)){
+				$params['_h'] = " height=".$m[1];
+			}
+			if (preg_match("/^a(?:lign)?:(l|r|t|b)$/i",$arg,$m)){
+				$params['_a'] = " align=\"{$m[1]}\"";
+			}
+			if (preg_match("/^b(?:gcolor)?:#?([abcdef\d]{6,6})$/i",$arg,$m)){
+				$params['_bp'] = "<param name=\"bgcolor\" value=\"{$m[1]}\">";
+				$params['_b']  = " bgcolor=\"#{$m[1]}\"";
+			}
+			if (preg_match("/^sc(?:ale)?:(showall|noborder|exactfit|noscale)$/i",$arg,$m)){
+				$params['_scp'] = "<param name=\"scale\" value=\"{$m[1]}\">";
+				$params['_sc']  = " scale=\"{$m[1]}\"";
+			}
+			if (preg_match("/^sa(?:lign)?:(l|r|t|b|tl|tr|bl|br)$/i",$arg,$m)){
+				$params['_sap'] = "<param name=\"salign\" value=\"{$m[1]}\">";
+				$params['_sa']  = " salign=\"{$m[1]}\"";
+			}
+			if (preg_match("/^m(?:enu)?:(true|false)$/i",$arg,$m)){
+				$params['_mp'] = "<param name=\"menu\" value=\"{$m[1]}\">";
+				$params['_m']  = " menu=\"{$m[1]}\"";
+			}
+			if (preg_match("/^wm(?:ode)?:(window|opaque|transparent)$/i",$arg,$m)){
+				$params['_wmp'] = "<param name=\"wmode\" value=\"{$m[1]}\">";
+			}
+		}
+		$ret .= <<<_HTML_
+<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,79,0"{$params['_w']}{$params['_h']}{$params['_a']}>
+<param name="movie" value="{$file}">
+{$params['_qp']}{$params['_lp']}{$params['_pp']}{$params['_scp']}{$params['_sap']}{$params['_mp']}{$params['_wmp']}
+<embed src="{$file}" pluginspage="http://www.macromedia.com/jp/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"{$params['_w']}{$params['_h']}{$params['_a']}{$params['_p']}{$params['_l']}{$params['_q']}{$params['_b']}{$params['_sc']}{$params['_sa']}{$params['_m']}>
+</embed>
+</object>
+_HTML_;
+
 	} else { // 通常ファイル
 		foreach ($params['_args'] as $arg){
 			if (preg_match("/^t:(.*)$/i",$arg,$m)){
