@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.8 2003/07/05 14:44:25 nao-pon Exp $
+// $Id: index.php,v 1.9 2003/07/05 15:04:24 nao-pon Exp $
 
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -215,7 +215,7 @@ function displayForm(){
 		<input type='radio' name='_wiki_mail_sw' value='1'".$_mail_sw_[1].">"._AM_WIKI_MAIL_NOADMIN."
 		<input type='radio' name='_wiki_mail_sw' value='0'".$_mail_sw_[0].">"._AM_WIKI_MAIL_NONE."
 	</td></tr>
-	<tr><th colspan=2>ページ新規作成時の編集権限規定値</th></tr>
+	<tr><th colspan=2>"._AM_ALLOW_EDIT_VALDEF."</th></tr>
 	<tr><td colspan=2><input type='checkbox' name='freeze' value='1'".$freeze_check." /><span class='small'>".$_btn_freeze_enable."</span></td></tr>
 	<tr><td colspan=2>".$allow_edit_form."</td></tr>
 	</table><p>

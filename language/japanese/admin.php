@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.3 2003/06/28 16:11:13 nao-pon Exp $
+// $Id: admin.php,v 1.4 2003/07/05 15:04:24 nao-pon Exp $
 
 define("_AM_WIKI_TITLE1", "PukiWiki 基本設定");
 define("_AM_WIKI_TITLE2", "パーミッションの変更");
@@ -32,6 +32,5 @@ define("_AM_WIKI_ADMIN", "管理者のみ");
 define("_AM_WIKI_MAIL_ALL", "すべて通知");
 define("_AM_WIKI_MAIL_NOADMIN", "管理者投稿以外を通知");
 define("_AM_WIKI_MAIL_NONE", "通知しない");
-
+define("_AM_ALLOW_EDIT_VALDEF", "ページ新規作成時の編集権限規定値");
 ?>
-
