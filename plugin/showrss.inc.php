@@ -22,7 +22,7 @@
  *
  * ÈòÆñ½ê       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.9 2004/06/09 13:02:49 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.10 2004/06/22 13:33:05 nao-pon Exp $
  *
  */
 
@@ -123,6 +123,7 @@ class ShowRSS_html
 				
 				$link = "<a href=\"$link\" title=\"$title $passage\" target=\"_blank\">$title</a>";
 				if ($show_description)
+					$item['DESCRIPTION'] = htmlspecialchars(strip_tags(str_replace(array("&lt;","&gt;"),array("<",">"),$item['DESCRIPTION'])));
 					$link .= "<br />"."<p class=\"quotation\">".make_link($item['DESCRIPTION'])."</p>";
 				$this->items[$date][] = $this->format_link($link);
 			}
