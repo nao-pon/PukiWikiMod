@@ -269,16 +269,15 @@ class link_wikiname extends link
 	function toString($refer = '')
 	{
 		global $script;
+		//プラグインで付加された<a href>タグを取り除く
+		$this_alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
 
 		if ($this->name == '' and $this->anchor != ''){
-			//プラグインで付加された<a href>タグを取り除く
-			$this_alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
 			return "<a href=\"{$this->anchor}\">{$this_alias}</a>";
-			//return "<a href=\"{$this->anchor}\">{$this->alias}</a>";
 		}
 
 		if (is_page($this->name))
-			return "<a href=\"$script?{$this->rawname}{$this->anchor}\" title=\"{$this->special}".$this->passage()."\">{$this->alias}</a>";
+			return "<a href=\"$script?{$this->rawname}{$this->anchor}\" title=\"{$this->special}".$this->passage()."\">{$this_alias}</a>";
 		else {
 			$rawrefer = ($refer != '') ? rawurlencode($refer) : $this->rawrefer;
 			return "<span class=\"noexists\">$this->alias<a href=\"$script?cmd=edit&amp;page={$this->rawname}&amp;refer=$rawrefer\">?</a></span>";
