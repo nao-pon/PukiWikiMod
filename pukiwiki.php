@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.16 2003/07/14 09:03:59 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.17 2003/07/16 13:47:26 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -41,7 +41,6 @@ require("backup.php");
 require("rss.php");
 require('make_link.php');
 require('config.php');
-
 
 
 /////////////////////////////////////////////////
@@ -187,6 +186,13 @@ else if(arg_check("edit"))
 // プレビュー
 else if(arg_check("preview") || $post["preview"] || $post["template"])
 {
+	if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
+		//添付ファイルあり
+		include_once (PLUGIN_DIR.'attach.inc.php');
+		$attach_msg = plugin_attach_action();
+		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$HTTP_POST_FILES["attach_file"]["name"]."$1)",$post["msg"]);
+	}
+	
 	if($post["template"] && page_exists($post["template_page"]))
 	{
 		$post["msg"] = @join("",get_source($post["template_page"]));
@@ -235,19 +241,37 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_preview);
 	$page = str_replace('$1',make_search($post["page"]),$_title_preview);
 
-	$body = "$_msg_preview<br />\n";
+	$body = (isset($attach_msg['msg']))? str_replace("$1",strip_bracket($post["page"]),$attach_msg['msg'])."<br />" : "";
+	$body .= "$_msg_preview<br />\n";
 	if($postdata == "") $body .= "<strong>$_msg_preview_delete</strong><br />\n";
 	else                $body .= "<br />\n";
 
 	if($postdata != "")
 	{
+		//if(file_exists(PLUGIN_DIR."attach.inc.php") && $is_read)
+		if(file_exists(PLUGIN_DIR."attach.inc.php"))
+		{
+			require_once(PLUGIN_DIR."attach.inc.php");
+			
+			//削除リンクを表示させないため退避
+			$X_uid_tmp = $X_uid;
+			$X_admin_tmp = $X_admin;
+			$X_admin = $X_uid = 0;
+			$attaches = attach_filelist();
+			
+			if ($attaches) $attaches = "<hr />".$attaches;
+			
+			$X_uid = $X_uid_tmp;
+			$X_admin = $X_admin_tmp;
+		}
+
 		$postdata = convert_html($postdata);
 		
 		$body .= "<table width=\"100%\" style=\"background-color:$preview_color\">\n"
 			."<tr><td>\n"
-			.$postdata
+			.$postdata.$attaches
 			."\n</td></tr>\n"
-			."</table>\n";
+			."</table><hr />\n";
 	}
 
 	if($post["add"])
@@ -275,10 +299,11 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 		$auther_tag = '<input type="hidden" name="f_author_uid" value="'.htmlspecialchars($post["f_author_uid"]).'" />';
 	}
 
-	$body .= "<form action=\"$script\" method=\"post\">\n"
+	$body .= "<form enctype=\"multipart/form-data\" action=\"$script\" method=\"post\">\n"
 		."<div>\n"
 		."<input type=\"checkbox\" name=\"enter_enable\" value=\"true\" $checked_enter /><span class=\"small\">$_btn_enter_enable</span>\n"
-		."　<input type=\"checkbox\" name=\"auto_bra_enable\" value=\"true\" /><span class=\"small\">$_btn_autobracket_enable</span>　\n"
+		."　<input type=\"checkbox\" name=\"auto_bra_enable\" value=\"true\" /><span class=\"small\">$_btn_autobracket_enable</span>\n"
+		.file_attache_form()
 		."<input type=\"hidden\" name=\"help\" value=\"".htmlspecialchars($post["add"])."\" />\n"
 		."<input type=\"hidden\" name=\"page\" value=\"".htmlspecialchars($post["page"])."\" />\n"
 		."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($post["digest"])."\" />\n"
@@ -297,6 +322,13 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 // 書き込みもしくは追加もしくはコメントの挿入
 else if($post["write"])
 {
+	if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
+		//添付ファイルあり
+		include_once (PLUGIN_DIR.'attach.inc.php');
+		$attach_msg = plugin_attach_action();
+		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$HTTP_POST_FILES["attach_file"]["name"]."$1)",$post["msg"]);
+	}
+
 	//編集以前のページデータを取得
 	if(is_page($post["page"]))
 		$oldpostdata = join("",get_source($post["page"]));
@@ -544,7 +576,7 @@ else if($post["write"])
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_updated);
 				$page = str_replace('$1',make_search($post["page"]),$_title_updated);
 				$body = convert_html($postdata);
-				header("Location: $script?".rawurlencode($post["page"]));
+				//header("Location: $script?".rawurlencode($post["page"]));
 			}
 			else
 			{

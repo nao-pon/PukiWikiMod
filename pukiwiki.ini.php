@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.6 2003/07/14 09:03:59 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.7 2003/07/16 13:47:26 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -36,6 +36,21 @@ define("SKIN_FILE","./skin/pukiwiki.skin.".LANG.".php");
 /////////////////////////////////////////////////
 // 言語ファイルの読み込み(編集しないでください)
 require(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/".LANG.".lng");
+
+/////////////////////////////////////////////////
+// ファイルアップロード関連
+// set PHP value to enable file upload
+ini_set("file_uploads","1");
+
+// upload dir(must set end of /)
+define("UPLOAD_DIR","./attach/");
+
+// max file size for upload on PHP(PHP default 2MB)
+ini_set("upload_max_filesize","2M");
+
+// max file size for upload on script of PukiWiki(default 1MB)
+define("MAX_FILESIZE",1000000);
+
 
 /////////////////////////////////////////////////
 // index.php などに変更した場合のスクリプト名の設定

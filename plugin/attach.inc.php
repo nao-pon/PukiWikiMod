@@ -2,8 +2,9 @@
 // プラグイン attach
 
 // changed by Y.MASUI <masui@hisec.co.jp> http://masui.net/pukiwiki/
-// $Id: attach.inc.php,v 1.4 2003/07/03 04:46:05 nao-pon Exp $
+// $Id: attach.inc.php,v 1.5 2003/07/16 13:51:12 nao-pon Exp $
 
+/********************* Move to pukiwiki.ini.php
 // set PHP value to enable file upload
 ini_set("file_uploads","1");
 
@@ -15,6 +16,7 @@ ini_set("upload_max_filesize","2M");
 
 // max file size for upload on script of PukiWiki(default 1MB)
 define("MAX_FILESIZE",1000000);
+**********************************************/
 
 // file icon image
 define("FILE_ICON","<img src=\"./image/file.gif\" width=\"20\" height=\"20\" alt=\"file\" style=\"border-width:0px\">");

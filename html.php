@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.13 2003/07/15 13:22:51 nao-pon Exp $
+// $Id: html.php,v 1.14 2003/07/16 13:47:26 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -926,20 +926,23 @@ function edit_form($postdata,$page,$add=0)
 	}
 
 return '
-<form action="'.$script.'" method="post">
+<form enctype="multipart/form-data" action="'.$script.'" method="post">
 '.$addtag.'
 <table cellspacing="3" cellpadding="0" border="0" width="100%">
  <tr>
+  <td>
+'.file_attache_form().'
+  </td>
   <td align="right">
 '.$template.'
   </td>
  </tr>
- <tr><td>
+ <tr><td colspan=2>
    <input type="checkbox" name="enter_enable" value="true" checked /><span class="small">'.$_btn_enter_enable.'</span> 
    <input type="checkbox" name="auto_bra_enable" value="true" checked /><span class="small">'.$_btn_autobracket_enable.'</span>
  </td></tr>
  <tr>
-  <td align="right">
+  <td align="right" colspan=2>
    <input type="hidden" name="page" value="'.htmlspecialchars($page).'" />
    <input type="hidden" name="digest" value="'.htmlspecialchars($digest).'" />
    <textarea name="msg" rows="'.$rows.'" cols="'.$cols.'" wrap="virtual">
@@ -947,7 +950,7 @@ return '
   </td>
  </tr>
  <tr>
-  <td>
+  <td colspan=2>
    <input type="submit" name="preview" value="'.$_btn_preview.'" accesskey="p" />
    <input type="submit" name="write" value="'.$_btn_update.'" accesskey="s" />
    '.$add_top.'
@@ -1241,5 +1244,20 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	
 	return $ret;
 
+}
+// 添付ファイルアップロードフォーム
+function file_attache_form() {
+	global $_msg_attach_filelist,$max_size,$_msg_maxsize,$_msg_attachfile,$vars;
+
+	$max_size = number_format(MAX_FILESIZE/1000);
+	$max_size.= "KB";
+
+	$ret.= "<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($vars["page"])."\">\n";
+	$ret.= "<input type=\"hidden\" name=\"max_file_size\" value=\"".MAX_FILESIZE."\" />\n";
+	//$ret.= "<span class=\"small\">[<a href=\"$script?plugin=attach&amp;pcmd=list\" target=\"_blank\">$_msg_attach_filelist</a>]</span><br />\n";
+	$ret.= "<b>".$_msg_attachfile."</b>:<input type=\"file\" name=\"attach_file\" />Max[$max_size]\n";
+	//$ret.= "<br /><span class=\"small\">".str_replace('$1',$max_size,$_msg_maxsize)."</span><br />\n";
+
+	return $ret;
 }
 ?>
