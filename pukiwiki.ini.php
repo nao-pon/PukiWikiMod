@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.14 2003/09/29 12:19:50 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.15 2003/10/02 12:17:46 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -122,7 +122,7 @@ $_list_margin = 16;      // リストの階層間の間隔(px)
 $_list_pad_str = ' class="list%d" style="padding-left:%dpx;margin-left:%dpx"';
 
 /////////////////////////////////////////////////
-// リスト構造の左マージン
+// テーブルのマージン
 $_table_left_margin = 10;		// テーブル左寄せの場合の画面左端との間隔(px)
 $_table_right_margin = 10;	// テーブル右寄せの場合の画面右端との間隔(px)
 
@@ -278,26 +278,6 @@ $str_rules = array(
 /////////////////////////////////////////////////
 // ユーザ定義ルール(コンバート時に置換、直接しない)
 $line_rules = array(
-"COLOR\(([^\(\)]*)\){([^}]*)}" => "<span style=\"color:\\1\">\\2</span>",
-"SIZE\(([^\(\)]*)\){([^}]*)}" => "<span style=\"font-size:\\1px;display:inline-block;line-height:130%;text-indent:0px\">\\2</span>",
-"COLOR\(([^\(\)]*)\):((?:(?!COLOR\([^\)]+\)\:).)*)" => "<span style=\"color:\\1\">\\2</span>",
-"SIZE\(([^\(\)]*)\):((?:(?!SIZE\([^\)]+\)\:).)*)" => "<span class=\"size\\1\">\\2</span>",
-"^LEFT:((?:(?!LEFT\:).)*)" => "<div style=\"text-align:left\">\\1</div>",
-"^CENTER:((?:(?!CENTER\:).)*)" => "<div style=\"text-align:center\">\\1</div>",
-"^RIGHT:((?:(?!RIGHT\:).)*)" => "<div style=\"text-align:right\">\\1</div>",
-"%%((?:(?!%%).)*)%%" => "<del>\\1</del>",
-"'''((?:(?!''').)*)'''" => "<em>\\1</em>",
-"''((?:(?!'').)*)''" => "<strong>\\1</strong>",
-"~((?:<\\/[a-zA-Z]+>)*)$" => "\\1<br />", /* 行末にチルダは改行 */
-"&amp;aname\(([A-Za-z][\w\-]*)\);" => "<a id=\"\\1\" name=\"\\1\"></a>",
-"^BR-ALL:" => "<br clear=all />",
-"&amp;br-all;" => "<br clear=all />",
-"&amp;br;" => "<br />",
-"&amp;#124;" => "|",
-"&amp;#x7c;" => "|",
-"&amp;uarr;" => "&uarr;",
-"&amp;darr;" => "&darr;",
-"&amp;amp;" => "&amp;",
 );
 
 /////////////////////////////////////////////////
@@ -317,7 +297,13 @@ $facemark_rules = array(
 "\s(;(?:-)?\()" => " <img src=\"./face/sad.gif\" alt=\"\\1\" />",
 "\s(\:(?:-)?\()" => " <img src=\"./face/sad.gif\" alt=\"\\1\" />",
 "\s(\:(?:-)?\?)" => " <img src=\"./face/confused.gif\" alt=\"\\1\" />",
-"&amp;(heart);" => "<img src=\"./face/heart.gif\" alt=\"\\1\" />",
+'&amp;(smile);' => ' <img src="./face/smile.png" alt="$1" />',
+'&amp;(bigsmile);' => ' <img src="./face/bigsmile.png" alt="$1" />',
+'&amp;(huh);' => ' <img src="./face/huh.png" alt="$1" />',
+'&amp;(oh);' => ' <img src="./face/oh.png" alt="$1" />',
+'&amp;(wink);' => ' <img src="./face/wink.png" alt="$1" />',
+'&amp;(sad);' => ' <img src="./face/sad.png" alt="$1" />',
+"&amp;(heart);" => ' <img src="./face/heart.gif" alt="$1" />',
 );
 
 $_cache_file = "cache/config.php";
