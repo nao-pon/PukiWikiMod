@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.6 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: paint.inc.php,v 1.7 2004/04/03 14:16:25 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -277,7 +277,7 @@ function paint_insert_ref($filename)
 	$msg = str_replace("\x08NAME\x08",$name, $msg);
 	$msg = str_replace("\x08DATE\x08",$date, $msg);
 	//ブロックに食われないように、#imgの直前に\nを2個書いておく。
-	$msg = "\n#ref($filename,wrap,around)\n".trim($msg)."\n\n#img(,clear)\n";
+	$msg = "\n#ref($filename,wrap,around)\n".trim($msg)."\n//IP:".$_SERVER["REMOTE_ADDR"]."\n#img(,clear)\n";
 	
 	$postdata_old = get_source($vars['refer']);
 	$postdata = '';
