@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.24 2005/03/02 00:07:44 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.25 2005/03/05 02:15:27 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -366,9 +366,7 @@ function plugin_calendar_viewer_action(){
 
 	$return_vars_array = array();
 
-	$page = strip_bracket($vars['page']);
-	$vars['page'] = '*';
-	if(isset($vars['file'])) $vars['page'] = $vars['file'];
+	$vars['page'] = (empty($vars['file']))? "" : add_bracket($vars['file']);
 
 	$date_sep = $vars["date_sep"];
 
@@ -384,18 +382,20 @@ function plugin_calendar_viewer_action(){
 	
 	$return_vars_array["body"] = call_user_func_array("plugin_calendar_viewer_convert",$args_array);
 
-	//$return_vars_array["msg"] = "calendar_viewer ".$vars["page"]."/".$page_YM;
-	$return_vars_array["msg"] = "calendar_viewer ".htmlspecialchars($vars["page"]);
-	if ($vars["page"] != ""){
-		$return_vars_array["msg"] .= "/";
+	$return_vars_array["msg"] = htmlspecialchars(strip_bracket($vars["page"]));
+	
+	if(preg_match("/\*/",$page_YM))
+	{
+		$count = explode("*",$page_YM);
+		$count[0] = (int)$count[0];
+		$count[1] = (int)$count[1];
+		$return_vars_array["msg"] .= " / Recent ".$count[0]." - ".($count[0] + $count[1]);
 	}
-	if(preg_match("/\*/",$page_YM)){
-		//うーん、n件表示の時はなんてページ名にしたらいい？
-	}else{
-		$return_vars_array["msg"] .= htmlspecialchars($page_YM);
+	else
+	{
+		$return_vars_array["msg"] .= " / ".htmlspecialchars($page_YM);
 	}
 
-	$vars['page'] = $page;
 	return $return_vars_array;
 }
 

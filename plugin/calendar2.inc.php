@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.24 2005/03/02 00:06:45 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.25 2005/03/05 02:15:27 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -434,15 +434,16 @@ function plugin_calendar2_convert()
 
 function plugin_calendar2_action()
 {
-	global $command,$vars;
+	global $command,$vars,$h_excerpt;
 	global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable;
 	
 	$command = 'read';
-	$page = strip_bracket($vars['page']);
 	if (!isset($vars['date'])) $vars['date']=sprintf("%04d%02d",$vars['year'],$vars['month']);
 
-	$vars['page'] = '*';
-	if($vars['file']) $vars['page'] = $vars['file'];
+	$vars['page'] = (empty($vars['file']))? "" : add_bracket($vars['file']);
+	
+	if (!is_page($vars['page']))
+		return array('msg'=>'ERROR: There is no page.','body'=>'ERROR: There is no page.');
 	
 	$date = $vars['date'];
 	if($date=='')
@@ -463,10 +464,9 @@ function plugin_calendar2_action()
 	if (isset($vars['co']) && ($vars['co']))
 		$aryargs .= ",contents:".(int)($vars['co']);
 	
-	$ret["msg"] = "calendar ".htmlspecialchars($vars['page'])."/".$yy;
+	$ret["msg"] = htmlspecialchars(strip_bracket($vars['page']))." / ".$yy;
 	$ret["body"] = do_plugin_convert("calendar2",$aryargs);
-	
-	$vars['page'] = $page;
+	$h_excerpt = "";
 	
 	return $ret;
 }
