@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.40 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: convert_html.php,v 1.41 2005/02/25 00:27:16 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -219,7 +219,7 @@ class convert
 		$string = str_replace("\x08","",$string);
 		
 		// #categoryを確実にブロック要素とするため改行で挟む
-		$string = preg_replace("/(^|\n)(\#category\(.*\))(\n|$)/","$1\n$2\n$3",$string);
+		$string = preg_replace("/(^|\n)(\#category\(.*\))(\n|$)/","\n$2\n",$string);
 		
 		//行単位の配列に格納
 		$lines = split("\n", $string);
@@ -245,13 +245,13 @@ class convert
 		foreach ($lines as $line)
 		{
 			// #categoryを事前にコンバート
-			if(preg_match("/^\#category\((.*)\)$/",$line,$out))
+			if(!$_pre && preg_match("/^\#category\((.*)\)$/",$line,$out))
 			{
 				if(exist_plugin_convert("category"))
 					$line = do_plugin_convert("category",$out[1]);
 			}
 			
-			if(!preg_match("/^\/\/(.*)/",$line,$comment_out) && $table != 0)
+			if(!$_pre && !preg_match("/^\/\/(.*)/",$line,$comment_out) && $table != 0)
 			{
 				if(!preg_match("/^\|(.+)\|(c|h)?$/",$line,$out) or
 					$table != count(table_inc_add(explode("|",$out[1]))))
