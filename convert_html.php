@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.24 2004/05/20 13:57:35 nao-pon Exp $
+// $Id: convert_html.php,v 1.25 2004/05/23 13:37:28 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -19,8 +19,6 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		if (!$X_uid && file_exists($filename) && ($cache || (filemtime($filename) + PAGE_CACHE_MIN * 60) > time()))
 		{
 			$htmls = file($filename);
-			//list($related_link,$noattach,$noheader,$h_excerpt,$wiki_ads_shown,$vars['is_rsstop'],$foot_explain) = explode("\t",trim(array_shift($htmls)),6);
-			//$foot_explain = explode("\t",$foot_explain);
 			$var_data = unserialize(rtrim(array_shift($htmls)));
 			if (!is_array($var_data)) $var_data = array();
 			$related_link = $var_data[0];
@@ -108,8 +106,6 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		//されてしまう問題のほうが大きいので、とりあえずこうする。
 		$rsstop_set = ($convert_load === 1)? $vars['is_rsstop'] : 0;
 		
-		
-		//$html = $related_link."\t".$noattach."\t".$noheader."\t".$h_excerpt."\t".$wiki_ads_shown."\t".$rsstop_set."\t".preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain))."\n".$str;
 		$var_data = array();
 		$var_data[0] = $related_link;
 		$var_data[1] = $noattach;
@@ -160,11 +156,6 @@ class convert
 		
 		// テーブルセル中フラグ
 		static $is_intable = 0;
-		
-		//インラインコンバーター(注釈は処理しない)
-		static $converter;
-		if (!isset($converter))
-			$converter = new InlineConverter(NULL,array('note'));
 		
 		$_freeze = is_freeze($vars['page']);
 
@@ -324,12 +315,7 @@ class convert
 					// <title>用
 					if (!$h_excerpt) 
 					{
-						//$_converter = $converter; // copy
-						//$h_excerpt = strip_tags($_converter->convert($str, $vars['page']));
-						$_nowikiname = $nowikiname;
-						$nowikiname = 1;
-						$h_excerpt = trim(strip_htmltag(make_link(preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$str)),$vars['page']));
-						$nowikiname = $_nowikiname;
+						$h_excerpt = trim(strip_htmltag(preg_replace("/<a[^>]+>\?<\/a>/","",make_link(preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$str)))));
 					}
 					//$level = strlen($out[1]) + 1;
 					$level = strlen($out[1]);
@@ -809,23 +795,7 @@ class convert
 		}
 		else
 			$str = make_link($str);
-/*		
-		$str = preg_replace("/^#related/e",'make_related($vars["page"],TRUE)',$str);
-
-		$tmp = $str;
-		$str = preg_replace("/^#norelated$/","",$str);
-		if($tmp != $str) $related_link = 0;
-
-		$tmp = $str;
-		$str = preg_replace("/^#noattach$/","",$str);
-		if($tmp != $str) $noattach = 1;
-
-		$tmp = $str;
-		$str = preg_replace("/^#noheader$/","",$str);
-		if($tmp != $str) $noheader = 1;
 		
-		unlink($tmp);
-*/
 		return $str;
 	}
 }
