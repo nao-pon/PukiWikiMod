@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.13 2004/11/24 14:19:59 nao-pon Exp $
+// $Id: rss.php,v 1.14 2005/01/13 13:36:26 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -51,7 +51,7 @@ function catrss($rss,$page,$with_content="false",$list_count=0)
 	
 	$page_title_utf8 = $page_title;
 	$page_title_utf8 = mb_convert_encoding($page_title_utf8,"UTF-8",SOURCE_ENCODING);
-	$page_utf8 = mb_convert_encoding($page,"UTF-8",SOURCE_ENCODING);
+	$page_utf8 = mb_convert_encoding(strip_bracket($page),"UTF-8",SOURCE_ENCODING);
 	$page_add_utf8 = ($page)? "-".$page_utf8 : "";
 	
 	$item = "";
