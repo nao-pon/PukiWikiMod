@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.25 2004/05/13 14:17:19 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.26 2004/06/20 13:48:34 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -212,14 +212,14 @@ $load_template_func = 1;
 // ページ名に従って自動で、雛形とするページの読み込み
 $auto_template_func = 1;
 $auto_template_name = "template";
-$auto_template_rules = array(
-'\[\[((.+)\/([^\/]+))\]\]' => '[[\2/'.$auto_template_name.']]'
-);
+$auto_template_rules = array();
+$auto_template_rules[] = array('\[\[((.+)\/([^\/]+))\]\]' => '[[\2/'.$auto_template_name.']]');
+$auto_template_rules[] = array('\[\[((.+)\/([^\/]+))\]\]' => '[[:'.$auto_template_name.'/\2]]');
 
 /////////////////////////////////////////////////
 // TrackBackでのPing先URL抽出時に除外するプラグイン
 // カンマ区切りで、#をつけずに記述
-$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,aws,blogs";
+$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,aws,blogs,google";
 
 /////////////////////////////////////////////////
 // 検索用Plainソース作成時に除外するプラグイン

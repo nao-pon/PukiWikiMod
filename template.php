@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: template.php,v 1.6 2004/05/27 13:55:39 nao-pon Exp $
+// $Id: template.php,v 1.7 2004/06/20 13:48:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 function auto_template($page,$this=false)
@@ -13,16 +13,17 @@ function auto_template($page,$this=false)
 	{
 		foreach($auto_template_rules as $rule => $template)
 		{
+			if (is_array($template))
+			{
+				foreach($template as $rule => $template){}
+			}
 			if(preg_match("/$rule/",$page,$matches))
 			{
 				$template_page = preg_replace("/$rule/",$template,$page);
-				
 				if (!is_page($template_page)) $template_page = get_uptemplate_page($template_page);
-				
-				if (is_page($template_page) && check_readable($template_page,false,false))
+				if ($template_page && is_page($template_page) && check_readable($template_page,false,false))
 				{
 					$body = join('',get_source($template_page));
-					$body = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$body);
 					delete_page_info($body);
 					for($i=0; $i<count($matches); ++$i)
 					{
