@@ -1,5 +1,5 @@
 <?php
-// $Id: block.inc.php,v 1.1 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: block.inc.php,v 1.2 2004/09/04 01:16:46 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -11,7 +11,7 @@
 
 function plugin_block_convert()
 {
-	$params = array('end'=>false,'clear'=>false,'left'=>false,'center'=>false,'right'=>false,'around'=>false,'width'=>"",'w'=>"",'class'=>false,'_args'=>array(),'_done'=>FALSE);
+	$params = array('end'=>false,'clear'=>false,'left'=>false,'center'=>false,'right'=>false,'around'=>false,'width'=>"",'w'=>"",'class'=>false,'font-size'=>'','_args'=>array(),'_done'=>FALSE);
 	array_walk(func_get_args(), 'block_check_arg', &$params);	
 
 	// end
@@ -26,30 +26,37 @@ function plugin_block_convert()
 	$around = $params['around'];
 	$width = $params['w'];
 	if (!$width) $width = $params['width'];
+	$fontsize = $params['font-size'];
+	$_style = "";
+	
+	if (preg_match("/^[\d]+%?$/",$fontsize))
+	{
+		$fontsize = (!strstr($fontsize,"%"))? $fontsize."px" : $fontsize;
+		$_style .= "font-size:".$fontsize.";";
+	}
+
 	
 	if (preg_match("/^[\d]+%?$/",$width))
 	{
 		$width = (!strstr($width,"%"))? $width."px" : $width;
-		$width = "width:".$width.";";
+		$_style .= "width:".$width.";";
 	}
-	else
-		$width = "";
 
 	if ($params['around'])
-		$style = " style='float:{$align};{$width}'";
+		$style = " style='float:{$align};{$_style}'";
 	else
 	{
 		if ($params['left'])
 		{
-			$style = " align='left' style='{$width}'";
+			$style = " align='left' style='{$_style}'";
 		}
 		elseif ($params['right'])
 		{
-			$style = " align='right' style='{$width}'";
+			$style = " align='right' style='{$_style}'";
 		}
 		else
 		{
-			$style = " align='center' style='{$width}'";
+			$style = " align='center' style='{$_style}'";
 		}
 	}
 	//$clear = ($around)? "" : "<div style='clear:both;'></div>\n";
