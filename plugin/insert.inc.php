@@ -1,5 +1,5 @@
 <?php
-// $Id: insert.inc.php,v 1.3 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: insert.inc.php,v 1.4 2004/01/24 14:50:27 nao-pon Exp $
 
 /////////////////////////////////////////////////
 // テキストエリアのカラム数
@@ -62,34 +62,8 @@ function plugin_insert_action()
 	}
 	else
 	{
-		$postdata = user_rules_str($postdata);
-
-		// 差分ファイルの作成
-		if(is_page($post["refer"]))
-			$oldpostdata = join('',get_source($post["refer"]));
-		else
-			$oldpostdata = "\n";
-		if($postdata)
-			$diffdata = do_diff($oldpostdata,$postdata);
-		file_write(DIFF_DIR,$post["refer"],$diffdata);
-
-		// バックアップの作成
-		if(is_page($post["refer"]))
-			$oldposttime = filemtime(get_filename(encode($post["refer"])));
-		else
-			$oldposttime = time();
-
-		// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
-		if(!$postdata && $del_backup)
-			backup_delete(BACKUP_DIR.encode($post["refer"]).".txt");
-		else if($do_backup && is_page($post["refer"]))
-			make_backup(encode($post["refer"]).".txt",$oldpostdata,$oldposttime);
-
 		// ファイルの書き込み
-		file_write(DATA_DIR,$post["refer"],$postdata);
-
-		// is_pageのキャッシュをクリアする。
-		is_page($post["refer"],true);
+		page_write($post["refer"],$postdata,NULL,"","","","","","",array('plugin'=>'insert','mode'=>'add'));
 
 		$title = $_title_updated;
 	}

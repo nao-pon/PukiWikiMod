@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.8 2003/10/31 12:22:59 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.9 2004/01/24 14:50:27 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -225,12 +225,9 @@ function plugin_bugtrack_write($base, $pagename, $summary, $name, $priority, $st
     	or !preg_match("/^(($BracketName)|($WikiName))$/",$pagename))
       $pagename = $page;
     else
-      file_write(DATA_DIR,$page,"move to $pagename");
-    file_write(DATA_DIR,$pagename,$postdata);
+      page_write($page,"move to $pagename",NULL,"","","","","","",array('plugin'=>'bugtrack','mode'=>'all'));
+    page_write($pagename,$postdata,NULL,"","","","","","",array('plugin'=>'bugtrack','mode'=>'all'));
   }
-
-  // is_pageのキャッシュをクリアする。
-  is_page($post["refer"],true);
   
   return $page;
 }

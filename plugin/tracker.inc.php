@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.7 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.8 2004/01/24 14:50:27 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -171,28 +171,7 @@ function plugin_tracker_action()
 	//page_write($page,$postdata);
 	// ファイルの書き込み
 	$postdata = join('',$postdata);
-	file_write(DATA_DIR,$page,$postdata);
-	
-	if (WIKI_MAIL_NOTISE) {
-		// メール送信 by nao-pon
-		global $xoopsConfig;
-		
-		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".$r_page."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket($page)."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$X_uname."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_ALL_LINES."\n";
-		$mail_body .= $postdata;
-		$xoopsMailer =& getMailer();
-		$xoopsMailer->useMail();
-		$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromName($xoopsConfig['sitename']);
-		$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["page"])));
-		$xoopsMailer->setBody($mail_body);
-		$xoopsMailer->send();
-		//メール送信ここまで by nao-pon
-	}
+	page_write($page,$postdata,NULL,"","","","","","",array('plugin'=>'tracker','mode'=>'all'));
 	
 	$r_page = rawurlencode($page);
 	

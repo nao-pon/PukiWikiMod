@@ -260,7 +260,7 @@ define("_MD_PUKIWIKI_MAIL_POSTER","投稿者: ");
 define("_MD_PUKIWIKI_MAIL_DEL_LINES","----------削除された行------------");
 define("_MD_PUKIWIKI_MAIL_ADD_LINES","----------追加された行------------");
 define("_MD_PUKIWIKI_MAIL_ALL_LINES","----------全　文------------------");
-define("_MD_PUKIWIKI_MAIL_HEAD","----------%sで追加された行------------");
+define("_MD_PUKIWIKI_MAIL_HEAD","----------%sでの投稿----------");
 define("_MD_PUKIWIKI_MAIL_FOOT","-------------------以上--------------------");
 define("_MD_PUKIWIKI_NO_AUTH","指定されたページ[ $1 ]を作成する権限がありません。");
 define("_MD_PUKIWIKI_NO_VISIBLE","指定されたページを閲覧する権限がないので表示されません。");

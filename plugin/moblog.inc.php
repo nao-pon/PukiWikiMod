@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.2 2004/01/15 13:01:03 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.3 2004/01/24 14:50:27 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -291,7 +291,7 @@ function plugin_moblog_page_write($page,$subject,$text,$filename,$ref_option,$no
 		{
 			//ÊÔ½¸¸¢¸Â·Ñ¾µ¤¢¤ê
 			$freeze = 1;
-			$X_uid = $uid = $up_freezed[1];
+			$uid = $up_freezed[1];
 			$aids = preg_replace("/(($|,)$uid,|,$)/","",join(",",$up_freezed[2]));
 			$gids = preg_replace("/,$/","",join(",",$up_freezed[3]));
 			$page_info = "#freeze\tuid:{$uid}\taid:{$aids}\tgid:{$gids}\n// author:{$uid}\n";

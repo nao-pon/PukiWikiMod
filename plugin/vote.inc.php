@@ -1,5 +1,5 @@
 <?php
-// $Id: vote.inc.php,v 1.4 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: vote.inc.php,v 1.5 2004/01/24 14:50:27 nao-pon Exp $
 
 function plugin_vote_init()
 {
@@ -150,35 +150,7 @@ function plugin_vote_action()
 		else
 			$oldposttime = time();
 
-		if(!$postdata && $del_backup)
-			backup_delete(BACKUP_DIR.encode($post["refer"]).".txt");
-		else if($do_backup && is_page($post["refer"]))
-			make_backup(encode($post["refer"]).".txt",$oldpostdata,$oldposttime);
-
-		file_write(DATA_DIR,$post["refer"],$postdata,$notimestamp);
-
-		is_page($post["refer"],true);
-		
-		if (WIKI_MAIL_NOTISE && $post['vote_newitem']) {
-			// メール送信 by nao-pon
-			global $xoopsConfig;
-			$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-			$mail_body .= _MD_PUKIWIKI_MAIL_URL."XOOPS_URL/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
-			$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["refer"]))."\n";
-			$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.strip_bracket(trim($name))."\n";
-			$mail_body .= sprintf(_MD_PUKIWIKI_MAIL_HEAD,"vote")."\n";
-			$mail_body .= $post['vote_newitem'];
-			$mail_body .= _MD_PUKIWIKI_MAIL_FOOT."\n";
-			$xoopsMailer =& getMailer();
-			$xoopsMailer->useMail();
-			$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
-			$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
-			$xoopsMailer->setFromName($xoopsConfig['sitename']);
-			$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["refer"])));
-			$xoopsMailer->setBody($mail_body);
-			$xoopsMailer->send();
-			//メール送信ここまで by nao-pon
-		}
+		page_write($post["refer"],$postdata,$notimestamp,"","","","","","",array('plugin'=>'vote','mode'=>'del&add'));
 
 		$title = $_title_updated;
 	}
