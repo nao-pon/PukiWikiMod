@@ -1,12 +1,12 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.33 2005/03/05 02:15:51 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.34 2005/03/29 23:54:21 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
 <!-- pukiwikimod -->
 	<script type="text/javascript">
 	<!--
-	var pukiwiki_root_url = "";
+	var pukiwiki_root_url = "<?php echo XOOPS_WIKI_HOST.XOOPS_WIKI_URL ?>/";
 	//-->
 	</script>
 	<script type="text/javascript" src="skin/default.ja.js"></script>
