@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.35 2004/01/15 13:01:51 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.36 2004/01/24 14:51:11 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -76,6 +76,7 @@ if ( $xoopsUser ) {
 } else {
 	$X_uname = $no_name;
 }
+
 /////////////////////////////////////////////////
 // 編集権限セット
 if ($X_admin || ($wiki_writable === 0) || (($X_uid && ($wiki_writable < 2)))) {
@@ -90,14 +91,6 @@ if ($X_admin || ($wiki_allow_new === 0) || (($X_uid && ($wiki_allow_new < 2)))) 
 	define("WIKI_ALLOW_NEWPAGE",FALSE);
 }	
 $wiki_allow_newpage = WIKI_ALLOW_NEWPAGE; //Skin用に残す
-
-/////////////////////////////////////////////////
-// メール通知の有効 or 無効
-if ($wiki_mail_sw === 2 || ($wiki_mail_sw === 1 && (!$X_admin))) {
-	define("WIKI_MAIL_NOTISE",TRUE);
-} else {
-	define("WIKI_MAIL_NOTISE",FALSE);
-}
 
 // <title>用
 $h_excerpt = "";
@@ -513,7 +506,7 @@ else if($post["write"])
 	}
 	
 	// ページ作成者 元ページに記載があればその値を取得
-	$author_uid = 0;
+	$author_uid = $X_uid;
 	if (preg_match("/^\/\/ author:([0-9]+)($|\n)/",$checkpostdata,$arg))
 		$author_uid = $arg[1];
 	// 管理者権限はフォームデーターで上書き
@@ -710,45 +703,6 @@ else if($post["write"])
 
 			// ページの出力
 			page_write($post["page"],$postdata,$post['notimestamp'],$freeze_aid,$freeze_gid,$unvisible_aid,$unvisible_gid,$post["freeze"],$post["unvisible"]);
-
-			
-			if (WIKI_MAIL_NOTISE) {
-				// メール送信 by nao-pon
-				global $xoopsConfig;
-
-				 //- メール用差分データの作成
-				$mail_add = $mail_del = "";
-				$diffdata_ar = array();
-				$diffdata_ar=split("\n",$diffdata);
-				foreach($diffdata_ar as $diffdata_line){
-					if (ereg("^\+(.*)",$diffdata_line,$regs)){
-						$mail_add .= $regs[1]."\n";
-					}
-					if (ereg("^\-(.*)",$diffdata_line,$regs)){
-						$mail_del .= $regs[1]."\n";
-					}
-				}
-
-				$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-				$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["page"]))."\n";
-				$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["page"]))."\n";
-				$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$X_uname."\n";
-				$mail_body .= _MD_PUKIWIKI_MAIL_DEL_LINES."\n";
-				$mail_body .= $mail_del;
-				$mail_body .= _MD_PUKIWIKI_MAIL_ADD_LINES."\n";
-				$mail_body .= $mail_add;
-				$mail_body .= _MD_PUKIWIKI_MAIL_ALL_LINES."\n";
-				$mail_body .= $postdata;
-				$xoopsMailer =& getMailer();
-				$xoopsMailer->useMail();
-				$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
-				$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
-				$xoopsMailer->setFromName($xoopsConfig['sitename']);
-				$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["page"])));
-				$xoopsMailer->setBody($mail_body);
-				$xoopsMailer->send();
-				//メール送信ここまで by nao-pon
-			}
 
 			if($postdata)
 			{
