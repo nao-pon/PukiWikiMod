@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.7 2003/07/05 14:44:25 nao-pon Exp $
+// $Id: html.php,v 1.8 2003/07/06 11:57:05 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -861,7 +861,7 @@ function edit_form($postdata,$page,$add=0)
 	global $script,$rows,$cols,$hr,$vars,$function_freeze;
 	global $_btn_addtop,$_btn_preview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp,$_btn_enter_enable,$_btn_autobracket_enable,$_btn_freeze_enable,$_btn_auther_id;
 	global $whatsnew,$_btn_template,$_btn_load,$non_list,$load_template_func;
-	global $freeze_check,$create_uid,$author_uid,$X_admin,$X_uid,$freeze_tag;
+	global $freeze_check,$create_uid,$author_uid,$X_admin,$X_uid,$freeze_tag,$wiki_writable;
 	
 	$digest = md5(@join("",get_source($page)));
 	$create_uid = (isset($create_uid))? $create_uid : $X_uid ;
@@ -881,7 +881,14 @@ function edit_form($postdata,$page,$add=0)
 	//if($function_freeze){
 		//$str_freeze = '<input type="submit" name="freeze" value="'.$_btn_freeze.'" accesskey="f" />';
 		if (($X_uid && $X_uid == $author_uid) || $X_admin) {
-			$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.$_btn_freeze_enable.'</span>';
+			if ($wiki_writable === 2){
+				$enable_user = _MD_PUKIWIKI_ADMIN;
+			} elseif($wiki_writable === 1){
+				$enable_user = _MD_PUKIWIKI_REGIST;
+			} else {
+				$enable_user = _MD_PUKIWIKI_ALL;
+			}
+			$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.sprintf($_btn_freeze_enable,$enable_user).'</span>';
 			$allow_edit_tag = allow_edit_form();
 		}
 	//}
@@ -1159,8 +1166,10 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	$ret .= "<tr><th class='style_th'>$_btn_allow_group</th><th class='style_th'>$_btn_allow_user</th><th class='style_th'>$_btn_allow_memo_t</th></tr>";
 	$ret .= "<tr><td class='style_td'>";
 
-	$groups = X_get_group_list();
-	$mygroups = X_get_groups();
+	if ($wiki_writable !== 2){
+		$groups = X_get_group_list();
+		$mygroups = X_get_groups();
+	}
 
 	// グループの名前をサイトの設定に書き換え
 	//$_btn_allow_memo = str_replace("_GUEST_ALLOW_",$_btn_allow_guest,$_btn_allow_memo);
@@ -1183,8 +1192,11 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	}
 	$ret .= "</select></td>";
 	$ret .= "<td class='style_td'>";
-	$allusers = X_get_users();
-	asort($allusers);
+	
+	if ($wiki_writable !== 2){
+		$allusers = X_get_users();
+		asort($allusers);
+	}
 
 	// ユーザ一覧表示
 	$ret .= "<select  size='10' name='aids[]' id='aids[]' multiple='multiple'>";

@@ -89,7 +89,7 @@ $_btn_load = '読込';
 $_btn_edit = '編集';
 $_btn_enter_enable = ' 改行を有効にする';
 $_btn_autobracket_enable = ' オートブラケット処理をする';
-$_btn_freeze_enable = ' このページの編集許可設定を有効にする。(チェックなしで凍結解除)';
+$_btn_freeze_enable = ' このページの編集許可設定を有効にする。(チェックをはずすと、%sが編集可能になります。)';
 $_btn_auther_id = '作成者ID:';
 $_btn_allow_header = 'このページの編集権限設定';
 $_btn_allow_deny = '許可しない';
@@ -178,6 +178,10 @@ define("_MD_PUKIWIKI_MAIL_ALL_LINES","----------全　文------------------");
 define("_MD_PUKIWIKI_MAIL_HEAD","----------%sで追加された行------------");
 define("_MD_PUKIWIKI_MAIL_FOOT","-------------------以上--------------------");
 define("_MD_PUKIWIKI_NO_AUTH","指定されたページ[ $1 ]を作成する権限がありません。");
+define("_MD_PUKIWIKI_ALL", "すべての訪問者");
+define("_MD_PUKIWIKI_REGIST", "登録ユーザーのみ");
+define("_MD_PUKIWIKI_ADMIN", "管理者のみ");
+
 
 
 ///////////////////////////////////////
