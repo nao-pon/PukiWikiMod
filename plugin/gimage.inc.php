@@ -58,7 +58,7 @@ function plugin_gimage_search($q,$qmode)
 	{
 		//$file = "http://images.google.co.jp/images?hl=ja&inlang=ja&lr=&ie=EUC-JP&oe=EUC-JP&{$safe}&c2coff=1&q=".rawurlencode($q);
 		$qmode = ($qmode)? "op_q_or" : "q" ;
-		$q = str_replace("¡¦","",$q);
+		//$q = str_replace("¡¦","",$q);
 		$file = "http://cgi.search.biglobe.ne.jp/cgi-bin/pict/search?{$qmode}=".rawurlencode($q);
 		$result = http_request($file);
 		if ($result['rc'] != 200)
