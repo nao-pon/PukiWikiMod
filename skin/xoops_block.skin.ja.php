@@ -1,4 +1,4 @@
-<?php // $Id: xoops_block.skin.ja.php,v 1.10 2004/12/04 15:38:47 nao-pon Exp $
+<?php // $Id: xoops_block.skin.ja.php,v 1.11 2004/12/04 16:04:40 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -14,19 +14,27 @@ $pukiwiki_url = XOOPS_URL."/modules/".$xoopsModule->dirname()."/";
 // イメージタグのURLを訂正
 $body = preg_replace("/(<img[^>]+src=('|\")?)\.\//","$1".$pukiwiki_url,$body);
 ?>
-	<div class="pukiwiki_body">
-	<script type="text/javascript">
-	<!--
-	var pukiwiki_root_url = "<?php echo $pukiwiki_url ?>";
-	-->
-	</script>
+
+<!-- PukiWiki Block -->
+<script type="text/javascript">
+<!--
+var pukiwiki_root_url = "<?php echo $pukiwiki_url ?>";
+-->
+</script>
+<table border="0" cellspacing="0" style="width:100%;" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()>
+ <tr>
+  <td class="pukiwiki_body">
 	<script language=javascript src="<?php echo $pukiwiki_url ?>skin/default.ja.js"></script>
-	<div class="wiki_content" onmouseup="pukiwiki_pos();" onkeyup="pukiwiki_pos();">
+	<div class="wiki_content">
 	<?php echo $body ?>
 	</div>
-	<script type="text/javascript">
-	<!--
-	pukiwiki_initTexts();
-	//-->
-	</script>
-	</div>
+  </td>
+ </tr>
+</table>
+<script type="text/javascript">
+<!--
+pukiwiki_initTexts();
+//-->
+</script>
+<!-- /PukiWiki Block -->
+
