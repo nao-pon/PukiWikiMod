@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.10 2004/01/27 14:28:54 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.11 2004/01/30 14:47:12 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -76,7 +76,7 @@ function plugin_ls2_convert() {
 		//$prefix = strip_bracket($vars['page']).'/';
 		$prefix = strip_bracket($vars['page']);
 		
-	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'_done'=>FALSE,'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE,'depth'=>FALSE);
+	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE,'depth'=>FALSE,'_done'=>FALSE);
 	array_walk($args, 'ls2_check_arg', &$params);
 	$title = (count($params['_args']) > 0) ?
 		join(',', $params['_args']) :
@@ -223,13 +223,15 @@ function ls2_get_child_pages($prefix,$depth=FALSE) {
 //オプションを解析する
 function ls2_check_arg($val, $key, &$params) {
 	if ($val == '') { $params['_done'] = TRUE; return; }
+
 	if (!$params['_done']) {
-		foreach (array_keys($params) as $key) {
-			//if (strpos($key, strtolower($val)) === 0) {
-			if (preg_match("/^".preg_quote($key,'/')."(:(.*))?$/",$val,$value))
+		foreach (array_keys($params) as $key)
+		{
+			list($val,$thisval) = split(":",$val);
+			if (strtolower($val) == $key)
 			{
-				if ($value[2])
-					$params[$key] = $value[2];
+				if (!empty($thisval))
+					$params[$key] = $thisval;
 				else
 					$params[$key] = TRUE;
 				return;
@@ -239,5 +241,4 @@ function ls2_check_arg($val, $key, &$params) {
 	}
 	$params['_args'][] = $val;
 }
-
 ?>
