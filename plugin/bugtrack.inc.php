@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.3 2003/06/28 15:46:11 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -42,7 +42,20 @@ function plugin_bugtrack_init()
 function plugin_bugtrack_action()
 {
   global $command,$vars,$_bugtrack_plugin_default_category,$script,$post;
-  
+
+	//改行コード統一 by nao-pon
+	$post['body'] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post['body']);
+
+	//改行有効 by nao-pon
+	if($post['enter_enable']) {
+		$post['body'] = auto_br($post['body']);
+	}
+
+	//ページ名に自動リンク by nao-pon
+	if ($post['auto_bra_enable']) {
+		$post['body'] = auto_braket($post['body'],$vars['page']);
+	}
+
   if($post['mode']=='submit') {
     $ret['msg'] = $_bugtrack_plugin_title_submitted;
     $page = plugin_bugtrack_write($post['base'], $post['pagename'], $post['summary'], $post['name'], $post['priority'], $post['state'], $post['category'], $post['version'], $post['body']);
@@ -65,7 +78,14 @@ function plugin_bugtrack_print_form($base,$category)
   global $_bugtrack_plugin_summary, $_bugtrack_plugin_submit, $_bugtrack_plugin_version;
   global $_bugtrack_plugin_pagename, $_bugtrack_plugin_pagename_comment;
   global $_bugtrack_plugin_version_comment;
-  global $script;
+  global $script,$_btn_enter_enable,$_btn_autobracket_enable;
+
+	// xoops //
+	global $xoopsUser;
+	if ($xoopsUser){
+		$name = $xoopsUser->uname();
+	}
+	// ---- //
 
   $select_priority = '';
   for($i=0; $i<count($_bugtrack_plugin_priority_list); ++$i) {
@@ -96,18 +116,19 @@ function plugin_bugtrack_print_form($base,$category)
   }
   
   $body = "<table border=\"0\"><form action=\"$script\" method=\"post\">
-<tr><th nowrap>$_bugtrack_plugin_name</th><td><input name=\"name\" size=\"20\" type=\"text\"></td></tr>
+<tr><th nowrap>$_bugtrack_plugin_name</th><td><input name=\"name\" size=\"20\" type=\"text\" value=\"$name\"></td></tr>
 <tr><th nowrap>$_bugtrack_plugin_category</th><td>$encoded_category</td></tr>
 <tr><th nowrap>$_bugtrack_plugin_priority</th><td><select name=\"priority\">$select_priority</select></td></tr>
 <tr><th nowrap>$_bugtrack_plugin_state</th><td><select name=\"state\">$select_state</select></td></tr>
 <tr><th nowrap>$_bugtrack_plugin_pagename</th><td><input name=\"pagename\" size=\"20\" type=\"text\">$_bugtrack_plugin_pagename_comment</td></tr>
 <tr><th nowrap>$_bugtrack_plugin_version</th><td><input name=\"version\" size=\"10\" type=\"text\">$_bugtrack_plugin_version_comment</td></tr>
 <tr><th nowrap>$_bugtrack_plugin_summary</th><td><input name=\"summary\" size=\"60\" type=\"text\"></td></tr>
+<tr><th nowrap></th><td><input type=\"checkbox\" name=\"enter_enable\" value=\"true\" checked /><span class=\"small\">$_btn_enter_enable</span> <input type=\"checkbox\" name=\"auto_bra_enable\" value=\"true\" checked /><span class=\"small\">$_btn_autobracket_enable</span></td></tr>
 <tr><th nowrap>$_bugtrack_plugin_body</th><td><textarea name=\"body\" cols=\"60\" rows=\"6\"></textarea></td></tr>
 <tr><td colspan=\"2\" align=\"center\"><input type=\"submit\" value=\"$_bugtrack_plugin_submit\">
 <input type=\"hidden\" name=\"plugin\" value=\"bugtrack\">
 <input type=\"hidden\" name=\"mode\" value=\"submit\">
-<input type=\"hidden\" name=\"base\" value=\"$base\">
+<input type=\"hidden\" name=\"base\" value=\"".htmlspecialchars($base)."\">
 </td></tr>
 </form></table>";
   
@@ -150,12 +171,15 @@ $body
 function plugin_bugtrack_write($base, $pagename, $summary, $name, $priority, $state, $category, $version, $body)
 {
   global $WikiName,$BracketName;
+  global $X_uid;
   
   $pagename = strip_bracket($pagename);
   
   $postdata = plugin_bugtrack_template($base, $summary, $name, $priority, $state, $category, $version, $body);
   $postdata = user_rules_str($postdata);
-
+  // author:uid の追加
+	$postdata = "// author:".$X_uid."\n".$postdata;
+	
   $i = 0;
   do {
     $i++;
@@ -208,36 +232,37 @@ function plugin_bugtrack_convert()
 
 
 function plugin_bugtrack_pageinfo($page) {
-  global $WikiName, $InterWikiName, $BracketName;
+	global $WikiName, $InterWikiName, $BracketName;
 
-  $source = get_source($page);
-  if(preg_match("/move\s*to\s*($WikiName|$InterWikiName|$BracketName)/",$source[0],$match)) {
-    return(plugin_bugtrack_pageinfo($match[1]));
-  }
+	$source = get_source($page);
+	$source = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$source);
+	
+	if(preg_match("/move\s*to\s*($WikiName|$InterWikiName|$BracketName)/",$source[0],$match)) {
+		return(plugin_bugtrack_pageinfo($match[1]));
+	}
 
-  $body = join("\n",$source);
-  $summary = $name = $priority = $state = $category = 'test';
-  $itemlist = array();
-  foreach(array('summary','name','priority','state','category') as $item) {
-    $itemname = '_bugtrack_plugin_'.$item;
-    global $$itemname;
-    $itemname = $$itemname;
-    if(preg_match("/-\s*$itemname\s*:\s*(.*)\s*/",$body,$matches)) {
-      if($item == "name") {
-	$$item = htmlspecialchars(strip_bracket($matches[1]));
-      }
-      else {
-	$$item = htmlspecialchars($matches[1]);
-      }
-    }
-  }
+	$body = join("\n",$source);
+	$summary = $name = $priority = $state = $category = "\x08";
+	$itemlist = array();
+	foreach(array('summary','name','priority','state','category') as $item) {
+		$itemname = '_bugtrack_plugin_'.$item;
+		global $$itemname;
+		$itemname = $$itemname;
+		if(preg_match("/-\s*$itemname\s*:\s*(.*)\s*/",$body,$matches)) {
+			if($item == "name" || $item == "summary") {
+				$$item = htmlspecialchars(strip_bracket($matches[1]));
+			}else {
+				$$item = htmlspecialchars($matches[1]);
+			}
+		}
+	}
 
-  global $_bugtrack_plugin_summary;
-  if(preg_match("/\*([^\n]+)/",$body,$matches)) {
-    $summary = htmlspecialchars($matches[1]);
-  }
-  
-  return(array($page, $summary, $name, $priority, $state, $category));
+	global $_bugtrack_plugin_summary;
+	if(preg_match("/\*([^\n]+)/",$body,$matches)) {
+		$summary = htmlspecialchars($matches[1]);
+	}
+	
+	return(array($page, $summary, $name, $priority, $state, $category));
 }
 
 function plugin_bugtrack_list_convert()
@@ -252,10 +277,12 @@ function plugin_bugtrack_list_convert()
   if(func_num_args()) {
 	  $aryargs = func_get_args();
 	  $_page = get_fullname($aryargs[0],$page);
-	  if (preg_match("/^(($BracketName)|($WikiName))$/",$_page))
-	  {
+	  if (preg_match("/^(($BracketName)|($WikiName))$/",$_page)){
 		  $page = $_page;
-	  }
+	  } else {
+			$compact = ($aryargs[0]=="compact")? true : false;
+		}
+	  if (!$compact) $compact = ($aryargs[1]=="compact")? true : false;
   }
   
   $data = array();
@@ -270,9 +297,11 @@ function plugin_bugtrack_list_convert()
 	  if(substr($file,0,$filepattern_len)!=$filepattern) continue; 
 	  $page = decode(trim(preg_replace("/\.txt$/"," ",$file)));
 	  $line = plugin_bugtrack_pageinfo($page);
-	  array_push($data,$line);
 	  list($page, $summary, $name, $priority, $state, $category) = $line;
-	  array_push($states,$state);
+	  if ($category != "\x08") {
+			array_push($data,$line);
+	  	array_push($states,$state);
+	  }
 	}
       closedir($dir);
     }
@@ -284,20 +313,22 @@ function plugin_bugtrack_list_convert()
   }
   foreach($data as $line) {
     list($page, $summary, $name, $priority, $state, $category) = $line;
-    $page_link = make_link($page);
+    //$page_link = make_link($page);
+    $short_name = ($compact)? "- ".preg_replace("/.*\/([^\/]*)$/","$1",strip_bracket($page))." -" : "";
+    $page_link = make_pagelink($page,$short_name);
     $state_no = array_search($state,$_bugtrack_plugin_state_sort);
-    if($state_no===NULL) {
+    if($state_no === NULL or $state_no === FALSE) {
       $state_no = count($_bugtrack_plugin_state_list);
     }
     $bgcolor = $_bugtrack_plugin_state_bgcolor[$state_no];
-    array_push($table[$state_no],"<tr bgcolor=\"$bgcolor\"><td nowrap>$page_link</td><td nowrap>$state</td><td nowrap>$priority</td><td nowrap>$category</td><td nowrap>$name</td><td>$summary</td></tr>");
+    array_push($table[$state_no],"<tr bgcolor=\"$bgcolor\"><td nowrap>$page_link</td><td nowrap>$state</td><td nowrap>$priority</td><td nowrap>$category</td><td nowrap>".make_pagelink("[[$name]]")."</td><td>".make_pagelink($page,$summary)."</td></tr>");
   }
   
   $table_html = "<tr><th></th><th>$_bugtrack_plugin_state</th><th>$_bugtrack_plugin_priority</th><th>$_bugtrack_plugin_category</th><th>$_bugtrack_plugin_name</th><th>$_bugtrack_plugin_summary</th></tr>\n";
   for($i=0; $i<=count($_bugtrack_plugin_state_list); ++$i) {
     $table_html .= join("\n",$table[$i]);
   }
-  return "<table border=1>$table_html</table>";
+  return "<table border=1 style=\"width:100%\">$table_html</table>";
 }
 
 ?>

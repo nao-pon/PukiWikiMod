@@ -1,8 +1,8 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.2 2003/06/28 11:33:05 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.3 2003/06/28 15:52:58 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
-global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable;
+global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable;
 if(is_freeze($vars['page'])){
 	if($hide_navi){
 		if($xoopsUser){
@@ -31,26 +31,32 @@ if(is_freeze($vars['page'])){
 	<?php if(!$hide_navi){ ?>
 		<center><div style="width:80%;text-align:center;font-size:14px;font-weight:bold;border: #6699FF thick ridge 2px;background-color:#FFFFEE;padding:2px;"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
-		[ <a href="<?php echo "$script?".rawurlencode($vars[page]) ?>">リロード</a> ]
+		[ <a href="<?php echo "$script?".rawurlencode($vars['page']) ?>">リロード</a> ]
 		&nbsp;
 	<?php
 	$isfreeze =is_freeze($vars[page]);
-	if ($xoopsUser||$anon_writable){
+	
+	if ($anon_writable){
 		echo "
 		[ <a href=\"$script?plugin=newpage\">新規</a>";
 		if (!$isfreeze) echo "
 		| <a href=\"$link_edit\">編集</a>
 		| <a href=\"$link_diff\">差分</a>
-		| <a href=\"$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars[page])."\">添付</a>
+		| <a href=\"$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page'])."\">添付</a>
 		| <a href=\"$script?plugin=rename\">リネーム</a>";
 		echo "
 		]
 		&nbsp;";
 	} else {
+		$source_tag = "<a href=\"$script?plugin=source&amp;page=".rawurlencode($vars['page'])."\">ソース</a>";
 		if (is_freeze($vars[page])){
-			//echo "[ 凍結中 ]&nbsp;";
+			echo "[ ".$source_tag." ]&nbsp;";
 		} else {
-			echo "[ <a href='".XOOPS_URL."/user.php'>ログインすると編集できます</a> ]&nbsp;";
+			if ($wiki_writable < 2) {
+				echo "[ <a href='".XOOPS_URL."/user.php'>ログインすると編集できます</a> | $source_tag ]&nbsp;";
+			} else {
+				echo "[ ".$source_tag." ]&nbsp;";
+			}
 		}
 	}
 	?>
@@ -114,7 +120,7 @@ if(is_freeze($vars['page'])){
 		<?php if($is_page) { ?>
 			<a href="<?php echo "$script?".rawurlencode($vars[page]) ?>"><img src="./image/reload.gif" width="20" height="20" border="0" alt="リロード" /></a>
 			&nbsp;
-		  <?php if ($xoopsUser||$anon_writable){ ?>
+		  <?php if ($anon_writable){ ?>
 			<a href="<?php echo $script ?>?plugin=newpage"><img src="./image/new.gif" width="20" height="20" border="0" alt="新規" /></a>
 			<a href="<?php echo $link_edit ?>"><img src="./image/edit.gif" width="20" height="20" border="0" alt="編集" /></a>
 			<a href="<?php echo $link_diff ?>"><img src="./image/diff.gif" width="20" height="20" border="0" alt="差分" /></a>

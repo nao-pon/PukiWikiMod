@@ -1,19 +1,28 @@
 <?php
-// $Id: yetlist.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: yetlist.inc.php,v 1.3 2003/06/28 15:48:39 nao-pon Exp $
 
 // modified by PANDA <panda@arino.jp> http://home.arino.jp/
 // Last-Update:2002-09-12 rev.1
 
+function plugin_yetlist_init() {
+	if (LANG == "ja"){
+		define("WIKI_PLUGIN_YETLIST_MSG","未入力(作成されていない)ページの一覧");
+	} else {
+		define("WIKI_PLUGIN_YETLIST_MSG","List of pages,are not made yet");
+	}
+}
+
 function plugin_yetlist_action() {
 	global $script,$LinkPattern;
 
-	$ret['msg'] = 'List of pages,are not made yet';
+	$ret['msg'] = WIKI_PLUGIN_YETLIST_MSG;
 	
 	if (!$dir = @opendir(DATA_DIR)) { return $ret; }
 
 	while($file = readdir($dir)) {
 		if ($file == '..' || $file == '.') continue;
 		$page = decode(str_replace('.txt','',$file));
+		if ($page == "RenameLog") continue;
 		$line = join("\n",preg_replace('/^(\s|\/\/|#).*$/','',file(DATA_DIR.$file)));
 		$obj = new link_wrapper($page);
 		foreach ($obj->get_link($line) as $obj) {
