@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.4 2004/10/16 04:14:53 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.5 2004/10/21 23:57:41 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -41,6 +41,12 @@ function b_pukiwiki_page_show($options)
 		
 		//マルチドメイン対応
 		$data = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$data);
+		
+		// SID 自動付加環境 は SID を削除
+		if (ini_get("session.use_trans_sid"))
+		{
+			$data = preg_replace("/(&|\?)?".preg_quote(ini_get("session.name"),"/")."=[0-9a-f]{32}/","",$data);
+		}
 		
 		if ($fp = fopen($cache_file,"w"))
 		{
