@@ -22,7 +22,7 @@
  *
  * ÈòÆñ½ê       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.7 2004/05/14 11:23:02 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.8 2004/05/14 12:24:14 nao-pon Exp $
  *
  */
 
@@ -88,6 +88,11 @@ function plugin_showrss_convert()
 
 	list($rss,$time) = plugin_showrss_get_rss($rssurl,$usecache);
 
+	if ($rss === FALSE)
+	{
+		return "<p>showrss: cannot get rss from server.</p>\n";
+	}
+	
 	$obj = new $class($rss,$show_description);
 
 	$timestamp = '';
@@ -200,7 +205,7 @@ function plugin_showrss_get_rss($target,$usecache)
 		$data = http_request($target);
 		if ($data['rc'] !== 200)
 		{
-			return FALSE;
+			return array(FALSE,0);
 		}
 		$buf = $data['data'];
 		$time = UTIME;
