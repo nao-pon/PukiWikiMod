@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.10 2004/08/19 03:03:03 nao-pon Exp $
+// $Id: paint.inc.php,v 1.11 2004/08/19 05:30:37 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -266,7 +266,7 @@ function paint_insert_ref($filename)
 	
 	if (empty($vars['yourname'])) $vars['yourname'] = $X_uname;
 	
-	$title = (!empty($vars['title']))? "****".rtrim($vars['title'])."\n" : "";
+	$title = (!empty($vars['title']))? "**** ".rtrim($vars['title'])."\n" : "";
 	
 	$spch = (!empty($vars['spch']))? "\nRIGHT:&showspch(".$vars['spch'].",[ 動画再生 ]);\n\n" : "";
 	
