@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.8 2003/07/17 13:11:21 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.9 2003/07/21 01:30:06 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -55,7 +55,7 @@ define("MAX_FILESIZE",1000000);
 /////////////////////////////////////////////////
 // index.php などに変更した場合のスクリプト名の設定
 // とくに設定しなくても問題なし
-//$script = "http://hogehoge/pukiwiki/";
+$script = XOOPS_URL.'/modules/pukiwiki/index.php';
 
 /////////////////////////////////////////////////
 // トップページの名前
