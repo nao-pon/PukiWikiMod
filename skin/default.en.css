@@ -460,7 +460,7 @@ strong.word9 {
 /* new.inc.php */
 .comment_date
 {
-	font-size:x-small;
+	font-size:10px;
 }
 .new1
 {
@@ -499,7 +499,6 @@ div.wiki_source
 	padding: .5em;
 	margin-left: 1em;
 	margin-right: 2em;
-	white-space: pre;
 	background-color: #F0F8FF;
 	color: black;
 	line-height:150%;
