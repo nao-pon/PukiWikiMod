@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.62 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.63 2005/01/13 13:35:52 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -1186,7 +1186,7 @@ if (empty($vars['xoops_block']))
 	// XOOPSコメント
 	if ($use_xoops_comments && $show_comments)
 	{
-		$_GET['pgid'] = $pgid;
+		$HTTP_GET_VARS['pgid'] = $_GET['pgid'] = $pgid;
 		
 		// ゲスト投稿権限
 		$xoopsModuleConfig['com_anonpost'] = 1;
