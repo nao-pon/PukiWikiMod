@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.19 2004/01/12 13:12:06 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.20 2004/01/15 13:03:45 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -23,7 +23,13 @@ define("PLUGIN_DIR","./plugin/");
 /////////////////////////////////////////////////
 // counter file
 define("COUNTER_DIR","./counter/");
-
+/////////////////////////////////////////////////
+// ページHTMLキャッシュディレクトリ
+define("PAGE_CACHE_DIR","./pagehtml/");
+/////////////////////////////////////////////////
+// ページHTMLキャッシュ期限（分）0 でキャッシュしない
+// ゲストユーザーのみキャッシュ機能が有効になります。
+define("PAGE_CACHE_MIN",10);
 
 /////////////////////////////////////////////////
 // Language

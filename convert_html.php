@@ -1,11 +1,23 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.13 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: convert_html.php,v 1.14 2004/01/15 13:03:45 nao-pon Exp $
 /////////////////////////////////////////////////
-function convert_html($string,$is_intable=false)
+function convert_html($string,$is_intable=false,$page_cvt=false)
 {
-	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins;
-	
+	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid;
+	if ($page_cvt)
+	{
+		$page = add_bracket($string);
+		$h_excerpt = "";
+		$filename = PAGE_CACHE_DIR.encode($page).".txt";
+		if (!$X_uid && file_exists($filename) && (filemtime($filename) + PAGE_CACHE_MIN * 60) > time())
+		{
+			$htmls = file($filename);
+			list($related_link,$noattach,$noheader,$h_excerpt) = split("\t",trim(array_shift($htmls)));
+			return join('',$htmls);
+		}
+		else $string = join("",get_source($page));
+	}
 	$string = preg_replace("/(^|\n)#newfreeze(\n|$)/","$1",$string);
 	
 	if (is_array($string)) $string = join('',$string);
@@ -49,9 +61,21 @@ function convert_html($string,$is_intable=false)
 	//整形済み指定の" "を削除 nao-pon
 	$str = preg_replace("/(^|\n) /", "$1", $str);
 	
-	//一応アンセットしてみる
-	unset ($body,$cnts_plain,$arykeep,$result_last);
+	//ゲストアカウントでページコンバート指定時
+	if (!$X_uid && $page_cvt)
+	{
+		$html = $related_link."\t".$noattach."\t".$noheader."\t".$h_excerpt."\n".$str;
+		//キャッシュ書き込み
+		if ($fp = @fopen($filename,"w"))
+		{
+			fputs($fp,$html);
+			fclose($fp);
+		}
+	}
 
+	//一応アンセットしてみる
+	unset ($body,$cnts_plain,$arykeep,$result_last,$html);
+	
 	return $str;
 	
 }

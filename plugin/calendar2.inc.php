@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.12 2004/01/12 13:15:15 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.13 2004/01/15 13:03:45 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -38,7 +38,7 @@ function plugin_calendar2_convert()
 	global $_calendar2_msg_detail, $_calendar2_msg_month, $_calendar2_msg_day;
 	global $script,$weeklabels,$vars,$command,$WikiName,$BracketName,$post,$get;
 	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable, $_msg_month;
-	global $wiki_user_dir,$comment_no;
+	global $wiki_user_dir,$comment_no,$h_excerpt;
 	
 	$today_view = true;
 	$category_view = "";
@@ -331,20 +331,23 @@ function plugin_calendar2_convert()
 			// 閲覧権限チェック＋
 			if (is_page($_page) && check_readable($_page,false,false)) {
 				$page_ = $vars['page'];
+				$_h_excerpt = $h_excerpt;
 				$get['page'] = $post['page'] = $vars['page'] = add_bracket($_page);
 				//comment_no 初期化
 				$_comment_no = $comment_no;
 				$comment_no = 0;
-				$body = @join("",get_source($_page));
+				//$body = @join("",get_source($_page));
 				$user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($_page)) : "[[".get_pg_auther_name($_page)."]]";
 				$user_tag = make_link($user_tag);
 				$show_tag = "by ".$user_tag." at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/search.png\" />");
 				$tb_tag = ($trackback)? "<div style=\"text-align:right\">{$show_tag}  [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($_page)."\">TrackBack(".tb_count($_page).")</a> ]</div>" : "<div style=\"text-align:right\">{$show_tag}</div>";
-				$str .= $tb_tag.convert_html($body);
+				//$str .= $tb_tag.convert_html($body);
+				$str .= $tb_tag.convert_html($_page,false,true);
 				if ($anon_writable) $str .= "<a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_calendar2_plugin_edit</a>";
 				$str .= "<hr />";
 				$get['page'] = $post['page'] = $vars['page'] = $page_;
 				$comment_no = $_comment_no;
+				$h_excerpt = $_h_excerpt;
 				$page_found = true;
 			}
 			else

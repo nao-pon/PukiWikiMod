@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.8 2004/01/12 13:15:15 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.9 2004/01/15 13:03:45 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -64,7 +64,7 @@ function plugin_calendar_viewer_convert()
   global $_calendar_viewer_msg_arg2, $_calendar_viewer_msg_noargs, $_calendar_viewer_msg_edit;
   global $WikiName,$BracketName,$vars,$get,$post,$hr,$script,$trackback;
   global $anon_writable,$wiki_user_dir;
-  global $comment_no;
+  global $comment_no,$h_excerpt;
   //*デフォルト値をセット
   //基準となるページ名
   $pagename = "";
@@ -274,6 +274,7 @@ if ($cal2 == 1){
   //変数値退避
   $tmppage = $vars["page"];
   $_comment_no = $comment_no;
+	$_h_excerpt = $h_excerpt;
   
   //$tmp_related = $related;
   $return_body = "";
@@ -309,8 +310,9 @@ if ($cal2 == 1){
     //comment_no 初期化
     $comment_no = 0;
 
-    $body = @join("",@file(get_filename(encode($page))));
-    $body = "<div class=\"style_calendar_body\">".$tb_tag.convert_html($body)."</div>";
+    //$body = @join("",@file(get_filename(encode($page))));
+    //$body = "<div class=\"style_calendar_body\">".$tb_tag.convert_html($body)."</div>";
+    $body = "<div class=\"style_calendar_body\">".$tb_tag.convert_html($page,false,true)."</div>";
     //$link = "<a href=\"$script?cmd=read&amp;page=".rawurlencode($page)."\">".strip_bracket($page)."</a>";
     $link = make_pagelink($page,preg_replace("/^.*\//","",strip_bracket($page)));
     if ($anon_writable) $link .= " <a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\"><font size=\"-2\">(".$_calendar_viewer_msg_edit.")</font></a>";
@@ -329,6 +331,7 @@ if ($cal2 == 1){
   $post["page"] = $tmppage;
   $vars["page"] = $tmppage;
   $comment_no = $_comment_no;
+	$h_excerpt = $_h_excerpt;
   //$related = $tmp_related;
 
 
