@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: template.php,v 1.5 2004/05/20 13:59:11 nao-pon Exp $
+// $Id: template.php,v 1.6 2004/05/27 13:55:39 nao-pon Exp $
 /////////////////////////////////////////////////
 
 function auto_template($page,$this=false)
@@ -28,6 +28,7 @@ function auto_template($page,$this=false)
 					{
 						$body = str_replace("\$$i",$matches[$i],$body);
 					}
+					$vars["refer"] = "";
 					break;
 				}
 			}
