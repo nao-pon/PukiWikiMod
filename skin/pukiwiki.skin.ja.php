@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.24 2004/09/20 12:33:23 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.25 2004/10/05 08:49:00 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -10,6 +10,7 @@ if($_freeze){
 	$hide_navi = ($X_admin)? 0 : $hide_navi;
 }
 ?>
+	<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">
 <?php if (WIKI_THEME_CSS){ ?>
 	<link rel="stylesheet" href="<?php echo WIKI_THEME_CSS ?>" type="text/css" media="screen" charset="shift_jis">
 <?php } else { ?>
@@ -61,7 +62,7 @@ if($_freeze){
 	| <a href="<?php echo $link_list ?>">一覧</a>
 	| <a href="<?php echo $link_search ?>">単語検索</a>
 	<?php if(arg_check("list")) { ?>
-		| <a href="<?php echo $link_filelist ?>">ファイル名一覧</a>
+		| <a href="<?php echo $link_filelist ?>">添付ファイル一覧</a>
 	<?php } ?>
 	| <a href="<?php echo $link_whatsnew ?>">最新</a>
 	<?php if ($wiki_allow_newpage){ ?>
@@ -118,6 +119,22 @@ if($_freeze){
 			}
 		}
 	?>
+	<?php
+	$trackback_body = tb_get_tb_body($vars['page'],TRUE);
+	if ($trackback_body){
+	?>
+	<div class="centercolumn">
+	  <div class="blockTitle">トラックバック <?php echo $tb_tag ?></div>
+	  <div class="blog">
+	<?php
+		echo $trackback_body;
+	?>
+	  </div>
+	</div>
+	<hr />
+	<?php
+	}
+	?>
 	<div style="text-align:right">
 		<?php if($is_page) { ?>
 		<a href="<?php echo $link_page ?>"><img src="./image/reload.png" width="20" height="20" border="0" alt="リロード" /></a>
@@ -134,6 +151,7 @@ if($_freeze){
 		<?php } // !$_freeze ?>
 		<a href="<?php echo $link_diff ?>"><img src="./image/diff.png" width="20" height="20" border="0" alt="差分" /></a>
 		<a href="<?php echo $link_source ?>"><img src="./image/source.png" width="20" height="20" border="0" alt="ソース" /></a>
+		<a href="<?php echo $link_attachlist ?>"><img src="./image/attach.png" width="20" height="20" border="0" alt="添付ファイル一覧" /></a>
 		&nbsp;
 		<?php } // $is_page ?>
 		<a href="<?php echo $link_top ?>"><img src="./image/top.png" width="20" height="20" border="0" alt="Wikiトップ" /></a>

@@ -1,13 +1,10 @@
 /* http://www.movabletype.org/trackback//styles-site.css */
-	body {
-		margin:20px 20px 20px 20px;
-		background:#EEE;
-		}
-	A 		{ color: #003366; font-family: verdana, arial, sans-serif; text-decoration: none; font-weight:bold; }
-	A:link		{ color: #003366; text-decoration: none; }
-	A:visited	{ color: #003366; text-decoration: none; }
-	A:active	{ color: #FFCC66;  }
-	A:hover		{ color: #FFCC66;  }
+
+	div.blog A 		{ color: #003366; font-family: verdana, arial, sans-serif; text-decoration: none; font-weight:bold; }
+	div.blog A:link		{ color: #003366; text-decoration: none; }
+	div.blog A:visited	{ color: #003366; text-decoration: none; }
+	div.blog A:active	{ color: #FFCC66;  }
+	div.blog A:hover		{ color: #FFCC66;  }
 
 	.blog {
 		padding:15px;

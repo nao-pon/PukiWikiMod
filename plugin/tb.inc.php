@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.2 2004/01/27 14:30:47 nao-pon Exp $
+// $Id: tb.inc.php,v 1.3 2004/10/05 08:49:00 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -205,6 +205,7 @@ EOD;
 	echo $rc;
 	die;
 }
+
 // ?__mode=view 処理
 function tb_mode_view($tb_id)
 {
@@ -223,52 +224,8 @@ function tb_mode_view($tb_id)
 	
 	$tb_title = sprintf($_tb_title,$page);
 	$tb_refer = sprintf($_tb_refer,"<a href=\"$script?$r_page\">'$page'</a>","<a href=\"$script\">$page_title</a>");
-
 	
-	//$data = tb_get(TRACKBACK_DIR.$tb_id.'.txt');
-	$data = tb_get_db($tb_id);
-	
-	
-	// 最新版から整列
-	//usort($data,create_function('$a,$b','return $b[0] - $a[0];'));
-	
-	$tb_body = '';
-	foreach ($data as $x)
-	{
-		list ($time,$url,$title,$excerpt,$blog_name,$dum,$dum,$ip) = $x;
-		if ($title == '')
-		{
-			$title = 'no title';
-		}
-		$time = date($_tb_date, $time + LOCALZONE); // May 2, 2003 11:25 AM
-		$del_form_tag = ($X_admin)? "<input type=\"checkbox\" name=\"delete_check[]\" value=\"$url\"/>" : "";
-		$ip_tag = ($X_admin)? "<br />\n  <strong>IP:</strong> $ip" : "";
-		$tb_body .= <<<EOD
-<div class="trackback-body">
- <span class="trackback-post">
-  $del_form_tag
-  <a href="$url" target="new">$title</a><br />
-  <strong>$_tb_header_Excerpt</strong> $excerpt<br />
-  <strong>$_tb_header_Weblog</strong> $blog_name<br />
-  <strong>$_tb_header_Tracked</strong> $time$ip_tag
- </span>
-</div>
-EOD;
-	}
-	
-	if ($X_admin && $tb_body)
-	{
-		$tb_body = <<<EOD
-<form method="post" action="$script">
-<input type="hidden" name="plugin" value="tb" />
-<input type="hidden" name="__mode" value="view" />
-<input type="hidden" name="tb_id" value="$tb_id" />
-<input type="hidden" name="cmd" value="delete" />
-<input type="submit" value="チェックしたものを削除" />
-$tb_body
-</form>
-EOD;
-	}
+	$tb_body = tb_get_tb_body($tb_id);
 	
 	if (!$tb_body) $tb_body = <<<EOD
 <div class="trackback-body">

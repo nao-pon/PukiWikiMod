@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.12 2004/06/09 13:16:24 nao-pon Exp $
+// $Id: trackback.php,v 1.13 2004/10/05 08:49:00 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -583,5 +583,59 @@ function get_sended_pings($tb_id)
 		$ret['count'] = 0;
 	}
 	return $ret;
+}
+
+// トラックバック一覧 Body取得
+function tb_get_tb_body($tb_id,$page=FALSE)
+{
+	global $script;
+	global $_tb_title,$_tb_header,$_tb_entry,$_tb_refer,$_tb_date;
+	global $_tb_header_Excerpt,$_tb_header_Weblog,$_tb_header_Tracked;
+	global $X_admin;
+	
+	if ($page) $tb_id = tb_get_id($tb_id);
+	
+	$data = tb_get_db($tb_id);
+	
+	$tb_body = '';
+	foreach ($data as $x)
+	{
+		list ($time,$url,$title,$excerpt,$blog_name,$dum,$dum,$ip) = $x;
+		if ($title == '')
+		{
+			$title = 'no title';
+		}
+		$time = date($_tb_date, $time + LOCALZONE); // May 2, 2003 11:25 AM
+		$del_form_tag = ($X_admin)? "<input type=\"checkbox\" name=\"delete_check[]\" value=\"$url\"/>" : "";
+		$ip_tag = ($X_admin)? "<br />\n  <strong>IP:</strong> $ip" : "";
+		$tb_body .= <<<EOD
+<div class="trackback-body">
+ <span class="trackback-post">
+  $del_form_tag
+  <a href="$url" target="new">$title</a><br />
+  <strong>$_tb_header_Excerpt</strong> $excerpt<br />
+  <strong>$_tb_header_Weblog</strong> $blog_name<br />
+  <strong>$_tb_header_Tracked</strong> $time$ip_tag
+ </span>
+</div>
+EOD;
+	}
+	
+	if ($X_admin && $tb_body)
+	{
+		$tb_body = <<<EOD
+<form method="post" action="$script">
+<input type="hidden" name="plugin" value="tb" />
+<input type="hidden" name="__mode" value="view" />
+<input type="hidden" name="tb_id" value="$tb_id" />
+<input type="hidden" name="cmd" value="delete" />
+<input type="submit" value="チェックしたものを削除" />
+$tb_body
+</form>
+EOD;
+	}
+	
+	return $tb_body;
+
 }
 ?>
