@@ -219,6 +219,10 @@ class link_interwiki extends link
 	{
 		global $script,$interwiki_target;
 		$strip_name = strip_bracket($this->name);
+		
+		// ./ は自分自身($script)に変換
+		$strip_name = preg_replace("/^\.\//",$script,$strip_name);
+
 		if (preg_match("/^(https?|ftp|news):\/\/[!~*'();\/?:\@&=+\$,%#\w.-]+$/",$strip_name)){
 			//URLへのエリアスの場合
 			///プラグインで付加された<a href>タグを取り除く

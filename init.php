@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.5 2003/07/22 13:36:42 nao-pon Exp $
+// $Id: init.php,v 1.6 2003/07/23 23:55:43 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -39,7 +39,7 @@ $LinkPattern = "/( (?# <1>:all)
 	(?# url )
 	(?:\[\[([^\]]+):)?           (?#<2>:alias)
 		(\[)?                      (?#<3>:open bracket)
-			((?:https?|ftp|news)(?::\/\/[!~*'();\/?:\@&=+\$,%#\w.-]+)) (?#<4>:url)
+			((?:(?:https?|ftp|news):\/\/|\.\.?\/)(?:[!~*'();\/?:\@&=+\$,%#\w.-]+)) (?#<4>:url)
 		(?(3)\s([^\]]+)\])         (?#<5>:alias, close bracket if <3>)
 	(?(2)\]\])                   (?# close bracket if <2>)
 	|
