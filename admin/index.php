@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.3 2003/06/28 16:11:14 nao-pon Exp $
+// $Id: index.php,v 1.4 2003/07/02 00:53:04 nao-pon Exp $
 
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -60,7 +60,7 @@ function writeConfig(){
 	fwrite($file, $wiki_css);
 	fclose($file);
 
-	redirect_header(XOOPS_ADMIN_URL,1,_AM_DBUPDATED);
+	redirect_header("./index.php",1,_AM_DBUPDATED);
 	exit();
 }
 
@@ -98,7 +98,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $anon_writable, $hide_navi, $wiki_mail_sw;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw;
 	xoops_cp_header();
 	OpenTable();
 	checkPermit();
@@ -111,9 +111,9 @@ function displayForm(){
 	if(isset($wiki_mail_sw)){
 		$_mail_sw_[$wiki_mail_sw] = " checked";
 	}
-	if($anon_writable === 0){
+	if($wiki_writable === 0){
 		$_anon_writable_all = " checked";
-	} elseif($anon_writable === 1) {
+	} elseif($wiki_writable === 1) {
 		$_anon_writable_regist = " checked";
 	} else {
 		$_anon_writable_admin = " checked";
