@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.10 2003/09/14 13:06:08 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.11 2003/09/29 12:23:27 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -294,7 +294,7 @@ function attach_mime_content_type($filename)
 		}
 	}
 	
-	if (!preg_match('/_([0-9A-Z]+)$/',$filename,$matches))
+	if (!preg_match('/_((?:[0-9A-F]{2})+)(?:\.\d+)?$/',$filename,$matches))
 	{
 		return $type;
 	}
