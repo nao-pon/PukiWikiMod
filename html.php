@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.19 2003/09/02 14:09:11 nao-pon Exp $
+// $Id: html.php,v 1.20 2003/09/25 13:14:43 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -321,13 +321,15 @@ function user_rules_str($str)
 function make_user_rules($str)
 {
 	global $user_rules;
-
-	foreach($user_rules as $rule => $replace)
+	static $pattern,$replace;
+	
+	if (!isset($pattern))
 	{
-		$str = preg_replace("/$rule/",$replace,$str);
+		$pattern = array_map(create_function('$a','return "/$a/";'),array_keys($user_rules));
+		$replace = array_values($user_rules);
+		unset($user_rules);
 	}
-
-	return $str;
+	return preg_replace($pattern,$replace,$str);
 }
 
 // HTMLタグを取り除く
