@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.10 2004/05/15 10:59:51 nao-pon Exp $
+// $Id: trackback.php,v 1.11 2004/05/15 13:13:23 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -155,6 +155,8 @@ function tb_send($page,$data="")
 	$title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
 	//$xml_title = $title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
 	$up_page = (strpos($page,"/")) ? preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($page)) : $defaultpage;
+	if (!is_page($up_page)) $up_page = $defaultpage;
+	
 	if ($h_excerpt) $title .= "/".$h_excerpt;
 	
 	//静的URLのようなURLにするか？
