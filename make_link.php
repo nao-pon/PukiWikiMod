@@ -187,9 +187,10 @@ class link_url extends link
 	function toString()
 	{
 		global $link_target;
-
+		//プラグインで付加された<a href>タグを取り除く
+		$this_alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
 		return "<a href=\"{$this->name}\" target=\"$link_target\">"
-			.($this->is_image ? $this->image : $this->alias)
+			.($this->is_image ? $this->image : $this_alias)
 			.'</a>';
 	}
 }
@@ -212,21 +213,20 @@ class link_interwiki extends link
 	{
 		global $script;
 		parent::link($name,'InterWikiName',($alias == '') ? strip_bracket($name) : $alias);
-
-		$script_reg = preg_quote($script,"/");
-		if (preg_match("/\[\[$script_reg\?(.*)\]\]/",$name,$reg)){
-			$name = $reg[1];
-			//$name = str_replace("&amp;","&",$name);
-			$this->rawname = $name;
-		} else {
-			$this->rawname = rawurlencode($name);
-		}
+		$this->rawname = rawurlencode($name);
 	}
 	function toString()
 	{
 		global $script,$interwiki_target;
-
-		return "<a href=\"$script?$this->rawname\" target=\"$interwiki_target\">{$this->alias}</a>";
+		$strip_name = strip_bracket($this->name);
+		if (preg_match("/^(https?|ftp|news):\/\/[!~*'();\/?:\@&=+\$,%#\w.-]+$/",$strip_name)){
+			//URLへのエリアスの場合
+			///プラグインで付加された<a href>タグを取り除く
+			$this_alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
+			return "<a href=\"$strip_name\">{$this_alias}</a>";
+		} else {
+			return "<a href=\"$script?$this->rawname\" target=\"$interwiki_target\">{$this->alias}</a>";
+		}
 	}
 }
 class link_wikiname extends link
@@ -266,8 +266,12 @@ class link_wikiname extends link
 	{
 		global $script;
 
-		if ($this->name == '' and $this->anchor != '')
-			return "<a href=\"{$this->anchor}\">{$this->alias}</a>";
+		if ($this->name == '' and $this->anchor != ''){
+			//プラグインで付加された<a href>タグを取り除く
+			$this_alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
+			return "<a href=\"{$this->anchor}\">{$this_alias}</a>";
+			//return "<a href=\"{$this->anchor}\">{$this->alias}</a>";
+		}
 
 		if (is_page($this->name))
 			return "<a href=\"$script?{$this->rawname}{$this->anchor}\" title=\"{$this->special}".$this->passage()."\">{$this->alias}</a>";
@@ -285,6 +289,8 @@ function make_pagelink($page,$alias='',$anchor='',$refer='')
 	global $_symbol_noexists;
 	
 	$page = add_bracket($page);
+	
+	//echo $page;
 	
 	$s_page = htmlspecialchars(strip_bracket($page));
 	$s_alias = ($alias == '') ? $s_page : $alias;
