@@ -14,42 +14,11 @@
 
  ※$_btn_nameはcommentプラグインで既に設定されている場合があります
 
- $Id: article.inc.php,v 1.12 2005/02/24 15:35:33 nao-pon Exp $
+ $Id: article.inc.php,v 1.13 2005/03/05 02:14:50 nao-pon Exp $
  
  */
 
-global $name_format, $subject_format, $no_subject, $_mailto;
-
-/////////////////////////////////////////////////
-// テキストエリアのカラム数
-define("article_COLS",70);
-/////////////////////////////////////////////////
-// テキストエリアの行数
-define("article_ROWS",5);
-/////////////////////////////////////////////////
-// 名前テキストエリアのカラム数
-define("NAME_COLS",24);
-/////////////////////////////////////////////////
-// 題名テキストエリアのカラム数
-define("SUBJECT_COLS",60);
-/////////////////////////////////////////////////
-// 名前の挿入フォーマット
-$name_format = '[[$name]]';
-/////////////////////////////////////////////////
-// 題名の挿入フォーマット
-$subject_format = '**$subject';
-/////////////////////////////////////////////////
-// 題名が未記入の場合の表記 
-$no_subject = '無題';
-/////////////////////////////////////////////////
-// 挿入する位置 1:欄の前 0:欄の後
-define("ARTICLE_INS",0);
-/////////////////////////////////////////////////
-// 書き込みの下に一行コメントを入れる 1:入れる 0:入れない
-define("ARTICLE_COMMENT",1);
-/////////////////////////////////////////////////
-// 改行を自動的変換 1:する 0:しない
-define("ARTICLE_AUTO_BR",1);
+global $article_no;
 
 // initialize
 $article_no = 0;
@@ -69,8 +38,16 @@ function plugin_article_action()
 {
 	global $post,$vars,$script,$cols,$rows,$del_backup,$do_backup,$now;
 	global $name_format, $subject_format, $no_subject, $name, $subject, $article;
-	global $_title_collided,$_msg_collided,$_title_updated;
-	global $_mailto,$no_name;;
+	global $_title_collided,$_msg_collided,$_title_updated,$_msg_comment_collided;
+	global $_mailto,$no_name,$article_body_format;
+	
+	// 設定ファイル読み込み
+	$conf = (isset($post['conf']))?  preg_replace("/[^\w]+/","",$post['conf']) : 0;
+	$conf = "article/".$conf.".conf.php";
+	if(file_exists(PLUGIN_DATA_DIR.$conf))
+		include (PLUGIN_DATA_DIR.$conf);
+	else
+		return (array("msg"=>"ERROR: Config file 'PLUGIN_DATA_DIR/{$conf}' is not found.","body"=>"ERROR: Config file 'PLUGIN_DATA_DIR/{$conf}' is not found."));
 	
 	if (!$post["msg"]) $post["msg"]="\t";
 	if ($post["msg"])
@@ -92,31 +69,23 @@ function plugin_article_action()
 		
 		if($post['subject'])
 		{
-			$subject = str_replace('$subject',$post[subject],$subject_format);
+			$subject = str_replace('$subject',$post['subject'],$subject_format);
 		} else {
 			$subject = str_replace('$subject',$no_subject,$subject_format);
 		}
 
-//		$article  = $subject."\n>";
-//		$article .= $name." (".$now.")\n>~\n";
-		$article  = $subject." SIZE(10){> ".$name." (".$now.")}\n";
-
-		if(ARTICLE_AUTO_BR){
-			$article .= auto_br($post['msg']);
+		if($article_auto_br){
+			$text = auto_br($post['msg']);
 		} else {
-			$article .= ">".$post['msg'];
-		}
-
-		if(ARTICLE_COMMENT){
-			$article .= "\n#comment";
+			$text = ">".$post['msg'];
 		}
 		
-		$article .= "\n----\n";
-
+		$article = str_replace(array('$subject','$name','$now','$text','\n',"\r"),array($subject,$name,$now,$text,"\n",""),trim($article_body_format));
+		
 		foreach($postdata_old as $line)
 		{
-			if(!ARTICLE_INS) $postdata .= $line;
-			if(preg_match("/^#article$/",trim($line)))
+			if(!$article_ins) $postdata .= $line;
+			if(preg_match("/^#article.*$/",rtrim($line)))
 			{
 				if($article_no == $post["article_no"] && $post[msg]!="")
 				{
@@ -124,35 +93,20 @@ function plugin_article_action()
 				}
 				$article_no++;
 			}
-			if(ARTICLE_INS) $postdata .= $line;
+			if($article_ins) $postdata .= $line;
 		}
-
-		$postdata_input = "$article\n";
 	}
 	else
 		return;
 
 	if(md5(@join("",get_source($post["refer"]))) != $post["digest"])
-	{
-		$title = $_title_collided;
-
-		$body = "$_msg_collided\n";
-
-		$body .= "<form action=\"$script?cmd=preview\" method=\"post\">\n"
-			."<div>\n"
-			."<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($post["refer"])."\" />\n"
-			."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($post["digest"])."\" />\n"
-			.fontset_js_tag()."<br />\n"
-			."<textarea name=\"msg\" rows=\"$rows\" cols=\"$cols\" wrap=\"virtual\" id=\"textarea\">".htmlspecialchars($postdata_input)."</textarea><br />\n"
-			."</div>\n"
-			."</form>\n";
-	}
+		$title = $_msg_comment_collided;
 	else
-	{
-		// ページの書き込み
-		page_write($post["refer"],$postdata,NULL,"","","","","","",array('plugin'=>'article','mode'=>'add'));
 		$title = $_title_updated;
-	}
+	
+	// ページの書き込み
+	page_write($post["refer"],$postdata,NULL,"","","","","","",array('plugin'=>'article','mode'=>'add'));
+	
 	$retvars["msg"] = $title;
 	$retvars["body"] = $body;
 
@@ -166,23 +120,66 @@ function plugin_article_convert()
 	global $script,$vars,$digest;
 	global $_btn_article,$_btn_name,$_btn_subject,$vars;
 	global $article_no;
+	
+	$conf = "default";
+	
+	$style = $btn = $nsize = $ssize = $col = $row = $auth = $plugin = "";
+	
+	foreach(func_get_args() as $op)
+	{
+		if (strtolower($op == "auth"))
+			$auth = TRUE;
+		if (strtolower(substr($op,0,7)) == "config:")
+			$conf = preg_replace("/[^\w]+/","",substr($op,7));
+		if (strtolower(substr($op,0,4)) == "btn:")
+			$btn = htmlspecialchars(substr($op,4));
+		if (strtolower(substr($op,0,6)) == "nsize:")
+			$nsize = min((int)substr($op,6),100);
+		if (strtolower(substr($op,0,6)) == "ssize:")
+			$ssize = min((int)substr($op,6),100);
+		if (strtolower(substr($op,0,4)) == "col:")
+			$col = min((int)substr($op,4),100);
+		if (strtolower(substr($op,0,4)) == "row:")
+			$row = min((int)substr($op,4),100);
+	}
+	
+	if ($auth && is_freeze($vars["page"]))
+	{
+		$article_no++;
+		return "";
+	}
+	
+	$conf_file = "article/".$conf.".conf.php";
+	if(file_exists(PLUGIN_DATA_DIR.$conf_file))
+		include (PLUGIN_DATA_DIR.$conf_file);
+	else
+		return "ERROR: Config file 'PLUGIN_DATA_DIR/{$conf_file}' is not found.";
+	
+	if (!$btn) $btn = $_btn_article;
+	if (!$nsize) $nsize = $article_name_cols;
+	if (!$ssize) $ssize = $article_subject_cols;
+	if (!$col) $col = $article_cols;
+	if (!$row) $row = $article_rows;
 
+	$style = " style=\"width:auto;\"";
+	$button = '';
 	if((arg_check("read")||$vars["cmd"] == ""||arg_check("unfreeze")||arg_check("freeze")||$vars["write"]||$vars["article"]))
-		$button = "<input type=\"submit\" name=\"article\" value=\"$_btn_article\" />\n";
-
+		$button = "<input type=\"submit\" name=\"article\" value=\"$btn\" />\n";
+	
 	$string = "<form action=\"$script\" method=\"post\">\n"
 		 ."<div>\n"
 		 ."<input type=\"hidden\" name=\"article_no\" value=\"$article_no\" />\n"
 		 ."<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($vars["page"])."\" />\n"
 		 ."<input type=\"hidden\" name=\"plugin\" value=\"article\" />\n"
 		 ."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($digest)."\" />\n"
-		 ."$_btn_name<input type=\"text\" name=\"name\" size=\"".NAME_COLS."\" value=\"".WIKI_NAME_DEF."\" /><br />\n"
-		 ."$_btn_subject<input type=\"text\" name=\"subject\" size=\"".SUBJECT_COLS."\" /><br />\n"
+		 ."<input type=\"hidden\" name=\"conf\" value=\"".htmlspecialchars($conf)."\" />\n"
+		 ."$_btn_name<input type=\"text\" name=\"name\" size=\"".$nsize."\" value=\"".WIKI_NAME_DEF."\" /><br />\n"
+		 ."$_btn_subject<input type=\"text\" name=\"subject\" size=\"".$ssize."\" /><br />\n"
 		 .fontset_js_tag()."<br />\n"
-		 ."<textarea name=\"msg\" rows=\"".article_ROWS."\" cols=\"".article_COLS."\">\n</textarea><br />\n"
+		 ."<textarea name=\"msg\" rows=\"".$row."\" cols=\"".$col."\"{$style}>\n</textarea><br />\n"
 		 .$button
 		 ."</div>\n"
-		 ."</form>";
+		 ."</form><hr />";
 
 	$article_no++;
 
