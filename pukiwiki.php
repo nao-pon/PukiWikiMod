@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.65 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.66 2005/03/08 15:23:05 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する
 if (
@@ -1152,7 +1152,7 @@ if (empty($vars['xoops_block']))
 			if (strpos($vars["page"],"/") === FALSE)
 				$up_page = "";
 			else
-				$up_page = preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($vars["page"]));
+				$up_page = preg_replace("/^(.+)\/[^\/]+$/","$1",strip_bracket($vars["page"]));
 		}
 		$up_page = ($up_page && is_page($up_page))? "/".get_pgid_by_name($up_page) : "";
 		

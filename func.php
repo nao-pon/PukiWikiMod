@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.41 2005/03/05 07:16:39 nao-pon Exp $
+// $Id: func.php,v 1.42 2005/03/08 15:23:05 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1045,10 +1045,12 @@ function include_page($page,$ret_array=false)
 	$_h_excerpt = $h_excerpt;
 	$_digest = $digest;
 	$_article_no = $article_no;
+	$_rsstop = $vars['is_rsstop'];
 	
-	//comment_no 初期化
+	//初期化
 	$comment_no = 0;
 	$article_no = 0;
+	$vars['is_rsstop'] = 0;
 	
 	//現ページ名書き換え
 	$vars["page"] = $post["page"] = $get["page"] = add_bracket($page);
@@ -1080,6 +1082,7 @@ function include_page($page,$ret_array=false)
 	$h_excerpt = $_h_excerpt;
 	$digest = $_digest;
 	$article_no = $_article_no;
+	$vars['is_rsstop'] = $_rsstop;
 	
 	return $ret;
 }

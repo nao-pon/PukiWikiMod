@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.43 2005/03/05 02:13:52 nao-pon Exp $
+// $Id: convert_html.php,v 1.44 2005/03/08 15:23:05 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -124,11 +124,11 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		//マルチドメイン対応
 		$str = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$str);
 		
-		//toprssはインクルードページは常に0
-		//#toprssを記述したページがインクルードされた場合問題も少し残るが
+		//rsstopはインクルードページは常に0
+		//#rsstopを記述したページがインクルードされた場合問題も少し残るが
 		//calendar_viewer などでインクルードされたページに元ページの値がセット
 		//されてしまう問題のほうが大きいので、とりあえずこうする。
-		$rsstop_set = ($convert_load === 1)? $vars['is_rsstop'] : 0;
+		//$rsstop_set = ($convert_load === 1)? $vars['is_rsstop'] : 0;
 		
 		$var_data = array();
 		$var_data[0] = $related_link;
