@@ -1,7 +1,9 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.3 2004/10/16 03:36:59 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.4 2004/10/16 04:14:53 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
+	global $xoopsConfig;
+	
 	$show_page = ($options[0])? $options[0] : "";
 	$cache_time = (empty($options[1]))? 0 : $options[1];
 	$cache_time = (int)$cache_time * 60;
@@ -37,7 +39,7 @@ function b_pukiwiki_page_show($options)
 				unset ($contents);
 		}
 		
-		//É}ÉãÉ`ÉhÉÅÉCÉìëŒâû
+		//•ﬁ•Î•¡•…•·•§•Û¬–±˛
 		$data = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$data);
 		
 		if ($fp = fopen($cache_file,"w"))
@@ -46,7 +48,7 @@ function b_pukiwiki_page_show($options)
 			fclose($fp);
 		}
 	}
-	// ÉeÅ[É}êÍópCSS Link Çíuä∑
+	// •∆°º•ﬁ¿ÏÕ—CSS Link §Ú√÷¥π
 	$css_url = (file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'))?
 		XOOPS_THEME_URL.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'
 		:
