@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.14 2004/10/11 14:03:30 nao-pon Exp $
+// $Id: admin.php,v 1.15 2004/11/01 09:03:55 nao-pon Exp $
 
 define("_AM_WIKI_TITLE0", "PukiWiki 初期設定");
 define("_AM_WIKI_INFO0", "初期設定を完了するために次の２つのリンク先にアクセスして処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
@@ -66,5 +66,8 @@ define("_AM_SYSTEM_ADMENU2","ブロック管理");
 
 // Ver 1.0.6
 define("_AM_WIKI_ANCHOR_VISIBLE","見出しに固定リンクアンカーを表示する");
+
+// Ver 1.0.8
+define("_AM_WIKI_TRACKBACK_ENCODING","トラックバック送信時の文字コード");
 
 ?>

@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.5 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: admin.php,v 1.6 2004/11/01 09:03:55 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE0", "PukiWikiMod initial setting.");
@@ -51,4 +51,19 @@ define("_AM_WIKI_PAGEREADING_KAKASI_PATH", "Execution file path of KAKASI (it se
 define("_AM_WIKI_PAGEREADING_CONFIG_PAGE", "The name of the page which stored page name reading.");
 define("_AM_WIKI_SITE_NAME", "Name of this site's wiki");
 define("_AM_WIKI_FUNCTION_TRACKBACK", "Enable TrackBack");
+
+// Ver 0.08 b5
+define("_AM_WIKI_PAGE_CACHE_MIN", "The value(minutes) which carries out the cache of the conversion result to HTML. Only a guest user becomes effective. (with 0 is no cache)");
+define("_AM_WIKI_USE_STATIC_URL", "Use static URL.(ex. [Page ID].html) A setup in '.htaccess ' is required.");
+
+define("_AM_WIKI_UPDATE_PING_TO", "The place which always carries out Ping transmission at the time of edit of a page. It divides in a new-line or a space.");
+define("_AM_WIKI_COMMON_DIRS", "A common link directory. An auto link becomes effective even if it omits this. Finally / (slash) is required. It divides in a new-line or a space.");
+define("_AM_SYSTEM_ADMENU","Basic settings.");
+define("_AM_SYSTEM_ADMENU2","Block management.");
+
+// Ver 1.0.6
+define("_AM_WIKI_ANCHOR_VISIBLE","A fixed link anchor is displayed.");
+
+// Ver 1.0.8
+define("_AM_WIKI_TRACKBACK_ENCODING","The character code at the time of track back transmission.");
 ?>

@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.25 2004/10/11 14:03:30 nao-pon Exp $
+// $Id: index.php,v 1.26 2004/11/01 09:03:55 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -64,7 +64,13 @@ function writeConfig(){
 		$f_kanji2kana_encoding = 'EUC';
 	else
 		$f_kanji2kana_encoding = 'SJIS';
-	
+	$f_trackback_encoding = (int)$f_trackback_encoding;
+	if (!$f_trackback_encoding)
+		$trackback_encoding = "EUC-JP";
+	else if ($f_trackback_encoding === 1)
+		$trackback_encoding = "UTF-8";
+	else
+		$trackback_encoding = "SJIS";
 	
 	$content = "";
 	$content .= "<?php";
@@ -98,6 +104,7 @@ function writeConfig(){
 	\$update_ping_to = '$update_ping_to';
 	\$wiki_common_dirs = '$wiki_common_dirs';
 	\$fixed_heading_anchor = $fixed_heading_anchor;
+	\$trackback_encoding = '$trackback_encoding';
 	";
 	$content .= "\n?>";
 
@@ -161,7 +168,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor,$trackback_encoding;
 	
 	xoops_cp_header();
 	OpenTable();
@@ -261,6 +268,14 @@ function displayForm(){
 	} else {
 		$_allow_new_sw_[$wiki_writable] = " checked";
 	}
+	
+	$_trackback_encoding_sw = array("","","");
+	if (!$trackback_encoding || $trackback_encoding == "EUC-JP")
+		$_trackback_encoding_sw[0] = " checked";
+	else if ($trackback_encoding == "UTF-8")
+		$_trackback_encoding_sw[1] = " checked";
+	else
+		$_trackback_encoding_sw[2] = " checked";
 
 	echo "
 	| "._AM_SYSTEM_ADMENU." | <a href='./myblocksadmin.php'>"._AM_SYSTEM_ADMENU2."</a> |
@@ -316,6 +331,13 @@ function displayForm(){
 		"._AM_WIKI_FUNCTION_TRACKBACK."
 	</td><td>
 		<input type='text' size='2' name='f_trackback' value='".$trackback."'>
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_TRACKBACK_ENCODING."
+	</td><td>
+		<input type='radio' name='f_trackback_encoding' value='0'".$_trackback_encoding_sw[0].">EUC-JP 
+		<input type='radio' name='f_trackback_encoding' value='1'".$_trackback_encoding_sw[1].">UTF-8 
+		<input type='radio' name='f_trackback_encoding' value='2'".$_trackback_encoding_sw[2].">S-JIS 
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_UPDATE_PING_TO."

@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.13 2004/10/05 08:49:00 nao-pon Exp $
+// $Id: trackback.php,v 1.14 2004/11/01 09:03:55 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -91,6 +91,7 @@ function tb_count($page,$ext='.txt')
 function tb_send($page,$data="")
 {
 	global $script,$trackback,$update_ping_to,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$use_static_url,$update_ping_to,$defaultpage;
+	global $trackback_encoding;
 	
 	$page = strip_bracket($page);
 
@@ -191,13 +192,24 @@ function tb_send($page,$data="")
   </params>
 </methodCall>';
 	
+	// 送信文字コード
+	$_send_encoding = SOURCE_ENCODING;
+	$data = mb_strimwidth(preg_replace("/[\r\n]/",' ',$data),0,255,'...');
+	
+	if ($trackback_encoding && $trackback_encoding != SOURCE_ENCODING)
+	{
+		$title = mb_convert_encoding($title,$trackback_encoding,SOURCE_ENCODING);
+		$page_title = mb_convert_encoding($page_title,$trackback_encoding,SOURCE_ENCODING);
+		$data = mb_convert_encoding($data,$trackback_encoding,SOURCE_ENCODING);
+		$_send_encoding = $trackback_encoding;
+	}
 	// 自文書の情報
 	$putdata = array(
 		'title'     => $title,
 		'url'       => $myurl,
-		'excerpt'   => mb_strimwidth(preg_replace("/[\r\n]/",' ',$data),0,255,'...'),
+		'excerpt'   => $data,
 		'blog_name' => $page_title,
-		'charset'   => SOURCE_ENCODING // 送信側文字コード(未既定)
+		'charset'   => $_send_encoding // 送信側文字コード(未既定)
 	);
 	
 	// Ping送信制限値をチェック
