@@ -1,0 +1,76 @@
+/* http://www.movabletype.org/trackback//styles-site.css */
+	body {
+		margin:20px 20px 20px 20px;
+		background:#EEE;
+		}
+	A 		{ color: #003366; font-family: verdana, arial, sans-serif; text-decoration: none; font-weight:bold; }
+	A:link		{ color: #003366; text-decoration: none; }
+	A:visited	{ color: #003366; text-decoration: none; }
+	A:active	{ color: #FFCC66;  }
+	A:hover		{ color: #FFCC66;  }
+
+	.blog {
+		padding:15px;
+		background:#FFF;
+		}
+
+	.trackback-url {
+		font-family:georgia, verdana, arial, sans-serif;
+		color:#666;
+		font-size:12px;
+		font-weight:normal;
+		background:#FFF;
+		line-height:18px;
+		padding:5px;
+		border:1px dotted #444;
+		}
+
+	.trackback-body {
+		font-family:georgia, verdana, arial, sans-serif;
+		color:#444;
+		font-size:14px;
+		font-weight:normal;
+		background:#FFF;
+		line-height:18px;
+		padding-bottom:10px;
+		padding-top:10px;
+		border-bottom:1px dotted #444;
+		}
+
+	.trackback-post {
+		font-family:verdana, arial, sans-serif;
+		color:#444;
+		font-size:12px;
+		font-weight:normal;
+		background:#FFF;
+		}
+
+	#banner-commentspop {
+		font-family:georgia, verdana, arial, sans-serif;
+		color:#FFF;
+		font-size:18px;
+		font-weight:bold;
+		border-left:1px solid #FFF;
+		border-right:1px solid #FFF;
+		border-top:1px solid #FFF;
+		background:#003366;
+		padding-left:15px;
+		padding-right:15px;
+		padding-top:5px;
+		padding-bottom:5px;
+		}
+
+	#banner-sendedping {
+		font-family:georgia, verdana, arial, sans-serif;
+		color:#FFF;
+		font-size:14px;
+		font-weight:bold;
+		border-left:1px solid #FFF;
+		border-right:1px solid #FFF;
+		border-top:1px solid #FFF;
+		background:#003366;
+		padding-left:15px;
+		padding-right:15px;
+		padding-top:5px;
+		padding-bottom:5px;
+		}

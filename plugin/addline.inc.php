@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: addline.inc.php,v 1.1 2003/08/03 13:43:12 nao-pon Exp $
+// $Id: addline.inc.php,v 1.2 2003/10/31 12:22:59 nao-pon Exp $
 // ORG: addline.inc.php,v 0.2 2003/07/29 22:47:10 sha Exp $
 //
 /* 
@@ -155,7 +155,7 @@ function addline_get_source($page) // tracker_listから。
 {
 	$source = get_source($page);
 	// 見出しの固有ID部を削除
-	$source = preg_replace('/^(\*{1,3}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
+	$source = preg_replace('/^(\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
 	// #freezeを削除
 	$source = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",'',$source);
 	$source = preg_replace("/^\/\/ author:([0-9]+)\n/","",$source);

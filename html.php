@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.21 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: html.php,v 1.22 2003/10/31 12:22:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -571,7 +571,8 @@ function allow_view_form($allow_groups=NULL,$allow_users=NULL) {
 	$ret .= "<option value='0' $sel>$_btn_allow_deny</option>";
 	foreach ($allusers as $uid => $uname){
 			$sel = (in_array($uid,$allow_users) || in_array("all",$allow_users))? " selected" : "";
-			if ($uid != $X_uid) $ret .= "<option value='".$uid."'$sel>$uname</option>";
+			//if ($uid != $X_uid) $ret .= "<option value='".$uid."'$sel>$uname</option>";
+			$ret .= "<option value='".$uid."'$sel>$uname</option>";
 	}
 	$ret .= "</select></td><td class='style_td'>".$_btn_v_allow_memo."</td></tr></table>";
 	

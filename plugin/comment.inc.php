@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.7 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: comment.inc.php,v 1.8 2003/10/31 12:22:59 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -44,7 +44,7 @@ function plugin_comment_action()
 		$retvars['msg'] = $name;
 		$post['page'] = $post['refer'];
 		$vars['page'] = $post['refer'];
-		$retvars['body'] = convert_html(join("",file(get_filename(encode($post['refer'])))));
+		$retvars['body'] = convert_html(join('',get_source($post["refer"])));
 		return $retvars;
 	}
 	if($post['msg'])
@@ -92,20 +92,23 @@ function plugin_comment_action()
 		{
 			if (!preg_match("/\n$/",$line)) $line .= "\n";
 			//if(preg_match("/^(\|.*)?#comment(\((?:up|down|above|below|nodate|noname)\))?((\||->).*)?/i",$line,$reg)) {
-			if(preg_match("/^(\|)?#comment(.*?)?(\||->)?$/",rtrim($line),$reg)) {
-				if($comment_no == $post["comment_no"] && $post[msg]!="") {
+			if(preg_match("/^(\|(.*)?)?#comment(.*?)?(\||->)?$/",rtrim($line),$reg)) {
+				$celltag = $arg[1];
+				if ($celltag) $celltag = cell_format_tag_del($celltag);
+
+				if($comment_no == $post["comment_no"] && $post[msg]!="" && !$celltag) {
 					$comment_data = "-$comment";
 				} else {
 					$comment_data = "";
 				}
-				if (($reg[1]) || ($reg[3])) { // テーブル内
+				if (($reg[1]) || ($reg[4])) { // テーブル内
 					if($comment_data){
 						if($comment_ins) { //上に追加
 							$postdata .= $reg[1].$comment_data."->\n";
-							$postdata .= "#comment$reg[2]".$reg[3]."\n";
+							$postdata .= "#comment$reg[3]".$reg[4]."\n";
 						} else {  //下に追加
-							$postdata .= $reg[1]."#comment$reg[2]->\n";
-							$postdata .= $comment_data.$reg[3]."\n";
+							$postdata .= $reg[1]."#comment$reg[3]->\n";
+							$postdata .= $comment_data.$reg[4]."\n";
 						}
 					} else {
 						$postdata .= $line;
@@ -145,7 +148,7 @@ function plugin_comment_action()
 /*差分＆バックアップは必要ないですね
 	// 差分ファイルの作成
 	if(is_page($post["refer"]))
-		$oldpostdata = join("",file(get_filename(encode($post["refer"]))));
+		$oldpostdata = join('',get_source($post["refer"]));
 	else
 		$oldpostdata = "\n";
 	if($postdata)

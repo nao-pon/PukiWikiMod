@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.13 2003/10/13 14:20:24 nao-pon Exp $
+// $Id: init.php,v 1.14 2003/10/31 12:22:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -8,7 +8,7 @@ define("INI_FILE","./pukiwiki.ini.php");
 
 //** 初期設定 **
 
-define("_XOOPS_WIKI_VERSION", "0.07");
+define("_XOOPS_WIKI_VERSION", "0.08");
 define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003 <a href=\"http://ishii.s26.xrea.com/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.");
 //文字エンコード
 define('SOURCE_ENCODING','EUC-JP');
@@ -152,7 +152,7 @@ if(!file_exists(LANG.".lng")||!is_readable(LANG.".lng"))
 
 /////////////////////////////////////////////////
 // 文字実体参照　正規表現
-$entity_pattern = '(?=[a-zA-Z0-9]{2,8})(?:A(?:Elig|acute|circ|grave|lpha|ring|tilde|uml)|Beta|C(?:cedil|hi)|D(?:agger|elta)|E(?:TH|acute|circ|grave|psilon|ta|uml)|Gamma|I(?:acute|circ|grave|ota|uml)|Kappa|Lambda|Mu|N(?:tilde|u)|O(?:Elig|acute|circ|grave|m(?:ega|icron)|slash|tilde|uml)|P(?:hi|i|rime|si)|Rho|S(?:caron|igma)|T(?:HORN|au|heta)|U(?:acute|circ|grave|psilon|uml)|Xi|Y(?:acute|uml)|Zeta|a(?:acute|c(?:irc|ute)|elig|grave|l(?:efsym|pha)|mp|n(?:d|g)|pos|ring|symp|tilde|uml)|b(?:dquo|eta|rvbar|ull)|c(?:ap|cedil|e(?:dil|nt)|hi|irc|lubs|o(?:ng|py)|rarr|u(?:p|rren))|d(?:Arr|a(?:gger|rr)|e(?:g|lta)|i(?:ams|vide))|e(?:acute|circ|grave|m(?:pty|sp)|nsp|psilon|quiv|t(?:a|h)|u(?:ml|ro)|xist)|f(?:nof|orall|ra(?:c(?:1(?:2|4)|34)|sl))|g(?:amma|e|t)|h(?:Arr|arr|e(?:arts|llip))|i(?:acute|circ|excl|grave|mage|n(?:fin|t)|ota|quest|sin|uml)|kappa|l(?:Arr|a(?:mbda|ng|quo|rr)|ceil|dquo|e|floor|o(?:wast|z)|rm|s(?:aquo|quo)|t)|m(?:acr|dash|i(?:cro|ddot|nus)|u)|n(?:abla|bsp|dash|e|i|ot(?:in)?|sub|tilde|u)|o(?:acute|circ|elig|grave|line|m(?:ega|icron)|plus|r(?:d(?:f|m))?|slash|ti(?:lde|mes)|uml)|p(?:ar(?:a|t)|er(?:mil|p)|hi|i(?:v)?|lusmn|ound|r(?:ime|o(?:d|p))|si)|quot|r(?:Arr|a(?:dic|ng|quo|rr)|ceil|dquo|e(?:al|g)|floor|ho|lm|s(?:aquo|quo))|s(?:bquo|caron|dot|ect|hy|i(?:gma(?:f)?|m)|pades|u(?:b(?:e)?|m|p(?:1|2|3|e)?)|zlig)|t(?:au|h(?:e(?:re4|ta(?:sym)?)|insp|orn)|i(?:lde|mes)|rade)|u(?:Arr|a(?:cute|rr)|circ|grave|ml|psi(?:h|lon)|uml)|weierp|xi|y(?:acute|en|uml)|z(?:eta|w(?:j|nj)))';
+$entity_pattern = trim(join('',file(CACHE_DIR.'entities.dat')));
 
 /////////////////////////////////////////////////
 // ユーザ(システム)定義ルール(コンバート時に置換、直接しない)

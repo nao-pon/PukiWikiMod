@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.6 2003/10/31 12:22:59 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -72,8 +72,9 @@ function plugin_ls2_convert() {
 		$args = array();
 	}
 	if ($prefix == '')
-		$prefix = strip_bracket($vars['page']).'/';
-
+		//$prefix = strip_bracket($vars['page']).'/';
+		$prefix = strip_bracket($vars['page']);
+		
 	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'_done'=>FALSE,'pagename'=>FALSE,'notemplate'=>FALSE);
 	array_walk($args, 'ls2_check_arg', &$params);
 	$title = (count($params['_args']) > 0) ?
@@ -91,7 +92,6 @@ function plugin_ls2_convert() {
 }
 function ls2_show_lists($prefix,&$params) {
 	global $_ls2_messages;
-
 	$pages = ls2_get_child_pages($prefix);
 	if ($params['reverse']) $pages = array_reverse($pages);
 
@@ -127,7 +127,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name)){
 		$_body = get_source($page);
 		foreach($_body as $line){
-			if (preg_match("/^\*{1,3}(.*)/",$line,$reg)){
+			if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
 				$_name = str_replace(array("[[","]]"),"",$reg[1]);
 				break;
 			}
@@ -187,13 +187,9 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 function ls2_get_child_pages($prefix) {
 	global $vars;
 	
-	$pattern = '[['.$prefix;
-	
 	$pages = array();
-	foreach (get_existpages() as $_page){
-		if (strpos($_page,$pattern) === 0 && (check_readable($_page,false,false))){
-			$pages[$_page] = strip_bracket($_page);
-		}
+	foreach (get_existpages_db(false,$prefix."/") as $_page){
+		$pages[$_page] = strip_bracket($_page);
 	}
 	natcasesort($pages);
 

@@ -1,5 +1,10 @@
 <?php
-// $Id: admin.php,v 1.8 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: admin.php,v 1.9 2003/10/31 12:22:59 nao-pon Exp $
+
+define("_AM_WIKI_TITLE0", "PukiWiki 初期設定");
+define("_AM_WIKI_INFO0", "初期設定を完了するために次の２つのリンク先にアクセスして処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
+define("_AM_WIKI_DB_INIT", "データベース初期化");
+define("_AM_WIKI_PAGE_INIT", "ページリンク情報初期化");
 
 define("_AM_WIKI_TITLE1", "PukiWiki 基本設定");
 define("_AM_WIKI_TITLE2", "パーミッションの変更");
@@ -47,4 +52,6 @@ define("_AM_WIKI_KANJI2KANA_ENCODING", "ChaSen/KAKASI との受け渡しに使う漢字コー
 define("_AM_WIKI_PAGEREADING_CHASEN_PATH", "ChaSen の実行ファイルパス (各自の環境に合わせて設定)");
 define("_AM_WIKI_PAGEREADING_KAKASI_PATH", "KAKASI の実行ファイルパス (各自の環境に合わせて設定)");
 define("_AM_WIKI_PAGEREADING_CONFIG_PAGE", "ページ名読みを格納したページの名前");
+define("_AM_WIKI_SITE_NAME", "このサイトのWikiの名称");
+define("_AM_WIKI_FUNCTION_TRACKBACK", "ページあたりのTrackBack Ping 最大送信数<br />( 0 でTrackBack機能はOFFになります。)");
 ?>

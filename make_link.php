@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.10 2003/10/18 15:20:38 nao-pon Exp $
+// $Id: make_link.php,v 1.11 2003/10/31 12:22:59 nao-pon Exp $
 //
 
 // リンクを付加する
@@ -310,7 +310,7 @@ class Link_url extends Link
 		return <<<EOD
 (\[\[             # (1) open bracket
  ((?:(?!\]\]).)+) # (2) alias
- (?:>|:)
+ (?:&gt;|>|:)
 )?
 (                 # (3) url
  (?:https?|ftp|news):\/\/[!~*'();\/?:\@&=+\$,%#\w.-]+
@@ -501,7 +501,7 @@ class Link_bracketname extends Link
 		$s2 = $this->start + 2;
 		return <<<EOD
 \[\[                     # open bracket
-(?:((?:(?!\]\]).)+)(?:(?:&gt;)|>))?   # (1) alias
+(?:((?:(?!\]\]).)+)(?:&gt;|>))?   # (1) alias
 (\[\[)?                  # (2) open bracket
 (                        # (3) PageName
  (?:$WikiName)
@@ -779,7 +779,7 @@ function make_pagelink($page,$alias='',$anchor='',$refer='')
 		if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name) && !$alias){
 			$_body = get_source($page);
 			foreach($_body as $line){
-				if (preg_match("/^\*{1,3}(.*)/",$line,$reg)){
+				if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
 					$s_alias = $f_name[1].trim(htmlspecialchars(str_replace(array("[[","]]"),"",$reg[1])));
 					break;
 				}

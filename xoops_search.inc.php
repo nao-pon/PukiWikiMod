@@ -22,19 +22,87 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.6 2003/10/31 12:22:59 nao-pon Exp $
 
 $_cache_file = XOOPS_ROOT_PATH."/modules/pukiwiki/cache/config.php";
 if(file_exists($_cache_file) && is_readable($_cache_file)){
 	require($_cache_file);
 }
+require (XOOPS_ROOT_PATH."/modules/pukiwiki/db_func.php");
 // pcomment のコメントページ名
 define ("PCMT_PAGE",$pcmt_page_name);
 // 閲覧制限を使用するか
 define("PUKIWIKI_READ_AUTH",$read_auth);
 
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
-	$files = get_existpages();
+	//$files = get_existpages_db();
+	
+	global $xoopsDB,$xoopsUser;
+	
+	$X_uid = $X_admin = 0;
+	if ( $xoopsUser ) {
+		$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+		if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
+			$X_admin = 1;
+		}
+		$X_uid = $xoopsUser->uid();
+	}
+
+	$nocheck=false;
+	$page="";
+	$d_limit=0;
+	$order=" ORDER BY editedtime DESC";
+	$nolisting=true;
+	
+	if ($nocheck || $X_admin)
+		$where = "";
+	else
+	{
+		$where = "";
+		if ($X_uid) $where .= "  (uid = $X_uid) OR";
+		$where .= " (vaids LIKE '%all%') OR (vgids LIKE '%&3&%')";
+		if ($X_uid) $where .= " OR (vaids LIKE '%&{$X_uid}&%')";
+		foreach(X_get_groups() as $gid)
+		{
+			$where .= " OR (vgids LIKE '%&{$gid}&%')";
+		}
+	}
+	if ($page)
+	{
+		$page = strip_bracket($page);
+		if ($where)
+			$where = " (name LIKE '$page%') AND ($where)";
+		else
+			$where = " name LIKE '$page%'";
+	}
+	if ($nolisting)
+	{
+		if ($where)
+			$where = " (name NOT LIKE ':%') AND ($where)";
+		else
+			$where = " (name NOT LIKE ':%')";
+	}
+	if ($userid)
+	{
+		if ($where)
+			$where = " (uid = $userid) AND ($where)";
+		else
+			$where = " (uid = $userid)";
+	}
+	if ($where) $where = " WHERE".$where;
+	$d_limit = ($d_limit)? " LIMIT $d_limit" : "";
+	
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")."$where$order$d_limit;";
+	$res = $xoopsDB->query($query);
+	if ($res)
+	{
+		while($data = mysql_fetch_row($res))
+		{
+			$aryret[add_bracket($data[1])] = $data[9];
+		}
+	}
+
+
 	if (!isset($vars["page"])) $vars["page"]="";
 	$non_format = 1;
 	$ret_count = 0;
@@ -51,31 +119,21 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	$type = $andor;
 	$whatsnew = "RecentChanges";
 	$cnt = 0;
-	foreach($files as $name=>$ftime) {
+	//foreach($files as $name=>$ftime) {
+	foreach($aryret as $name=>$author_uid) {
 		$cnt++;
 		if($name == $whatsnew) continue;
 		if($name == $vars["page"] && $non_format) continue;
 		$lines = get_source($name);
 		$lines = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$lines);
+		if (!count($lines)) continue;
 
-		$author_uid = 0;
-		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
-			$lines[0] = "";
-			if (preg_match("/^\/\/ author:([0-9]+)\n/",$lines[1],$arg))
-				$author_uid = $arg[1];
-				$lines[1] = "";
-		} else {
-			if (preg_match("/^\/\/ author:([0-9]+)\n/",$lines[0],$arg))
-				$author_uid = $arg[1];
-				$lines[0] = "";
-		}
-
-		//nao-pon
-		//$line = join("\n",$lines);
 		$line = strtolower(join("\n",$lines));
+		$line = preg_replace("/(^|\n)(#freeze|#unvisible|\/\/ author:)([^\n]*)?/","",$line);
+		$line = preg_replace("/^\n+/","",$line);
 		
 		$hit = 0;
-		//echo "$author_uid:$userid<br />";
+
 		if($userid <= 0)
 		{
 			foreach($arywords as $word)
@@ -107,7 +165,6 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 				$word_url = rawurlencode($word);
 				$str = get_pg_passage($name);
 
-				//$ret[$ret_count]['link'] = "index.php?$page_url";
 				$ret[$ret_count]['link'] = "index.php?cmd=read&amp;page=$page_url&amp;word=$word_url";
 				$ret[$ret_count]['title'] = htmlspecialchars($name2, ENT_QUOTES);
 				$ret[$ret_count]['image'] = "image/search.gif";
@@ -130,6 +187,7 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 				$ret[$ret_count]['image'] = "image/search.gif";
 				$ret[$ret_count]['time'] = "$str";
 				$ret[$ret_count]['uid'] = $author_uid;
+				$ret[$ret_count]['queries'] = "";
 				$ret_count++;
 			}
 		}

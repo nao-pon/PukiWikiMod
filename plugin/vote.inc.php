@@ -1,5 +1,5 @@
 <?php
-// $Id: vote.inc.php,v 1.3 2003/10/02 12:18:38 nao-pon Exp $
+// $Id: vote.inc.php,v 1.4 2003/10/31 12:22:59 nao-pon Exp $
 
 function plugin_vote_init()
 {
@@ -138,7 +138,7 @@ function plugin_vote_action()
 	else
 	{
 		if(is_page($post["refer"]))
-			$oldpostdata = join("",file(get_filename(encode($post["refer"]))));
+			$oldpostdata = join('',get_source($post["refer"]));
 		else
 			$oldpostdata = "\n";
 		if($postdata)

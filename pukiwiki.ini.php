@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.16 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.17 2003/10/31 12:22:59 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -20,6 +20,10 @@ define("BACKUP_DIR","./backup/");
 /////////////////////////////////////////////////
 // プラグインファイル格納先ディレクトリ
 define("PLUGIN_DIR","./plugin/");
+/////////////////////////////////////////////////
+// counter file
+define("COUNTER_DIR","./counter/");
+
 
 /////////////////////////////////////////////////
 // Language
@@ -58,42 +62,12 @@ define("MAX_FILESIZE",1000000);
 $script = XOOPS_URL.'/modules/pukiwiki/index.php';
 
 /////////////////////////////////////////////////
-// トップページの名前
-$defaultpage = "FrontPage";
-/////////////////////////////////////////////////
 // 更新履歴ページの名前
 $whatsnew = "RecentChanges";
 /////////////////////////////////////////////////
 // InterWikiNameページの名前
 $interwiki = "InterWikiName";
-/////////////////////////////////////////////////
-// 編集者の名前(自由に変えてください)
-$modifier = 'me';
-/////////////////////////////////////////////////
-// 編集者のホームページ(自由に変えてください)
-$modifierlink = 'http://change me!/';
 
-/////////////////////////////////////////////////
-// ホームページのタイトル(自由に変えてください)
-// RSS に出力するチャンネル名
-$page_title = "PukiWiki";
-
-/////////////////////////////////////////////////
-// 凍結機能を有効にするか
-$function_freeze = 1;
-/////////////////////////////////////////////////
-// 凍結解除用の管理者パスワード(MD5)
-// pukiwiki.php?md5=pass のようにURLに入力し
-// MD5にしてからどうぞ。面倒なら以下のように。
-// $adminpass = md5("pass");
-// 以下は pass のMD5パスワードになってます。
-$adminpass = "";
-
-///////////////////////////////////////////////// 
-// ページごとの閲覧制限を使用するか
-// 0:使用しない 
-// 1:使用する
-$read_auth = 1; 
 
 /////////////////////////////////////////////////
 // 更新履歴を表示するときの最大件数
@@ -186,12 +160,6 @@ $do_backup = 1;
 // ページを削除した際にバックアップもすべて削除する
 $del_backup = 0;
 /////////////////////////////////////////////////
-// 定期バックアップの間隔を時間(hour)で指定します(0で更新毎)
-$cycle = 6;
-/////////////////////////////////////////////////
-// バックアップの最大世代数を指定します
-$maxage = 20;
-/////////////////////////////////////////////////
 // バックアップの世代を区切る文字列を指定します
 // (通常はこのままで良いが、文章中で使われる可能性
 // があれば、使われそうにない文字を設定する)
@@ -211,27 +179,15 @@ $load_template_func = 1;
 /////////////////////////////////////////////////
 // ページ名に従って自動で、雛形とするページの読み込み
 $auto_template_func = 1;
+$auto_template_name = "template";
 $auto_template_rules = array(
-'\[\[((.+)\/([^\/]+))\]\]' => '[[\2/template]]'
+'\[\[((.+)\/([^\/]+))\]\]' => '[[\2/'.$auto_template_name.']]'
 );
 
-
 /////////////////////////////////////////////////
-// ChaSen, KAKASI による、ページ名の読みの取得 (0:無効,1:有効)
-$pagereading_enable = 0;
-// ChaSen or KAKASI
-//$pagereading_kanji2kana_converter = 'chasen';
-$pagereading_kanji2kana_converter = 'kakasi';
-// ChaSen/KAKASI との受け渡しに使う漢字コード (UNIX系は EUC、Win系は SJIS が基本)
-//$pagereading_kanji2kana_encoding = 'EUC';
-$pagereading_kanji2kana_encoding = 'SJIS';
-// ChaSen/KAKASI の実行ファイル (各自の環境に合わせて設定)
-//$pagereading_chasen_path = '/usr/local/bin/chasen';
-$pagereading_chasen_path = 'c:\Program Files\chasen21\chasen.exe';
-//$pagereading_kakasi_path = '/usr/local/bin/kakasi';
-$pagereading_kakasi_path = 'c:\kakasi\bin\kakasi.exe';
-// ページ名読みを格納したページの名前
-$pagereading_config_page = ':config/PageReading';
+// TrackBackでのPing先URL抽出時に除外するプラグイン
+// カンマ区切りで、#をつけずに記述
+$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list";
 
 /////////////// ParaEdit //////////////////
 // ParaEdit 改行の代替文字列
@@ -312,6 +268,69 @@ $facemark_rules = array(
 '&amp;(sad);' => ' <img src="./face/sad.png" alt="$1" />',
 "&amp;(heart);" => ' <img src="./face/heart.gif" alt="$1" />',
 );
+
+////////以下の設定はXOOPSの管理画面での設定で上書きされます///////
+/////////////////////////////////////////////////
+// ホームページのタイトル(自由に変えてください)
+// RSS に出力するチャンネル名
+$page_title = "PukiWiki";
+
+/////////////////////////////////////////////////
+// トップページの名前
+$defaultpage = "FrontPage";
+
+/////////////////////////////////////////////////
+// 編集者の名前(自由に変えてください)
+$modifier = 'me';
+
+/////////////////////////////////////////////////
+// 編集者のホームページ(自由に変えてください)
+$modifierlink = 'http://change me!/';
+
+/////////////////////////////////////////////////
+// 凍結機能を有効にするか
+$function_freeze = 1;
+
+/////////////////////////////////////////////////
+// 凍結解除用の管理者パスワード(MD5)
+// pukiwiki.php?md5=pass のようにURLに入力し
+// MD5にしてからどうぞ。面倒なら以下のように。
+// $adminpass = md5("pass");
+// 以下は pass のMD5パスワードになってます。
+$adminpass = "";
+
+///////////////////////////////////////////////// 
+// ページごとの閲覧制限を使用するか
+// 0:使用しない 
+// 1:使用する
+$read_auth = 1; 
+
+/////////////////////////////////////////////////
+// 定期バックアップの間隔を時間(hour)で指定します(0で更新毎)
+$cycle = 6;
+
+/////////////////////////////////////////////////
+// バックアップの最大世代数を指定します
+$maxage = 20;
+
+/////////////////////////////////////////////////
+// ChaSen, KAKASI による、ページ名の読みの取得 (0:無効,1:有効)
+$pagereading_enable = 0;
+// ChaSen or KAKASI
+//$pagereading_kanji2kana_converter = 'chasen';
+$pagereading_kanji2kana_converter = 'kakasi';
+// ChaSen/KAKASI との受け渡しに使う漢字コード (UNIX系は EUC、Win系は SJIS が基本)
+$pagereading_kanji2kana_encoding = 'EUC';
+//$pagereading_kanji2kana_encoding = 'SJIS';
+// ChaSen/KAKASI の実行ファイル (各自の環境に合わせて設定)
+$pagereading_chasen_path = '/usr/local/bin/chasen';
+//$pagereading_chasen_path = 'c:\Program Files\chasen21\chasen.exe';
+$pagereading_kakasi_path = '/usr/local/bin/kakasi';
+//$pagereading_kakasi_path = 'c:\kakasi\bin\kakasi.exe';
+// ページ名読みを格納したページの名前
+$pagereading_config_page = ':config/PageReading';
+
+//////////////////////////////////////////////////////////////////
 
 $_cache_file = "cache/config.php";
 clearstatcache();

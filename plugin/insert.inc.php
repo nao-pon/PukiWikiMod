@@ -1,5 +1,5 @@
 <?php
-// $Id: insert.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: insert.inc.php,v 1.3 2003/10/31 12:22:59 nao-pon Exp $
 
 /////////////////////////////////////////////////
 // テキストエリアのカラム数
@@ -66,7 +66,7 @@ function plugin_insert_action()
 
 		// 差分ファイルの作成
 		if(is_page($post["refer"]))
-			$oldpostdata = join("",file(get_filename(encode($post["refer"]))));
+			$oldpostdata = join('',get_source($post["refer"]));
 		else
 			$oldpostdata = "\n";
 		if($postdata)

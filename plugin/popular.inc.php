@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.4 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: popular.inc.php,v 1.5 2003/10/31 12:22:59 nao-pon Exp $
 //
 
 /*
@@ -25,9 +25,6 @@
  * 3 - 今日(true)か通算(false)の一覧かのフラグ  default false
  */
 
-// counter file : counter プラグインで設定しているものと同じにして下さい。
-if (!defined('COUNTER_DIR'))
-	define('COUNTER_DIR', './counter/');
 
 function plugin_popular_init()
 {
@@ -46,6 +43,7 @@ function plugin_popular_init()
 
 function plugin_popular_convert()
 {
+	//return false;
 	global $_popular_plugin_frame, $_popular_plugin_today_frame;
 	global $script,$whatsnew,$non_list;
 	
@@ -66,51 +64,74 @@ function plugin_popular_convert()
 		$max = $array[0];
 	}
 
+	$nopage = "";
+	$excepts = explode("|",$except);
+	foreach(explode("|",$except) as $_except)
+	{
+		$nopage .= " AND (p.name NOT LIKE '%$_except%')";
+	}
 	$counters = array();
 
-	foreach (get_existpages(COUNTER_DIR,'.count') as $page) {
-		if ($except != '' and ereg($except,$page)) {
-			continue;
-		}
-		if ($page == $whatsnew or preg_match("/$non_list/",$page) or !is_page($page)) {
-			continue;
-		}
-		// 閲覧権限
-		if (!check_readable($page,false,false)) continue;
-		
-		$array = file(COUNTER_DIR.encode($page).'.count');
-		$count = rtrim($array[0]);
-		$date = rtrim($array[1]);
-		$today_count = rtrim($array[2]);
-		$yesterday_count = rtrim($array[3]);
-		
-		if ($today) {
-			if ($today == $date) {
-				// $pageが数値に見える(たとえばencode('BBS')=424253)とき、
-				// array_splice()によってキー値が変更されてしまうのを防ぐ
-				$counters["_$page"] = $today_count;
-			}
-		}
-		else {
-			$counters["_$page"] = $count;
+	global $xoopsDB,$X_admin,$X_uid;
+	
+	if ($X_admin)
+		$where = "";
+	else
+	{
+		$where = "";
+		if ($X_uid) $where .= "  (uid = $X_uid) OR";
+		$where .= " (vaids LIKE '%all%') OR (vgids LIKE '%&3&%')";
+		if ($X_uid) $where .= " OR (vaids LIKE '%&{$X_uid}&%')";
+		foreach(X_get_groups() as $gid)
+		{
+			$where .= " OR (vgids LIKE '%&{$gid}&%')";
 		}
 	}
-	
-	asort($counters, SORT_NUMERIC);
-	$counters = array_splice(array_reverse($counters,TRUE),0,$max);
-	
+	/*
+	if ($page)
+	{
+		$page = strip_bracket($page);
+		if ($where)
+			$where = " (name LIKE '$page/%') AND ($where)";
+		else
+			$where = " name LIKE '$page/%'";
+	}
+	*/
+	if ($where) $where = " AND ($where)";
+	if ($today)
+	{
+		$where = " WHERE (c.name = p.name) AND (p.name NOT LIKE ':%') AND (today = '$today')$nopage$where";
+		$sort = "today_count";
+	}
+	else
+	{
+		$where = " WHERE (c.name = p.name) AND (p.name NOT LIKE ':%')$nopage$where";
+		$sort = "count";
+	}
+	//echo $where;
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." as p , ".$xoopsDB->prefix("pukiwikimod_count")." as c $where ORDER BY $sort DESC LIMIT $max;";
+	$res = $xoopsDB->query($query);
+	//echo $query."<br>";
+	if ($res)
+	{
+		while($data = mysql_fetch_row($res))
+		{
+			//echo $data[1]."<br>";
+			if ($today)
+				$counters["_$data[1]"] = $data[15];
+			else
+				$counters["_$data[1]"] = $data[13];
+		}
+	}
+
+
 	$items = '';
 	if (count($counters)) {
 		$items = '<ul class="recent_list">';
 		
 		foreach ($counters as $page=>$count) {
 			$page = htmlspecialchars(substr($page,1));
-			$page_name = strip_bracket($page);
-			$title = "$page_name<span class=\"counter\">($count)</span>";
-			$s_page = htmlspecialchars($page);
 			$items .= " <li>".make_pagelink($page)."<span class=\"counter\">($count)</span></li>\n";
-			//$items .= " <li>".make_pagelink($page,"$s_page<span class=\"counter\">($count)</span>")."</li>\n";
-			//$items .="<li><a href=\"".$script."?".rawurlencode($page)."\" title=\"$page_name ".get_pg_passage($page,false)."\">$title</a></li>\n";
 			}
 		$items .= '</ul>';
 	}

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.6 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.7 2003/10/31 12:22:59 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -686,14 +686,18 @@ class Tracker_list
 		$this->rows = array();
 		$pattern = "$page/";
 		$pattern_len = strlen($pattern);
-		foreach (get_existpages() as $_page)
+		//foreach (get_existpages() as $_page)
+		foreach (get_existpages_db(false,$page."/") as $_page)
 		{
 			$_page = strip_bracket($_page);
-			if (strpos($_page,$pattern) === 0
-				and strpos($name = substr($_page,$pattern_len),'/') === FALSE)
-			{
-				$this->add($_page,$name);
-			}
+			$name = substr($_page,$pattern_len);
+			$this->add($_page,$name);
+			//$_page = strip_bracket($_page);
+			//if (strpos($_page,$pattern) === 0
+			//	and strpos($name = substr($_page,$pattern_len),'/') === FALSE)
+			//{
+			//	$this->add($_page,$name);
+			//}
 		}
 	}
 	function add($page,$name)
@@ -711,7 +715,7 @@ class Tracker_list
 		{
 			return $this->add(strip_bracket($matches[1]),$name);
 		}
-		$source = join('',preg_replace('/^(\*{1,3}.*)\[#[A-Za-z][\w-]+\](.*)$/','$1$2',$source));
+		$source = join('',preg_replace('/^(\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)$/','$1$2',$source));
 		
 		// デフォルト値
 		$this->rows[$name] = array(
@@ -896,7 +900,7 @@ function plugin_tracker_get_source($page)
 {
 	$source = get_source($page);
 	// 見出しの固有ID部を削除
-	$source = preg_replace('/^(\*{1,3}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
+	$source = preg_replace('/^(\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
 	// #freezeなどを削除
 	$source = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",'',$source);
 	$source = preg_replace("/^#unvisible(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+|all))?(?:\tgid:([0-9,]+))?\n/",'',$source);

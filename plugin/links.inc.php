@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: links.inc.php,v 1.1 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: links.inc.php,v 1.2 2003/10/31 12:22:59 nao-pon Exp $
 // ORG: links.inc.php,v 1.17 2003/05/19 09:22:08 arino Exp $
 //
 
@@ -18,14 +18,14 @@ function plugin_links_init()
 			'msg_usage'     => "
 * 処理内容
 
-:キャッシュを更新|
-全てのページをスキャンし、あるページがどのページからリンクされているかを調査して、キャッシュに記録します。
+:キャッシュを更新:全てのページをスキャンし、あるページがどのページからリンクされているかを調査して、キャッシュに記録します。
 
 * 注意
 実行には数分かかる場合もあります。実行ボタンを押したあと、しばらくお待ちください。
 
 * 実行
-管理者パスワードを入力して、[実行]ボタンをクリックしてください。
+[実行]ボタンを ''1回のみ'' クリックしてください。~
+この下に実行ボタンが表示されていない場合は、管理者権限でログインして再表示してください。
 "
 		)
 	);
@@ -35,22 +35,23 @@ function plugin_links_init()
 function plugin_links_action()
 {
 	global $script,$post,$vars,$adminpass,$foot_explain;
-	global $_links_messages;
+	global $_links_messages,$X_admin;
 	
-	if (empty($vars['action']) or empty($post['adminpass']) or md5($post['adminpass']) != $adminpass)
+	if (empty($vars['action']) or !$X_admin)
 	{
 		$body = convert_html($_links_messages['msg_usage']);
+	if ($X_admin)
+	{
 		$body .= <<<EOD
 <form method="POST" action="$script">
  <div>
   <input type="hidden" name="plugin" value="links" />
   <input type="hidden" name="action" value="update" />
-  {$_links_messages['msg_adminpass']}
-  <input type="password" name="adminpass" size="20" value="" />
   <input type="submit" value="{$_links_messages['btn_submit']}" />
  </div>
 </form>
 EOD;
+	}
 		return array(
 			'msg'=>$_links_messages['title_update'],
 			'body'=>$body

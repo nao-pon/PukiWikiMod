@@ -19,7 +19,7 @@
  -投稿内容のメール自動配信先
  を設定の上、ご使用ください。
 
- $Id: article.inc.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
+ $Id: article.inc.php,v 1.6 2003/10/31 12:22:59 nao-pon Exp $
  
  */
 
@@ -182,7 +182,7 @@ function plugin_article_action()
 
 		// 差分ファイルの作成
 		if(is_page($post["refer"]))
-			$oldpostdata = join("",file(get_filename(encode($post["refer"]))));
+			$oldpostdata = join('',get_source($post["refer"]));
 		else
 			$oldpostdata = "\n";
 		if($postdata)

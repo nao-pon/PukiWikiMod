@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.9 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.10 2003/10/31 12:22:59 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -32,6 +32,7 @@ function plugin_calendar2_convert()
 	global $_calendar2_msg_detail, $_calendar2_msg_month, $_calendar2_msg_day;
 	global $script,$weeklabels,$vars,$command,$WikiName,$BracketName,$post,$get;
 	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable, $_msg_month;
+	global $wiki_user_dir;
 	
 	$today_view = true;
 	$args = func_get_args();
@@ -299,26 +300,49 @@ function plugin_calendar2_convert()
 
 	$ret .= "  </tr>\n</table>\n";
   if ($today_view == true){
-		$page = sprintf("[[%s%4d-%02d-%02d]]", $prefix, $today[year], $today[mon], $today[mday]);
-		$page_url = rawurlencode($page);
-		// 閲覧権限チェック＋
-		if (is_page($page) && check_readable($page,false,false)) {
-			$page_ = $vars['page'];
-			$get['page'] = $post['page'] = $vars['page'] = $page;
-			$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
-			$body = @join("",@file(get_filename(encode($page))));
-			$str .= convert_html($body);
-			if ($anon_writable) $str .= "<hr /><a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\">$_calendar2_plugin_edit</a>";
-			$get['page'] = $post['page'] = $vars['page'] = $page_;
+		$page = sprintf("%s%4d-%02d-%02d", $prefix, $today[year], $today[mon], $today[mday]);
+		//$page_url = rawurlencode($page);
+		global $trackback;
+		//$tb_tag = ($trackback)? "<div style=\"text-align:right\">[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($page)."\">TrackBack(".tb_count($page).")</a> ]</div>" : "";
+		$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
+		for ($i=0;$i<10;$i++)
+		{
+			$daynum = ($i)? "-".$i:"";
+			$_page = $page.$daynum;
+			// 閲覧権限チェック＋
+			if (is_page($_page) && check_readable($_page,false,false)) {
+				$page_ = $vars['page'];
+				$get['page'] = $post['page'] = $vars['page'] = $_page;
+				$body = @join("",get_source($_page));
+				$user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($_page)) : "[[".get_pg_auther_name($_page)."]]";
+				$user_tag = make_link($user_tag);
+				$show_tag = "by ".$user_tag." ".make_pagelink($_page,"<img src=\"./image/search.png\" />");
+				$tb_tag = ($trackback)? "<div style=\"text-align:right\">{$show_tag}  [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($_page)."\">TrackBack(".tb_count($_page).")</a> ]</div>" : "<div style=\"text-align:right\">{$show_tag}</div>";
+				$str .= $tb_tag.convert_html($body);
+				if ($anon_writable) $str .= "<a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_calendar2_plugin_edit</a>";
+				$str .= "<hr />";
+				$get['page'] = $post['page'] = $vars['page'] = $page_;
+			}
+			else
+			{
+				if (!$other_month) {
+					$page_url = rawurlencode($_page);
+					if ($i == 0)
+					{
+						$str .= sprintf($_calendar2_plugin_empty,$today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day);
+						if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
+					}
+					else
+					{
+						if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">"."[さらに記事を追加する]"."<span class=\"note_super\"> </span></a>";
+					}
+				} else {
+					$str = "";
+				}
+				break;
+			}
 		}
-		elseif (!$other_month) {
-			$str = "<h4>".sprintf($_calendar2_msg_detail, sprintf('%s%4d-%02d-%02d',$prefix, $today[year], $today[mon], $today[mday]))."</h4><br />";
-			//$str .= sprintf($_calendar2_plugin_empty,make_link($today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day));
-			$str .= sprintf($_calendar2_plugin_empty,$today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day);
-			if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" title=\"$name\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
-		} else {
-			$str = "";
-		}
+		
   }else{
     $str = "";
   }

@@ -37,50 +37,57 @@ function plugin_recent_convert()
 		$array = func_get_args();
 		$recent_lines = $array[0];
 	}
+
+
+	global $xoopsDB,$X_admin,$X_uid;
 	
-	//$lines = file(get_filename(encode($whatsnew)));
-	$lines = get_source($whatsnew);
-	$date = $items = "";
-	$cnt = 0;
-	$i = 1;
-	//foreach($lines as $line)
-	while (isset($lines[$i]))
+	if ($X_admin)
+		$where = "";
+	else
 	{
-		if($cnt > $recent_lines - 1) break;
-		
-		list($auth['owner'],$auth['user'],$auth['group']) = split("\t",substr($lines[$i],3));
-		$auth = preg_replace("/^.*:/","",$auth);
-		
-		if ($X_admin || get_readable($auth))
+		$where = "";
+		if ($X_uid) $where .= "  (uid = $X_uid) OR";
+		$where .= " (vaids LIKE '%all%') OR (vgids LIKE '%&3&%')";
+		if ($X_uid) $where .= " OR (vaids LIKE '%&{$X_uid}&%')";
+		foreach(X_get_groups() as $gid)
 		{
-			if(preg_match("/(($WikiName)|($BracketName))/",$lines[$i+1],$match))
-			{
-				$name = $match[1];
-				if($match[2])
-				{
-					$title = $match[1];
-				}
-				else
-				{
-					$title = strip_bracket($match[1]);
-	 			}
-				if(preg_match("/([0-9]{4}-[0-9]{2}-[0-9]{2})/",$lines[$i+1],$match)) {
-					if($date != $match[0]) {
-						if($date != '') {
-							$items .= "</ul>";
-						}
-						$items .= "<div class=\"recent_date\">".$match[0]."</div><ul class=\"recent_list\">";
-						$date = $match[0];
-					}
-				}
-				$title = htmlspecialchars($title);
-				//$items .="<li><a href=\"".$script."?".rawurlencode($name)."\" title=\"$title ".get_pg_passage($name,false)."\">".$title."</a></li>\n";
-				$items .="<li>".make_pagelink($name)."</a></li>\n";
-				$cnt++;
-			}
+			$where .= " OR (vgids LIKE '%&{$gid}&%')";
 		}
-		$i = $i + 2;
 	}
+	/*
+	if ($page)
+	{
+		$page = strip_bracket($page);
+		if ($where)
+			$where = " (name LIKE '$page/%') AND ($where)";
+		else
+			$where = " name LIKE '$page/%'";
+	}
+	*/
+	if ($where) $where = " AND ($where)";
+	//echo $where;
+
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE (name NOT LIKE ':%')$where ORDER BY editedtime DESC LIMIT $recent_lines;";
+	$res = $xoopsDB->query($query);
+	//echo $query."<br>";
+	if ($res)
+	{
+		$date = $items = "";
+		$cnt = 0;
+		while($data = mysql_fetch_row($res))
+		{
+			if(date("Y-n-j",$data[3]) != $date) {
+					if($date != "") {
+						$items .= "</ul>";
+					}
+					$date = date("Y-n-j",$data[3]);
+					$items .= "<div class=\"recent_date\">".$date."</div><ul class=\"recent_list\">";
+			}
+			$items .="<li>".make_pagelink($data[1])."</a></li>\n";
+			$cnt++;
+		}
+	}
+
 	$items .="</ul>";
 	return sprintf($_recent_plugin_frame,$cnt,$items);
 }

@@ -1,5 +1,5 @@
 <?php
-// $Id: memo.inc.php,v 1.3 2003/06/28 16:11:13 nao-pon Exp $
+// $Id: memo.inc.php,v 1.4 2003/10/31 12:22:59 nao-pon Exp $
 
 /////////////////////////////////////////////////
 // テキストエリアのカラム数
@@ -66,7 +66,7 @@ function plugin_memo_action()
 
 		// 差分ファイルの作成
 		if(is_page($post["refer"]))
-			$oldpostdata = join("",file(get_filename(encode($post["refer"]))));
+			$oldpostdata = join('',get_source($post["refer"]));
 		else
 			$oldpostdata = "\n";
 		if($postdata)

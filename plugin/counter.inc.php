@@ -5,11 +5,8 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: counter.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+ * $Id: counter.inc.php,v 1.3 2003/10/31 12:22:59 nao-pon Exp $
  */
-
-// counter file
-define(COUNTER_DIR, "./counter/");
 
 function plugin_counter_convert()
 {
@@ -52,7 +49,24 @@ function plugin_counter_convert()
 	fputs($nf,"$ip\n");
 	fclose($nf);
 	
-	return "<span class=\"counter\">Counter: $count, today: $today_count, yesterday: $yesterday_count</span>";
+	// DB¤ò¹¹¿·
+	global $xoopsDB;
+	$name = strip_bracket($vars["page"]);
+	$s_name = addslashes($name);
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_count")." WHERE name='$name';";
+	$result=$xoopsDB->query($query);
 
+	if (mysql_num_rows($result))
+	{
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_count")." SET count=$count,today='$today',today_count=$today_count,yesterday_count=$yesterday_count,ip='$ip' WHERE name='$name';";
+		$result=$xoopsDB->queryF($query);
+	}
+	else
+	{
+		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_count")." (name,count,today,today_count,yesterday_count,ip) VALUES('$s_name',$count,'$today',$today_count,$yesterday_count,'$ip');";
+		$result=$xoopsDB->queryF($query);
+	}
+
+	return "<span class=\"counter\">Counter: $count, today: $today_count, yesterday: $yesterday_count</span>";
 }
 ?>

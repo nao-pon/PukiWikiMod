@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.13 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: index.php,v 1.14 2003/10/31 12:22:59 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -30,14 +30,15 @@ function writeConfig(){
 	global $xoopsConfig, $HTTP_POST_VARS;
 
 	foreach($HTTP_POST_VARS as $k => $v){
-		$$k = $v;
+		$$k = str_replace("'","\'",$v);
 	}
 
 	$filename = _AM_WIKI_CONFIG_FILE;
 	$file = fopen($filename, "w");
 	$gids = implode(",",$gids);
 	$aids = implode(",",$aids);
-	$freeze = (isset($freeze))? 1 : 0 ;
+	$freeze = (isset($freeze))? 1 : 0;
+	$f_trackback = (int)$f_trackback;
 	$f_cycle = (int)$f_cycle;
 	$f_maxage = (int)$f_maxage;
 	$f_jp_pagereading = (int)$f_jp_pagereading;
@@ -65,6 +66,7 @@ function writeConfig(){
 	$content = "";
 	$content .= "<?php";
 	$content .= "
+	\$page_title = '$wiki_site_name';
 	\$defaultpage = '$wiki_defaultpage';
 	\$modifier = '$wiki_modifier';
 	\$modifierlink = '$wiki_modifierlink';
@@ -87,6 +89,7 @@ function writeConfig(){
 	\$pagereading_chasen_path = '$f_pagereading_chasen_path';
 	\$pagereading_kakasi_path = '$f_pagereading_kakasi_path';
 	\$pagereading_config_page = '$f_pagereading_config_page';
+	\$trackback = $f_trackback;
 	";
 	$content .= "\n?>";
 
@@ -145,7 +148,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback;
 	xoops_cp_header();
 	OpenTable();
 	checkPermit();
@@ -194,6 +197,9 @@ function displayForm(){
 		$_ff_disable = " checked";
 		$_ff_enable = "";
 	}
+	
+	$trackback = (int)$trackback;
+	
 	$pcmt_page_name = strip_bracket($pcmt_page_name);
 	$_jp_pagereading = array("","","");
 	if (!$pagereading_enable)
@@ -231,23 +237,35 @@ function displayForm(){
 	}
 
 	echo "
+	<h2>"._AM_WIKI_TITLE0."</h2>
+	<span style='color:red;font-weight:bold;'>"._AM_WIKI_INFO0."</span>
+	<ul>
+		<li><a href='".XOOPS_URL."/modules/pukiwiki/?plugin=pginfo' target='setting'>"._AM_WIKI_DB_INIT."</a></li>
+		<li><a href='".XOOPS_URL."/modules/pukiwiki/?plugin=links' target='setting'>"._AM_WIKI_PAGE_INIT."</a></li>
+	</ul>
+	<hr />
 	<h2>"._AM_WIKI_TITLE1."</h2>
 	<form method='post' action='index.php'>
 	<table border=1>
 	<tr><td>
+		"._AM_WIKI_SITE_NAME."
+	</td><td>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='wiki_site_name' value='".htmlspecialchars($page_title)."'>
+	</td></tr>
+	<tr><td>
 		"._AM_WIKI_DEFAULTPAGE."
 	</td><td>
-		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='wiki_defaultpage' value='".$defaultpage."'>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='wiki_defaultpage' value='".htmlspecialchars($defaultpage)."'>
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_MODIFIER."
 	</td><td>
-		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='wiki_modifier' value='".$modifier."'>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='wiki_modifier' value='".htmlspecialchars($modifier)."'>
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_MODIFIERLINK."
 	</td><td>
-		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='wiki_modifierlink' value='".$modifierlink."'>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='wiki_modifierlink' value='".htmlspecialchars($modifierlink)."'>
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_FUNCTION_FREEZE."
@@ -265,6 +283,11 @@ function displayForm(){
 	</td><td>
 		<input type='radio' name='wiki_function_unvisible' value='1'".$_unvisible_sw_[1].">"._AM_WIKI_ENABLE."
 		<input type='radio' name='wiki_function_unvisible' value='0'".$_unvisible_sw_[0].">"._AM_WIKI_DISABLE."
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_FUNCTION_TRACKBACK."
+	</td><td>
+		<input type='text' size='2' name='f_trackback' value='".$trackback."'>
 	</td></tr>
 	<tr><td valign='top'>
 		"._AM_WIKI_CSS."
@@ -284,12 +307,12 @@ function displayForm(){
 	<tr><td>
 		"._AM_WIKI_USER_DIR."
 	</td><td>
-		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_wiki_user_dir' value='".$wiki_user_dir."'>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_wiki_user_dir' value='".htmlspecialchars($wiki_user_dir)."'>
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_PCMT_PAGE."
 	</td><td>
-		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pcmt_page_name' value='".$pcmt_page_name."'>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pcmt_page_name' value='".htmlspecialchars($pcmt_page_name)."'>
 	</td></tr>
 	<tr><td valign='top'>
 		"._AM_WIKI_HIDE_NAVI."
@@ -314,17 +337,17 @@ function displayForm(){
 	<tr><td>
 		"._AM_WIKI_PAGEREADING_CHASEN_PATH."
 	</td><td>
-		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pagereading_chasen_path' value='".$pagereading_chasen_path."'>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pagereading_chasen_path' value='".htmlspecialchars($pagereading_chasen_path)."'>
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_PAGEREADING_KAKASI_PATH."
 	</td><td>
-		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pagereading_kakasi_path' value='".$pagereading_kakasi_path."'>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pagereading_kakasi_path' value='".htmlspecialchars($pagereading_kakasi_path)."'>
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_PAGEREADING_CONFIG_PAGE."
 	</td><td>
-		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pagereading_config_page' value='".$pagereading_config_page."'>
+		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='f_pagereading_config_page' value='".htmlspecialchars($pagereading_config_page)."'>
 	</td></tr>
 	<tr><td colspan=2><hr /></td></tr>
 	<tr><td valign='top'>
@@ -382,8 +405,78 @@ function displayForm(){
 	xoops_cp_footer();
 }
 
+function db_check()
+{
+	global $xoopsDB;
+	// DB Check
+	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." LIMIT 1;";
+	if(!$result=$xoopsDB->query($query))
+	{
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_pginfo")."` (
+  `id` int(10) NOT NULL auto_increment,
+  `name` varchar(255) NOT NULL default '',
+  `buildtime` int(10) NOT NULL default '0',
+  `editedtime` int(10) NOT NULL default '0',
+  `aids` text NOT NULL,
+  `gids` varchar(255) NOT NULL default '',
+  `vaids` text NOT NULL,
+  `vgids` varchar(255) NOT NULL default '',
+  `lastediter` mediumint(8) NOT NULL default '0',
+  `uid` mediumint(8) NOT NULL default '0',
+  `freeze` tinyint(1) NOT NULL default '0',
+  `unvisible` tinyint(1) NOT NULL default '0',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `name` (`name`)
+) TYPE=MyISAM;";
+		if(!$result=$xoopsDB->queryF($query)){
+			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo $query;
+		}
+	}
+
+	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod_count")." LIMIT 1;";
+	if(!$result=$xoopsDB->query($query))
+	{
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_count")."` (
+  `name` varchar(255) NOT NULL default '',
+  `count` int(10) NOT NULL default '0',
+  `today` varchar(10) NOT NULL default '',
+  `today_count` int(10) NOT NULL default '0',
+  `yesterday_count` int(10) NOT NULL default '0',
+  `ip` varchar(15) NOT NULL default '',
+  UNIQUE KEY `name` (`name`)
+) TYPE=MyISAM;";
+		if(!$result=$xoopsDB->queryF($query)){
+			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo $query;
+		}
+	}
+
+	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod_tb")." LIMIT 1;";
+	if(!$result=$xoopsDB->query($query))
+	{
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_tb")."` (
+  `last_time` int(10) NOT NULL default '0',
+  `url` text NOT NULL,
+  `title` varchar(255) NOT NULL default '',
+  `excerpt` text NOT NULL,
+  `blog_name` varchar(255) NOT NULL default '',
+  `tb_id` varchar(32) NOT NULL default '',
+  `page_name` varchar(255) NOT NULL default '',
+  `ip` varchar(15) NOT NULL default '',
+  KEY `page_id` (`tb_id`),
+  KEY `page_name` (`page_name`)
+) TYPE=MyISAM;";
+		if(!$result=$xoopsDB->queryF($query)){
+			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo $query;
+		}
+	}
+
+}
 clearstatcache();
 if($_SERVER["REQUEST_METHOD"] == "GET"){
+	db_check();
 	displayForm();
 } else {
 	$wiki_admin_mode = (isset($HTTP_POST_VARS['wiki_admin_mode']))? $HTTP_POST_VARS['wiki_admin_mode'] : "";

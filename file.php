@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.11 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: file.php,v 1.12 2003/10/31 12:22:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -42,7 +42,7 @@ function get_filetime($page)
 }
 
 // ページの出力
-function page_write($page,$postdata,$notimestamp=NULL)
+function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="",$agids="",$freeze="",$unvisible="")
 {
 	global $do_backup,$del_backup;
 
@@ -68,13 +68,13 @@ function page_write($page,$postdata,$notimestamp=NULL)
 		make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
 
 	// ファイルの書き込み
-	file_write(DATA_DIR,$page,$postdata,$notimestamp);
+	file_write(DATA_DIR,$page,$postdata,$notimestamp,$aids,$gids,$vaids,$agids,$freeze,$unvisible);
 	
 }
 
 // ファイルへの出力
 // 第4引数追加:最終更新しない=true by nao-pon
-function file_write($dir,$page,$str,$notimestamp=NULL)
+function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="",$agids="",$freeze="",$unvisible="")
 {
 	global $post,$update_exec;
 	
@@ -85,10 +85,13 @@ function file_write($dir,$page,$str,$notimestamp=NULL)
 	if($str == "")
 	{
 		@unlink($dir.encode($page).".txt");
+		$action = "delete";
 	}
 	else
 	{
 		$str = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$str);
+		
+		$action = (is_page($page))? "update" : "insert";
 		
 		if($notimestamp && is_page($page))
 		{
@@ -114,14 +117,28 @@ function file_write($dir,$page,$str,$notimestamp=NULL)
 	{
 		system($update_exec." > /dev/null &");
 	}
-	// linkデータベースを更新
+	
 	if ($dir === DATA_DIR)
+	{
+		// linkデータベースを更新
 		links_update($page);
+		
+		// pginfo DBを更新
+		pginfo_db_write($page,$action,$aids,$gids,$vaids,$agids,$freeze,$unvisible);
+		
+		// TrackBack Ping用ファイル作成
+		// pcomment用：親ページ名をセット
+		$page = ($post['refer'])? $post['refer'] : $page; 
+		tb_send($page);
+	}	
 }
 
 // 最終更新ページの更新
 function put_lastmodified()
 {
+	// 最終更新ページはDBから得るようにしたので必要なくなった
+	return;
+	
 	global $script,$maxshow,$whatsnew,$date_format,$time_format,$weeklabels,$post,$non_list;
 	
 	// ページ閲覧権限のキャッシュをクリアー
@@ -427,11 +444,15 @@ function get_readings()
 	return $readings;
 }
 
-
 // 全ページ名を配列に
-function get_existpages($nocheck=false)
+function get_existpages($nocheck=false,$page="",$limit=0,$order="",$nolisting=false)
 {
-	$aryret = array();
+	return get_existpages_db($nocheck,$page,$limit,$order,$nolisting);
+
+	static $aryret = array();
+	
+	if ($aryret) return $aryret;
+	
 
 	if ($dir = @opendir(DATA_DIR))
 	{
@@ -508,8 +529,13 @@ function get_pg_auther($page)
 //ページ作成者名を得る
 function get_pg_auther_name($page)
 {
+	global $no_name;
+	
+	if (!is_page($page)) return "";
+	
 	$uid = get_pg_auther($page);
-	if (!$uid) return "";
+	if (!$uid) return "$no_name";
+	
 	$user = new XoopsUser($uid);
 	return $user->getVar("uname");
 }

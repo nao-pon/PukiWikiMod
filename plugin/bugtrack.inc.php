@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.7 2003/10/13 12:23:28 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.8 2003/10/31 12:22:59 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -277,9 +277,12 @@ function plugin_bugtrack_pageinfo($page) {
 		$itemname = $$itemname;
 		//if(preg_match("/-\s*$itemname\s*:\s*(.*)\s*/",$body,$matches)) {
 		if(preg_match("/-[ \t\r\f]*".$itemname."[ \t]*:[ \t]*(.*)[ \t]*/",$body,$matches)) {
-			if($item == "name" || $item == "summary") {
+			if($item == "summary")
+			{
 				$$item = htmlspecialchars(strip_bracket($matches[1]));
-			}else {
+			}
+			else
+			{
 				$$item = htmlspecialchars($matches[1]);
 			}
 		}
@@ -351,7 +354,7 @@ function plugin_bugtrack_list_convert()
       $state_no = count($_bugtrack_plugin_state_list);
     }
     $bgcolor = $_bugtrack_plugin_state_bgcolor[$state_no];
-    array_push($table[$state_no],"<tr bgcolor=\"$bgcolor\"><td nowrap>$page_link</td><td nowrap>$state</td><td nowrap>$priority</td><td nowrap>$category</td><td nowrap>".make_pagelink("[[$name]]")."</td><td>".make_pagelink($page,$summary)."</td></tr>");
+    array_push($table[$state_no],"<tr bgcolor=\"$bgcolor\"><td nowrap>$page_link</td><td nowrap>$state</td><td nowrap>$priority</td><td nowrap>$category</td><td nowrap>".make_link("$name")."</td><td>".make_pagelink($page,$summary)."</td></tr>");
   }
   
   $table_html = "<tr><th></th><th>$_bugtrack_plugin_state</th><th>$_bugtrack_plugin_priority</th><th>$_bugtrack_plugin_category</th><th>$_bugtrack_plugin_name</th><th>$_bugtrack_plugin_summary</th></tr>\n";

@@ -22,7 +22,7 @@
  *
  * 避難所       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.4 2003/09/14 13:10:25 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.5 2003/10/31 12:22:59 nao-pon Exp $
  *
  */
 
@@ -176,7 +176,7 @@ function plugin_showrss_get_rss($target,$usecache)
 	if ($usecache)
 	{
 		// 期限切れのキャッシュをクリア
-		plugin_showrss_cache_expire();
+		plugin_showrss_cache_expire($usecache);
 
 		// キャッシュがあれば取得する
 		$filename = CACHE_DIR . encode($target) . '.tmp';
@@ -210,7 +210,7 @@ function plugin_showrss_get_rss($target,$usecache)
 	return array($obj->parse($buf),$time);
 }
 // 期限切れのキャッシュをクリア
-function plugin_showrss_cache_expire()
+function plugin_showrss_cache_expire($usecache)
 {
 	$expire = $usecache * 60 * 60; // Hour
 
@@ -344,7 +344,8 @@ function plugin_showrss_get_timestamp($str)
 	$time = strtotime($matches[1].' '.$matches[2]);
 	if (!empty($matches[3]))
 	{
-		$diff = ($matches[5]*60+$matches[6])*60;
+		//$diff = ($matches[5]*60+$matches[6])*60;
+		$diff = ($matches[5]*60+$matches[6])*60 - date('Z');
 		$time += ($matches[4] == '-' ? $diff : -$diff);
 	}
 	return $time;

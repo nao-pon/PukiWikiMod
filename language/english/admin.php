@@ -1,6 +1,11 @@
 <?php
-// $Id: admin.php,v 1.4 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: admin.php,v 1.5 2003/10/31 12:22:59 nao-pon Exp $
 // FIXME: not good at English. :P
+
+define("_AM_WIKI_TITLE0", "PukiWikiMod initial setting.");
+define("_AM_WIKI_INFO0", "In order to carry out initial setting, please access the following two link places and perform processing.");
+define("_AM_WIKI_DB_INIT", "DataBace initialization.");
+define("_AM_WIKI_PAGE_INIT", "Page relation initialization.");
 
 define("_AM_WIKI_TITLE1", "Preferences");
 define("_AM_WIKI_TITLE2", "Change Permission");
@@ -44,5 +49,6 @@ define("_AM_WIKI_KANJI2KANA_ENCODING", "The kanji code used for delivery with Ch
 define("_AM_WIKI_PAGEREADING_CHASEN_PATH", "Execution file path of ChaSen (it sets up according to each one of environment);
 define("_AM_WIKI_PAGEREADING_KAKASI_PATH", "Execution file path of KAKASI (it sets up according to each one of environment)");
 define("_AM_WIKI_PAGEREADING_CONFIG_PAGE", "The name of the page which stored page name reading.");
-
+define("_AM_WIKI_SITE_NAME", "Name of this site's wiki");
+define("_AM_WIKI_FUNCTION_TRACKBACK", "Enable TrackBack");
 ?>

@@ -1,8 +1,8 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.11 2003/10/13 12:23:28 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.12 2003/10/31 12:22:59 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
-global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $_freeze, $wiki_allow_newpage, $X_admin,$noattach,$noheader;
+global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $_freeze, $wiki_allow_newpage, $X_admin,$noattach,$noheader,$trackback;
 
 $_freeze = is_freeze($vars[page]);
 if($_freeze){
@@ -79,10 +79,16 @@ if($_freeze){
 
 	<?php
 	if ($is_page) {
+		//$tb_tag = ($trackback)? "<div style=\"float:right\">[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]</div>" : "";
+		$tb_tag = ($trackback)? "&nbsp;&nbsp;[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]" : "";
+		$sended_ping_tag = ($trackback)? "[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."#sended_ping\">送信したPing(".tb_count($vars['page'],".ping").")</a> ]" : "";
+	
 		if (strip_bracket($vars['page']) != $defaultpage) {
 			require_once(PLUGIN_DIR.'where.inc.php');
-			echo do_plugin_convert("where");
+			echo do_plugin_inline("where").$tb_tag;
 		}
+		else
+			echo $tb_tag;
 		require_once(PLUGIN_DIR.'counter.inc.php');
 		echo "<div style=\"float:right\">".do_plugin_convert("counter")."</div>";
 		echo $hr;
@@ -138,6 +144,7 @@ if($_freeze){
 		&nbsp;
 		<a href="pukiwiki.php?cmd=rss"><img src="./image/rss.gif" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
 	</div>
+	<span class="small"><?php echo $sended_ping_tag ?><br /></span>
 	<?php $pg_auther_name=get_pg_auther_name($vars["page"]);
 	if ($pg_auther_name){ ?>
 	<span class="small">ページ作成:<a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a> - </span>

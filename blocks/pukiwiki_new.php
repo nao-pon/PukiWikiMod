@@ -1,44 +1,61 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.5 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.6 2003/10/31 12:22:59 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
 	$show_num = 10;
+
+	global $xoopsUser,$xoopsDB;
+	if ( $xoopsUser )
+	{
+		$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+		if ( $xoopsUser->isAdmin($xoopsModule->mid()) )
+			$X_admin = 1;
+		else
+			$X_admin = 0;
 	
-	//最新記事のページ名
-	$puki_new_name = "RecentChanges";
+		$X_uid = $xoopsUser->uid();
+	}
+	else
+	{
+		$X_admin = $X_uid = 0;
+	}
 
-	$block = array();
-	// プログラムファイル読み込み
-	$pukiwiki_path = XOOPS_ROOT_PATH."/modules/pukiwiki/";
+	if ($X_admin)
+		$where = "";
+	else
+	{
+		$where = "";
+		if ($X_uid) $where .= "  (uid = $X_uid) OR";
+		$where .= " (vaids LIKE '%all%') OR (vgids LIKE '%&3&%')";
+		if ($X_uid) $where .= " OR (vaids LIKE '%&{$X_uid}&%')";
+		foreach(xb_X_get_groups($X_uid) as $gid)
+		{
+			$where .= " OR (vgids LIKE '%&{$gid}&%')";
+		}
+	}
 
-	$postdata = xb_get_source($puki_new_name);
+	if ($where) $where = " AND ($where)";
+
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE (name NOT LIKE ':%')$where ORDER BY editedtime DESC LIMIT $show_num;";
+	$res = $xoopsDB->query($query);
+
+	if ($res)
+	{
+		$date = $items = "";
+		while($data = mysql_fetch_row($res))
+		{
+			if(date("Y-n-j",$data[3]) != $date) {
+				$date = date("Y-n-j",$data[3]);
+				$items .= "&nbsp;<strong>".$date."</strong><br />\n";
+			}
+			$items .="&nbsp;&nbsp;<strong><big>&middot;</big></strong>&nbsp;".xb_make_link($data[1])."<br />\n";
+		}
+	}
 
 	$block['title'] = _MI_PUKIWIKI_BTITLE;
-	$block['content'] = "<small>";
-	$d = '';
-	$count = 0;
-	$i = 1;
-	while ($count < $show_num){
-		if (!isset($postdata[$i]))
-			break;
+	$block['content'] = "<small>$items</small>";
 
-		list($auth['owner'],$auth['user'],$auth['group']) = split("\t",substr($postdata[$i],3));
-		$auth = preg_replace("/^.*:/","",$auth);
-
-		if (xb_get_readable($auth)) //チェック関数
-		{
-			$show_line = split(" ",$postdata[$i+1]);
-			if($d != substr($show_line[0],1)){
-				$block['content'] .= "&nbsp;<strong>".substr($show_line[0],1)."</strong><br />";
-				$d = substr($show_line[0],1);
-			}
-			$block['content'] .= "&nbsp;&nbsp;<strong><big>&middot;</big></strong>&nbsp;".xb_make_link(trim($show_line[4]))."<br />";
-			$count++;
-		}
-		$i = $i + 2;
-	}
-	$block['content'] .= "</small>";
 	return $block;
 }
 
@@ -48,22 +65,23 @@ function xb_make_link($page)
 	$pukiwiki_path = XOOPS_URL."/modules/pukiwiki/index.php";
 
 	//$url = rawurlencode($page);
-	$_name = $name = xb_strip_bracket($page);
+	$_name = $name = $page;
+	$page = xb_add_bracket($page);
 	$url = rawurlencode($name);
 
 	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name)){
+	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name,$f_name)){
 		$body = xb_get_source($page);
 		foreach($body as $line){
-			if (preg_match("/^\*{1,3}(.*)/",$line,$reg)){
-				$_name = str_replace(array("[[","]]"),"",$reg[1]);
+			if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
+				$_name = $f_name[1].trim(htmlspecialchars(str_replace(array("[[","]]"),"",$reg[1])));
 				break;
 			}
 		}
 	}
 	$pgp = xb_get_pg_passage($page,FALSE);
 	//return "<a href=\"".$pukiwiki_path."?$url\" title=\"".$date."\">".htmlspecialchars($name)."</a> ";
-	return "<a href=\"".$pukiwiki_path."?$url\" title=\"".$name.$pgp."\">".htmlspecialchars($_name)."</a> ";
+	return "<a href=\"".$pukiwiki_path."?$url\" title=\"".$name.$pgp."\">".$_name."</a> ";
 }
 
 // ページ名のエンコード
@@ -85,6 +103,15 @@ function xb_strip_bracket($str)
 {
 	if(preg_match("/^\[\[(.*)\]\]$/",$str,$match)) {
 		$str = $match[1];
+	}
+	return $str;
+}
+
+// [[ ]] を付加する
+function xb_add_bracket($str){
+	$WikiName = '(?<!(!|\w))[A-Z][a-z]+(?:[A-Z][a-z]+)+';
+	if (!preg_match("/^".$WikiName."$/",$str)){
+		if (!preg_match("/\[\[.*\]\]/",$str)) $str = "[[".$str."]]";
 	}
 	return $str;
 }
@@ -138,6 +165,20 @@ function xb_get_pg_passage($page,$sw=true)
 	else
 		return $_pg_passage[$page]["label"];
 }
+
+function xb_X_get_groups($X_uid){
+	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
+		// XOOPS 2
+		global $xoopsDB;
+		$X_M = new XoopsMemberHandler($xoopsDB);
+		return $X_M->getGroupsByUser($X_uid);
+	} else {
+		// XOOPS 1
+		global $xoopsUser;
+		return XoopsGroup::getByUser($xoopsUser);
+	}
+}
+
 
 //閲覧権限を得る
 function xb_get_readable(&$auth)

@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.9 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.10 2003/10/31 12:22:59 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -190,7 +190,7 @@ EOD;
 			$link = preg_replace('/^(\[\[)?/',"$1$_pcmt_msg_all>[[","$_page]]");
 		$recent = '';
 		if ($count > 0) { $recent = sprintf($_pcmt_msg_recent,$count); }
-		$edit_tag =  (is_freeze($_page,false))? "" : " | <a href=\"$script?cmd=edit&amp;page=$_page\">$_pcmt_msg_edit</a>";
+		$edit_tag =  (is_freeze($_page,false))? "" : " | <a href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_pcmt_msg_edit</a>";
 	}
 	$link = make_link($link);
 	return $dir ?
@@ -301,6 +301,9 @@ function pcmt_insert($page) {
 	//親ページのファイルタイム更新
 	touch(DATA_DIR.encode($post['refer']).".txt");
 	put_lastmodified();
+	//親ページのDB更新
+	pginfo_db_write($post['refer'],"update");
+
 	
 	// コメントファイルの書き込み 第4引数:最終更新しない=true
 	file_write(DATA_DIR, $page, $new, true);

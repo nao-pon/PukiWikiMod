@@ -1,9 +1,11 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.10 2003/10/18 15:19:50 nao-pon Exp $
+// $Id: convert_html.php,v 1.11 2003/10/31 12:22:59 nao-pon Exp $
 /////////////////////////////////////////////////
-function convert_html($string)
+function convert_html($string,$is_intable=false)
 {
+	global $vars,$related_link,$noattach,$noheader,$h_excerpt;
+	
 	if (is_array($string)) $string = join('',$string);
 	$body = new convert();
 	$result_last = $body->to_html($string);
@@ -11,6 +13,26 @@ function convert_html($string)
 	
 	// インライン処理(リンク付加など)
 	$result_last = $body->inline2($result_last);
+
+	if ($is_intable)
+		$result_last = preg_replace("/^#related/","\x08#related",$result_last);
+	else
+		$result_last = preg_replace("/(^|\x08)#related/e",'make_related($vars["page"],TRUE)',$result_last);
+
+	$tmp = $result_last;
+	$result_last = preg_replace("/^#norelated$/","",$result_last);
+	if($tmp != $result_last) $related_link = 0;
+
+	$tmp = $result_last;
+	$result_last = preg_replace("/^#noattach$/","",$result_last);
+	if($tmp != $result_last) $noattach = 1;
+
+	$tmp = $result_last;
+	$result_last = preg_replace("/^#noheader$/","",$result_last);
+	if($tmp != $result_last) $noheader = 1;
+	
+	unlink($tmp);
+	
 	
 	// 配列から戻す
 	$str = join("\n", $result_last);
@@ -39,7 +61,7 @@ class convert
 		global $user_rules,$str_rules,$line_rules,$strip_link_wall;
 		global $WikiName,$InterWikiName, $BracketName;
 		global $_table_left_margin,$_table_right_margin;
-		global $anon_writable;
+		global $anon_writable,$h_excerpt;
 		
 		$_freeze = is_freeze($vars['page']);
 
@@ -91,6 +113,8 @@ class convert
 		// ブロックの判定フラグ
 		$_p = FALSE;
 		$_bq = FALSE;
+		// 整形済み行判定フラグ
+		$_pre = 0;
 		// カラーネームの正規表現
 		$colors_reg = "aqua|navy|black|olive|blue|purple|fuchsia|red|gray|silver|green|teal|lime|white|maroon|yellow|transparent";
 
@@ -115,12 +139,23 @@ class convert
 					array_push($result, "</table></div>".$table_around."");
 				}
 			}
+			if($line == "<<<")
+			{
+				array_push($result, "<pre>");
+				$line = "";
+				if (!$_pre) $_pre_headform = $headform[$_cnt-1];
+				$_pre ++;
+			}
 
 			$comment_out = $comment_out[1];
 
 			// 行頭書式かどうかの判定
 			$line_head = substr($line,0,1);
-			if(	$line_head == ' ' || 
+			if
+			(
+			!$_pre &&
+				(
+				$line_head == ' ' || 
 				$line_head == ':' || 
 				$line_head == '>' || 
 				$line_head == '-' || 
@@ -129,8 +164,9 @@ class convert
 				$line_head == '*' || 
 				$line_head == '#' || 
 				$comment_out != ''
-			) {
-
+				)
+			)
+			{
 				if($headform[$_cnt-1] == '' && $_p){
 					array_push($result, "</p>");
 					$_p = FALSE;
@@ -155,11 +191,13 @@ class convert
 						array_push($result, htmlspecialchars($line));
 					}
 				}
-				else if(preg_match("/^(\*{1,3})(.*)/",$line,$out))
+				else if(preg_match("/^(\*{1,6})(.*)/",$line,$out))
 				{
 					$result = array_merge($result,$saved); $saved = array();
 					$headform[$_cnt] = $out[1];
 					$str = inline($out[2]);
+					// <title>用
+					if (!$h_excerpt) $h_excerpt = strip_tags(make_user_rules(make_link($str)));
 					
 					//$level = strlen($out[1]) + 1;
 					$level = strlen($out[1]);
@@ -180,14 +218,14 @@ class convert
 					$arycontents[] = str_repeat("-",$level)."<a href=\"#content_{$content_id_local}_$content_count\">".strip_htmltag(make_user_rules(inline($out[2],TRUE)))."</a>\n";
 					$content_count++;
 				}
-				else if(preg_match("/^(-{1,4})(.*)/",$line,$out))
+				else if(preg_match("/^(-+)(.*)/",$line,$out))
 				{
 					$headform[$_cnt] = $out[1];
-					if(strlen($out[1]) == 4)
+					if($out[1]=="----" && (preg_match("/^\d+%?$/",$out[2]) || !$out[2]))
 					{
 						$result = array_merge($result,$saved); $saved = array();
 						$hr_tmp = $hr;
-						if ($out[2]) $hr_tmp = ereg_replace("(<.*)(>)","\\1 width=$out[2]\\2",$hr_tmp);
+						if ($out[2]) $hr_tmp = ereg_replace("(<.*)(>)","\\1 width=".htmlspecialchars($out[2])."\\2",$hr_tmp);
 						array_push($result, $hr_tmp);
 					}
 					else
@@ -196,7 +234,7 @@ class convert
 						array_push($result, '<li>'.inline($out[2]));
 					}
 				}
-				else if(preg_match("/^(\+{1,3})(.*)/",$line,$out))
+				else if(preg_match("/^(\++)(.*)/",$line,$out))
 				{
 					$headform[$_cnt] = $out[1];
 					list_push($result,$saved,'ol', strlen($out[1]));
@@ -457,7 +495,7 @@ class convert
 								) {
 									$td_lines = ereg_replace("&br;","\n",$td);//this
 									
-									array_push($result,"\t".convert_html($td_lines));
+									array_push($result,"\t".convert_html($td_lines,true));
 								} else {
 									array_push($result,ltrim(inline($td)));
 								}
@@ -477,58 +515,94 @@ class convert
 	#				array_push($result," <!-- ".htmlspecialchars($comment_out)." -->");
 				}
 
-			} else {
-
+			}
+			else if($line == ">>>" && $_pre)
+			{
+				$_pre --;
+				if (!$_pre) $headform[$_cnt] = $_pre_headform;
+				$_result = array_pop($result);
+				if ($_result == "</pre>")
+					array_push($result, "</pre></pre>");
+				else
+				{
+					array_push($result, $_result);
+					array_push($result, "</pre>");
+				}
+			}
+			else
+			{
 				$headform[$_cnt] = '';
-				if($headform[$_cnt-1] != $headform[$_cnt]){
-					if(array_values($saved)){
-						if( $_bq ){
-							array_unshift($saved, "</p>");
-							$_bq = FALSE;
+				if (!$_pre)
+				{
+					if($headform[$_cnt-1] != $headform[$_cnt]){
+						if(array_values($saved)){
+							if( $_bq ){
+								array_unshift($saved, "</p>");
+								$_bq = FALSE;
+							}
+							$i = array_pop($saved);
+							array_push($saved,$i);
+							$result = array_merge($result,$saved); $saved = array();
 						}
-						$i = array_pop($saved);
-						array_push($saved,$i);
-						$result = array_merge($result,$saved); $saved = array();
+						if( substr($line,0,1) == '' && !$_p){
+							array_push($result, "<p>");
+							$_p = TRUE;
+						}
+						else if( substr($line,0,1) != '' && $_p){
+							array_push($result, "</p>");
+							$_p = FALSE;
+						}
 					}
-					if( substr($line,0,1) == '' && !$_p){
-						array_push($result, "<p>");
-						$_p = TRUE;
-					}
-					else if( substr($line,0,1) != '' && $_p){
-						array_push($result, "</p>");
+					
+					if (preg_match("/^(LEFT|CENTER|RIGHT):(.*)$/",$line,$tmp)) {
+						if ($_p)
+							array_push($result,"</p>");
+						array_push($result,'<div class="p_'.strtolower($tmp[1]).'">');
+						array_push($result,inline($tmp[2]));
+						array_push($result,"</div>");
+						$line = '';
 						$_p = FALSE;
 					}
-				}
-				
-				if (preg_match("/^(LEFT|CENTER|RIGHT):(.*)$/",$line,$tmp)) {
-					if ($_p)
-						array_push($result,"</p>");
-					array_push($result,'<div class="p_'.strtolower($tmp[1]).'">');
-					array_push($result,inline($tmp[2]));
-					array_push($result,"</div>");
-					$line = '';
-					$_p = FALSE;
-				}
-				if( substr($line,0,1) == '' && $_p){
-					$_tmp = array_pop($result);
-					if($_tmp == "<p>") {
-						$_tmp = '<p class="empty">';
+					if( substr($line,0,1) == '' && $_p){
+						$_tmp = array_pop($result);
+						if($_tmp == "<p>") {
+							$_tmp = '<p class="empty">';
+						}
+						array_push($result, $_tmp, "</p>");
+						$_p = FALSE;
 					}
-					array_push($result, $_tmp, "</p>");
-					$_p = FALSE;
-				}
-				else if( substr($line,0,1) != '' && !$_p) {
-					array_push($result, "<p>");
-						$_p = TRUE;
+					else if( substr($line,0,1) != '' && !$_p) {
+						array_push($result, "<p>");
+							$_p = TRUE;
+					}
 				}
 				if( substr($line,0,1) != '' ){
-					array_push($result, inline($line));
+					if ($_pre)
+					{
+						// ~\nで繋げた行を元に戻す
+						$line = str_replace("\t&br;\t","~\n",$line);
+						// &#x7c; を戻す
+						$line = str_replace("&#x7c;","|",$line);
+						
+						$_result = array_pop($result);
+						if ($_result == "</pre>")
+							array_push($result, " </pre>".htmlspecialchars($line,ENT_NOQUOTES));
+						else
+						{
+							array_push($result, $_result);
+							array_push($result, " ".htmlspecialchars($line,ENT_NOQUOTES));
+						}
+
+						//array_push($result, " ".htmlspecialchars($line,ENT_NOQUOTES));
+					}
+					else
+						array_push($result, inline($line));
 				}
 
 			}
 		$_cnt++;
 		}
-
+		if ($_pre) array_push($result, str_repeat("</pre>",$_pre));
 		if($_p) array_push($result, "</p>");
 		if($_bq) {
 			array_push($result, "</p>");
@@ -544,7 +618,7 @@ class convert
 
 			foreach($arycontents as $line)
 			{
-				if(preg_match("/^(-{1,3})(.*)/",$line,$out))
+				if(preg_match("/^(-+)(.*)/",$line,$out))
 				{
 					list_push($result,$saved,'ul', strlen($out[1]));
 					array_push($result, '<li>'.$out[2]);
@@ -589,8 +663,8 @@ class convert
 		}
 		else
 			$str = make_user_rules(make_link($str));
-		
-		$str = preg_replace("/#related/e",'make_related($vars["page"],TRUE)',$str);
+/*		
+		$str = preg_replace("/^#related/e",'make_related($vars["page"],TRUE)',$str);
 
 		$tmp = $str;
 		$str = preg_replace("/^#norelated$/","",$str);
@@ -605,7 +679,7 @@ class convert
 		if($tmp != $str) $noheader = 1;
 		
 		unlink($tmp);
-
+*/
 		return $str;
 	}
 }

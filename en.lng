@@ -219,6 +219,17 @@ $_tracker_messages = array(
 );
 
 ///////////////////////////////////////
+// TrackBack
+$_tb_title = 'TrackBack: Discussion on TrackBack in %s';
+$_tb_header = 'Continuing the discussion...';
+$_tb_entry = 'TrackBack URL for this entry:';
+$_tb_refer = ' Listed below are links to weblogs that reference %s from %s.';
+$_tb_header_Excerpt = 'Excerpt:';
+$_tb_header_Weblog = 'Weblog:';
+$_tb_header_Tracked = 'Tracked:';
+$_tb_date = 'F j, Y, g:i A';
+
+///////////////////////////////////////
 // pcomment.inc.php
 // Default page name (replace %s to $vars['page'])
 $pcmt_page_name = '[[Comments/%s]]';

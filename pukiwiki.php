@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.30 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.31 2003/10/31 12:22:59 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -44,9 +44,14 @@ require('make_link.php');
 require('config.php');
 require('link.php');
 require('proxy.php');
+require('db_func.php');
+require('trackback.php');
+if (!extension_loaded('mbstring'))
+{
+	require('mbstring.php');
+}
 
-/////////////////////////////////////////////////
-// プログラムファイル読み込み
+
 require("init.php");
 
 // XOOPSデータ読み込み
@@ -94,6 +99,9 @@ if ($wiki_mail_sw === 2 || ($wiki_mail_sw === 1 && (!$X_admin))) {
 	define("WIKI_MAIL_NOTISE",FALSE);
 }
 
+// <title>用
+$h_excerpt = "";
+
 /////////////////////////////////////////////////
 // メイン処理
 
@@ -101,13 +109,16 @@ if ($wiki_mail_sw === 2 || ($wiki_mail_sw === 1 && (!$X_admin))) {
 if (arg_check("list")) $vars["plugin"] = "list";
 
 // ファイル名一覧の表示
-elseif (arg_check("filelist")) {
+elseif (arg_check("filelist"))
+{
 	$vars['plugin'] = "attach";
 	$vars['pcmd'] = "list";
 }
-
 // RecentChenges の表示
-elseif ($arg === $whatsnew) $vars["plugin"] = "recentchanges";
+elseif ($arg === $whatsnew)
+{
+	$vars["plugin"] = "recentchanges";
+}
 
 // Plug-in action
 if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
@@ -200,7 +211,7 @@ else if(arg_check("edit"))
 			$is_first_line = 1;
 			$is_in_table = 0;
 			foreach (split ("\n", $textareas[3]) as $line) {
-				if (preg_match("/^\*{1,3}/", $line) && !$is_in_table) {
+				if (preg_match("/^\*{1,6}/", $line) && !$is_in_table) {
 					$index_num++;
 				}
 				if (!$is_first_line) { $line = "\n$line"; } else { $is_first_line = 0; }
@@ -273,8 +284,13 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	
 	$freeze_check = ($post["freeze"])? "checked " : "";
 	$unvisible_check = ($post["unvisible"])? "checked " : "";
-
-	$post["msg"] = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$post["msg"]);
+	
+	//ページ情報削除
+	delete_page_info($post["msg"]);
+	//$post["msg"] = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$post["msg"]);
+	
+	//整形済みブロックの | を &#x7c; に置換
+	$post["msg"] = rep_for_pre($post["msg"]);
 	
 	//改行有効 by nao-pon
 	if($post["enter_enable"]) {
@@ -482,7 +498,10 @@ else if($post["write"])
 	$author_uid = 0;
 	if (preg_match("/^\/\/ author:([0-9]+)($|\n)/",$checkpostdata,$arg))
 		$author_uid = $arg[1];
-
+	// 管理者権限はフォームデーターで上書き
+	if ($X_admin)
+		$author_uid = $post["f_author_uid"];
+	
 	unset($checkpostdata);
 	
 	if (!$body){
@@ -495,6 +514,9 @@ else if($post["write"])
 
 		if (!$is_empty)
 		{
+			//整形済みブロックの | を &#x7c; に置換
+			$post["msg"] = rep_for_pre($post["msg"]);
+			
 			//改行有効 by nao-pon
 			if($post["enter_enable"]) {
 				$post["msg"] = auto_br($post["msg"]);
@@ -612,67 +634,65 @@ else if($post["write"])
 			if (!$is_empty)
 			{
 				//ページ情報付加　今のところページ製作者のみ
-				if ($X_uid && (!is_page($post["page"])))
-					$postdata = "// author:".$X_uid."\n".$postdata;
-				else
+				if (is_page($post["page"]))
 					$postdata = "// author:".$author_uid."\n".$postdata;
+				else
+					$postdata = "// author:".$X_uid."\n".$postdata;
 
 				//閲覧権限
-				if ($post["unvisible"]){
-					// ゲストグループが選択されていたら他を無効に
-					if (in_array("3",$post["v_gids"]))
-					{
-						$unvisible_gid = "3";
-						$unvisible_aid = "all";
-					}
-					else
-					{
-						$unvisible_gid = implode(",",$post["v_gids"]);
-						$unvisible_aid = implode(",",$post["v_aids"]);
-					}
-					
-					if ($X_admin){
+				if ((!$X_admin && ($X_uid != $author_uid || !$X_uid)) || !$read_auth)
+				{
+					$postdata = $unvisible_org.$postdata;
+					$unvisible_aid = $unvisible_gid = "";
+					$post["unvisible"] = "";
+				}
+				else
+				{
+					if ($post["unvisible"]){
+						// ゲストグループが選択されていたら他を無効に
+						if (in_array("3",$post["v_gids"]))
+						{
+							$unvisible_gid = "3";
+							$unvisible_aid = "all";
+						}
+						else
+						{
+							$unvisible_gid = implode(",",$post["v_gids"]);
+							$unvisible_aid = implode(",",$post["v_aids"]);
+						}
+						
 						$unvisible_uid = ($author_uid == 0)? $post["f_create_uid"] : $author_uid ;
 						$postdata = "#unvisible\tuid:".$unvisible_uid."\taid:".$unvisible_aid."\tgid:".$unvisible_gid."\n".$postdata;
-					} else {
-						if ($X_uid){
-							if (($X_uid == $author_uid) || ($author_uid==0)) {
-								$postdata = "#unvisible\tuid:".$X_uid."\taid:".$unvisible_aid."\tgid:".$unvisible_gid."\n".$postdata;
-							} else {
-								$postdata = $unvisible_org.$postdata;
-							}
-						}
 					}
-				} else {
-					if ((!$X_admin && ($X_uid != $author_uid || !$X_uid)) || !$read_auth)
-						$postdata = $unvisible_org.$postdata;
+					else
+						$post["unvisible"] = false;
 				}
 
 				//編集権限
-				if ($post["freeze"]){
-					$freeze_gid = implode(",",$post["gids"]);
-					$freeze_aid = implode(",",$post["aids"]);
-					
-					if ($X_admin){
+				if ((!$X_admin && $X_uid != $author_uid || !$X_uid) || !$function_freeze)
+				{
+					$postdata = $freeze_org.$postdata;
+					$freeze_aid=$freeze_gid="";
+					$post["freeze"]="";
+				}
+				else
+				{
+					if ($post["freeze"])
+					{
+						$freeze_gid = implode(",",$post["gids"]);
+						$freeze_aid = implode(",",$post["aids"]);
+						
 						$freeze_uid = ($author_uid == 0)? $post["f_create_uid"] : $author_uid ;
 						$postdata = "#freeze\tuid:".$freeze_uid."\taid:".$freeze_aid."\tgid:".$freeze_gid."\n".$postdata;
-					} else {
-						if ($X_uid){
-							if (($X_uid == $author_uid) || ($author_uid==0)) {
-								$postdata = "#freeze\tuid:".$X_uid."\taid:".$freeze_aid."\tgid:".$freeze_gid."\n".$postdata;
-							} else {
-								$postdata = $freeze_org.$postdata;
-							}
-						}
 					}
-				} else {
-					if ((!$X_admin && $X_uid != $author_uid) || !$function_freeze)
-						$postdata = $freeze_org.$postdata;
+					else
+						$post["freeze"] = false;
 				}
 			}
 
 			// ページの出力
-			page_write($post["page"],$postdata);
+			page_write($post["page"],$postdata,$post['notimestamp'],$freeze_aid,$freeze_gid,$unvisible_aid,$unvisible_gid,$post["freeze"],$post["unvisible"]);
+
 			
 			if (WIKI_MAIL_NOTISE) {
 				// メール送信 by nao-pon
@@ -715,10 +735,8 @@ else if($post["write"])
 			if($postdata)
 			{
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_updated);
-				//$page = str_replace('$1',make_search($post["page"]),$_title_updated);
-				//$body = convert_html($postdata);
-				//header("Location: $script?".rawurlencode($post["page"]));
-				redirect_header("$script?".rawurlencode(strip_bracket($post["page"])),1,$title);
+				$r_page = rawurlencode(strip_bracket($post["page"]));
+				redirect_header("$script?$r_page",1,$title);
 				exit();
 			}
 			else
@@ -726,6 +744,8 @@ else if($post["write"])
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_deleted);
 				$page = str_replace('$1',make_search($post["page"]),$_title_deleted);
 				$body = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_deleted);
+				// TrackBackデータ削除
+				tb_delete($post["page"]);
 			}
 		}
 	}
@@ -1060,9 +1080,9 @@ else if($vars["md5"])
 else if(arg_check("rss"))
 {
 	if(!arg_check("rss10"))
-		catrss(1);
+		catrss(1,$vars['page']);
 	else
-		catrss(2);
+		catrss(2,$vars['page']);
 	die();
 }
 // ページの表示とInterWikiNameの解釈
@@ -1094,8 +1114,16 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 
 			$title = htmlspecialchars(strip_bracket($get["page"]));
 			$page = make_search($get["page"]);
-			$body = $postdata;
-
+			$body = tb_get_rdf($vars['page'])."\n";
+			
+			//ping送出データーがあればランチャー起動
+			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".tbf"))
+			{
+				$r_page = rawurlencode(strip_bracket($post["page"]));
+				$body = "<img style=\"float:left\" src=\"".XOOPS_URL."/modules/pukiwiki/ping.php?$r_page\" width=1 height=1/>";
+			}
+			
+			$body .= $postdata;
 			header_lastmod($vars["page"]);
 		}
 		else
@@ -1219,13 +1247,13 @@ else
 	$vars["page"] = $defaultpage;
 	$title = htmlspecialchars(strip_bracket($defaultpage));
 	$page = make_search($vars["page"]);
-	$body = convert_html($postdata);
+	$body = tb_get_rdf($vars['page'])."\n".convert_html($postdata);
 
 	header_lastmod($vars["page"]);
 }
 // <title>にページ名をプラス
 $xoops_pagetitle = $xoopsModule->name();
-$xoops_pagetitle = "$title ($xoops_pagetitle)";
+$xoops_pagetitle = "$title $h_excerpt($xoops_pagetitle)";
 // XOOPS 1 用 XOOPS/include/functions.php の改造が必要
 global $xoops_mod_add_title;
 $xoops_mod_add_title = $xoops_pagetitle;
@@ -1241,6 +1269,7 @@ if ($xoopsTpl){
 
 // ** 出力処理 **
 catbody($title,$page,$body);
+//pginfo_db_init();
 unset($title,$page,$body);//一応開放してみる
 //XOOPSフッタ
 CloseTable();

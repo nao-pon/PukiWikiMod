@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: backup.php,v 1.3 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: backup.php,v 1.4 2003/10/31 12:22:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // バックアップデータを作成する
@@ -44,7 +44,7 @@ function make_backup($filename,$body,$oldtime)
 		$body = "$splitter " . $oldtime . "\n" . $body;
 		if(!preg_match("/\n$/",$body)) $body .= "\n";
 
-		$fp = backup_fopen($realfilename,"w");
+		$fp = backup_fopen($realfilename,"wb");
 		if($fp===FALSE) die_message("cannot write file ".htmlspecialchars($realfilename)."<br>maybe permission is not writable or filename is too long");
 		backup_fputs($fp,$strout);
 		backup_fputs($fp,$body);
@@ -117,7 +117,9 @@ function read_backup($filename)
 		}
 		else
 		{
-			$retvars[$age][] = $line;
+			// gzread に変更したので \n をつける by nao-pon 2003/10/22
+			$retvars[$age][] = $line."\n";
+			//$retvars[$age][] = $line;
 		}
 	}
 
@@ -139,12 +141,12 @@ function get_backup_list($_page="")
 	{
 		while($file = readdir($dir))
 		{
-			if(function_exists(gzopen))
-				$file = str_replace(".txt",".gz",$file);
-
-			if($file == ".." || $file == ".") continue;
-			$page = decode(trim(preg_replace("/(\.txt)|(\.gz)$/"," ",$file)));
-			if(in_array($page,$cantedit) || !check_readable($page,false,false)) continue;
+			if (!preg_match('/^((?:[0-9A-F]{2})+)\.(?:txt|gz)$/',$file,$matches))
+			{
+				continue;
+			}
+			$page = decode($matches[1]);
+			if(in_array($page,$cantedit)) continue;
 			$page_url = rawurlencode($page);
 			$name = strip_bracket($page);
 			$s_name = htmlspecialchars($name);
@@ -228,7 +230,16 @@ function backup_fclose($zp)
 function backup_file($filename)
 {
 	if(function_exists(gzfile))
-		return @gzfile(str_replace(".txt",".gz",$filename));
+	{
+		// PHP 4.2.3 dev + Win2k + Apache 1.3.27 環境で
+		// zlib のバグかなんか知らんけど、gzfile で正常に読み出せないことがあるので
+		// gzread に変更 by nao-pon 2003/10/22
+		$zd = backup_fopen($filename,"rb");
+		$data = explode("\n",gzread ($zd, 1000000));
+		backup_fclose($zd);
+		return $data;
+		//return @gzfile(str_replace(".txt",".gz",$filename));
+	}
 	else
 		return @file($filename);
 }

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.19 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: func.php,v 1.20 2003/10/31 12:22:59 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -615,6 +615,68 @@ function js_redirect($location) {
 		<hr />
 		";
 }
+//整形済みブロックの | を &#x7c; に置換
+function rep_for_pre($msg)
+{
+	$lines = split("\n",$msg);
+	$msg = "";
+	$_pre = 0;
+	foreach($lines as $line)
+	{
+		if (preg_match("/(^|\|)<<<($|->)/",$line)) $_pre ++;
+		if ($_pre)
+		{
+			if (preg_match("/^>>>($|\||->)/",$line)) $_pre --;
+			if ($_pre) $line = str_replace("|","&#x7c;",$line);
+		}
+		else
+			if (preg_match("/^>>>($|\||->)/",$line)) $_pre --;
+		$msg .= $line."\n";
+	}
+	return $msg;
+}
+
+//整形済みブロックの行頭にスペースを追加
+function inssp_for_pre($msg)
+{
+	$lines = split("\n",$msg);
+	$msg = "";
+	$_pre = 0;
+	foreach($lines as $line)
+	{
+		if (preg_match("/(^|\|)<<<($|->)/",$line)) $_pre ++;
+		if ($_pre)
+		{
+			if (preg_match("/^>>>($|\||->)/",$line)) $_pre --;
+			if ($_pre && !preg_match("/(^|\|)(<<<|>>>)($|->)/",$line)) $line = " " . $line;
+		}
+		else
+			if (preg_match("/^>>>($|\||->)/",$line)) $_pre --;
+		$msg .= $line."\n";
+	}
+	return $msg;
+}
+
+//整形済みブロックの行頭の1文字を削除
+function delsp_for_pre($msg)
+{
+	$lines = split("\n",$msg);
+	$msg = "";
+	$_pre = 0;
+	foreach($lines as $line)
+	{
+		if (preg_match("/(^|\|)<<<($|->)/",$line)) $_pre ++;
+		if ($_pre)
+		{
+			if (preg_match("/^>>>($|\||->)/",$line)) $_pre --;
+			if ($_pre && !preg_match("/(^|\|)(<<<|>>>)($|->)/",$line)) $line = substr($line, 1);
+		}
+		else
+			if (preg_match("/^>>>($|\||->)/",$line)) $_pre --;
+		$msg .= $line."\n";
+	}
+	return $msg;
+}
 
 //改行を有効にする by nao-pon
 function auto_br($msg){
@@ -635,8 +697,12 @@ function auto_br($msg){
 		$post_lines = split("\n",$msg);
 		//テーブル対応のため変更⇒処理が複雑になってしまった。
 		$msg = "";
-		foreach($post_lines as $line){
-			if (substr($line,0,1) != ' ') {
+		$_pre = 0;
+		foreach($post_lines as $line)
+		{
+			if (preg_match("/(^|\|)<<<($|->)/",$line)) $_pre ++;
+			if (substr($line,0,1) != ' ' && !$_pre)
+			{
 				//取り合えず改行前の~を削除
 				$line = preg_replace("/~(->)?$/","\\1",$line);
 				if (preg_match("/^(.*\|(\{)?(LEFT|CENTER|RIGHT)?(:)?(TOP|MIDDLE|BOTTOM)?)(.*)$/",$line,$reg)){
@@ -648,13 +714,15 @@ function auto_br($msg){
 				}
 			}
 			$msg .= $line."\n";
+			if (preg_match("/^>>>($|\|)/",$line)) $_pre --;
 		}
 		$msg = rtrim($msg);
 
 		//余分な~を削除
-		$msg = preg_replace("/~(->)?\n((?:[#\-+*|:>\n]|\/\/))/","\\1\n\\2",$msg);
+		$msg = preg_replace("/~(->)?\n((?:[#\-+*|:>\n]|\/\/|<<<))/","\\1\n\\2",$msg);
 		$msg = preg_replace("/((?:^|\n)[^ ][^\n~]*)~((:?->)?\n )/","\\1\\2",$msg);
 		$msg = preg_replace("/((?:^|\n)(?:----|\/\/)(?:.*)?)~((:?->)?\n)/","\\1\\2",$msg);
+		//$msg = str_replace("<<<~->\n","<<<->\n",$msg);
 		$msg = preg_replace("/~$/","",$msg);
 
 		//前処理制御文字へ置換
@@ -674,6 +742,9 @@ function auto_br($msg){
 }
 // オートブラケット by nao-pon
 function auto_braket($msg,$tgt_name){
+	
+	$msg = inssp_for_pre($msg);
+	
 	// \をエスケープ
 	$msg = str_replace('\\','_yEn_',$msg);
 	
@@ -732,6 +803,9 @@ function auto_braket($msg,$tgt_name){
 	}
 	// \をアンエスケープ
 	$msg = str_replace('_yEn_','\\',$msg);
+	
+	$msg = delsp_for_pre($msg);
+	
 	return $msg;
 }
 // オートブラケット用サブ関数
@@ -747,11 +821,13 @@ function auto_br_replace($front,$tgt,$back,$page_name){
 function cell_format_tag_del ($td) {
 	// カラーネームの正規表現
 	$colors_reg = "aqua|navy|black|olive|blue|purple|fuchsia|red|gray|silver|green|teal|lime|white|maroon|yellow|transparent";
+	// 文字色指定削除
+	$td = preg_replace("/FC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
 	// 背景色指定削除
-	$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","SC:$2",$td);
-	$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
+	$td = preg_replace("/(SC|BC):(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","SC:$2",$td);
+	$td = preg_replace("/(SC|BC):(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
 	// 背景画指定削除
-	$td = preg_replace("/SC:\(([^),]*)(,once|,1)?\)/i","",$td);
+	$td = preg_replace("/(SC|BC):\(([^),]*)(,once|,1)?\)/i","",$td);
 	// 文字揃え指定削除
 	if (preg_match("/^(LEFT|CENTER|RIGHT)?(:)(TOP|MIDDLE|BOTTOM)?/i",$td,$tmp)) {
 		$td = (!$tmp[1] && !$tmp[3])? $tmp[2] : "";
