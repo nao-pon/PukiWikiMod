@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.5 2003/07/15 13:21:48 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.6 2003/07/21 01:23:35 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -379,7 +379,8 @@ function plugin_calendar2_convert()
 			$get['page'] = $post['page'] = $vars['page'] = $page;
 			$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
 			$body = @join("",@file(get_filename(encode($page))));
-			$str .= convert_html(&$body);
+			//$str .= convert_html(&$body);
+			$str .= convert_html($body);
 			if ($anon_writable) $str .= "<hr /><a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\">$_calendar2_plugin_edit</a>";
 			$get['page'] = $post['page'] = $vars['page'] = $page_;
 		}
@@ -395,10 +396,13 @@ function plugin_calendar2_convert()
     $str = "";
   }
 	$ret .= "</td><td valign=\"top\" width=\"100%\">".$str."</td></tr></table>";
+
 	if (exist_plugin_convert("calendar_viewer") && ($vars['file'] != "")){
 		$aryargs = "[[".$vars['file']."]],".substr($vars['date'],0,4)."-".substr($vars['date'],4,2).",view,cal2";
 		$ret .= do_plugin_convert("calendar_viewer",$aryargs);
 	}
+	unset($aryargs);
+
 	return $ret;
 }
 

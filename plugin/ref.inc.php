@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.6 2003/07/16 13:51:45 nao-pon Exp $
+// $Id: ref.inc.php,v 1.7 2003/07/21 01:23:35 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -59,11 +59,19 @@ function plugin_ref_inline() {
 	$name = array_shift($args);
 
 	//パラメータ変換
-	$params = array('left'=>FALSE,'center'=>FALSE,'right'=>FALSE,'wrap'=>FALSE,'nowrap'=>FALSE,'around'=>FALSE,'_args'=>array(),'_done'=>FALSE,'nocache'=>FALSE,'_size'=>FALSE,'_w'=>0,'_h'=>0);
-	array_walk($args, 'ref_check_arg', &$params);
+	$params = array('_args'=>array(),'nocache'=>FALSE,'_size'=>FALSE,'_w'=>0,'_h'=>0);
+	
+	foreach($args as $val){
+		if ($val == nocache) {
+			$params['nocache'] = TRUE;
+			continue;
+		}
+		$params['_args'][] = $val;
+	}
 
 	$ret = plugin_ref_body($name,$args,$params);
-	
+	unset($params,$args,$name);
+
 	return $ret;
 }
 
@@ -103,6 +111,8 @@ function plugin_ref_convert() {
 		$ret = wrap_table($ret, $align, $params['around']);
 	}
 	$ret = wrap_div($ret, $align, $params['around']);
+
+	unset($params,$args,$name);
 
 	return $ret;
 }
@@ -208,9 +218,9 @@ function plugin_ref_body($name,$args,$params){
 			$parse = parse_url($url);
 			$tmpname = $parse['host']."_".basename($parse['path']);
 			$filename = $dir.encode($vars['page'])."_".encode($tmpname);
-			$img_arg = plugin_ref_cache_image_fetch($filename, $url, UPLOAD_DIR);
-			$url = $img_arg[0];
-			$size = $img_arg[1];
+			$size = plugin_ref_cache_image_fetch($filename, &$url);
+			//$url = $img_arg[0];
+			//$size = $img_arg[1];
 			$org_w = $size[0];
 			$org_h = $size[1];
 		}
@@ -261,30 +271,35 @@ function plugin_ref_body($name,$args,$params){
 }
 
 // 画像キャッシュがあるか調べる
-function plugin_ref_cache_image_fetch($filename, $target, $dir) {
-	global $vars;
+function plugin_ref_cache_image_fetch($filename, &$url) {
 	
-  $filename = $dir.$filename;
+	$filename = UPLOAD_DIR.$filename;
 
 	if (!is_readable($filename)) {
-		$file = fopen($target, "rb"); // たぶん size 取得よりこちらが原始的だからやや速い
+		$file = fopen($url, "rb"); // たぶん size 取得よりこちらが原始的だからやや速い
 		if (! $file) {
 			fclose($file);
 			$url = NOIMAGE;
+			$size = @getimagesize($url);
 		} else {
 			$data = fread($file, 1000000); 
 			fclose ($file);
-			$size = @getimagesize($target); // あったら、size を取得、通常は1が返るが念のため0の場合も(reimy)
-			if ($size[0] <= 1)
+			$size = @getimagesize($url); // あったら、size を取得、通常は1が返るが念のため0の場合も(reimy)
+			if ($size[0] <= 1){
 				$url = NOIMAGE;
-			else
+				$size = @getimagesize($url);
+			}else{
 				$url = $filename;
+			}
 		}
 		plugin_ref_cache_image_save($data, $filename);
+	} else {
+		$url = $filename;
+		$size = @getimagesize($filename);
 	}
-	$size = @getimagesize($filename);
 	
-	return array($filename,$size);
+	return $size;
+	
 }
 // 画像キャッシュを保存
 function plugin_ref_cache_image_save($data, $filename) {
