@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.17 2003/07/16 13:47:26 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.18 2003/07/16 14:27:49 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -158,7 +158,7 @@ else if(arg_check("add"))
 else if(arg_check("edit"))
 {
 	$postdata = @join("",get_source($get["page"]));
-	if (!$wiki_allow_newpage && !$is_page){
+	if (!$wiki_allow_newpage && !$postdata){
 		$body = $title = str_replace('$1',htmlspecialchars(strip_bracket($vars["page"])),_MD_PUKIWIKI_NO_AUTH);
 		$page = str_replace('$1',make_search($vars["page"]),_MD_PUKIWIKI_NO_AUTH);
 		$vars["page"] = "";
