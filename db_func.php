@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.15 2004/12/09 00:46:18 nao-pon Exp $
+// $Id: db_func.php,v 1.16 2004/12/09 13:34:26 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -86,13 +86,17 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 function get_pg_info_db($page)
 {
 	global $xoopsDB;
+	static $val = array();
 	$page = addslashes(strip_bracket($page));
-	$ret = array();
+	if (isset($val[$page])) return $val[$page];
+	
+	$val[$page] = array();
 	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
 	$res = $xoopsDB->query($query);
-	if (!$res) return $ret;
-	$ret = mysql_fetch_array($res,MYSQL_ASSOC);
-	return $ret;
+	if (!$res) return $val[$page];
+	$val[$page] = mysql_fetch_array($res,MYSQL_ASSOC);
+	
+	return $val[$page];
 }
 
 //ページIDからページ名を求める
@@ -112,7 +116,7 @@ function get_pgid_by_name($page)
 	global $xoopsDB;
 	static $page_id = array();
 	$page = addslashes(strip_bracket($page));
-	if (!empty($page_id[$page])) return $page_id[$page];
+	if (isset($page_id[$page])) return $page_id[$page];
 	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return 0;
