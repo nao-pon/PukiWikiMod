@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.66 2005/03/08 15:23:05 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.67 2005/03/10 13:25:21 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する
 if (
@@ -970,21 +970,25 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	{
 		if (check_readable($get["page"],false,false))
 		{
+			//$pcon = new pukiwiki_converter();
+			
 			if (isset($get['com_mode']))
 			{
 				$noattach = 1;
 				$page_comment_mode = "*ページコメント表示モード\n\n-ページコメント表示モードのため本文(ページ内容)を表示していません。\n-本文を表示するには、[[こちら>__PAGE__]]へアクセスしてください。";
 				
 				$postdata = convert_html(str_replace("__PAGE__",strip_bracket($vars['page']),$page_comment_mode));
-				
+				//$pcon->string = str_replace("__PAGE__",strip_bracket($vars['page']),$page_comment_mode);
+				//$postdata = $pcon->convert();
 			}
 			else
+			{
 				$postdata = convert_html($get["page"],false,true);
-				//$pcon = new pukiwiki_converter();
-				//$postdata = $pcon->convert_page($get["page"]);
-
-				//$postdata ="The server is being maintained now. Please access it after a while.<br>現在サーバーをメンテナンス中です。しばらくしてからアクセスしてください。";
-
+				//$pcon->string = $get["page"];
+				//$pcon->page_cvt = TRUE;
+				//$postdata = $pcon->convert();
+			}
+			
 			$title = htmlspecialchars(strip_bracket($get["page"]));
 			$page = make_search($get["page"]);
 			$body = tb_get_rdf($vars['page'])."\n";

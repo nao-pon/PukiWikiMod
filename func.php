@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.43 2005/03/09 12:10:20 nao-pon Exp $
+// $Id: func.php,v 1.44 2005/03/10 13:25:21 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1062,19 +1062,26 @@ function include_page($page,$ret_array=false)
 		if (preg_match("/(.*?)\n#more(\([^)]*\))?\n/s",$body,$match))
 			$body = $match[1];
 		$body .= "\n\nRIGHT:[[$_msg_read_more>$page]]";
-		$ret = convert_html($body,false,false,false,$ret_array);
-		//$pcon = new pukiwiki_converter();
-		//$body = $pcon->convert_str($body,false,false,false,true);
+		
+		//$ret = convert_html($body,false,false,false,$ret_array);
+		
+		$pcon = new pukiwiki_converter();
+		$pcon->string = $body;
+		$pcon->ret_array = $ret_array;
+		$ret = $pcon->convert();
 	}
 	else
 	{
-		$ret = convert_html($page,false,true,false,$ret_array);
-		//$pcon = new pukiwiki_converter();
-		//$body = $pcon->convert_page($page);
-
+		//$ret = convert_html($page,false,true,false,$ret_array);
+		
+		$pcon = new pukiwiki_converter();
+		$pcon->string = $page;
+		$pcon->page_cvt = TRUE;
+		$pcon->ret_array = $ret_array;
+		$ret = $pcon->convert();
 	}
 	
-	//unset($pcon);
+	unset($pcon);
 	
 	//ÂàÈòÊÑ¿ôÃÍÌá¤·
 	$vars["page"] = $post["page"] = $get["page"] = $tmppage;

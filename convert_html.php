@@ -1,17 +1,18 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.44 2005/03/08 15:23:05 nao-pon Exp $
+// $Id: convert_html.php,v 1.45 2005/03/10 13:25:21 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
-	function convert_str(&$str)
-	{
-		return convert_html($str);
-	}
+	var $string = "";
+	var $is_intabale = FALSE;
+	var $page_cvt = FALSE;
+	var $cache = FALSE;
+	var $ret_array = FALSE;
 	
-	function convert_page(&$page)
+	function convert()
 	{
-		return convert_html($page,false,true);
+		return convert_html($this->string,$this->is_intable,$this->page_cvt,$this->cache,$this->ret_array);
 	}
 }
 
@@ -50,7 +51,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 			$convert_load--;
 			
 			$str = join('',$htmls);
-
+			
 			if (!$ret_array)
 				return $str;
 			else
@@ -152,15 +153,15 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 
 	$convert_load--;
 	
-	//名前欄置換
-	//$str = str_replace(WIKI_NAME_DEF,$X_uname,$str);
+	$contents = $body->contents;
 	
-	//一応アンセットしてみる
-	//unset ($body,$cnts_plain,$arykeep,$result_last,$html);
+	//アンセット メモリー開放 $body は必須。
+	unset ($body,$cnts_plain,$arykeep,$result_last,$html);
+	
 	if (!$ret_array)
 		return $str;
 	else
-		return array($str, $body->contents);
+		return array($str, $contents);
 	
 }
 
