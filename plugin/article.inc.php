@@ -19,7 +19,7 @@
  -投稿内容のメール自動配信先
  を設定の上、ご使用ください。
 
- $Id: article.inc.php,v 1.9 2004/08/19 05:26:53 nao-pon Exp $
+ $Id: article.inc.php,v 1.10 2004/08/19 05:29:39 nao-pon Exp $
  
  */
 
@@ -96,7 +96,10 @@ function plugin_article_action()
 		//$postdata_old  = file(get_filename(encode($post["refer"])));
 		$postdata_old  = get_source($post["refer"]);
 		$article_no = 0;
-
+		
+		// 名前をクッキーに保存
+		setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
+		
 		$name = ($post['name'])? $post['name'] : $no_name;
 		if (WIKI_USER_DIR)
 			make_user_link($name);
