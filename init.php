@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.42 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: init.php,v 1.43 2005/03/29 23:40:17 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -35,9 +35,6 @@ if (!empty($_SERVER['PATH_INFO']))
 define("S_VERSION","1.3.3");
 define("S_COPYRIGHT","Based on \"PukiWiki\" by <a href=\"http://pukiwiki.org/\">PukiWiki Developers Team</a>");
 define("UTIME",time());
-define("HTTP_USER_AGENT",$HTTP_SERVER_VARS["HTTP_USER_AGENT"]);
-define("PHP_SELF",$HTTP_SERVER_VARS["PHP_SELF"]);
-define("SERVER_NAME",$HTTP_SERVER_VARS["SERVER_NAME"]);
 define("MUTIME",getmicrotime());
 
 // PukiWikiMod ディレクトリ名
@@ -47,15 +44,15 @@ define("PUKIWIKI_DIR_NAME", $xoopsModule->dirname());
 define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
 
 // スキーム + ドメイン名まで
-define("XOOPS_WIKI_HOST",(getenv('SERVER_PORT')==443?'https://':('http://')).getenv('SERVER_NAME').(getenv('SERVER_PORT')==80?'':(':'.getenv('SERVER_PORT'))));
+define("XOOPS_WIKI_HOST",preg_replace("#^(https?://[^/]+).*$#","$1",XOOPS_URL));
 
 // PukiWikiMod ルートURL(スキームとドメインを省いたもの)
-define("XOOPS_WIKI_URL",preg_replace("#^".preg_quote(XOOPS_WIKI_HOST)."(:[\d]+)?#","",XOOPS_URL).'/modules/pukiwiki');
+define("XOOPS_WIKI_URL",preg_replace("#^".preg_quote(XOOPS_WIKI_HOST)."(:[\d]+)?#","",XOOPS_URL).'/modules/'.PUKIWIKI_DIR_NAME);
 
 /////////////////////////////////////////////////
 // 初期設定 (サーバ変数)
 foreach (array('SCRIPT_NAME', 'SERVER_ADMIN', 'SERVER_NAME',
-	'SERVER_PORT', 'SERVER_SOFTWARE') as $key) {
+	'SERVER_PORT', 'SERVER_SOFTWARE', 'HTTP_USER_AGENT', 'PHP_SELF', 'SERVER_NAME') as $key) {
 	define($key, isset($_SERVER[$key]) ? $_SERVER[$key] : '');
 	unset(${$key}, $_SERVER[$key], $HTTP_SERVER_VARS[$key]);
 }
@@ -130,9 +127,11 @@ if ($X_admin || ($wiki_allow_new === 0) || (($X_uid && ($wiki_allow_new < 2)))) 
 $wiki_allow_newpage = WIKI_ALLOW_NEWPAGE; //Skin用に残す
 
 
+/*
 if($script == "") {
 	$script = (getenv('SERVER_PORT')==443?'https://':('http://')).getenv('SERVER_NAME').(getenv('SERVER_PORT')==80?'':(':'.getenv('SERVER_PORT'))).getenv('SCRIPT_NAME');
 }
+*/
 
 //$WikiName = '[A-Z][a-z]+(?:[A-Z][a-z]+)+';
 //$WikiName = '(?<!(!|\w))[A-Z][a-z]+(?:[A-Z][a-z]+)+';
@@ -364,10 +363,11 @@ if($usefacemark) {
 $note_id = 1;
 $foot_explain = array();
 
+/*
 // 変数のチェック
 if(php_sapi_name()=='cgi' && !preg_match("/^http:\/\/[-a-zA-Z0-9\@:;_.]+\//",$script))
 	die_message("please set '\$script' in ".INI_FILE);
-
+*/
 
 // 設定ファイルの変数チェック
 $wrong_ini_file = "";
