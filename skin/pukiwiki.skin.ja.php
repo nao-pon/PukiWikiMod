@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.6 2003/07/08 04:08:38 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.7 2003/07/08 14:11:16 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -42,7 +42,7 @@ if($_freeze){
 				echo "| <a href=\"$script?plugin=rename\">リネーム</a> ";
 			}
 		} else {
-			echo " | ".$source_tag." ";
+			echo $source_tag." ";
 		}
 		echo "]&nbsp;";
 	} else {
