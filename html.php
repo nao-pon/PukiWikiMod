@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.42 2004/10/14 13:04:39 nao-pon Exp $
+// $Id: html.php,v 1.43 2004/10/15 14:59:36 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -434,8 +434,14 @@ function user_rules_str($str)
 	global $str_rules,$fixed_heading_anchor;
 
 	$arystr = split("\n",$str);
-
+	
 	$pre = 0;
+	
+	// カラーネームの正規表現
+	$colors_reg = "aqua|navy|black|olive|blue|purple|fuchsia|red|gray|silver|green|teal|lime|white|maroon|yellow|transparent";
+	// セル書式指定子の正規表現
+	$table_reg = "(?:FC:(?:#?[0-9abcdef]{6}?|".$colors_reg."|0)|(?:SC|BC):(?:(?:#?[0-9abcdef]{6}?|".$colors_reg."|0)|\([^),]*(?:,once|,1)?\))|(?:LEFT|CENTER|RIGHT)?:(?:TOP|MIDDLE|BOTTOM)?)?";
+	
 	foreach($arystr as $str)
 	{
 		// 日付・時刻など置換処理
@@ -449,42 +455,45 @@ function user_rules_str($str)
 		
 		if ($str == "<<<") $pre ++;
 		if ($pre && $str == ">>>") $pre --;
+		
 		// 見出しに固有IDを付与する
-		if ($fixed_heading_anchor and
-			!$pre and
-			preg_match('/^(\|.*?)?(\*{1,6}(.(?!\[#[A-Za-z][\w-]+\]))+?)(\||->)?$/', $str, $matches))
+		if ($fixed_heading_anchor and !$pre)
 		{
-			if ($matches[1] || $matches[4])
+			preg_match('/^(\|)?(.*?)(\|h?|->)?$/', $str, $matches);
+			$matches[1] = (!empty($matches[1]))? $matches[1] : "";
+			$matches[3] = (!empty($matches[3]))? $matches[3] : "";
+			if ($matches[1] || $matches[3])
 			{
 				// 表中の処理
 				$_str_a = array();
 				foreach(explode("|",$matches[2]) as $_str)
 				{
-					if (preg_match('/^(\*{1,6}(.(?!\[#[A-Za-z][\w-]+\]))+?)$/', $_str, $_arg))
+					if (preg_match('/^('.$table_reg.'\*{1,6}(.(?!\[#[A-Za-z][\w-]+\]))+?)(->)?$/i', $_str, $_arg))
 					{
 						// 固有IDを生成する
 						// ランダムな英字(1文字)+md5ハッシュのランダムな部分文字列(7文字)
 						$anchor = chr(mt_rand(ord('a'), ord('z'))).
 							substr(md5(uniqid(substr($_arg[1], 0, 100), 1)), mt_rand(0, 24), 7);
-						$_str = rtrim($_arg[1])." [#$anchor]";
+						$_str = rtrim($_arg[1])." [#$anchor]".$_arg[4];
 					}
 					$_str_a[] = $_str;
 				}
-				$str = $matches[1].join("|",$_str_a).$matches[4];
+				$str = $matches[1].join("|",$_str_a).$matches[3];
 			}
 			else
 			{
-				// 固有IDを生成する
-				// ランダムな英字(1文字)+md5ハッシュのランダムな部分文字列(7文字)
-				$anchor = chr(mt_rand(ord('a'), ord('z'))).
-					substr(md5(uniqid(substr($matches[2], 0, 100), 1)), mt_rand(0, 24), 7);
-				$str = $matches[1].rtrim($matches[2])." [#$anchor]".$matches[4];
+				if (preg_match('/^(\*{1,3}(.(?!\[#[A-Za-z][\w-]+\]))+)$/', $str, $matches))
+				{
+					// 固有IDを生成する
+					// ランダムな英字(1文字)+md5ハッシュのランダムな部分文字列(7文字)
+					$anchor = chr(mt_rand(ord('a'), ord('z'))).
+						substr(md5(uniqid(substr($matches[2], 0, 100), 1)), mt_rand(0, 24), 7);
+					$str = rtrim($matches[1])." [#$anchor]";
+				}
 			}
 		}
-
 		$retvars[] = $str;
 	}
-	
 	return join("\n",$retvars);
 }
 
