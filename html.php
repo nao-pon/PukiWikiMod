@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.6 2003/07/02 11:04:42 nao-pon Exp $
+// $Id: html.php,v 1.7 2003/07/05 14:44:25 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -1145,12 +1145,12 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	//global $xoopsUser;
 	global $wiki_writable,$X_uid,$vars;
 	global $_btn_allow_memo,$_btn_allow_header,$_btn_allow_group,$_btn_allow_user,$_btn_allow_memo_t,$_btn_allow_deny,$freeze_tag;
+	global $defvalue_gids,$defvalue_aids;
 
 	//ページの編集権限を得る
 	if (is_null($allow_groups) || is_null($allow_users)) $allows = get_pg_allow_editer($vars['page']);
-	if (is_null($allow_groups) && $allows['group']) $allow_groups = explode(",",$allows['group']);
-	if (is_null($allow_users) && $allows['user']) $allow_users = explode(",",$allows['user']);
-	
+	if (is_null($allow_groups)) $allow_groups = ($allows['group'])? explode(",",$allows['group']) : explode(",",$defvalue_gids,",");
+	if (is_null($allow_users)) $allow_users = ($allows['user'])? explode(",",$allows['user']) : explode(",",$defvalue_aids.",");
 	//ゲストが投稿不可の設定の場合「ゲスト」グループのメッセージを表示しない
 	//$_btn_allow_guest = ($wiki_writable === 0)? $_btn_allow_guest : "";
 	

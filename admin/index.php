@@ -1,10 +1,13 @@
 <?php
-// $Id: index.php,v 1.7 2003/07/03 11:58:56 nao-pon Exp $
+// $Id: index.php,v 1.8 2003/07/05 14:44:25 nao-pon Exp $
 
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
 include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/pukiwiki.ini.php");
 include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/config.php");
+include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/html.php");
+include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/file.php");
+include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/func.php");
 define("_AM_WIKI_CONFIG_FILE", "../cache/config.php");
 define("_AM_WIKI_ADMIN_PASS", "../cache/adminpass.php");
 define("_AM_WIKI_CSS_FILE", XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css");
@@ -32,7 +35,9 @@ function writeConfig(){
 
 	$filename = _AM_WIKI_CONFIG_FILE;
 	$file = fopen($filename, "w");
-
+	$gids = implode(",",$gids);
+	$aids = implode(",",$aids);
+	$freeze = ($freeze)? 1 : 0 ;
 	$content = "";
 	$content .= "<?php";
 	$content .= "
@@ -42,7 +47,11 @@ function writeConfig(){
 	\$wiki_writable = $wiki_anon_writable;
 	\$hide_navi = $wiki_hide_navi;
 	\$wiki_mail_sw = $_wiki_mail_sw;
-	\$function_freeze = $wiki_function_freeze;\n";
+	\$function_freeze = $wiki_function_freeze;
+	\$defvalue_freeze = $freeze;
+	\$defvalue_gids = \"$gids\";
+	\$defvalue_aids = \"$aids\";
+	\n";
 
 	$content .= "\n?>";
 
@@ -100,11 +109,22 @@ function checkPermit(){
 }
 
 function displayForm(){
-	global $xoopsConfig, $xoopsModule;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw;
+	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids;
 	xoops_cp_header();
 	OpenTable();
 	checkPermit();
+	
+	$X_admin =0;
+	$X_uid =0;
+	if ( $xoopsUser ) {
+		$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+		if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
+			$X_admin = 1;
+		}
+		$X_uid = $xoopsUser->uid();
+	}
+	
 	if($hide_navi){
 		$_hide_navi_1 = " checked";
 	} else {
@@ -113,6 +133,8 @@ function displayForm(){
 	$_mail_sw_ = array();
 	if(isset($wiki_mail_sw)){
 		$_mail_sw_[$wiki_mail_sw] = " checked";
+	} else {
+		$_mail_sw_[1] = " checked";
 	}
 	if($wiki_writable === 0){
 		$_anon_writable_all = " checked";
@@ -131,6 +153,12 @@ function displayForm(){
 		$wiki_css .= $__wiki;
 	}
 	$wiki_css = htmlspecialchars($wiki_css);
+	$freeze_check = ($defvalue_freeze)? " checked" : "";
+	if (!isset($defvalue_gids)) $defvalue_gids = "0";
+	if (!isset($defvalue_aids)) $defvalue_aids = "0";
+	$def_gids = explode(",",$defvalue_gids.",");
+	$def_aids = explode(",",$defvalue_aids.",");
+	$allow_edit_form = allow_edit_form($def_gids,$def_aids);
 
 	echo "
 	<h2>"._AM_WIKI_TITLE1."</h2>
@@ -187,6 +215,9 @@ function displayForm(){
 		<input type='radio' name='_wiki_mail_sw' value='1'".$_mail_sw_[1].">"._AM_WIKI_MAIL_NOADMIN."
 		<input type='radio' name='_wiki_mail_sw' value='0'".$_mail_sw_[0].">"._AM_WIKI_MAIL_NONE."
 	</td></tr>
+	<tr><th colspan=2>ページ新規作成時の編集権限規定値</th></tr>
+	<tr><td colspan=2><input type='checkbox' name='freeze' value='1'".$freeze_check." /><span class='small'>".$_btn_freeze_enable."</span></td></tr>
+	<tr><td colspan=2>".$allow_edit_form."</td></tr>
 	</table><p>
 	<input type='hidden' name='wiki_admin_mode' value='change_config'>
 	<input type='submit' value='"._AM_WIKI_SUBMIT."'>

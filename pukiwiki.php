@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.8 2003/07/04 13:54:00 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.9 2003/07/05 14:44:25 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -924,12 +924,14 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 				$page = str_replace('$1',make_search($get["page"]),$_title_edit);
 				$template = auto_template($get["page"]);
 				$author_uid = $X_uid;
+				$freeze_check = ($defvalue_freeze)? "checked " : "";
 				$body = edit_form($template,$get["page"]);
 				$vars["cmd"] = "edit";
 			}
 			else {
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_invalidwn);
 				$body = $page = str_replace('$1',make_search($get["page"]), str_replace('$2','WikiName',$_msg_invalidiwn));
+				$vars["page"] = "";
 				$template = '';
 			}
 		}
