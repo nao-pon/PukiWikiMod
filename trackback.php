@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.17 2005/02/23 02:45:37 nao-pon Exp $
+// $Id: trackback.php,v 1.18 2005/02/23 14:51:16 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -122,10 +122,10 @@ function tb_send($page,$data="")
 		fputs($fp,XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']);
 		fclose($fp);
 		
-		// 非同期モードで別スレッド処理 Blokking=0,Retry=5
+		// 非同期モードで別スレッド処理 Blokking=0,Retry=5,接続タイムアウト=30,ソケットタイムアウト=0(指定しない)
 		$ret = http_request(
 		XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']
-		,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5);
+		,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5,30,0);
 		
 		/*
 		$filename = CACHE_DIR."debug.txt";
