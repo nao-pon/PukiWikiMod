@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.10 2003/07/06 11:56:11 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.11 2003/07/06 12:03:29 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -242,7 +242,14 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	if($post["notimestamp"]) $checked_time = "checked=\"checked\"";
 	if($post["enter_enable"]) $checked_enter = "checked=\"checked\"";
 	if($function_freeze && (($X_uid && $X_uid == $post["f_author_uid"]) || $X_admin)){
-		$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($post["f_create_uid"]).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.$_btn_freeze_enable.'</span>';
+		if ($wiki_writable === 2){
+			$enable_user = _MD_PUKIWIKI_ADMIN;
+		} elseif($wiki_writable === 1){
+			$enable_user = _MD_PUKIWIKI_REGIST;
+		} else {
+			$enable_user = _MD_PUKIWIKI_ALL;
+		}
+		$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($post["f_create_uid"]).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.sprintf($_btn_freeze_enable,$enable_user).'</span>';
 		$allow_edit_tag = allow_edit_form($post["gids"],$post["aids"]);
 	}
 	if ($X_admin){
