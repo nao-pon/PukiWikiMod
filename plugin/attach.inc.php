@@ -2,7 +2,7 @@
 // プラグイン attach
 
 // changed by Y.MASUI <masui@hisec.co.jp> http://masui.net/pukiwiki/
-// $Id: attach.inc.php,v 1.3 2003/06/28 16:40:19 nao-pon Exp $
+// $Id: attach.inc.php,v 1.4 2003/07/03 04:46:05 nao-pon Exp $
 
 // set PHP value to enable file upload
 ini_set("file_uploads","1");
@@ -58,8 +58,9 @@ function plugin_attach_convert()
 			
 			$del = "[<a href=\"$script?plugin=attach&amp;mode=confirm&amp;delfile=${filename_url}&amp;refer=${refername_url}\" title=\"".str_replace('$1',$filename,$_msg_delete)."\">$_btn_delete</a>]";
 
-			$wiki2xoops_tmp = preg_replace("/index.php/", "pukiwiki.php", $script, 1);
-			$open = "<a href=\"$wiki2xoops_tmp?plugin=attach&amp;openfile=${filename_url}&amp;refer=${refername_url}\" title=\"$lastmod $file_size\">$icon$filename</a>$counter\n";
+//			$wiki2xoops_tmp = preg_replace("/index.php/", "pukiwiki.php", $script, 1);
+//			$open = "<a href=\"$wiki2xoops_tmp?plugin=attach&amp;openfile=${filename_url}&amp;refer=${refername_url}\" title=\"$lastmod $file_size\">$icon$filename</a>$counter\n";
+			$open = "<a href=\"$script?plugin=attach&amp;openfile=${filename_url}&amp;refer=${refername_url}\" title=\"$lastmod $file_size\">$icon$filename</a>$counter\n";
 			
 			// nao-pon さらに、管理者のみ削除可に変更
 			//if ($xoopsUser||$anon_writable){
@@ -211,8 +212,9 @@ function plugin_attach_action()
 				
 				$del = "[<a href=\"$script?plugin=attach&amp;mode=confirm&amp;delfile=${filename_url}&amp;refer=${pagename_url}\" title=\"".str_replace('$1',$filename,$_msg_delete)."\">$_btn_delete</a>]";
 				
-				$wiki2xoops_tmp = preg_replace("/index.php/", "pukiwiki.php", $script, 1);
+				//$wiki2xoops_tmp = preg_replace("/index.php/", "pukiwiki.php", $script, 1);
 				$open = "<a href=\"$wiki2xoops_tmp?plugin=attach&amp;openfile=${filename_url}&amp;refer=${pagename_url}\" title=\"$lastmod $file_size\">$filename</a>";
+				$open = "<a href=\"$script?plugin=attach&amp;openfile=${filename_url}&amp;refer=${pagename_url}\" title=\"$lastmod $file_size\">$filename</a>";
 				// nao-pon
 				if ($anon_writable){
 					$aryret[$pagename] .= "<li>$open <span class=\"small\">$del</span></li>\n";

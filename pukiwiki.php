@@ -25,14 +25,11 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.5 2003/07/02 00:56:44 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.6 2003/07/03 04:46:04 nao-pon Exp $
 /////////////////////////////////////////////////
-//XOOPSヘッダ
-//include("header.php");
-//$xoopsOption['show_rblock'] =0;
-//include(XOOPS_ROOT_PATH."/header.php");
-//OpenTable();
-//include_once(XOOPS_ROOT_PATH."/class/xoopsformloader.php");
+//XOOPS設定読み込み
+include("../../mainfile.php");
+
 /////////////////////////////////////////////////
 // プログラムファイル読み込み
 require("func.php");
@@ -905,7 +902,8 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			}
 			else
 			{
-				js_redirect($url);
+				//js_redirect($url);
+				header("Location: $url");
 				die();
 			}
 		}
@@ -948,10 +946,13 @@ else
 	header_lastmod($vars["page"]);
 }
 
+include("header.php");
+
 // ** 出力処理 **
 catbody($title,$page,$body);
+
 //XOOPSフッタ
-//CloseTable();
-//include(XOOPS_ROOT_PATH."/footer.php");
+CloseTable();
+include(XOOPS_ROOT_PATH."/footer.php");
 // ** 終了 **
 ?>
