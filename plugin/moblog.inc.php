@@ -1,12 +1,12 @@
 <?php
-// $Id: moblog.inc.php,v 1.4 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.5 2004/08/20 09:09:29 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
 
 function plugin_moblog_action()
 {
-	global $sock,$vars;
+	global $sock,$vars,$X_uid;
 	
 	//error_reporting(E_ALL);
 	//設定ファイル読み込み
@@ -114,8 +114,14 @@ function plugin_moblog_action()
 		$date = sprintf("/%04d-%02d-%02d-0",$today['year'],$today['mon'],$today['mday']);
 		
 		$page = "";
-		if (!empty($adr2page[$from])) $page = "[[".$adr2page[$from].$date."]]";
-		if (!$page && $adr2page['other']) $page = "[[".$adr2page['other'].$date."]]";
+		if (!empty($adr2page[$from]))
+		{
+			$_page = (is_array($adr2page[$from]))? $adr2page[$from][0] : $adr2page[$from];
+			$page = "[[". $_page . $date ."]]";
+			if (is_array($adr2page[$from])) $X_uid = $adr2page[$from][1];
+		}
+		$_page = (is_array($adr2page['other']))? $adr2page['other'][0] : $adr2page['other'];
+		if (!$page && $adr2page['other']) $page = "[[". $_page . $date ."]]";
 		if (!$page) $write = false;
 		
 		// 拒否アドレス
