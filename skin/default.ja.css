@@ -128,6 +128,7 @@ address {
 }
 
 .style_table {
+	width:auto;
 	margin:auto;
 	border:0px;
 	border-color:#99CCCC;
