@@ -166,6 +166,20 @@ $_calendar2_plugin_empty = '%sは書いていません。(^^ゞ';
 $_attach_plugin_files = '%s件';
 
 ///////////////////////////////////////
+// tracker.inc.php
+$_tracker_messages = array(
+	'msg_list' => '$1 の項目一覧',
+	'msg_back' => '<p>$1</p>',
+	'msg_limit' => '全$1件中、上位$2件を表示しています。',
+	'btn_page' => 'ページ名',
+	'btn_name' => 'ページ名',
+	'btn_real' => 'ページ名',
+	'btn_submit' => '追加',
+	'btn_date' => '日付',
+	'btn_refer' => '参照',
+);
+
+///////////////////////////////////////
 // PukiWikiMod (Use Define)
 // define("_MD_PUKIWIKI_","");
 define("_MD_PUKIWIKI_MAIL_FIRST","PukiWikiへ以下の投稿がありました。");

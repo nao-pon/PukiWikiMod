@@ -1,12 +1,17 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.5 2003/07/11 14:17:38 nao-pon Exp $
+// $Id: file.php,v 1.6 2003/07/14 09:04:00 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
 function get_source($page,$row=0)
 {	
-  if(page_exists($page)) {
+	global $WikiName;
+	if(page_exists($page)) {
+		//echo $page;
+		//if (!preg_match("/^$WikiName$/",$page)){
+		//	if (!preg_match("/^\[\[.*\]\]$/",$page)) $page = "[[".$page."]]";
+		//}
 		if ($row){
 			$ret = array();
 			$f_name = get_filename(encode($page));
@@ -129,7 +134,9 @@ function get_filename($pagename)
 function is_page($page,$reload=false)
 {
 	global $InterWikiName,$_ispage;
-
+	
+	$page = add_bracket($page);
+	
 	if(($_ispage[$page] === true || $_ispage[$page] === false) && !$reload) return $_ispage[$page];
 
 	if(preg_match("/($InterWikiName)/",$page))

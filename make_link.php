@@ -210,8 +210,17 @@ class link_interwiki extends link
 
 	function link_interwiki($name,$alias)
 	{
+		global $script;
 		parent::link($name,'InterWikiName',($alias == '') ? strip_bracket($name) : $alias);
-		$this->rawname = rawurlencode($name);
+
+		$script_reg = preg_quote($script,"/");
+		if (preg_match("/\[\[$script_reg\?(.*)\]\]/",$name,$reg)){
+			$name = $reg[1];
+			//$name = str_replace("&amp;","&",$name);
+			$this->rawname = $name;
+		} else {
+			$this->rawname = rawurlencode($name);
+		}
 	}
 	function toString()
 	{
@@ -274,6 +283,8 @@ function make_pagelink($page,$alias='',$anchor='',$refer='')
 {
 	global $script,$vars,$show_title,$show_passage,$link_compact,$related;
 	global $_symbol_noexists;
+	
+	$page = add_bracket($page);
 	
 	$s_page = htmlspecialchars(strip_bracket($page));
 	$s_alias = ($alias == '') ? $s_page : $alias;

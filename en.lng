@@ -157,6 +157,40 @@ $_calendar2_plugin_empty = '%s is empty.';
 $_attach_plugin_files = '%s downloads';
 
 ///////////////////////////////////////
+// tracker.inc.php
+$_tracker_messages = array(
+	'msg_list' => 'List items of $1',
+	'msg_back' => '<p>$1</p>',
+	'msg_limit' => 'top $2 results out of $1.',
+	'btn_page' => 'Page',
+	'btn_name' => 'Name',
+	'btn_real' => 'Realname',
+	'btn_submit' => 'Add',
+	'btn_date' => 'Date',
+	'btn_refer' => 'Refer page',
+);
+
+///////////////////////////////////////
+// PukiWikiMod (Use Define)
+// define("_MD_PUKIWIKI_","");
+define("_MD_PUKIWIKI_MAIL_FIRST","Following contribution to PukiWiki.");
+define("_MD_PUKIWIKI_MAIL_SUBJECT","PukiWiki:");
+define("_MD_PUKIWIKI_MAIL_URL","[URL] ");
+define("_MD_PUKIWIKI_MAIL_PAGENAME","[Page Name] ");
+define("_MD_PUKIWIKI_MAIL_POSTER","Name: ");
+define("_MD_PUKIWIKI_MAIL_DEL_LINES","----------Deleted------------");
+define("_MD_PUKIWIKI_MAIL_ADD_LINES","-----------Added-------------");
+define("_MD_PUKIWIKI_MAIL_ALL_LINES","----------All Lines----------");
+define("_MD_PUKIWIKI_MAIL_HEAD","----------Added lines by %s------------");
+define("_MD_PUKIWIKI_MAIL_FOOT","-------------------END--------------------");
+define("_MD_PUKIWIKI_NO_AUTH","There is no authority to create the specified page [$1].");
+define("_MD_PUKIWIKI_ALL", "All users");
+define("_MD_PUKIWIKI_REGIST", "All registered users");
+define("_MD_PUKIWIKI_ADMIN", "Webmasters only");
+
+
+
+///////////////////////////////////////
 // help 'wiki format rule'.
 $rule_body = '
 sorry. Japanese only

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.5 2003/07/06 11:54:27 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.6 2003/07/14 09:03:59 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -224,6 +224,8 @@ $line_rules = array(
 "&amp;br-all;" => "<br clear=all />",
 "&amp;br;" => "<br />",
 "&amp;#124;" => "|",
+"&amp;uarr;" => "&uarr;",
+"&amp;darr;" => "&darr;",
 "&amp;amp;" => "&amp;",
 );
 

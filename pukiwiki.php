@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.15 2003/07/09 14:23:56 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.16 2003/07/14 09:03:59 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -40,7 +40,7 @@ require("html.php");
 require("backup.php");
 require("rss.php");
 require('make_link.php');
-//require('config.php');
+require('config.php');
 
 
 

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.11 2003/07/12 04:56:12 nao-pon Exp $
+// $Id: html.php,v 1.12 2003/07/14 09:03:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -107,6 +107,8 @@ function convert_html($string)
 	global $content_id;
 	$content_id_local = ++$content_id;
 	$content_count = 0;
+	
+	//if (is_array($sting)) $string = join('',$string);
 
 	$string = rtrim($string);
 	$string = preg_replace("/((\x0D\x0A)|(\x0D)|(\x0A))/","\n",$string);
@@ -122,10 +124,6 @@ function convert_html($string)
 	//$string = preg_replace("/^#freeze\n/","",$string);
 	$string = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$string);
 
-	//~\nは&br;に変換して1行として処理 nao-pon 03/06/25
-	// 改行を挟んででURLなどが列挙してあると上手く切り分けられないので\tを挿入 03/06/29
-	//  (スペース)*#で始まる行は処理しない。 03/07/12
-	$string = preg_replace("/((^|\n)[^ *#~\n]*)~\n/","$1\t&br;\t",$string);
 
 	//これはなんだったけ？必要ないのとおもうのでとりあえずコメントアウト 03/06/29
 	//$string = str_replace("&br; ","~\n ",$string);
@@ -137,6 +135,13 @@ function convert_html($string)
 	//表と表の間は空行2行を1行に戻す
 	$string = str_replace("|\n\n\n|","|\n\n|",$string);
 	
+	//~\nは&br;に変換して1行として処理 nao-pon 03/06/25
+	// 改行を挟んででURLなどが列挙してあると上手く切り分けられないので\tを挿入 03/06/29
+	//  (スペース)*#で始まる行は処理しない。 03/07/12
+	$string = str_replace("\n","\n\x08",$string);
+	$string = preg_replace("/(^|\x08)([^ *#].*)~\n/","$2\t&br;\t",$string);
+	$string = str_replace("\x08","",$string);
+
 	//行単位の配列に格納
 	$lines = split("\n", $string);
 	// 各行の行頭書式を格納
@@ -1105,6 +1110,30 @@ function make_search($page)
 	//	$name = preg_replace("/([A-Z][a-z]+)/","$1 ",$name);
 
  	return "<a href=\"$script?cmd=search&amp;word=$url\">".htmlspecialchars($name)."</a> ";
+}
+
+// 見出しを生成 (注釈やHTMLタグを除去)
+function make_heading(&$str,$strip=TRUE)
+{
+	global $NotePattern;
+	
+	// 見出しの固有ID部を削除
+	$id = '';
+	if (preg_match('/^(\*{0,3})(.*?)\[#([A-Za-z][\w-]+)\](.*?)$/m',$str,$matches))
+	{
+		$str = $matches[2].$matches[4];
+		$id = $matches[3];
+	}
+	else
+	{
+		$str = preg_replace('/^\*{0,3}/','',$str);
+	}
+	if ($strip)
+	{
+		$str = strip_htmltag(make_link(preg_replace($NotePattern,'',$str)));
+	} 
+	
+	return $id; 
 }
 
 // テーブル入れ子用の連結

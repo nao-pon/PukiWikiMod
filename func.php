@@ -1,7 +1,34 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.9 2003/07/11 14:10:24 nao-pon Exp $
+// $Id: func.php,v 1.10 2003/07/14 09:03:59 nao-pon Exp $
 /////////////////////////////////////////////////
+// 文字列がページ名かどうか
+function is_pagename($str)
+{
+	global $BracketName,$WikiName;
+	//return true;
+	$str = add_bracket($str);
+	//$is_pagename = (!is_interwiki($str) and preg_match("/^(?!\/)$BracketName$(?<!\/$)/",$str)
+	//	and !preg_match('/(^|\/)\.{1,2}(\/|$)/',$str));
+	if (!$str) return false;
+	$is_pagename = (preg_match("/^(?!\/)($BracketName|$InterWikiName)$(?<!\/$)/",$str)
+		and !preg_match('/(^|\/)\.{1,2}(\/|$)/',$str));
+	
+	if (defined('SOURCE_ENCODING'))
+	{
+		if (SOURCE_ENCODING == 'UTF-8')
+		{
+			$is_pagename = ($is_pagename and preg_match('/^(?:[\x00-\x7F]|(?:[\xC0-\xDF][\x80-\xBF])|(?:[\xE0-\xEF][\x80-\xBF][\x80-\xBF]))+$/',$str)); // UTF-8
+		}
+		else if (SOURCE_ENCODING == 'EUC-JP')
+		{
+			$is_pagename = ($is_pagename and preg_match('/^(?:[\x00-\x7F]|(?:[\x8E\xA1-\xFE][\xA1-\xFE])|(?:\x8F[\xA1-\xFE][\xA1-\xFE]))+$/',$str)); // EUC-JP
+		}
+	}
+	
+	return $is_pagename;
+}
+
 // 検索語を展開する
 function get_search_words($words,$special=FALSE)
 {
@@ -227,6 +254,15 @@ function strip_bracket($str)
 	  if(preg_match("/^\[\[(.*)\]\]$/",$str,$match)) {
 	    $str = $match[1];
 	  }
+	}
+	return $str;
+}
+
+// [[ ]] を付加する
+function add_bracket($str){
+	global $WikiName;
+	if (!preg_match("/$WikiName/",$str)){
+		if (!preg_match("/\[\[.*\]\]/",$str)) $str = "[[".$str."]]";
 	}
 	return $str;
 }
