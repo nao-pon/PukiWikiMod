@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.15 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: trackback.php,v 1.16 2005/02/23 02:20:28 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -246,6 +246,9 @@ function tb_send($page,$data="")
 				set_time_limit(120); // 処理実行時間を長めに再設定
 				// URL から TrackBack ID を取得する
 				$tb_id = trim(str_replace("&amp;","&",tb_get_url($link)));
+				
+				tb_debug_output($tb_id);
+				
 				if (empty($tb_id) || in_array($tb_id,$sended)) // TrackBack に対応していないか送信済み
 				{
 					continue;
@@ -254,8 +257,10 @@ function tb_send($page,$data="")
 				if ($result['rc'] === 200 || strpos($result['data'],"<error>0</error>") !== false)
 				{
 					$sended[] = $tb_id;
+					$sended_count++;
 				}
 				// FIXME: エラー処理を行っても、じゃ、どうする？だしなぁ...
+				if ($trackback <= $sended_count) break;
 			}
 		}
 		
@@ -278,19 +283,25 @@ function tb_send($page,$data="")
 		foreach ($pings as $tb_id)
 		{
 			set_time_limit(120); // 処理実行時間を長めに再設定
+			
+			tb_debug_output($tb_id);
+			
 			$done = false;
 			// XML RPC Ping を打ってみる
-			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,5,30,60);
-			// 超手抜きなチェック
-			if (strpos($result['data'],"<boolean>0</boolean>") !== false)
-				$done = true;
-			else
+			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,3,30,60);
+			if ($result['rc'] === 200)
 			{
-				//Track Back Ping
-				$result = http_request($tb_id,'POST','',$putdata,HTTP_REQUEST_URL_REDIRECT_MAX,1,5);
 				// 超手抜きなチェック
-				if (strpos($result['data'],"<error>0</error>") !== false)
+				if (strpos($result['data'],"<boolean>0</boolean>") !== false)
 					$done = true;
+				else
+				{
+					//Track Back Ping
+					$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,30,60);
+					// 超手抜きなチェック
+					if (strpos($result['data'],"<error>0</error>") !== false)
+						$done = true;
+				}
 			}
 			/*
 			echo htmlspecialchars($tb_id).":ping<hr />";
@@ -404,22 +415,31 @@ function tb_get_my_tb_url($pid)
 // 文書をGETし、埋め込まれたTrackBack Ping urlを取得
 function tb_get_url($url)
 {
-	// プロキシを経由する必要があるホストにはpingを送信しない
+	static $ng_host = array();
+	
 	$parse_url = parse_url($url);
+	
+	// 5回抽出に失敗した host はパスする。
+	if (!isset($ng_host[$parse_url['host']])) $ng_host[$parse_url['host']] = 0;
+	if ($ng_host[$parse_url['host']] > 5) return '';
+	
+	// プロキシを経由する必要があるホストにはpingを送信しない
 	if (empty($parse_url['host']) or via_proxy($parse_url['host']))
 	{
 		return '';
 	}
 	
-	$data = http_request($url);
+	$data = http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,TRUE,5,30,60);
 	
 	if ($data['rc'] !== 200)
 	{
+		$ng_host[$parse_url['host']]++;
 		return '';
 	}
 	
 	if (!preg_match_all('#<rdf:RDF[^>]*>(.*?)</rdf:RDF>#si',$data['data'],$matches,PREG_PATTERN_ORDER))
 	{
+		$ng_host[$parse_url['host']]++;
 		return '';
 	}
 	
@@ -656,5 +676,15 @@ EOD;
 	
 	return $tb_body;
 
+}
+
+function tb_debug_output($str)
+{
+	$data = "----------\n".date("D M j G:i:s T Y")."\n----------\n";
+	$data .= $str."\n\n";
+	$filename = CACHE_DIR."tb_debug.txt";
+	$fp = fopen($filename,'a+');
+	fputs($fp,$data."\n");
+	fclose($fp);
 }
 ?>

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: proxy.php,v 1.10 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: proxy.php,v 1.11 2005/02/23 02:20:28 nao-pon Exp $
 //
 
 /*
@@ -101,6 +101,7 @@ function http_request
 	$fp = $retry_count = 0;
 	while( !$fp && $retry_count < $retry )
 	{
+		set_time_limit($c_timeout + 120);
 		$fp = fsockopen(
 			$via_proxy ? $proxy_host : $arr['host'],
 			$via_proxy ? $proxy_port : $arr['port'],
