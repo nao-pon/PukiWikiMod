@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.32 2004/09/12 13:31:07 nao-pon Exp $
+// $Id: init.php,v 1.33 2004/09/12 14:01:24 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -274,12 +274,16 @@ if (isset($vars['pgid']))
 	}
 }
 
+// command 判定
+if (arg_check("preview") || $post["preview"] || $post["template"]) $vars['cmd'] = "preview";
+if (arg_check("write") || $post["write"]) $vars['cmd'] = "write";
+
 // cmdもpluginも指定されていない場合は、QUERY_STRINGをページ名かInterWikiNameであるとみなす
 if (! isset($vars['cmd']) && ! isset($vars['plugin'])) {
 
 	$get['cmd']  = $post['cmd']  = $vars['cmd']  = 'read';
 
-	if ($arg == '') $arg = $defaultpage;
+	//if ($arg == '') $arg = $defaultpage;
 	$arg = rawurldecode($arg);
 	$arg = strip_bracket($arg);
 	$arg = input_filter($arg);
