@@ -1,5 +1,5 @@
 <?php
-// $Id: block.inc.php,v 1.3 2004/11/27 04:44:47 nao-pon Exp $
+// $Id: block.inc.php,v 1.4 2004/12/02 13:56:15 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -54,10 +54,10 @@ function plugin_block_convert()
 	if ($tate)
 	{
 		$block_class = "wiki_body_block_tate";
-		$tate_div = "<div class=\"tate\">";
-		$tate_style = " style=\"direction:rtl;\"";
+		//$tate_div = "<div class=\"tate\">";
+		//$b_tag[$b_count]++;
+		$tate_style = " style=\"writing-mode:tb-rl;\"";
 		$tate_js = "\n<script type=\"text/javascript\">\n<!--\nif (!pukiwiki_WinIE) document.write(\"<div style='text-align:right;'><small>※ このブロックは IE(5.5以上)で閲覧すると縦書きで表示されます。</small></div>\");\n-->\n</script>\n";
-		$b_tag[$b_count]++;
 		
 		if (strpos($width,"%")) $width = "";
 		if (strpos($height,"%")) $height = "";
@@ -98,6 +98,7 @@ function plugin_block_convert()
 		{
 			$style = " style='margin-left:auto;margin-right:auto;{$_style}'";
 		}
+		//$ie5_div = "<div class=\"ie5\"{$tate_style}>";
 		$ie5_div = "<div class=\"ie5\">";
 		$b_tag[$b_count]++;
 	}

@@ -1,19 +1,9 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.29 2004/11/11 23:34:00 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.30 2004/12/02 13:56:15 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
 <!-- pukiwikimod -->
-
-	<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">
-<?php if (WIKI_THEME_CSS){ ?>
-	<link rel="stylesheet" href="<?php echo WIKI_THEME_CSS ?>" type="text/css" media="screen" charset="shift_jis">
-<?php } else { ?>
-	<link rel="stylesheet" href="skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">
-<?php } ?>
-<?php if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css")){ ?>
-	<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">
-<?php } ?>
 	<script type="text/javascript">
 	<!--
 	var pukiwiki_root_url = "";

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.37 2004/11/02 09:25:44 nao-pon Exp $
+// $Id: convert_html.php,v 1.38 2004/12/02 13:56:14 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -160,7 +160,7 @@ class convert
 		// テーブルセル中フラグ
 		static $is_intable = 0;
 		
-		$_freeze = is_freeze($vars['page']);
+		//$_freeze = is_freeze($vars['page']);
 
 		global $content_id;
 		$content_id_local = ++$content_id;
@@ -342,7 +342,7 @@ class convert
 					
 					///// ParaeEdit /////
 					$_tag = "<h$level><a name=\"content_{$content_id_local}_$content_count\"></a>{$str}{$_fh_text} {$top_link}</h$level>";
-					if ($content_id_local == 1 && !$_freeze && $anon_writable) {
+					if ($content_id_local == 1 && check_editable($vars['page'],FALSE,FALSE)) {
 						$para_num = $content_count + 1;
 						$para_link = "$script?cmd=edit&amp;id=$para_num&amp;page=" . rawurlencode($vars[page]);
 						$para_link = "".sprintf(_EDIT_LINK, $para_link)."";

@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.8 2004/11/24 12:08:48 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.9 2004/12/02 13:56:15 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -73,15 +73,28 @@ function b_pukiwiki_page_show($options)
 	}
 	
 	// 外部リンクマーク用 class設定
-	$data = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/i","$1class=\"ext\" $2",$data);
+	$data = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/","$1class=\"ext\" $2",$data);
 	
-	// テーマ専用CSS Link を置換
+	// CSS Link を発行
 	$css_url = (file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'))?
 		XOOPS_THEME_URL.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'
 		:
 		$wiki_url.'skin/default.ja.css';
 	$css_tag = '<link rel="stylesheet" href="'.$css_url.'" type="text/css" media="screen" charset="shift_jis">';
-	$data = str_replace('<!-- This tag will be replace CSS Link -->',$css_tag,$data);
+	
+	if(is_readable( XOOPS_ROOT_PATH."/modules/pukiwiki/cache/css.css"))
+	{
+		$css_tag .= "\n".'<link rel="stylesheet" href="'.$wiki_url.'cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+	}
+	global $xoopsTpl;
+	if ($xoopsTpl)
+	{
+		$xoopsTpl->assign('xoops_module_header',$xoopsTpl->get_template_vars('xoops_module_header').$css_tag);
+	}
+	else
+	{
+		$data = $css_tag."\n".$data;
+	}
 	
 	$block['title'] = "PukiWiki - {$show_page}";
 	$block['content'] = $data;

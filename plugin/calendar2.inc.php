@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.19 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.20 2004/12/02 13:56:15 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -339,7 +339,7 @@ function plugin_calendar2_convert()
 				//インクルード
 				$str .= $tb_tag.include_page($_page);
 				
-				if ($anon_writable) $str .= "<a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_calendar2_plugin_edit</a>";
+				if (check_editable($_page,FALSE,FALSE)) $str .= "<a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_calendar2_plugin_edit</a>";
 				$str .= "<div style=\"clear:both;\"></div><hr />";
 				$page_found = true;
 			}
@@ -353,14 +353,16 @@ function plugin_calendar2_convert()
 						else
 							$page_url = ($__page)? rawurlencode($__page) : rawurlencode($_page);
 						
+						$up_freeze_info = get_freezed_uppage($__page);
+						
 						if (!$page_found)
 						{
 							$str .= sprintf($_calendar2_plugin_empty,$today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day);
-							if (WIKI_ALLOW_NEWPAGE) $str .= "<p><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write."</a></p>";
+							if (!$up_freeze_info[4]) $str .= "<p><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write."</a></p>";
 						}
 						else
 						{
-							if (WIKI_ALLOW_NEWPAGE) $str .= "<p><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write_more."</a></p>";
+							if (!$up_freeze_info[4]) $str .= "<p><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write_more."</a></p>";
 						}
 					} else {
 						$str = "";

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.42 2004/11/02 00:10:12 nao-pon Exp $
+// $Id: file.php,v 1.43 2004/12/02 13:56:15 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -385,16 +385,18 @@ function is_editable($page)
 }
 
 // ページが凍結されているか
-function is_freeze($page,$cache=true)
+function is_freeze($page)
 {
-	if ($cache) global $_freeze;
+	static $ret = array();
+	
+	if (isset($ret[$page])) return $ret[$page];
+	
 	global $X_uid,$X_admin,$anon_writable;
-
-	if(!is_page($page)) return false;
-	if($_freeze === true || $_freeze === false) return $_freeze;
+	
+	if(!is_page($page)) return ($ret[$page]=false);
 	
 	// 閲覧権限をチェック
-	if (!check_readable($page,false,false)) return true;
+	if (!check_readable($page,false,false)) return ($ret[$page]=true);
 	
 	$lines = get_source($page,1);
 
@@ -404,18 +406,18 @@ function is_freeze($page,$cache=true)
 		if ($arg[3]) $gids = explode(",",$arg[3].",");
 
 		// 管理者は凍結解除
-		if ($X_admin) return false;
+		if ($X_admin) return ($ret[$page]=false);
 
 		// 非ログインユーザー
-		if (!$X_uid) return (in_array("3",$gids))? false : true;
+		if (!$X_uid) return ($ret[$page]=(in_array("3",$gids))? false : true);
 		
 		//ログインユーザーは権限チェック
 		
 		// 自分で凍結したページ
-		if ($arg[1] == $X_uid) return false;
+		if ($arg[1] == $X_uid) return ($ret[$page]=false);
 		
 		// ユーザー権限があるか
-		if (in_array($X_uid,$aids)) return false;
+		if (in_array($X_uid,$aids)) return ($ret[$page]=false);
 		
 		// グループ権限があるか？
 		$X_gids = X_get_groups();
@@ -426,14 +428,14 @@ function is_freeze($page,$cache=true)
 				break;
 			}
 		}
-		if ($gid_match) return false;
+		if ($gid_match) return ($ret[$page]=false);
 		
 		// 編集権限なし
-		$_freeze = true;
+		$ret[$page] = true;
 	} else {
-		$_freeze = ($anon_writable)? false : true;
+		$ret[$page] = ($anon_writable)? false : true;
 	}
-	return $_freeze;
+	return $ret[$page];
 }
 
 // 指定されたページの経過時刻
@@ -764,7 +766,7 @@ function get_freezed_uppage($page)
 		if (isset($arg[3])) $gids = explode(",",$arg[3].",");
 		//$aids[] = $owner;
 		$uppage_name = add_bracket($uppage_name);
-		return array($uppage_name,$owner,$aids,$gids,is_freeze($uppage_name,false));
+		return array($uppage_name,$owner,$aids,$gids,is_freeze($uppage_name));
 	}
 	else
 		return get_freezed_uppage($uppage_name);

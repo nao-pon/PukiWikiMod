@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.19 2004/11/24 13:15:35 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.20 2004/12/02 13:56:15 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -329,7 +329,7 @@ if ($cal2 == 1){
 	$body = "<div class=\"style_calendar_body\" style=\"clear:both;\"><div style=\"width:100%;\">".$tb_tag.include_page($page)."</div></div>";
 
     $link = make_pagelink($page,preg_replace("/^.*\//","",strip_bracket($page)));
-    if ($anon_writable) $link .= " <a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\"><font size=\"-2\">(".$_calendar_viewer_msg_edit.")</font></a>";
+    if (check_editable($page,FALSE,FALSE)) $link .= " <a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\"><font size=\"-2\">(".$_calendar_viewer_msg_edit.")</font></a>";
     $head = "<div class = \"style_calendar_date\" style=\"clear:both;\">$link</div>\n";
     $return_body .= $head . $body;
     $tmp++;

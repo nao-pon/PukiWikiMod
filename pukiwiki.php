@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.58 2004/11/24 14:19:59 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.59 2004/12/02 13:56:14 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -108,7 +108,7 @@ if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 }
 
 // 編集不可能なページを編集しようとしたとき
-else if((arg_check("add") || arg_check("edit") || arg_check("preview") || $post["preview"] || $post["write"]) && (!is_editable($vars["page"]) || $vars["page"] == "" || !$anon_writable))
+else if((arg_check("add") || arg_check("edit") || arg_check("preview") || $post["preview"] || $post["write"]) && (!check_editable($vars["page"],FALSE,FALSE) || $vars["page"] == "" || !$anon_writable))
 {
 	$body = $title = str_replace('$1',htmlspecialchars(strip_bracket($vars["page"])),$_title_cannotedit);
 	$page = str_replace('$1',make_search($vars["page"]),$_title_cannotedit);
@@ -1114,12 +1114,29 @@ if (is_page($vars["page"]))
 	$xoops_mod_add_header .= get_header_link_tag_by_name($vars["page"]);
 }
 
+// CSS
+
+$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+if (WIKI_THEME_CSS)
+{
+	$xoops_mod_add_header .= '<link rel="stylesheet" href="'.WIKI_THEME_CSS.'" type="text/css" media="screen" charset="shift_jis">'."\n";
+}
+else
+{
+	$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+}
+if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css"))
+{
+	$xoops_mod_add_header .= '<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+}
+
 if (empty($vars['xoops_block'])) include("header.php");
 
 // <title>にページ名をプラス
 // XOOPS 2 用
 global $xoopsTpl;
-if ($xoopsTpl){
+if ($xoopsTpl)
+{
 	$xoopsTpl->assign("xoops_pagetitle",$xoops_pagetitle);
 	$xoopsTpl->assign("xoops_module_header",$xoops_mod_add_header);
 	//Ads表示済みフラグ
@@ -1132,7 +1149,10 @@ if ($xoopsTpl){
 	// desciption
 	$xoopsTpl->assign("xoops_meta_description",mb_strcut(preg_replace("/\s+/","",strip_tags($body)),0,200));
 }
-
+else
+{
+	$body = $xoops_mod_add_header."\n".$body;
+}
 // ** 出力処理 **
 //echo "<div class=\"pukiwiki_body\">\n";
 catbody($title,$page,$body);
