@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.13 2004/08/19 04:02:33 nao-pon Exp $
+// $Id: comment.inc.php,v 1.14 2004/08/20 09:12:47 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -75,15 +75,20 @@ function plugin_comment_action()
 			
 			$_msg  = str_replace('$msg', $post['msg'], $msg_format);
 			
-			// 名前をクッキーに保存
-			setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
-			
-			$_name = ($post['name'] == '')? $no_name : $post['name'];
-
-			if (WIKI_USER_DIR)
-				make_user_link($_name);
+			if (empty($post['noname']))
+			{
+				// 名前をクッキーに保存
+				setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
+				
+				$_name = ($post['name'] == '')? $no_name : $post['name'];
+				
+				if (WIKI_USER_DIR)
+					make_user_link($_name);
+				else
+					$_name = str_replace('$name',$_name,$name_format);
+			}
 			else
-				$_name = str_replace('$name',$_name,$name_format);
+				$_name = "";
 
 			$_now  = ($post['nodate'] == '1') ? '' : str_replace('$now',$now,$now_format);
 			
@@ -176,11 +181,15 @@ function plugin_comment_convert()
 	global $script,$comment_no,$vars,$name_cols,$comment_cols,$digest;
 	global $_btn_comment,$_btn_name,$_msg_comment,$vars,$comment_ins;
 	
-	// xoops //
-	//global $X_uid,$X_uname;
-	// ---- //
-	
 	$options = func_get_args();
+	
+	// 編集権限が必要？
+	if (in_array('auth',$options) && !check_editable($vars["page"],false,false))
+	{
+		$comment_no++;
+		return "";
+	}
+	
 	//ボタンテキスト指定オプション
 	$btn_text = $_btn_comment;
 	$all_option = (is_array($options))? implode(" ",$options) : $options;
@@ -198,10 +207,9 @@ function plugin_comment_convert()
 		$areaedit = "<input type=\"hidden\" name=\"areaedit\" value=\"1\" />\n";
 	}
 	
-	//$name = ($X_uid)? $X_uname : '_gEsTnAmE_';
 	$nametags = "$_btn_name<input type=\"text\" name=\"name\" size=\"$name_cols\" value=\"".WIKI_NAME_DEF."\" />\n";
 	if(is_array($options) && in_array("noname",$options)) {
-		$nametags = $_msg_comment;
+		$nametags = "<input type=\"hidden\" name=\"noname\" value=\"1\" />\n".$_msg_comment;
 	}
 
 	$nodate = in_array('nodate',$options) ? '1' : '0';
