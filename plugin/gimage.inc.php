@@ -89,6 +89,7 @@ function plugin_gimage_convert()
 	if ($refresh)
 	{
 		$vars['mc_refresh'][] = "?plugin=gimage&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&q=".rawurlencode($query)."&m=".rawurlencode($qmode);
+		@touch(P_CACHE_DIR.get_pgid_by_name($vars["page"]).".mcr");
 	}
 	
 	//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";

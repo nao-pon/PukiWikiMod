@@ -22,7 +22,7 @@
  *
  * ÈòÆñ½ê       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.19 2005/02/23 00:16:41 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.20 2005/03/16 12:51:47 nao-pon Exp $
  *
  */
 
@@ -149,6 +149,7 @@ function plugin_showrss_convert()
 	if ($refresh)
 	{
 		$vars['mc_refresh'][] = "?plugin=showrss&pmode=refresh&uc={$usecache}&ref=".rawurlencode(strip_bracket($vars["page"]))."&tgt=".rawurlencode($rssurl);
+		@touch(P_CACHE_DIR.get_pgid_by_name($vars["page"]).".mcr");
 	}
 	
 	if ($usetimestamp > 0)

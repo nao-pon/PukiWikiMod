@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.9 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: google.inc.php,v 1.10 2005/03/16 12:51:47 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -144,6 +144,7 @@ function plugin_google_search_google_result($query,$max=10)
 	if ($refresh)
 	{
 		$vars['mc_refresh'][] = "?plugin=google&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&q=".rawurlencode($query)."&m=".rawurlencode($max);
+		@touch(P_CACHE_DIR.get_pgid_by_name($vars["page"]).".mcr");
 	}
 	
 	if ($ret !== false)

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: mc_refrash.php,v 1.1 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: mc_refrash.php,v 1.2 2005/03/16 12:51:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 //XOOPS設定読み込み
@@ -27,6 +27,7 @@ require("init.php");
 /////////////////////////////
 
 //error_reporting(E_ALL);
+
 
 $data = (isset($_POST['mc_refresh']))? explode(" ",$_POST['mc_refresh']) : array();
 $page = add_bracket($post['tgt_page']);
