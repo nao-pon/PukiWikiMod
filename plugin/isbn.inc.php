@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.13 2004/10/28 12:04:41 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.14 2004/10/28 12:12:36 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -310,7 +310,7 @@ function plugin_isbn_cache_image_fetch($target, $dir, $check=true) {
 	$filename = $dir.encode($vars["page"])."_".encode("ISBN".$target.".jpg");
 
 	if (!is_readable($filename) || (is_readable($filename) && $check && ISBN_AMAZON_EXPIRE_IMG * 3600 * 24 < time() - filemtime($filename))) {
-		$size = "M";
+		$size = "MZZZZ";
 		if (preg_match("/^(?:(s|m|l):)(.+)/i",$target,$match))
 		{
 			$size = strtoupper($match[1]);
