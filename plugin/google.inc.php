@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.2 2004/06/07 15:16:32 nao-pon Exp $
+// $Id: google.inc.php,v 1.3 2004/06/09 13:02:49 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -10,7 +10,7 @@
 function plugin_google_init()
 {
 	$data = array('plugin_google_dataset'=>array(
-	'license_key'   => '', // GoogleAPIsライセンスキー
+	'license_key'   => '8eJ5g29QFHIOFDogGDNwHdkjoRw5M002', // GoogleAPIsライセンスキー
 	'cache_time'    => 1,                                  // キャッシュ有効時間(h)
 	'def_max'       => 10,                                 // デフォルト表示数
 	'max_limit'     => 50,                                 // 最大表示数
@@ -57,7 +57,7 @@ function plugin_google_search_google_result($query,$max=10)
 		{
 			$result .= "<li><a href=\"".$line['url']."\" target=\"_blank\">".$line['title']."</a>\n";
 			$result .= "<div class=\"small\" style=\"text-align:right;\"><a href=\"".$line['url']."\" target=\"_blank\">".$line['url']."</a></div>\n";
-			$result .= "<p class=\"quotation\" style=\"margin-top:1px;\">".strip_tags($line['snippet'])."</p>";
+			$result .= "<p class=\"quotation\" style=\"margin-top:1px;\">".make_link(strip_tags($line['snippet']))."</p>";
 			$result .= "</li>\n";
 		}
 		if ($result)
