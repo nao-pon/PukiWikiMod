@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.6 2003/07/03 04:42:07 nao-pon Exp $
+// $Id: index.php,v 1.7 2003/07/03 11:58:56 nao-pon Exp $
 
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -222,6 +222,8 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 	displayForm();
 } else {
 	$wiki_admin_mode = $HTTP_POST_VARS['wiki_admin_mode'];
+	$wiki_permit_change_dir = $HTTP_POST_VARS['wiki_permit_change_dir'];
+	
 	if($wiki_admin_mode == "change_config"){
 		writeConfig();
 	} else if($wiki_admin_mode == "change_permit"){
