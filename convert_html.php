@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.41 2005/02/25 00:27:16 nao-pon Exp $
+// $Id: convert_html.php,v 1.42 2005/02/28 14:45:17 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -15,7 +15,7 @@ class pukiwiki_converter
 	}
 }
 
-function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
+function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$ret_array=false)
 {
 	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id,$wiki_strong_words,$wiki_head_keywords;
 	global $X_uname;
@@ -42,16 +42,20 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 			$wiki_ads_shown =  $var_data[4];
 			$vars['is_rsstop'] =  $var_data[5];
 			$foot_explain = explode("\t",$var_data[6]);
-			$wiki_strong_words =  $var_data[7];
+			$wiki_strong_words = $var_data[7];
+			$contents = (isset($var_data[8]))? $var_data[8] : "";
 			
 			$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 			
 			$convert_load--;
 			
 			$str = join('',$htmls);
-			//名前欄置換
-			//$str = str_replace(WIKI_NAME_DEF,$X_uname,$str);
-			return $str;
+
+			if (!$ret_array)
+				return $str;
+			else
+				return array($str, $contents);
+
 		}
 		else
 		{
@@ -132,6 +136,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		$var_data[5] = $vars['is_rsstop'];
 		$var_data[6] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain));
 		$var_data[7] = ($convert_load === 1)? $wiki_head_keywords : $wiki_strong_words;
+		$var_data[8] = str_replace(array("\r","\n"),"",$body->contents);
 		$html = serialize($var_data)."\n".$str;
 		
 		//キャッシュ書き込み
@@ -148,9 +153,11 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 	//$str = str_replace(WIKI_NAME_DEF,$X_uname,$str);
 	
 	//一応アンセットしてみる
-	unset ($body,$cnts_plain,$arykeep,$result_last,$html);
-	
-	return $str;
+	//unset ($body,$cnts_plain,$arykeep,$result_last,$html);
+	if (!$ret_array)
+		return $str;
+	else
+		return array($str, $body->contents);
 	
 }
 
@@ -186,9 +193,11 @@ class convert
 
 		$string = preg_replace("/((\x0D\x0A)|(\x0D)|(\x0A))/","\n",$string);
 
-		$start_mtime = getmicrotime();
+		//$start_mtime = getmicrotime();
 
 		$digest = md5(@join("",get_source($vars["page"])));
+		
+		$pgid = get_pgid_by_name($vars["page"]);
 
 		$result = array();
 		$saved = array();
@@ -240,7 +249,7 @@ class convert
 		$pre_id = $c_pre_line = 0;
 		
 		if(preg_match("/#contents/",$string))
-			$top_link = "<a href=\"#contents_$content_id_local\">$top</a>";
+			$top_link = "<a href=\"#ct{$pgid}_{$content_id_local}\">$top</a>";
 
 		foreach ($lines as $line)
 		{
@@ -357,7 +366,7 @@ class convert
 					$str = inline($str);
 					
 					///// ParaeEdit /////
-					$_tag = "<h$level><a name=\"content_{$content_id_local}_$content_count\"></a>{$str}{$_fh_text} {$top_link}</h$level>";
+					$_tag = "<h$level><a name=\"ct{$pgid}_{$content_id_local}_{$content_count}\"></a>{$str}{$_fh_text} {$top_link}</h$level>";
 					if ($content_id_local == 1 && check_editable($vars['page'],FALSE,FALSE)) {
 						$para_num = $content_count + 1;
 						$para_link = "$script?cmd=edit&amp;id=$para_num&amp;page=" . rawurlencode($vars[page]);
@@ -370,7 +379,7 @@ class convert
 					///// ParaeEdit /////
 					
 					$_c_text = ($_c_text)? $_c_text : $content_id_local."_".$content_count;
-					$arycontents[] = str_repeat("-",$level)."<a href=\"#content_{$content_id_local}_$content_count\">".$_c_text."</a>\n";
+					$arycontents[] = str_repeat("-",$level)."<a href=\"#ct{$pgid}_{$content_id_local}_{$content_count}\">".$_c_text."</a>\n";
 					$content_count++;
 				}
 				else if(preg_match("/^(-+)(.*)/",$line,$out))
@@ -801,7 +810,7 @@ class convert
 			}
 			$result = array_merge($result,$saved); $saved = array();
 			
-			$this->contents = "<a name=\"contents_$content_id_local\"></a>\n";
+			$this->contents = "<a name=\"ct{$pgid}_$content_id_local\"></a>\n";
 			$this->contents .= join("\n",$result);
 			if($strip_link_wall)
 			{

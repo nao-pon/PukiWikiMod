@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.37 2005/02/24 15:35:33 nao-pon Exp $
+// $Id: func.php,v 1.38 2005/02/28 14:45:17 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -404,10 +404,13 @@ __TEXT__;
 }
 
 // 現在時刻をマイクロ秒で取得
+if (!function_exists('getmicrotime'))
+{
 function getmicrotime()
 {
 	list($usec, $sec) = explode(" ",microtime());
 	return ((float)$sec + (float)$usec);
+}
 }
 
 // 日時を得る
@@ -985,7 +988,7 @@ function ltrim_pagename($page,$num)
 }
 
 // 指定ページをインクルードする
-function include_page($page)
+function include_page($page,$ret_array=false)
 {
 	global $vars,$post,$get,$comment_no,$article_no,$h_excerpt,$digest;
 	global $_msg_read_more;
@@ -1011,13 +1014,13 @@ function include_page($page)
 		if (preg_match("/(.*?)\n#more(\([^)]*\))?\n/s",$body,$match))
 			$body = $match[1];
 		$body .= "\n\nRIGHT:[[$_msg_read_more>$page]]";
-		$body = convert_html($body);
+		$ret = convert_html($body,false,false,false,$ret_array);
 		//$pcon = new pukiwiki_converter();
-		//$body = $pcon->convert_str($body);
+		//$body = $pcon->convert_str($body,false,false,false,true);
 	}
 	else
 	{
-		$body = convert_html($page,false,true);
+		$ret = convert_html($page,false,true,false,$ret_array);
 		//$pcon = new pukiwiki_converter();
 		//$body = $pcon->convert_page($page);
 
@@ -1032,7 +1035,7 @@ function include_page($page)
 	$digest = $_digest;
 	$article_no = $_article_no;
 	
-	return $body;
+	return $ret;
 }
 
 // ページ専用CSSタグを得る
@@ -1080,6 +1083,27 @@ function get_url_by_name($name="")
 		return XOOPS_WIKI_URL."/".get_pgid_by_name($name).".html";
 	else
 		return XOOPS_WIKI_URL."/?".rawurlencode(strip_bracket($name));
+}
+
+// $content から指定レベル以上のリストを取り出す。
+function select_contents_by_level($str,$lev=1,$tag="ul")
+{
+	$lev = (int)$lev;
+	if (!$lev || !$str) return $str;
+
+	$str = str_replace("<{$tag} class=\"list","\x08",$str);
+	
+	$reg = "/\x08(([\d]+)[^\x08]+?<\/$tag>)/";
+	
+	while(preg_match($reg,$str,$arg))
+	{
+		if ($arg[2] > $lev)
+			$str = preg_replace($reg,"",$str,1);
+		else
+			$str = preg_replace($reg,"<{$tag} class=\"list$1",$str,1);
+	}
+	$str = preg_replace("#<a name=\"[^\"]+\"></a>#","",$str);
+	return $str;
 }
 
 //////////////////////////////////////////////////////
