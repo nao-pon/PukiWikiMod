@@ -1,5 +1,5 @@
 <?php
-// $Id: newpage.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: newpage.inc.php,v 1.3 2003/11/06 12:40:14 nao-pon Exp $
 
 function plugin_newpage_init()
 {
@@ -17,7 +17,11 @@ function plugin_newpage_convert()
 	if (func_num_args()) {
 		list($newpage) = func_get_args();
 	}
-	if ($newpage = 'this') $newpage = $vars['page'];
+	if ($newpage == 'this')
+		$newpage = $vars['page'];
+	else
+		$newpage = add_bracket($newpage);
+	
 	if (!preg_match("/^$BracketName$/",$newpage)) {
 		$newpage = '';
 	}
@@ -28,8 +32,9 @@ function plugin_newpage_convert()
  <div>
   <input type="hidden" name="plugin" value="newpage" />
   <input type="hidden" name="refer" value="$s_page" />
+  <input type="hidden" name="prefix" value="$s_newpage" />
   $_msg_newpage:
-  <input type="text" name="page" size="50" value="$s_newpage" />
+  <b>$s_newpage</b><input type="text" name="page" size="50" value="" />
   <input type="submit" value="$_btn_edit" />
  </div>
 </form>
@@ -47,7 +52,7 @@ function plugin_newpage_action()
 		$retvars['body'] = plugin_newpage_convert();
 		return $retvars;
 	}
-	$page = strip_bracket($vars['page']);
+	$page = $vars['prefix'].strip_bracket($vars['page']);
 	$r_page = rawurlencode(array_key_exists('refer',$vars) ?
 		get_fullname($page,$vars['refer']) : $page);
 	$r_refer = rawurlencode($vars['refer']);
