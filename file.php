@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.20 2004/03/20 07:21:17 nao-pon Exp $
+// $Id: file.php,v 1.21 2004/04/03 14:13:16 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -147,6 +147,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode($s_page)."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.$s_page."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$X_uname."\n";
+		$mail_body .= "IP:".$_SERVER["REMOTE_ADDR"]."\n";
 		$mail_body .= $plugin_title;
 		if (in_array("del",$mail_mode))
 		{
@@ -1017,7 +1018,7 @@ function get_heading_init($page)
 // 指定ページのコンバート後のHTMLキャッシュファイルを削除
 function delete_page_html($page)
 {
-	global $defaultpage;
+	global $defaultpage, $post;
 	$pages = array();
 	// 削除するページ
 	$pages[] = $page;
@@ -1029,6 +1030,8 @@ function delete_page_html($page)
 		$_page = $match[1];
 		$pages[] = add_bracket($_page);
 	}
+	//呼び出しもとのページ
+	$pages[] = add_bracket($post['refer']);
 	
 	foreach($pages as $del_page)
 	{
