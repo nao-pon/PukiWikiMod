@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.20 2004/05/22 14:00:17 nao-pon Exp $
+// $Id: make_link.php,v 1.21 2004/08/29 06:06:26 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -177,7 +177,8 @@ class Link
 		$this->name = $name;
 		$this->body = $body;
 		$this->type = $type;
-		if ($type != 'InterWikiName' and preg_match('/\.(gif|png|jpe?g)$/i',$alias))
+		//if ($type != 'InterWikiName' and preg_match('/\.(gif|png|jpe?g)$/i',$alias))
+		if (is_url($alias) && preg_match('/\.(gif|png|jpe?g)$/i',$alias))
 		{
 			$separator = $alias{0};
 			$alias = substr($alias,1);
@@ -191,6 +192,7 @@ class Link
 				$converter = new InlineConverter(array('plugin'));
 			}
 			$alias = make_line_rules($converter->convert($alias,$page));
+			$alias = preg_replace('#</?a[^>]*>#i','',$alias);
 		}
 		$this->alias = $alias;
 		
