@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.33 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.34 2004/01/12 13:18:59 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -1146,7 +1146,7 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".tbf"))
 			{
 				$r_page = rawurlencode(strip_bracket($post["page"]));
-				$body = "<img style=\"float:left\" src=\"".XOOPS_URL."/modules/pukiwiki/ping.php?$r_page\" width=1 height=1/>";
+				$body .= "<img style=\"float:left\" src=\"".XOOPS_URL."/modules/pukiwiki/ping.php?$r_page\" width=1 height=1/>";
 			}
 			
 			$body .= $postdata;
@@ -1285,16 +1285,26 @@ else
 $xoops_pagetitle = $xoopsModule->name();
 $xoops_pagetitle = "$title $h_excerpt($xoops_pagetitle)";
 // XOOPS 1 用 XOOPS/include/functions.php の改造が必要
-global $xoops_mod_add_title;
+global $xoops_mod_add_title,$xoops_mod_add_header;
 $xoops_mod_add_title = $xoops_pagetitle;
+//<link>タグを追加
+if (is_page($vars["page"]))
+{
+	$xoops_mod_add_header = '
+<link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list">
+<link rel="contents" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?plugin=map">
+';
+	$xoops_mod_add_header .= get_header_link_tag_by_name($vars["page"]);
+}
 
-include("header.php");
+if (empty($vars['xoops_block'])) include("header.php");
 
 // <title>にページ名をプラス
 // XOOPS 2 用
 global $xoopsTpl;
 if ($xoopsTpl){
 	$xoopsTpl->assign("xoops_pagetitle",$xoops_pagetitle);
+	$xoopsTpl->assign("$xoops_module_header",$xoops_mod_add_header);
 }
 
 // ** 出力処理 **
@@ -1304,6 +1314,6 @@ catbody($title,$page,$body);
 unset($title,$page,$body);//一応開放してみる
 //XOOPSフッタ
 //CloseTable();
-include(XOOPS_ROOT_PATH."/footer.php");
+if (empty($vars['xoops_block'])) include(XOOPS_ROOT_PATH."/footer.php");
 // ** 終了 **
 ?>
