@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.12 2004/10/28 11:36:31 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.13 2004/10/28 12:04:41 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -305,6 +305,7 @@ function plugin_isbn_cache_fetch($target, $dir, $check=true) {
 // 画像キャッシュがあるか調べる
 function plugin_isbn_cache_image_fetch($target, $dir, $check=true) {
 	global $vars;
+	//echo $target;
 	$_target = $target = strtoupper($target);
 	$filename = $dir.encode($vars["page"])."_".encode("ISBN".$target.".jpg");
 
@@ -313,9 +314,9 @@ function plugin_isbn_cache_image_fetch($target, $dir, $check=true) {
 		if (preg_match("/^(?:(s|m|l):)(.+)/i",$target,$match))
 		{
 			$size = strtoupper($match[1]);
-			if ($size="M") $target = $match[2];
+			if ($size == "M") $target = $match[2];
 			$_target = $match[2];
-			$size = ($size = "S")? "THUMB" : $size."ZZZZ";
+			$size = ($size == "S")? "THUMB" : $size."ZZZZ";
 		}
 		$url = "http://images-jp.amazon.com/images/P/" . $_target . ".09.{$size}ZZZ.jpg";
 		//echo $url;
@@ -352,6 +353,7 @@ function plugin_isbn_cache_image_fetch($target, $dir, $check=true) {
 			$data = fread($file, 100000); 
 			fclose ($file);
 		}
+		//echo $target."<br>";
 		plugin_isbn_cache_image_save($data, $target, UPLOAD_DIR);
 		return $filename;
 	} else
@@ -376,7 +378,6 @@ function plugin_isbn_cache_image_save($data, $target, $dir) {
 	
 	$name = "ISBN".$target.".jpg";
 	$filename = $dir . encode($vars["page"])."_".encode($name);
-	//$filename = $dir . "ISBN" . $target . ".jpg";
 
 	$fp = fopen($filename.".tmp", "wb");
 	fwrite($fp, $data);
