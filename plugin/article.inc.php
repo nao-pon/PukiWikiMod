@@ -19,7 +19,7 @@
  -投稿内容のメール自動配信先
  を設定の上、ご使用ください。
 
- $Id: article.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
+ $Id: article.inc.php,v 1.3 2003/06/28 16:40:20 nao-pon Exp $
  
  */
 
@@ -200,42 +200,44 @@ function plugin_article_action()
 		// ファイルの書き込み
 		file_write(DATA_DIR,$post["refer"],$postdata);
 
-		// メール送信 by nao-pon
-		global $xoopsConfig;
+		if (WIKI_MAIL_NOTISE) {
+			// メール送信 by nao-pon
+			global $xoopsConfig;
 
-		 //- メール用差分データの作成
-		$mail_add = $mail_del = "";
-		$diffdata_ar = array();
-		$diffdata_ar=split("\n",$diffdata);
-		foreach($diffdata_ar as $diffdata_line){
-			if (ereg("^\+(.*)",$diffdata_line,$regs)){
-				$mail_add .= $regs[1]."\n";
+			 //- メール用差分データの作成
+			$mail_add = $mail_del = "";
+			$diffdata_ar = array();
+			$diffdata_ar=split("\n",$diffdata);
+			foreach($diffdata_ar as $diffdata_line){
+				if (ereg("^\+(.*)",$diffdata_line,$regs)){
+					$mail_add .= $regs[1]."\n";
+				}
+				if (ereg("^\-(.*)",$diffdata_line,$regs)){
+					$mail_del .= $regs[1]."\n";
+				}
 			}
-			if (ereg("^\-(.*)",$diffdata_line,$regs)){
-				$mail_del .= $regs[1]."\n";
-			}
+
+			$mail_body = "PukiWikiへ以下の投稿がありました。\n";
+			$mail_body .= "URL: ".XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
+			$mail_body .= "ページ名: ".strip_bracket(trim($post["refer"]))."\n";
+			$mail_body .= "投稿者: ".$name."\n";
+			$mail_body .= "----------削除された行------------\n";
+			$mail_body .= $mail_del;
+			$mail_body .= "----------追加された行------------\n";
+			$mail_body .= $mail_add;
+			$mail_body .= "----------全　文------------------\n";
+			$mail_body .= $postdata;
+			$xoopsMailer =& getMailer();
+			$xoopsMailer->useMail();
+			$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
+			$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
+			$xoopsMailer->setFromName($xoopsConfig['sitename']);
+			$xoopsMailer->setSubject("PukiWikiへの投稿:".strip_bracket(trim($post["refer"])));
+			$xoopsMailer->setBody($mail_body);
+			$xoopsMailer->send();
+			//メール送信ここまで by nao-pon
 		}
-
-		$mail_body = "PukiWikiへ以下の投稿がありました。\n";
-		$mail_body .= "URL: ".XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
-		$mail_body .= "ページ名: ".strip_bracket(trim($post["refer"]))."\n";
-		$mail_body .= "投稿者: ".$name."\n";
-		$mail_body .= "----------削除された行------------\n";
-		$mail_body .= $mail_del;
-		$mail_body .= "----------追加された行------------\n";
-		$mail_body .= $mail_add;
-		$mail_body .= "----------全　文------------------\n";
-		$mail_body .= $postdata;
-		$xoopsMailer =& getMailer();
-		$xoopsMailer->useMail();
-		$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromName($xoopsConfig['sitename']);
-		$xoopsMailer->setSubject("PukiWikiへの投稿:".strip_bracket(trim($post["refer"])));
-		$xoopsMailer->setBody($mail_body);
-		$xoopsMailer->send();
-		//メール送信ここまで by nao-pon
-
+		
 		// is_pageのキャッシュをクリアする。
 		is_page($post["refer"],true);
 

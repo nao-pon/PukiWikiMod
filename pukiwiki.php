@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.3 2003/06/28 11:33:01 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.4 2003/06/28 16:40:20 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPSヘッダ
 //include("header.php");
@@ -49,18 +49,13 @@ require('make_link.php');
 // プログラムファイル読み込み
 require("init.php");
 
-/////////////////////////////////////////////////
 // XOOPSデータ読み込み
-// $anon_writable:ゲスト編集可能(Yes:0 No:1)
+// $anon_writable:編集可能(Yes:1 No:0)
 // $X_uid:XOOPSユーザーID
 // $X_admin:PukiWikiモジュール管理者(Yes:1 No:0)
 // 
 global $xoopsUser,$xoopsDB;
-if(!$anon_writable && !$xoopsUser){
-	$anon_writable = 0;
-} else {
-	$anon_writable = 1;
-}
+
 $X_admin =0;
 $X_uid =0;
 if ( $xoopsUser ) {
@@ -70,7 +65,21 @@ if ( $xoopsUser ) {
 	}
 	$X_uid = $xoopsUser->uid();
 }
-//echo "($X_admin)";
+/////////////////////////////////////////////////
+// 編集権限セット
+if ($X_admin || ($wiki_writable===0) || (($X_uid && ($wiki_writable < 2)))) {
+	$anon_writable = 1;
+} else {
+	$anon_writable = 0;
+}	
+/////////////////////////////////////////////////
+// メール通知の有効 or 無効
+if ($wiki_mail_sw === 2 || ($wiki_mail_sw === 1 && (!$X_admin))) {
+	define("WIKI_MAIL_NOTISE",TRUE);
+} else {
+	define("WIKI_MAIL_NOTISE",FALSE);
+}
+
 /////////////////////////////////////////////////
 // メイン処理
 
@@ -179,8 +188,8 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	}
 	
 	//ページ名に自動リンク by nao-pon
-	if ($auto_bra_enable) {
-		$post["msg"] = auto_braket($post["msg"]);
+	if ($post["auto_bra_enable"]) {
+		$post["msg"] = auto_braket($post["msg"],$post["page"]);
 	}
 	//nao-pon
 	
@@ -288,10 +297,13 @@ else if($post["write"])
 	}
 
 	//ページ情報
-	$author_uid = ($X_admin)? $post['f_author_uid'] : get_pg_auther($get["page"]);
+	$author_uid = ($X_admin)? $post['f_author_uid'] : get_pg_auther($post["page"]);
 	
 	if (!$body){
 		//エラーメッセージがセットされていなければ保存実行
+		
+		//素の状態のポストデータを記憶
+		$postdata_org = $post["msg"];
 		
 		//改行有効 by nao-pon
 		if($post["enter_enable"]) {
@@ -299,8 +311,8 @@ else if($post["write"])
 		}
 		
 		//ページ名に自動リンク by nao-pon
-		if ($auto_bra_enable) {
-			$post["msg"] = auto_braket($post["msg"]);
+		if ($post["auto_bra_enable"]) {
+			$post["msg"] = auto_braket($post["msg"],$post["page"]);
 		}
 		//nao-pon
 
@@ -392,54 +404,62 @@ else if($post["write"])
 				$oldposttime = time();
 
 			// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
-			if(!$postdata && $del_backup)
+			//if(!$postdata && $del_backup)
+			if(!$postdata_org && $del_backup)
 				backup_delete(BACKUP_DIR.encode($post["page"]).".txt");
 			else if($do_backup && is_page($post["page"]))
 				make_backup(encode($post["page"]).".txt",$oldpostdata,$oldposttime);
 
 			// ファイルの書き込み
-			file_write(DATA_DIR,$post["page"],$postdata);
-
-			// メール送信 by nao-pon
-			global $xoopsConfig;
-
-			 //- メール用差分データの作成
-			$mail_add = $mail_del = "";
-			$diffdata_ar = array();
-			$diffdata_ar=split("\n",$diffdata);
-			foreach($diffdata_ar as $diffdata_line){
-				if (ereg("^\+(.*)",$diffdata_line,$regs)){
-					$mail_add .= $regs[1]."\n";
-				}
-				if (ereg("^\-(.*)",$diffdata_line,$regs)){
-					$mail_del .= $regs[1]."\n";
-				}
+			if ($postdata_org){
+				file_write(DATA_DIR,$post["page"],$postdata);
+			} else {
+				file_write(DATA_DIR,$post["page"],$postdata_org);
 			}
 
-			$mail_body = "PukiWikiへ以下の投稿がありました。\n";
-			$mail_body .= "URL: ".XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["page"]))."\n";
-			$mail_body .= "ページ名: ".strip_bracket(trim($post["page"]))."\n";
-			$mail_body .= "投稿者: ".$xoopsUser->uname()."\n";
-			$mail_body .= "----------削除された行------------\n";
-			$mail_body .= $mail_del;
-			$mail_body .= "----------追加された行------------\n";
-			$mail_body .= $mail_add;
-			$mail_body .= "----------全　文------------------\n";
-			$mail_body .= $postdata;
-			$xoopsMailer =& getMailer();
-			$xoopsMailer->useMail();
-			$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
-			$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
-			$xoopsMailer->setFromName($xoopsConfig['sitename']);
-			$xoopsMailer->setSubject("PukiWikiへの投稿:".strip_bracket(trim($post["page"])));
-			$xoopsMailer->setBody($mail_body);
-			$xoopsMailer->send();
-			//メール送信ここまで by nao-pon
+			if (WIKI_MAIL_NOTISE) {
+				// メール送信 by nao-pon
+				global $xoopsConfig;
+
+				 //- メール用差分データの作成
+				$mail_add = $mail_del = "";
+				$diffdata_ar = array();
+				$diffdata_ar=split("\n",$diffdata);
+				foreach($diffdata_ar as $diffdata_line){
+					if (ereg("^\+(.*)",$diffdata_line,$regs)){
+						$mail_add .= $regs[1]."\n";
+					}
+					if (ereg("^\-(.*)",$diffdata_line,$regs)){
+						$mail_del .= $regs[1]."\n";
+					}
+				}
+
+				$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
+				$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["page"]))."\n";
+				$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["page"]))."\n";
+				$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$xoopsUser->uname()."\n";
+				$mail_body .= _MD_PUKIWIKI_MAIL_DEL_LINES."\n";
+				$mail_body .= $mail_del;
+				$mail_body .= _MD_PUKIWIKI_MAIL_ADD_LINES."\n";
+				$mail_body .= $mail_add;
+				$mail_body .= _MD_PUKIWIKI_MAIL_ALL_LINES."\n";
+				$mail_body .= $postdata;
+				$xoopsMailer =& getMailer();
+				$xoopsMailer->useMail();
+				$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
+				$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
+				$xoopsMailer->setFromName($xoopsConfig['sitename']);
+				$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["page"])));
+				$xoopsMailer->setBody($mail_body);
+				$xoopsMailer->send();
+				//メール送信ここまで by nao-pon
+			}
 
 			// is_pageのキャッシュをクリアする。
 			is_page($post["page"],true);
 
-			if($postdata)
+			//if($postdata)
+			if($postdata_org)
 			{
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_updated);
 				$page = str_replace('$1',make_search($post["page"]),$_title_updated);
@@ -883,7 +903,7 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 		if (!$anon_writable){
 			$title = strip_bracket($get["page"]);
 			$page = make_search($get["page"]);
-			$body = "指定されたページを作成する権限がありません。";
+			$body = _MD_PUKIWIKI_NO_AUTH;
 		} else {
 			if(preg_match("/^(($BracketName)|($WikiName))$/",$get["page"])) {
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_edit);
