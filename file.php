@@ -1,17 +1,14 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.6 2003/07/14 09:04:00 nao-pon Exp $
+// $Id: file.php,v 1.7 2003/07/22 13:36:42 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
 function get_source($page,$row=0)
 {	
 	global $WikiName;
+	$page = add_bracket($page);
 	if(page_exists($page)) {
-		//echo $page;
-		//if (!preg_match("/^$WikiName$/",$page)){
-		//	if (!preg_match("/^\[\[.*\]\]$/",$page)) $page = "[[".$page."]]";
-		//}
 		if ($row){
 			$ret = array();
 			$f_name = get_filename(encode($page));
@@ -23,10 +20,11 @@ function get_source($page,$row=0)
 				if ($row < 1) break;
 			}
 			fclose($fp);
-			return $ret;
 		} else {
-			return file(get_filename(encode($page)));
+			$ret = file(get_filename(encode($page)));
 		}
+		$ret = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$ret);
+		return $ret;
   }
   return array();
 }
@@ -41,6 +39,42 @@ function page_exists($page)
 function get_filetime($page)
 {
 	return filemtime(get_filename($page)) - LOCALZONE;
+}
+
+// ページの出力
+function page_write($page,$postdata,$notimestamp=NULL)
+{
+	global $do_backup,$del_backup;
+
+	$page = add_bracket($page);
+
+	$postdata = user_rules_str($postdata);
+	
+	// 差分ファイルの作成
+	$oldpostdata = is_page($page) ? join('',get_source($page)) : '';
+	$diffdata = do_diff($oldpostdata,$postdata);
+	file_write(DIFF_DIR,$page,$diffdata);
+	
+	// バックアップの作成
+	make_backup($page,$postdata == '');
+	// バックアップの作成
+	if(is_page($page))
+		$oldposttime = filemtime(get_filename(encode($page)));
+	else
+		$oldposttime = time();
+
+	// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
+	if(!$postdata && $del_backup)
+		backup_delete(BACKUP_DIR.encode($page).".txt");
+	else if($do_backup && is_page($page))
+		make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
+
+	// ファイルの書き込み
+	file_write(DATA_DIR,$page,$postdata,$notimestamp);
+	
+	// is_pageのキャッシュをクリアする。
+	is_page($page,TRUE);
+	
 }
 
 // ファイルへの出力
@@ -136,7 +170,6 @@ function is_page($page,$reload=false)
 	global $InterWikiName,$_ispage;
 	
 	$page = add_bracket($page);
-	
 	if(($_ispage[$page] === true || $_ispage[$page] === false) && !$reload) return $_ispage[$page];
 
 	if(preg_match("/($InterWikiName)/",$page))
@@ -177,7 +210,6 @@ function is_freeze($page)
 	if($_freeze === true || $_freeze === false) return $_freeze;
 
 	$lines = get_source($page,1);
-	$lines = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$lines);
 
 	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
 		$gids = $aids = array();
@@ -289,7 +321,6 @@ function get_existpages()
 function get_pg_auther($page)
 {
 	$lines = get_source($page,2);
-	$lines = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$lines);
 	
 	$author_uid = 0;
 	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
@@ -315,7 +346,6 @@ function get_pg_auther_name($page)
 //ページの編集権限を得る
 function get_pg_allow_editer($page){
 	$lines = get_source($page,1);
-	$lines = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$lines);
 
 	$allows['group'] = $allows['user']= "";
 	

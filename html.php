@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.17 2003/07/21 14:21:16 nao-pon Exp $
+// $Id: html.php,v 1.18 2003/07/22 13:36:42 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力

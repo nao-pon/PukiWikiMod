@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.4 2003/07/11 14:11:19 nao-pon Exp $
+// $Id: init.php,v 1.5 2003/07/22 13:36:42 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -10,6 +10,8 @@ define("INI_FILE","./pukiwiki.ini.php");
 
 define("_XOOPS_WIKI_VERSION", "0.05");
 define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003 <a href=\"http://ishii.s26.xrea.com/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.<BR>Based on \"PukiWiki\" 1.3.3 by <a href=\"http://pukiwiki.org/\">PukiWiki Developers Team</a>");
+//文字エンコード
+define('SOURCE_ENCODING','EUC-JP');
 
 ini_set('error_reporting', 5);
 define("S_VERSION","1.3.3");

@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.19 2003/07/21 14:21:16 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.20 2003/07/22 13:36:42 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -164,7 +164,6 @@ else if(arg_check("edit"))
 		$page = str_replace('$1',make_search($vars["page"]),_MD_PUKIWIKI_NO_AUTH);
 		$vars["page"] = "";
 	} else {
-		$postdata = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$postdata);
 		unset ($create_uid);
 		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$postdata,$arg)) {
 			$create_uid = $arg[1];
@@ -201,9 +200,6 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	
 	$freeze_check = ($post["freeze"])? "checked " : "";
 
-	//改行コード統一 by nao-pon
-	$post["msg"] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post["msg"]);
-	
 	$post["msg"] = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$post["msg"]);
 	
 	//改行有効 by nao-pon
@@ -336,10 +332,6 @@ else if($post["write"])
 	else
 		$oldpostdata = "\n";
 
-	//改行コード統一 by nao-pon
-	$post["msg"] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post["msg"]);
-	$oldpostdata = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$oldpostdata);
-
 	$post["msg"] = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$post["msg"]);
 	
 	//フォームデータを信用して素通ししてしまうのは問題があるので
@@ -435,10 +427,6 @@ else if($post["write"])
 			$post["digest"] = md5(join("",($oldpagesrc)));
 			
 			$oldpagesrc = join("",$oldpagesrc);
-			
-			//改行コード統一 by nao-pon
-			$oldpagesrc = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$oldpagesrc);
-			
 			
 			unset ($create_uid);
 			if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$oldpagesrc,$arg)) {

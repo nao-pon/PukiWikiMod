@@ -131,6 +131,48 @@ $_btn_upload = 'Upload';
 $_btn_delete = 'Del';
 
 ///////////////////////////////////////
+// attach.inc.php
+$_attach_messages = array(
+	'msg_uploaded' => 'Uploaded file to $1',
+	'msg_deleted'  => 'Deleted file in $1',
+	'msg_freezed'  => 'File freezed.',
+	'msg_unfreezed'=> 'File unfreezed',
+	'msg_upload'   => 'Upload to $1',
+	'msg_info'     => 'File information',
+	'msg_confirm'  => '<p>Delete %s.</p>',
+	'msg_list'     => 'List of attached file(s)',
+	'msg_listpage' => 'Already exists file in $1',
+	'msg_listall'  => 'Attached file list of all pages',
+	'msg_file'     => 'Attach file',
+	'msg_maxsize'  => 'Maximum file size is %s.',
+	'msg_count'    => ' <span class="small">%s download</span>',
+	'msg_password' => 'password',
+	'msg_adminpass'=> 'Administrator password',
+	'msg_delete'   => 'Delete file.',
+	'msg_freeze'   => 'Freeze file.',
+	'msg_unfreeze' => 'Unfreeze file.',
+	'msg_isfreeze' => 'File is freezing.',
+	'msg_require'  => '',
+	'msg_filesize' => 'size',
+	'msg_date'     => 'date',
+	'msg_dlcount'  => 'access count',
+	'msg_md5hash'  => 'MD5 hash',
+	'msg_page'     => 'Page',
+	'msg_filename' => 'Stored filename',
+	'err_noparm'   => 'Cannot upload/delete file in $1',
+	'err_exceed'   => 'File size too large to $1',
+	'err_exists'   => 'Already exists file in $1',
+	'err_notfound' => 'Not found the file in $1',
+	'err_noexist'  => 'File not exist.',
+	'err_delete'   => 'Cannot delete file in $1',
+	'err_password' => 'Wrong password.',
+	'err_adminpass'=> 'Wrong administrator password',
+	'btn_upload'   => 'Upload',
+	'btn_info'     => 'Information',
+	'btn_submit'   => 'Submit'
+);
+
+///////////////////////////////////////
 // newpage
 $_msg_newpage = 'new page';
 

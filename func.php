@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.12 2003/07/18 12:53:13 nao-pon Exp $
+// $Id: func.php,v 1.13 2003/07/22 13:36:42 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -591,7 +591,8 @@ function auto_braket($msg,$tgt_name){
 		$msg = eregi_replace($mail_ADR_regex, "[[\\1]]", $msg);
 	}
 	// #で始まるプラグイン行、//で始まるメッセージ行を処理しない為の前処理
-	$msg=preg_replace("/(^|[\n])( |#|\/\/)(.*)(\n|$)/","\\1\\2[[\\3]]\\4",$msg);
+	//$msg=preg_replace("/(^|\n)( |#|\/\/)(.*)(\n|$)/","\\1\\2[[\\3]]\\4",$msg);
+	$msg=preg_replace("/(^|\n)( |#|\/\/)(.*)/","\\1\\2[[\\3]]",$msg);
 	// インラインプラグイン エスケープ
 	$msg = preg_replace("/(&.*?;)/","[[$1]]",$msg);
 	
@@ -615,7 +616,8 @@ function auto_braket($msg,$tgt_name){
 	// インラインプラグイン アンエスケープ
 	$msg = preg_replace("/\[\[(&.*?;)\]\]/","$1",$msg);
 	// #で始まるプラグイン行、//で始まるメッセージ行を処理しない為の後処理
-	$msg = preg_replace("/(^|[\n])( |#|\/\/)\[\[(.*)\]\](\n|$)/","\\1\\2\\3\\4",$msg);
+	//$msg = preg_replace("/(^|[\n])( |#|\/\/)\[\[(.*)\]\](\n|$)/","\\1\\2\\3\\4",$msg);
+	$msg = preg_replace("/(^|[\n])( |#|\/\/)\[\[(.*)\]\]/","\\1\\2\\3",$msg);
 	// エスケープを元に戻す
 	if ($tgt_name == "InterWikiName"){
 		$msg = preg_replace("/\[\[(\[[^[\]]+\])\]\]/","$1",$msg);

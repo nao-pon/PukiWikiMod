@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.1 2003/07/21 14:21:15 nao-pon Exp $
+// $Id: convert_html.php,v 1.2 2003/07/22 13:36:42 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string)
 {
@@ -41,7 +41,7 @@ function convert_html($string)
 	$str = preg_replace("/(^|\n) /", "$1", $str);
 	
 	//一応アンセットしてみる
-	//unset ($body,$cnts_plain,$arykeep);
+	unset ($body,$cnts_plain,$arykeep);
 
 	return $str;
 	
@@ -311,15 +311,15 @@ class convert
 							$table_style .= " align=\"".$table_align."\"";
 							$div_style = " style=\"text-align:".$table_align."\"";
 							if ($table_align == "left"){
-								$table_sheet = "margin-left:{$_table_left_margin}px;margin-right:auto;";
+								$table_sheet .= "margin-left:{$_table_left_margin}px;margin-right:auto;";
 							} else {
-								$table_sheet = "margin-left:auto;margin-right:{$_table_right_margin}px;";
+								$table_sheet .= "margin-left:auto;margin-right:{$_table_right_margin}px;";
 							}
 						}
 						if (preg_match("/T(CENTER)/i",$out[1],$reg)) {
 							$table_style .= " align=\"".strtolower($reg[1])."\"";
 							$div_style = " style=\"text-align:".strtolower($reg[1])."\"";
-							$table_sheet = "margin-left:auto;margin-right:auto;";
+							$table_sheet .= "margin-left:auto;margin-right:auto;";
 							$table_around = "";
 						}
 						if (preg_match("/T(LEFT|CENTER|RIGHT)?:([0-9]+[%]?)/i",$out[1],$reg)) {
@@ -540,7 +540,7 @@ class convert
 			}
 		}
 		$result_last = preg_replace("/^#contents/",$contents,$result_last);
-		
+		unset ($result,$saved);//メモリ節約してみる
 		return $result_last;
 
 	}

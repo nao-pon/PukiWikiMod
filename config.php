@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: config.php,v 1.2 2003/07/14 12:09:42 nao-pon Exp $
+// $Id: config.php,v 1.3 2003/07/22 13:36:42 nao-pon Exp $
 //
 /*
  * プラグインの設定をPukiWikiのページに記述する
@@ -59,13 +59,12 @@ class Config
 		}
 		$this->objs = array();
 		$obj = &new ConfigTable('');
-		foreach (get_source("[[".$this->page."]]") as $line)
+		foreach (get_source($this->page) as $line)
 		{
 			if ($line == '')
 			{
 				continue;
 			}
-			//echo $line."<br />";
 			$head = $line{0};
 			$level = strspn($line,$head);
 			
