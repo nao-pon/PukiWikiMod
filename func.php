@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.38 2005/02/28 14:45:17 nao-pon Exp $
+// $Id: func.php,v 1.39 2005/03/02 00:10:13 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -225,25 +225,38 @@ function open_interwikiname_list()
 function strip_bracket($str)
 {
 	global $strip_link_wall;
+	static $ret = array();
+	
 	if ($str === "") return "";
+	
+	if (isset($ret[$str])) return $ret[$str];
+	
+	$ret[$str] = $str;
 	if($strip_link_wall)
 	{
-	  if(preg_match("/^\[\[(.*)\]\]$/",$str,$match)) {
-	    $str = $match[1];
-	  }
+		if(preg_match("/^\[\[(.*)\]\]$/",$str,$match)) {
+			$ret[$str] = $match[1];
+		}
 	}
-	return $str;
+	return $ret[$str];
 }
 
 // [[ ]] を付加する
 function add_bracket($str)
 {
 	global $WikiName;
+	static $ret = array();
+	
 	if ($str === "") return "";
+	
+	if (isset($ret[$str])) return $ret[$str];
+	
+	$ret[$str] = $str;
 	if (!preg_match("/^".$WikiName."$/",$str)){
-		if (!preg_match("/\[\[.*\]\]/",$str)) $str = "[[".$str."]]";
+		if (!preg_match("/\[\[.*\]\]/",$str)) $ret[$str] = "[[".$str."]]";
 	}
-	return $str;
+	
+	return $ret[$str];
 }
 
 // ページ一覧の作成
@@ -1088,6 +1101,8 @@ function get_url_by_name($name="")
 // $content から指定レベル以上のリストを取り出す。
 function select_contents_by_level($str,$lev=1,$tag="ul")
 {
+	global $link_compact;
+	
 	$lev = (int)$lev;
 	if (!$lev || !$str) return $str;
 
@@ -1103,7 +1118,23 @@ function select_contents_by_level($str,$lev=1,$tag="ul")
 			$str = preg_replace($reg,"<{$tag} class=\"list$1",$str,1);
 	}
 	$str = preg_replace("#<a name=\"[^\"]+\"></a>#","",$str);
+	
+	if (!$link_compact)
+	{
+		$str = preg_replace("/(<a href=\"#ct([^_]+).*?\")>/e",'select_contents_by_level_sub("$1","$2")',$str);
+	}
+	
 	return $str;
+}
+// titleタグを付加するサブ関数
+function select_contents_by_level_sub($link,$pid)
+{
+	$link = str_replace('\"','"',$link);
+	$page = get_pgname_by_id($pid);
+	$passage = get_pg_passage(add_bracket($page),FALSE);
+	$s_page = htmlspecialchars($page);
+	$title = " title=\"$s_page$passage\"";
+	return $link.$title.">";
 }
 
 //////////////////////////////////////////////////////
