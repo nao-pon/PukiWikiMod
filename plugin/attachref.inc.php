@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: attachref.inc.php,v 1.7 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: attachref.inc.php,v 1.8 2005/02/23 15:00:53 nao-pon Exp $
 // ORG: attachref.inc.php,v0.5 2003/07/31 14:15:29 sha Exp $
 //
 
@@ -209,7 +209,7 @@ function plugin_attachref_action()
 		$retval = attach_upload($file,$vars['refer'],$pass,$copyright);
 		if ($retval['result'] == TRUE)
 		{
-			$retval = attachref_insert_ref(strip_bracket($vars['refer'])."/".$file['name']);
+			$retval = attachref_insert_ref("#".get_pgid_by_name($vars['refer'])."/".$file['name']);
 		}
 	}
 	else
