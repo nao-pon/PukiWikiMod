@@ -1,5 +1,5 @@
 <?php
-// $Id: xoopsblock.inc.php,v 1.1 2003/07/30 14:57:28 nao-pon Exp $
+// $Id: xoopsblock.inc.php,v 1.2 2003/08/03 14:14:21 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -23,15 +23,16 @@ function plugin_xoopsblock_convert() {
 
 	global $xoopsUser;
 	$xoopsblock = new XoopsBlock();
+	$xoopsgroup = new XoopsGroup();
 	$arr = array();
 	$side = null;
 	
 	if ( $xoopsUser ) {
 		$arr = $xoopsblock->getAllBlocksByGroup($xoopsUser->groups(), true, $side, XOOPS_BLOCK_VISIBLE);
 	} else {
-		if (function_exists('XoopsGroup::getByType')){
+		if (method_exists($xoopsgroup,"getByType")){
 			//XOOPS 1.3
-			$arr = $xoopsblock->getAllBlocksByGroup(XoopsGroup::getByType("Anonymous"), true, $side, XOOPS_BLOCK_VISIBLE);
+			$arr = $xoopsblock->getAllBlocksByGroup($xoopsgroup->getByType("Anonymous"), true, $side, XOOPS_BLOCK_VISIBLE);
 		} else {
 			//XOOPS 2
 			$arr = $xoopsblock->getAllBlocksByGroup(plugin_xoopsblock_getByType("Anonymous"), true, $side, XOOPS_BLOCK_VISIBLE);
@@ -59,6 +60,7 @@ function plugin_xoopsblock_convert() {
 		unset($block);
 	}
 	if ($tgt == "?") $ret = "<ul>$ret</ul>";
+	unset($xoopsblock,$xoopsgroup);
 	return "<div>".$ret."</div>";
 }
 
@@ -77,5 +79,6 @@ function plugin_xoopsblock_getByType($type=""){
 	}
 	return $ret;
 }
+
 
 ?>
