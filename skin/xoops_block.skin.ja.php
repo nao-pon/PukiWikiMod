@@ -1,4 +1,4 @@
-<?php // $Id: xoops_block.skin.ja.php,v 1.1 2004/01/12 13:12:06 nao-pon Exp $
+<?php // $Id: xoops_block.skin.ja.php,v 1.2 2004/02/08 12:48:06 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -18,16 +18,4 @@ $pukiwiki_url = XOOPS_URL."/modules/".$xoopsModule->dirname()."/";
 		<link rel="stylesheet" href="<?php echo $pukiwiki_url ?>cache/css.css" type="text/css" media="screen" charset="shift_jis">
 	<?php } ?>
 	<script language=javascript src="<?php echo $pukiwiki_url ?>skin/default.js"></script>
-<table border=0 cellspacing="5" style="width:100%;"><tr><td class="pukiwiki_body">
-	<?php if($is_page) { ?>
-		<table cellspacing="1" cellpadding="0" border="0" style="width:100%;">
-			<tr>
-			<td valign="top" style="word-break:break-all;">
-	<?php } ?>
 	<?php echo $body ?>
-	<?php if($is_page) { ?>
-			</td>
-			</tr>
-		</table>
-	<?php } ?>
-</td></tr></table>

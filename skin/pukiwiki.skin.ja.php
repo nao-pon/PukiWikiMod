@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.15 2004/01/12 13:12:06 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.16 2004/02/08 12:48:06 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -23,7 +23,7 @@ if($_freeze){
 	<?php if(!$hide_navi && !$noheader){ // header ?>
 		<center><div style="width:80%;text-align:center;font-size:14px;font-weight:bold;border: #6699FF thick ridge 2px;background-color:#FFFFEE;padding:2px;"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
-		[ <a href="<?php echo "$script?".rawurlencode(strip_bracket($vars['page'])) ?>">リロード</a> ]
+		[ <a href="<?php echo $link_page ?>">リロード</a> ]
 		&nbsp;
 	<?php
 	$source_tag = "<a href=\"$script?plugin=source&amp;page=".rawurlencode($vars['page'])."\">ソース</a>";
@@ -37,7 +37,7 @@ if($_freeze){
 			echo "
 			<a href=\"$link_edit\">編集</a> | <a href=\"$link_diff\">差分</a> | <a href=\"$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page'])."\">添付</a> ";
 			if ($X_admin){
-				echo "| <a href=\"$script?plugin=rename\">リネーム</a> ";
+				echo "| <a href=\"$script?plugin=rename&refer=".rawurlencode($vars['page'])."\">リネーム</a> ";
 			}
 		} else {
 			echo $source_tag." ";
@@ -64,11 +64,13 @@ if($_freeze){
 		| <a href="<?php echo $link_filelist ?>">ファイル名一覧</a>
 	<?php } ?>
 	| <a href="<?php echo $link_whatsnew ?>">最新</a>
+	<?php if ($wiki_allow_newpage){ ?>
 	| <a href="<?php echo "$script?plugin=yetlist" ?>">未入力</a>
+	<?php } ?>
 	<?php if($do_backup) { ?>
 		| <a href="<?php echo $link_backup ?>">バックアップ</a>
 	<?php } ?>
-	| <a href="<?php echo "$script?".rawurlencode("[[ヘルプ]]") ?>">ヘルプ</a>
+	| <a href="<?php echo "$script?".rawurlencode("ヘルプ") ?>">ヘルプ</a>
 	]<br /></center>
 
 	<?php } // header ?>
@@ -81,7 +83,8 @@ if($_freeze){
 		$tb_tag = ($trackback)? "&nbsp;&nbsp;[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]" : "";
 		$sended_ping_tag = ($trackback)? "[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."#sended_ping\">送信したPing(".tb_count($vars['page'],".ping").")</a> ]" : "";
 	
-		echo "<div style=\"float:left\">";
+		//echo "<div style=\"float:left;width:80%\">";
+		echo "<div style=\"text-align:left;\">";
 		if (strip_bracket($vars['page']) != $defaultpage) {
 			require_once(PLUGIN_DIR.'where.inc.php');
 			echo do_plugin_inline("where").$tb_tag;
@@ -91,14 +94,15 @@ if($_freeze){
 		echo "</div>";
 		require_once(PLUGIN_DIR.'counter.inc.php');
 		echo "<div style=\"text-align:right\">".do_plugin_convert("counter")."</div>";
-		echo "<div style=\"clear: both;\">".$hr;
+		//echo "<div style=\"clear: both;\">".$hr;
+		echo "<hr style='width:95%;'>";
 	}
 	?>
 	
 	<?php if($is_page) { ?>
 		<table cellspacing="1" cellpadding="0" border="0" style="width:100%;">
 			<tr>
-			<td valign="top" style="word-break:break-all;">
+			<td valign="top" style="word-break:normal;">
 	<?php } ?>
 	<?php echo $body ?>
 	<?php if($is_page) { ?>
@@ -121,7 +125,7 @@ if($_freeze){
 	?>
 	<div style="text-align:right">
 		<?php if($is_page) { ?>
-			<a href="<?php echo "$script?".rawurlencode(strip_bracket($vars['page'])) ?>"><img src="./image/reload.gif" width="20" height="20" border="0" alt="リロード" /></a>
+			<a href="<?php echo $link_page ?>"><img src="./image/reload.gif" width="20" height="20" border="0" alt="リロード" /></a>
 			&nbsp;
 		  <?php if (!$_freeze){ ?>
 		  <?php if ($wiki_allow_newpage){ ?>
@@ -140,7 +144,7 @@ if($_freeze){
 			<a href="<?php echo $link_backup ?>"><img src="./image/backup.gif" width="20" height="20" border="0" alt="バックアップ" /></a>
 		<?php } ?>
 		&nbsp;
-		<a href="<?php echo "$script?".rawurlencode("[[ヘルプ]]") ?>"><img src="./image/help.gif" width="20" height="20" border="0" alt="ヘルプ" /></a>
+		<a href="<?php echo "$script?".rawurlencode("ヘルプ") ?>"><img src="./image/help.gif" width="20" height="20" border="0" alt="ヘルプ" /></a>
 		&nbsp;
 		<a href="pukiwiki.php?cmd=rss"><img src="./image/rss.gif" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
 	</div>

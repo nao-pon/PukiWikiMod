@@ -513,7 +513,14 @@ input.pcmt
 	margin-right:.5em;
 	border:none;
 }
-
+p.quotation
+{
+	border: #888899 2px dotted;
+	padding: .5em;
+	margin-left: 1em;
+	margin-right: 2em;
+	background-color: #FFFFFF;
+}
 /* source.inc.php */
 div.wiki_source
 {
@@ -527,4 +534,9 @@ div.wiki_source
 	background-color: #F0F8FF;
 	color: black;
 	line-height:150%;
+}
+/* ref.inc.php */
+div.img_margin
+{
+	margin: 5px,10px;
 }
