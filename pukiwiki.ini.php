@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.9 2003/07/21 01:30:06 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.10 2003/07/21 14:21:15 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -196,7 +196,7 @@ $splitter = ">>>>>>>>>>";
 
 /////////////////////////////////////////////////
 // 一覧・更新一覧に含めないページ名(正規表現で)
-$non_list = "(^(\[\[\:)|カレンダー\/|RenameLog|.*\/template)";
+$non_list = "(^(\[\[\:)|RenameLog|.*\/template)";
 
 /////////////////////////////////////////////////
 // 雛形とするページの読み込みを表示させるか
