@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.14 2003/07/09 09:03:58 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.15 2003/07/09 14:23:56 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -159,24 +159,30 @@ else if(arg_check("add"))
 else if(arg_check("edit"))
 {
 	$postdata = @join("",get_source($get["page"]));
-	$postdata = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$postdata);
-	unset ($create_uid);
-	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$postdata,$arg)) {
-		$create_uid = $arg[1];
-		$freeze_check = "checked ";
-		$postdata = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$postdata);
-	}
-	//ページ情報
-	$author_uid = get_pg_auther($get["page"]);
-	$postdata = preg_replace("/^\/\/ author:([0-9]+)\n/","",$postdata);
+	if (!$wiki_allow_newpage && !$is_page){
+		$body = $title = str_replace('$1',htmlspecialchars(strip_bracket($vars["page"])),_MD_PUKIWIKI_NO_AUTH);
+		$page = str_replace('$1',make_search($vars["page"]),_MD_PUKIWIKI_NO_AUTH);
+		$vars["page"] = "";
+	} else {
+		$postdata = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$postdata);
+		unset ($create_uid);
+		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$postdata,$arg)) {
+			$create_uid = $arg[1];
+			$freeze_check = "checked ";
+			$postdata = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$postdata);
+		}
+		//ページ情報
+		$author_uid = get_pg_auther($get["page"]);
+		$postdata = preg_replace("/^\/\/ author:([0-9]+)\n/","",$postdata);
 
-	if($postdata == '') {
-		$postdata = auto_template($get["page"]);
-		$author_uid = $X_uid;
-	}  
-	$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_edit);
-	$page = str_replace('$1',make_search($get["page"]),$_title_edit);
-	$body = edit_form($postdata,$get["page"]);
+		if($postdata == '') {
+			$postdata = auto_template($get["page"]);
+			$author_uid = $X_uid;
+		}  
+		$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_edit);
+		$page = str_replace('$1',make_search($get["page"]),$_title_edit);
+		$body = edit_form($postdata,$get["page"]);
+	}
 }
 // プレビュー
 else if(arg_check("preview") || $post["preview"] || $post["template"])
