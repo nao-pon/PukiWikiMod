@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.15 2003/07/17 13:11:21 nao-pon Exp $
+// $Id: html.php,v 1.16 2003/07/21 01:22:54 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -587,8 +587,27 @@ function convert_html($string)
 			$contents = preg_replace("/\[\[([^\]]+)\]\]/","$1",$contents);
 		}
 	}
-
+	
+	$cnts_plain = array();
+	$arykeep = array();
+	for($cnt=0;$cnt<count($result_last);$cnt++)
+	{
+		if(preg_match("/^(\s)/",$result_last[$cnt]))
+		{
+			$arykeep[$cnt] = $result_last[$cnt];
+			$result_last[$cnt] = "";
+			$cnts_plain[] = $cnt;
+		}
+	}
+	// インラインプラグイン
+	$result_last = preg_replace("/&amp;(\w+)(\(((?:(?!\)[;{]).)*)\))?(\{(.*)\})?;/ex","inline3('$1','$3','$5','$0')",$result_last);
+	
 	$result_last = inline2($result_last);
+	
+	foreach($cnts_plain as $cnt)
+		$result_last[$cnt] = $arykeep[$cnt];
+	
+	unset ($cnts_plain,$arykeep);
 	
 	$result_last = preg_replace("/^#contents/",$contents,$result_last);
 
@@ -665,26 +684,10 @@ function inline($line,$remove=FALSE)
 function inline2($str)
 {
 	global $WikiName,$BracketName,$InterWikiName,$vars,$related,$related_link,$script;
-	$cnts_plain = array();
-	$arykeep = array();
-
-	for($cnt=0;$cnt<count($str);$cnt++)
-	{
-		if(preg_match("/^(\s)/",$str[$cnt]))
-		{
-			$arykeep[$cnt] = $str[$cnt];
-			$str[$cnt] = "";
-			$cnts_plain[] = $cnt;
-		}
-	}
-
-	// インラインプラグイン
-	$str = preg_replace("/&amp;(\w+)(\(((?:(?!\)[;{]).)*)\))?(\{(.*)\})?;/ex","inline3('$1','$3','$5','$0')",$str);
 
 	// リンク処理
 	$str = make_link($str);
 	$str = str_replace(array("\x1c","\x1d"),"",$str);
-	//$str = str_replace("\x1d","",$str);
 	
 	$str = preg_replace("/#related/e",'make_related($vars["page"],TRUE)',$str);
 	$str = make_user_rules($str);
@@ -694,19 +697,7 @@ function inline2($str)
 	if($tmp != $str)
 		$related_link = 0;
 
-	foreach($cnts_plain as $cnt)
-		$str[$cnt] = $arykeep[$cnt];
-
 	return $str;
-}
-
-// インラインプラグイン用エスケープ後処理
-function inline_after($text)
-{
-	//echo $text."<br>";
-	$text = strip_tags($text);
-	$text = preg_replace("/(.*)\?$/","$1",$text);
-	return $text;
 }
 
 // インラインプラグインの処理
@@ -734,19 +725,11 @@ function inline3($name,$arg,$body,$all)
 		//echo htmlspecialchars("$name:$arg:$body")."<br>";
 		$str = do_plugin_inline($name,$arg,$body);
 		if ($str !== FALSE){ //成功
-			//echo "\x1c".$str."\x1d".$after;
 			return "\x1c".$str."\x1d".$after;
-			//return "\x08[[".$str."]]\x08".$after;
 		}
 	}
 	// プラグインが存在しないか、変換に失敗
 	return $all;
-}
-// インラインプラグイン用エスケープ後処理
-function inline_out($a,$b,$c)
-{
-	$b = strip_tags($b);
-	return $a.$b.$c;
 }
 
 // ページネームの取得
