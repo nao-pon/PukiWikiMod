@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.3 2004/08/04 13:58:55 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.4 2004/08/19 04:00:32 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -29,7 +29,7 @@ function plugin_areaedit_init()
 //			'btn_name_inline'=> '[e]',
 			'btn_name_inline'=> '<img src="./image/paraedit.png" width="9" height="9" />',
 //			'msg_cannotedit' => '[編集禁止]',
-			'msg_cannotedit' => '',
+			'msg_cannotedit' => 'この箇所を編集する権限がありません。',
 //			'msg_cannotedit_inline' => '[x]',
 			'msg_cannotedit_inline' => '',
 			'msg_unfreeze_inline' => '[uf]',
@@ -167,13 +167,17 @@ EOD;
 			if ( $num == '' ) $num = 99;
 			$inline_preview = $num;
         }
-        else if ( preg_match('/^uid:(\d+)?$/',$opt,$match) ){
+		else if ( preg_match('/^uid:(\d+)?$/',$opt,$match) ){
 			if ($X_uid && $X_uid == $match[1])
 			{
 				$nofreeze = 1;
 				$noauth = 1;
 			}
-        }
+		}
+		else if ( preg_match('/^ucd:([^,]+)$/',$opt,$match) ){
+			$nofreeze = 1;
+			$noauth = 1;
+		}
 	}
 	$f_page   = rawurlencode($page);
 	if ( $noauth == 0 and  ! edit_auth($page,FALSE,FALSE) ){
@@ -230,7 +234,8 @@ function plugin_areaedit_action_inline()
 	$title = $body = $headdata = $targetdata = $taildata =  '';
 
 	$areaedit_no = 0;
-	if ( array_key_exists('areaedit_no', $vars) ) $areaedit_no = $vars['areaedit_no'];
+	if ( array_key_exists('areaedit_no', $vars) ) $_areaedit_no = $areaedit_no = $vars['areaedit_no'];
+	
 
 	$postdata_old =	array();
 	$page = $vars['page'];
@@ -243,7 +248,7 @@ function plugin_areaedit_action_inline()
 		}
 		else {
 			$postdata_old = get_source($page);	
-			$postdata_old = str_replace("\r",'', $postdata_old);
+			//$postdata_old = str_replace("\r",'', $postdata_old);
 		}
 
 	$ic = new InlineConverter(array('plugin'));
@@ -261,9 +266,10 @@ function plugin_areaedit_action_inline()
 		}
 		//pcommentスタートマーカー
 		if ($areastart == md5(rtrim($line))) $areastart = "";
-		if ( substr($line,0,1) == ' ' || substr($line,0,2) == '//' || $areastart ){
-		    $headdata .= $line;
-	    	continue;
+		if ( substr($line,0,1) == ' ' || substr($line,0,2) == '//')
+		{
+			$headdata .= $line;
+			continue;
 		}
 		if ( ! preg_match("/&$str_areaedit/", $line, $match) ){
 			$headdata .= $line;
@@ -276,6 +282,11 @@ function plugin_areaedit_action_inline()
 			if ( $obj->name != $str_areaedit ) continue;
 			$pos = strpos($line, '&' . $str_areaedit, $pos);
 			$pos += $len_areaedit;
+			if ( $areastart )
+			{
+				$_areaedit_no++;
+				continue;
+			}
 			if ( $areaedit_ct++ < $areaedit_no ) continue;
 			$r_line = substr($line,$pos+strlen($obj->text)-$len_areaedit-1); // };.....
 			
@@ -314,6 +325,13 @@ function plugin_areaedit_action_inline()
 						$found_noauth = 1;
 					}
 				}
+				else if ( preg_match('/^ucd:([^,]+)$/',$opt,$match) ){
+					if (PUKIWIKI_UCD == $match[1])
+					{
+						$found_nofreeze = 1;
+						$found_noauth = 1;
+					}
+				}
 			}
 
 //echo '/param=',$obj->param;
@@ -332,16 +350,18 @@ echo '/nofreeze=',$found_nofreeze;
 echo '/noauth=',$found_noauth;
 echo '/postdata_old=',join('/',$postdata_old);
 */
-	$vars['areaedit_start_no'] = $areaedit_no;
+	$vars['areaedit_no'] = $vars['areaedit_start_no'] = $_areaedit_no;
 	if ( $found_noauth == 0 ){
 		edit_auth($page,TURE,TURE);
 	}
 	if ( $found_nofreeze == 0 and is_freeze($page) ){
 		$f_page = rawurlencode($page);
-		$title = str_replace('$1', strip_bracket($page), $_title_isfreezed);
+		//$title = str_replace('$1', strip_bracket($page), $_areaedit_messages['msg_cannotedit']);
+		$title = $_areaedit_messages['msg_cannotedit'];
 		return array(
 			'msg'=> $title,
-			'body' => "<h1>$title</h1>[<a href=\"$script?cmd=unfreeze&amp;page=$f_page\">$_msg_unfreeze</a>]",
+			//'body' => "<h1>$title</h1>[<a href=\"$script?cmd=unfreeze&amp;page=$f_page\">$_msg_unfreeze</a>]",
+			'body' => make_link($targetdata)."<hr />".$title,
 		);
 	}
 }
@@ -357,7 +377,10 @@ echo '/postdata_old=',join('/',$postdata_old);
 		$nowdata = $headdata . '{' . $targetdata . '}' . $taildata;
 		return plugin_areaedit_write($page, $targetdata, $nowdata);
 	}
+	//echo "ok";
+	//exit;
 	$retval = plugin_areaedit_preview($page, $targetdata, $headdata, $taildata, $inline_preview);
+	
 	if (array_key_exists('preview',$vars) ) return $retval;
 	
 	$title = str_replace('$1',strip_bracket($page),$_areaedit_messages['title_edit']);
@@ -571,7 +594,9 @@ function plugin_areaedit_preview($refer,$targetdata,$headdata,$taildata,$inline_
 			$ary = array_splice($ary, -$inline_flag, $inline_flag);
 		}
 		$head = join("\n", $ary);
-		if ( preg_match('/(.(?!\n\*|\n\n))+$/s',$head,$match) ) $head = $match[0];
+		//if ( preg_match('/(.(?!\n\*|\n\n))+$/s',$head,$match) ) $head = $match[0];
+		list ($_head,$head) = preg_split("/(\n\*|\n\n)/s",$head,2);
+		if (!$head) $head = $_head;
 		//テーブル
 		//$head = str_replace(array("~->\n","->\n"),array("&br;","\n"),$head);
 		$preview_above = $postdata_input;
