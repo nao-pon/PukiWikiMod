@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.6 2003/07/21 01:23:35 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.7 2003/07/21 14:21:51 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -28,8 +28,8 @@ function plugin_calendar2_init() {
 
 function plugin_calendar2_convert()
 {
-    global $_calendar2_msg_nextmonth, $_calendar2_msg_prevmonth, $_calendar2_msg_write;
-    global $_calendar2_msg_detail, $_calendar2_msg_month, $_calendar2_msg_day;
+	global $_calendar2_msg_nextmonth, $_calendar2_msg_prevmonth, $_calendar2_msg_write;
+	global $_calendar2_msg_detail, $_calendar2_msg_month, $_calendar2_msg_day;
 	global $script,$weeklabels,$vars,$command,$WikiName,$BracketName,$post,$get;
 	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable, $_msg_month;
 	
@@ -61,79 +61,6 @@ function plugin_calendar2_convert()
 			$prefix = strip_bracket($vars['page'])."/";
 		}
 	}
-	/*
-	else if(func_num_args() == 1)
-	{
-		if(is_numeric($args[0]) && (strlen($args[0]) >= 6 && strlen($args[0]) <= 8))
-		{
-			//#calendar2(yyyymm)
-			$date_str = $args[0];
-			$pre = strip_bracket($vars['page']);
-			$prefix = strip_bracket($vars['page'])."/";
-		}
-		else
-		{
-			//calendar2(pagename)
-			$date_str = date("Ym");
-			$pre = strip_bracket($args[0]);
-			$prefix = strip_bracket($args[0])."/";
-		}
-	}
-	else if(func_num_args() == 2)
-	{
-		if(is_numeric($args[0]) && (strlen($args[0]) >= 6 && strlen($args[0]) <= 8))
-		{
-                      //#calendar2(yyyymm,pagename)
-			$date_str = $args[0];
-			$pre = strip_bracket($args[1]);
-			$prefix = strip_bracket($args[1])."/";
-		}
-		else if(is_numeric($args[1]) && (strlen($args[1]) >= 6 && strlen($args[1]) <= 8))
-		{
-                      //#calendar2(pagename,yyyymm)
-			$date_str = $args[1];
-			$pre = strip_bracket($args[0]);
-			$prefix = strip_bracket($args[0]).'/';
-		}
-		else
-		{
-                      //#calendar2(?,?)
-			$date_str = date("Ym");
-			$pre = strip_bracket($vars[page]);
-			$prefix = strip_bracket($vars[page])."/";
-		}
-	}
-	else if(func_num_args() == 3){
-		if(is_numeric($args[0]) && (strlen($args[0]) >= 6 && strlen($args[0]) <= 8))
-		{
-                      //#calendar2(yyyymm,pagename)
-			$date_str = $args[0];
-			$pre = strip_bracket($args[1]);
-			$prefix = strip_bracket($args[1])."/";
-		}
-		else if(is_numeric($args[1]) && (strlen($args[1]) >= 6 && strlen($args[1]) <= 8))
-		{
-                      //#calendar2(pagename,yyyymm)
-			$date_str = $args[1];
-			$pre = strip_bracket($args[0]);
-			$prefix = strip_bracket($args[0]).'/';
-		}
-		else
-		{
-                      //#calendar2(?,?)
-			$date_str = date("Ym");
-			$pre = strip_bracket($vars[page]);
-			$prefix = strip_bracket($vars[page])."/";
-		}
-		if($args[2] == "off"){
-			$today_view = false;
-		}
-	}
-	else
-	{
-		return FALSE;
-	}
-  */
 	if($pre == "*") {
 		$prefix = '';
 		$pre = '';
@@ -374,20 +301,19 @@ function plugin_calendar2_convert()
   if ($today_view == true){
 		$page = sprintf("[[%s%4d-%02d-%02d]]", $prefix, $today[year], $today[mon], $today[mday]);
 		$page_url = rawurlencode($page);
-		if(is_page($page)) {
+		if (is_page($page)) {
 			$page_ = $vars['page'];
 			$get['page'] = $post['page'] = $vars['page'] = $page;
 			$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
 			$body = @join("",@file(get_filename(encode($page))));
-			//$str .= convert_html(&$body);
 			$str .= convert_html($body);
 			if ($anon_writable) $str .= "<hr /><a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\">$_calendar2_plugin_edit</a>";
 			$get['page'] = $post['page'] = $vars['page'] = $page_;
 		}
-		else if (!$other_month) {
+		elseif (!$other_month) {
 			$str = "<h4>".sprintf($_calendar2_msg_detail, sprintf('%s%4d-%02d-%02d',$prefix, $today[year], $today[mon], $today[mday]))."</h4><br />";
-			//$str .= sprintf($_calendar2_plugin_empty,make_link(sprintf('[[%s%4d-%02d-%02d]]',$prefix, $today[year], $today[mon], $today[mday])));
-			$str .= sprintf($_calendar2_plugin_empty,make_link($today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day));
+			//$str .= sprintf($_calendar2_plugin_empty,make_link($today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day));
+			$str .= sprintf($_calendar2_plugin_empty,$today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day);
 			if ($anon_writable) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" title=\"$name\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
 		} else {
 			$str = "";
