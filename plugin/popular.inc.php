@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.12 2005/01/29 03:13:54 nao-pon Exp $
+// $Id: popular.inc.php,v 1.13 2005/03/07 15:39:17 nao-pon Exp $
 //
 
 /*
@@ -19,12 +19,14 @@
  * #popular(20,FrontPage|MenuBar)
  * #popular(20,FrontPage|MenuBar,true)
  * #popular(20,FrontPage|MenuBar,true,XOOPS)
+ * #popular(20,FrontPage|MenuBar,true,,1)
  *
  * [引数]
- * 1 - 表示する件数                             default 10
- * 2 - 表示させないページの正規表現             default なし
- * 3 - 今日(true)か通算(false)の一覧かのフラグ  default false
- * 4 - 集計対象の仮想階層ページ名               default なし
+ * 1 - 表示する件数                                    default 10
+ * 2 - 表示させないページ(半角スペースまたは | 区切り) default なし
+ * 3 - 今日(true)か通算(false)の一覧かのフラグ         default false
+ * 4 - 集計対象の仮想階層ページ名                      default なし
+ * 5 - 多階層ページの場合、最下層のみを表示 ( 0 or 1 ) default 0
  */
 
 
@@ -32,13 +34,13 @@ function plugin_popular_init()
 {
 	if (LANG == 'ja')
 		$messages = array(
-			'_popular_plugin_frame' => '<h5 class="side_label">人気の%d件</h5><div>%s</div>',
-			'_popular_plugin_today_frame' => '<h5 class="side_label" >今日のTOP%d</h5><div>%s</div>',
+			'_popular_plugin_frame' => '<h5 class="side_label">人気の%d件%s</h5><div>%s</div>',
+			'_popular_plugin_today_frame' => '<h5 class="side_label" >今日のTOP%d%s</h5><div>%s</div>',
 		);
 	else
 		$messages = array(
-			'_popular_plugin_frame' => '<h5 class="side_label" >popular(%d)</h5><div>%s</div>',
-			'_popular_plugin_today_frame' => '<h5 class="side_label" >today\'s(%d)</h5><div>%s</div>',
+			'_popular_plugin_frame' => '<h5 class="side_label" >popular(%d)%s</h5><div>%s</div>',
+			'_popular_plugin_today_frame' => '<h5 class="side_label" >today\'s(%d)%s</h5><div>%s</div>',
 		);
 	set_plugin_messages($messages);
 }
@@ -56,8 +58,11 @@ function plugin_popular_convert()
 	$array = func_get_args();
 	$today = FALSE;
 	$prefix = "";
+	$compact = 0;
 
 	switch (func_num_args()) {
+	case 5:
+		if ($array[4]) $compact = 1;
 	case 4:
 		$prefix = $array[3];
 		$prefix = preg_replace("/\/$/","",$prefix);
@@ -138,9 +143,13 @@ function plugin_popular_convert()
 	$items = '';
 	if ($prefix)
 	{
+		$bypege = " [ ".make_pagelink($prefix,$prefix)." ]";
 		$prefix .= "/";
 		$prefix = preg_quote($prefix,"/");
 	}
+	else
+		$bypege = "";
+	
 	if (count($counters))
 	{
 		$_style = $_list_left_margin + $_list_margin;
@@ -155,13 +164,17 @@ function plugin_popular_convert()
 			if ($prefix)
 				$page = make_pagelink($page,preg_replace("/$prefix/","",$page));
 			else
-				$page = make_pagelink($page);
-				
+			{
+				if (!$compact)
+					$page = make_pagelink($page);
+				else
+					$page = make_pagelink($page,"#compact#");
+			}	
 			$items .= " <li>".$page."<span class=\"counter\">($count)</span>$new_mark</li>\n";
 			}
 		$items .= '</ul>';
 	}
-	return sprintf($today ? $_popular_plugin_today_frame : $_popular_plugin_frame,count($counters),$items);
+	return sprintf($today ? $_popular_plugin_today_frame : $_popular_plugin_frame,count($counters),$bypege,$items);
 }
 
 ?>
