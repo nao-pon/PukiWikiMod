@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.12 2003/10/31 12:22:59 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.13 2003/11/06 12:42:07 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -11,8 +11,6 @@ if($_freeze){
 }
 
 ?>
-<meta http-equiv="content-style-type" content="text/css">
-	<meta http-equiv="content-script-type" content="text/javascript">
 <?php if (! ( ($vars['cmd']==''||$vars['cmd']=='read') && $is_page) ) { ?>
 	<meta name="robots" content="noindex,nofollow" />
 <?php } ?>
@@ -145,12 +143,22 @@ if($_freeze){
 		<a href="pukiwiki.php?cmd=rss"><img src="./image/rss.gif" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
 	</div>
 	<span class="small"><?php echo $sended_ping_tag ?><br /></span>
-	<?php $pg_auther_name=get_pg_auther_name($vars["page"]);
-	if ($pg_auther_name){ ?>
-	<span class="small">ページ作成:<a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a> - </span>
-	<?php } ?>
-	<?php if($fmt) { ?>
-		 <span class="small">最終更新: <?php echo date("Y/m/d H:i:s T",$fmt) ?></span> <?php echo get_pg_passage($vars["page"]) ?><br />
+	<?php
+	if (is_page($vars["page"]))
+	{
+		global $no_name;
+		$pg_auther_name=get_pg_auther_name($vars["page"]);
+		$pginfo = get_pg_info_db($vars["page"]);
+		$user = new XoopsUser($pginfo['lastediter']);
+		$last_editer = $pginfo['lastediter']? $user->getVar("uname"):$no_name;
+		//$last_editer = $user->getVar("uname");
+		unset($user);
+	?>
+	<table style="width:auto;"><tr>
+	<td style="text-align:right;margin:0px;padding:0px;"><span class="small">ページ作成:</td><td style="margin:0px;padding:0px;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a></td><td style="margin:0px;padding:0px;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['buildtime'])." <small>".get_passage($pginfo['buildtime']); ?></small></span></td>
+	</tr><tr>
+	<td style="text-align:right;margin:0px;padding:0px;"><span class="small">最終更新:</td><td style="margin:0px;padding:0px;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo $pginfo['lastediter'] ?>"><?php echo $last_editer ?></a></td><td style="margin:0px;padding:0px;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) ?></span> <?php echo get_pg_passage($vars["page"]) ?></td>
+	</tr></table>
 	<?php } ?>
 	<?php if($related) { ?>
 		 <span class="small">リンクページ: <?php echo $related ?></span><br />
