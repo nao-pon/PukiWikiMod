@@ -29,7 +29,7 @@ CREATE TABLE pukiwikimod_pginfo (
   `update` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `name` (`name`)
-) TYPE=MyISAM AUTO_INCREMENT=779 ;
+) TYPE=MyISAM;
 
 # --------------------------------------------------------
 
