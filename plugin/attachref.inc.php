@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: attachref.inc.php,v 1.1 2003/08/03 13:43:38 nao-pon Exp $
+// $Id: attachref.inc.php,v 1.2 2003/08/05 23:45:08 nao-pon Exp $
 // ORG: attachref.inc.php,v0.5 2003/07/31 14:15:29 sha Exp $
 //
 
@@ -47,8 +47,8 @@ function plugin_attachref_init()
 	$messages = array(
 		'_attachref_messages' => array(
 			'btn_submit'    => '添付',
-			'msg_title'     => 'Attach and Ref to $1',
-			'msg_title_collided' => '$1 で【更新の衝突】が起きました',
+			'msg_title'     => '$1 へ指定ファイルを添付して参照を設定しました。',
+			'msg_title_collided' => '$1 へ指定ファイルを添付して参照を設定しましたが【更新の衝突】が起きました。',
 			'msg_collided'  => 'あなたがファイルを添付している間に、他の人が同じページを更新してしまったようです。<br />
 ファイルが違う位置に挿入されているかもしれません。<br />'
 		),
@@ -72,13 +72,18 @@ function plugin_attachref_inline()
 	$ret = '';
 	$dispattach = 1;
 	$button = 0;
+	$btn_text = $_attachref_messages['btn_submit'];
 
 	$args = func_get_args();
-	if ( $args[count($args)-1] === '' ){
+	if ( $args[count($args)-1] == '' ){
 	    array_pop($args);
 	}
 	if ( $args[count($args)-1] === 'button' ){
 	    $button = 1;
+	    array_pop($args);
+	}
+	if ( preg_match("/^btn:(.+)/",$args[count($args)-1],$tmp)){
+	    $btn_text = $tmp[1];
 	    array_pop($args);
 	}
 	if (func_num_args() and $args[0]!='' )
@@ -126,16 +131,15 @@ function plugin_attachref_inline()
   <input type="hidden" name="digest" value="$digest" />
   <input type="hidden" name="plugin" value="attachref" />
   <input type="hidden" name="refer" value="$f_page" />
-  <input type="submit" value="{$_attachref_messages['btn_submit']}" />
+  <input type="submit" value="{$btn_text}" />
   </div>
   </form>
 EOD;
 		} else {
 			$f_args = urlencode(htmlspecialchars($s_args));
-			//$f_args = htmlspecialchars($s_args);
 			$f_page = urlencode($f_page);
 			$ret = <<<EOD
-  $ret<a href="$script?plugin=attachref&attachref_no=$attachref_no&attachref_opt=$f_args&refer=$f_page&digest=$digest" alt="{$_attachref_messages['btn_submit']}">[{$_attachref_messages['btn_submit']}]</a>
+  $ret<a href="$script?plugin=attachref&attachref_no=$attachref_no&attachref_opt=$f_args&refer=$f_page&digest=$digest">[{$btn_text}]</a>
 EOD;
 		}
 	}
@@ -152,12 +156,12 @@ function plugin_attachref_action()
 	$retval['msg'] = $_attachref_messages['msg_title'];
 	$retval['body'] = '';
 	
-	if (array_key_exists('attach_file',$_FILES)
+	if (is_uploaded_file($_FILES['attach_file']['tmp_name'])
 		and array_key_exists('refer',$vars)
 		and is_page($vars['refer']))
 	{
 		$file = $_FILES['attach_file'];
-		$attachname = $file['name'];
+		$attachname = basename(str_replace("\\","/",$file['name']));
 		$filename = preg_replace('/\..+$/','', $attachname,1);
 
 		//すでに存在した場合、 ファイル名に'_0','_1',...を付けて回避(姑息)
@@ -182,9 +186,13 @@ function plugin_attachref_action()
 	}
 	else
 	{
-		$retval = attachref_showform();
-		// XHTML 1.0 Transitional
-		$html_transitional = TRUE;
+		if ($vars['url'] && is_url($vars['url'])){
+			$retval = attachref_insert_ref($vars['url']);
+		} else {
+			$retval = attachref_showform();
+			// XHTML 1.0 Transitional
+			$html_transitional = TRUE;
+		}
 	}
 	return $retval;
 }
@@ -241,6 +249,7 @@ function attachref_insert_ref($filename)
 			$line = preg_replace('/&___attachref(\(((?:(?!\)___[;{]).)*)\))?___;/','&attachref$1;',$line);
 		}
 		$postdata .= $line;
+		
 	}
 	
 	// 更新の衝突を検出
@@ -251,6 +260,28 @@ function attachref_insert_ref($filename)
 	}
 	
 	page_write($vars['refer'],$postdata);
+
+	if (WIKI_MAIL_NOTISE) {
+		// メール送信 by nao-pon
+		global $xoopsConfig,$X_uname;
+		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($vars["refer"]))."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($vars["refer"]))."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$X_uname."\n";
+		$mail_body .= "\n";
+		$mail_body .= $retval['msg'];
+		$mail_body .= "\n";
+		$mail_body .= "Attached File: ".$filename;
+		$xoopsMailer =& getMailer();
+		$xoopsMailer->useMail();
+		$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
+		$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
+		$xoopsMailer->setFromName($xoopsConfig['sitename']);
+		$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["page"])));
+		$xoopsMailer->setBody($mail_body);
+		$xoopsMailer->send();
+		//メール送信ここまで by nao-pon
+	}
 	
 	return $ret;
 }
@@ -314,8 +345,9 @@ function attachref_form($page)
   <span class="small">
    $msg_maxsize
   </span><br /><br />
-  {$_attach_messages['msg_file']}: <input type="file" name="attach_file" /><br />
-  Comment: <input type="text" name="comment" size="60" value="{$comment}"/><br /><br />
+  {$_attach_messages['msg_file']}: <input type="file" name="attach_file" size="40" /><br />
+  or URL: <input type="text" name="url" size="60" /><hr />
+  Comment: <input type="text" name="comment" size="60" value="{$comment}" /><br /><br />
   $pass
   <input type="submit" value="{$_attach_messages['btn_upload']}" />
  </div>
