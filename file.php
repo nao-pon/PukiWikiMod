@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.28 2004/05/25 14:39:45 nao-pon Exp $
+// $Id: file.php,v 1.29 2004/06/09 13:11:57 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -86,6 +86,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		backup_delete(BACKUP_DIR.encode($page).".txt");
 	else if($do_backup && is_page($page))
 		make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
+
 
 	// ファイルの書き込み
 	file_write(DATA_DIR,$page,$postdata,$notimestamp,$aids,$gids,$vaids,$agids,$freeze,$unvisible);
@@ -199,6 +200,8 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	if (is_null($notimestamp)) $notimestamp=$post['notimestamp'];
 	
 	$timestamp = FALSE;
+	
+	$time = is_page($page,TRUE) ? get_filetime($page) : 0;
 
 	if($str == "")
 	{
@@ -278,10 +281,11 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		}
 		
 		// linkデータベースを更新
-		links_update($page);
+		links_update($page,$time);
 		
 		// ページHTMLキャッシュとRSSキャッシュを削除
 		delete_page_html($page);
+
 		
 		if (!$notimestamp && !$unvisible)
 		{

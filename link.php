@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: link.php,v 1.4 2004/05/22 14:00:17 nao-pon Exp $
+// $Id: link.php,v 1.5 2004/06/09 13:11:57 nao-pon Exp $
 // ORG: link.php,v 1.6 2003/07/29 09:09:20 arino Exp $
 //
 
@@ -37,11 +37,14 @@ function links_get_related_db($page)
 	return $links;
 }
 //ページの関連を更新する
-function links_update($page)
+function links_update($page,$time=null)
 {
-	set_time_limit(0);
+	static $processed = array();
 	
-	$time = is_page($page,TRUE) ? get_filetime($page) : 0;
+	$processed[] = $page;
+	
+	if (is_null($time)) $time = is_page($page,TRUE) ? get_filetime($page) : 0;
+	
 	$page = strip_bracket($page);
 	
 	$rel_old = array();
@@ -97,7 +100,7 @@ function links_update($page)
 	
 	global $WikiName,$autolink,$nowikiname,$search_non_list,$wiki_common_dirs;
 	// $pageが新規作成されたページで、AutoLinkの対象となり得る場合
-	if ($time and !$rel_file_exist and $autolink
+	if (!$time and !$rel_file_exist and $autolink
 		and (preg_match("/^$WikiName$/",$page) ? $nowikiname : strlen($page) >= $autolink))
 	{
 		// $pageを参照していそうなページを一斉更新する(おい)
@@ -117,7 +120,9 @@ function links_update($page)
 			}
 		}
 		// 検索実行
+		$pages = array_diff(do_search($lookup_page,'AND',TRUE),$processed);
 		$pages = do_search($lookup_page,'AND',TRUE);
+		
 		foreach ($pages as $_page)
 		{
 			if ($_page != $page)
