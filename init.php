@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.37 2004/10/20 12:30:12 nao-pon Exp $
+// $Id: init.php,v 1.38 2004/10/21 13:04:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -282,7 +282,10 @@ if (arg_check("write") || $post["write"]) $vars['cmd'] = "write";
 if (! isset($vars['cmd']) && ! isset($vars['plugin'])) {
 
 	$get['cmd']  = $post['cmd']  = $vars['cmd']  = 'read';
-
+	
+	// & 以降を除去(SID自動付加環境対策)
+	$arg = preg_replace("/([^&]+)(&.+)?/","$1",$arg);
+	
 	if ($arg == '') $arg = $defaultpage;
 	$arg = rawurldecode($arg);
 	$arg = strip_bracket($arg);
