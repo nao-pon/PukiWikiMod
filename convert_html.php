@@ -1,10 +1,11 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.27 2004/08/18 23:24:55 nao-pon Exp $
+// $Id: convert_html.php,v 1.28 2004/08/21 04:26:51 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
 	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id,$wiki_strong_words,$wiki_head_keywords;
+	global $X_uname;
 	
 	static $convert_load = 0;
 	$convert_load++;
@@ -34,7 +35,10 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 			
 			$convert_load--;
 			
-			return join('',$htmls);
+			$str = join('',$htmls);
+			//名前欄置換
+			$str = str_replace(WIKI_NAME_DEF,$X_uname,$str);
+			return $str;
 		}
 		else
 		{
@@ -83,8 +87,8 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		$str = join("\r", $result_last);
 	
 	// WikiName抑止の!を削除
-	$WikiName_ORG = '[A-Z][a-z]+(?:[A-Z][a-z]+)+';
-	$str = preg_replace("/!($WikiName_ORG)/", "$1", $str);
+	//$WikiName_ORG = '[A-Z][a-z]+(?:[A-Z][a-z]+)+';
+	//$str = preg_replace("/!($WikiName_ORG)/", "$1", $str);
 	
 	//整形済み指定の" "を削除 nao-pon
 	$str = preg_replace("/(^|\n) /", "$1", $str);
@@ -126,7 +130,9 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 	}
 
 	$convert_load--;
-
+	
+	//名前欄置換
+	$str = str_replace(WIKI_NAME_DEF,$X_uname,$str);
 	
 	//一応アンセットしてみる
 	unset ($body,$cnts_plain,$arykeep,$result_last,$html);
