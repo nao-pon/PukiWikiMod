@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.8 2005/02/23 03:02:57 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.9 2005/02/23 14:57:53 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -210,12 +210,15 @@ function plugin_moblog_action()
 						$_filename = preg_replace('/^[^\.]+/',$attachname.$count++,$filename);
 					}
 					$filename = $_filename;
-					$save_file = UPLOAD_DIR.encode($page).'_'.encode($filename);
+					//$save_file = UPLOAD_DIR.encode($page).'_'.encode($filename);
+					$save_file = CACHE_DIR.encode($filename).".tmp";
 					
-					if (strlen($tmp) < $maxbyte && !eregi($viri, $filename) && $write) {
+					if (strlen($tmp) < $maxbyte && $write && exist_plugin('attach') && function_exists('attach_upload'))
+					{
 						$fp = fopen($save_file, "wb");
 						fputs($fp, $tmp);
 						fclose($fp);
+						do_upload($page,$filename,$save_file);
 					} else {
 						$write = false;
 					}
@@ -332,7 +335,7 @@ function plugin_moblog_page_write($page,$subject,$text,$filename,$ref_option,$no
 	page_write($page,$save_data,NULL,$aids,$gids,"","",$freeze,"");
 	
 	//Ping送信
-	$tmp = @file(XOOPS_URL."/modules/pukiwiki/ping.php?$page");
+	//$tmp = @file(XOOPS_URL."/modules/pukiwiki/ping.php?$page");
 }
 /* コマンドー送信！！*/
 function plugin_moblog_sendcmd($cmd) {
