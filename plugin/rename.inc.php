@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rename.inc.php,v 1.3 2004/01/27 14:32:58 nao-pon Exp $
+// $Id: rename.inc.php,v 1.4 2004/09/20 12:35:16 nao-pon Exp $
 //
 
 /*
@@ -485,6 +485,8 @@ function rename_proceed($pages,$files,$exists)
 			
 		// linkデータベースを更新
 		links_update($old);
+		// 念のため'rel'ファイルを削除しておく
+		@unlink(CACHE_DIR.encode($new).'.rel');
 		links_update($new);
 
 		// DB更新(ページ名はブラケットなし)
