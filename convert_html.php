@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.29 2004/08/29 06:04:18 nao-pon Exp $
+// $Id: convert_html.php,v 1.30 2004/09/18 02:43:15 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -338,8 +338,9 @@ class convert
 					}
 					array_push($result, $_tag);
 					///// ParaeEdit /////
-					
-					$arycontents[] = str_repeat("-",$level)."<a href=\"#content_{$content_id_local}_$content_count\">".strip_htmltag(make_line_rules(inline($out[2],TRUE)))."</a>\n";
+					$_c_text = strip_tags(make_line_rules(inline($out[2],TRUE)));
+					$_c_text = ($_c_text)? $_c_text : $content_id_local."_".$content_count;
+					$arycontents[] = str_repeat("-",$level)."<a href=\"#content_{$content_id_local}_$content_count\">".$_c_text."</a>\n";
 					$content_count++;
 				}
 				else if(preg_match("/^(-+)(.*)/",$line,$out))
