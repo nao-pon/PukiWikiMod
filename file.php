@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.46 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: file.php,v 1.47 2005/03/16 12:49:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -51,7 +51,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 {
 	global $do_backup,$del_backup;
 	global $X_uid,$X_admin,$X_uname,$wiki_mail_sw,$xoopsConfig;
-	global $pagereading_config_page,$use_static_url;
+	global $pagereading_config_page;
 	global $post,$pgid;
 	
 	$s_page = strip_bracket($page);
@@ -159,10 +159,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		global $xoopsConfig;
 		
 		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-		if ($use_static_url)
-			$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html";
-		else
-			$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_WIKI_URL."/?".rawurlencode($s_page)."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_URL.get_url_by_name($page)."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.$s_page."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$X_uname."\n";
 		$mail_body .= "IP:".$_SERVER["REMOTE_ADDR"]."\n";

@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.20 2005/01/13 13:57:51 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.21 2005/03/16 12:49:47 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -132,7 +132,7 @@ function ls2_show_lists($prefix,&$params) {
 }
 
 function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_count="") {
-	global $script,$auto_template_name,$use_static_url;
+	global $script,$auto_template_name;
 	global $_ls2_anchor, $_ls2_messages;
 	global $_list_left_margin, $_list_margin;
 	
@@ -150,29 +150,13 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 	
 	$name = strip_bracket($page);
 	$title = $name.' '.get_pg_passage($page,FALSE);
-
-	if ($use_static_url)
-	{
-		$pgid = get_pgid_by_name($page);
-		$href = XOOPS_WIKI_URL."/{$pgid}.html";
-	}
-	else
-		$href = $script.'?'.rawurlencode($name);
+	$href = get_url_by_name($page);
 
 	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 	$_name = "";
 	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name))
 	{
 		$_name = get_heading($page);
-/*
-		$_body = get_source($page);
-		foreach($_body as $line){
-			if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
-				$_name = str_replace(array("[[","]]"),"",$reg[1]);
-				break;
-			}
-		}
-*/
 	}
 
 	if ($params['pagename']){

@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.68 2005/03/11 15:00:39 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.69 2005/03/16 12:49:47 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する
 if (
@@ -110,10 +110,7 @@ if(!empty($vars["plugin"]))
 			$pg_link_url = $retvars['redirect'];
 		else
 		{
-			if ($use_static_url)
-				$pg_link_url = XOOPS_WIKI_URL."/".get_pgid_by_name($vars["refer"]).".html";
-			else
-				$pg_link_url = "$script?".rawurlencode(strip_bracket($vars["refer"]));
+			$pg_link_url = get_url_by_name($vars["refer"]);
 		}
 		redirect_header($pg_link_url,1,$title);
 		exit();
@@ -582,10 +579,7 @@ else if($post["write"] || ($_SERVER['REQUEST_METHOD'] == "POST" && arg_check("wr
 				// 新規作成時はIDが入っていないので
 				if (!$pgid) $pgid = get_pgid_by_name($post["page"]);
 				
-				if ($use_static_url)
-					$pg_link_url = XOOPS_WIKI_URL."/".$pgid.".html";
-				else
-					$pg_link_url = "$script?".rawurlencode(strip_bracket($post["page"]));
+				$pg_link_url = get_url_by_id($pgid);
 				
 				redirect_header($pg_link_url,1,$title);
 				exit();
@@ -1003,8 +997,11 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			}
 			
 			//モジュール用キャッシュデータの更新
-			if (!empty($vars['mc_refresh']))
+			if (!empty($vars['mc_refresh']) && file_exists(P_CACHE_DIR.$pgid.".mcr"))
 			{
+				// 有効化ファイルを削除
+				@unlink(P_CACHE_DIR.$pgid.".mcr");
+				// パラメーターセット
 				$vars['mc_refresh'] = join(" ",array_values($vars['mc_refresh']));
 				// 非同期でモードでデータ更新
 				http_request(

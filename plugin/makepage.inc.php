@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.4 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.5 2005/03/16 12:49:47 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -196,14 +196,11 @@ function plugin_makepage_action()
 	exit;
 	*/
 	
-	global $_title_updated,$use_static_url;
+	global $_title_updated;
 	
 	$title = str_replace('$1',htmlspecialchars(strip_bracket($page)),$_title_updated);
 	
-	if ($use_static_url)
-		$pg_link_url = XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html";
-	else
-		$pg_link_url = "$script?".rawurlencode(strip_bracket($page));
+	$pg_link_url = get_url_by_name($page);
 	
 	redirect_header($pg_link_url,1,$title);
 	exit();

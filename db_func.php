@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.20 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: db_func.php,v 1.21 2005/03/16 12:49:47 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -251,40 +251,26 @@ function get_nextpage_link_by_name($page)
 //ページ名から前後のページへの<link>タグを得る
 function get_header_link_tag_by_name($page)
 {
-	global $use_static_url;
-	
 	$data = get_relaypage_by_name($page);
 	
-	$up_pg_id = $data['up'][0];
-	$up_page = rawurlencode($data['up'][1]);
-	$prev_pg_id = $data['prev'][0];
-	$prev_pg = rawurlencode($data['prev'][1]);
-	$next_pg_id = $data['next'][0];
-	$next_pg = rawurlencode($data['next'][1]);
+	$up_page = $data['up'][0];
+	$prev_pg = $data['prev'][0];
+	$next_pg = $data['next'][0];
 	
 	$ret = "";
 	if ($up_page)
 	{
-		if ($use_static_url)
-			$ret .= '<link rel="start" href="'.XOOPS_WIKI_URL.'/'.$up_pg_id.'.html">'."\n";
-		else
-			$ret .= '<link rel="start" href="'.XOOPS_WIKI_URL.'/index.php?'.$up_page.'">'."\n";
+		$ret .= '<link rel="start" href="'.get_url_by_id($up_page).'">'."\n";
 	}
 	else
 		$ret .= '<link rel="start" href="'.XOOPS_URL.'/modules/pukiwiki/">'."\n";
 	if ($prev_pg)
 	{
-		if ($use_static_url)
-			$ret .= '<link rel="prev" href="'.XOOPS_WIKI_URL.'/'.$prev_pg_id.'.html">'."\n";
-		else
-			$ret .= '<link rel="prev" href="'.XOOPS_WIKI_URL.'/index.php?'.$prev_pg.'">'."\n";
+		$ret .= '<link rel="prev" href="'.get_url_by_id($prev_pg).'">'."\n";
 	}
 	if ($next_pg)
 	{
-		if ($use_static_url)
-			$ret .= '<link rel="next" href="'.XOOPS_WIKI_URL.'/'.$next_pg_id.'.html">'."\n";
-		else
-			$ret .= '<link rel="next" href="'.XOOPS_WIKI_URL.'/index.php?'.$next_pg.'">'."\n";
+		$ret .= '<link rel="next" href="'.get_url_by_id($next_pg).'">'."\n";
 	}
 	return $ret;
 

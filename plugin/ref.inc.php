@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.21 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: ref.inc.php,v 1.22 2005/03/16 12:49:47 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -482,11 +482,12 @@ function plugin_ref_body($name,$args,$params){
 				$params['_wmp'] = "<param name=\"wmode\" value=\"{$m[1]}\">";
 			}
 		}
+		$f_file = XOOPS_WIKI_URL.substr($file,1);
 		$ret .= <<<_HTML_
 <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,79,0"{$params['_w']}{$params['_h']}{$params['_a']}>
-<param name="movie" value="{$file}">
+<param name="movie" value="{$f_file}">
 {$params['_qp']}{$params['_lp']}{$params['_pp']}{$params['_scp']}{$params['_sap']}{$params['_mp']}{$params['_wmp']}
-<embed src="{$file}" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/jp/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"{$params['_w']}{$params['_h']}{$params['_a']}{$params['_p']}{$params['_l']}{$params['_q']}{$params['_b']}{$params['_sc']}{$params['_sa']}{$params['_m']}>
+<embed src="{$f_file}" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/jp/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"{$params['_w']}{$params['_h']}{$params['_a']}{$params['_p']}{$params['_l']}{$params['_q']}{$params['_b']}{$params['_sc']}{$params['_sa']}{$params['_m']}>
 </embed>
 </object>
 _HTML_;

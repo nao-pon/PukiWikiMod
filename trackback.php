@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.19 2005/03/09 12:33:51 nao-pon Exp $
+// $Id: trackback.php,v 1.20 2005/03/16 12:49:47 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -96,7 +96,7 @@ function tb_count($page,$ext='.txt')
 // TrackBack Ping 送信
 function tb_send($page,$data="")
 {
-	global $script,$trackback,$update_ping_to,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$use_static_url,$update_ping_to,$defaultpage;
+	global $script,$trackback,$update_ping_to,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$update_ping_to,$defaultpage;
 	global $trackback_encoding,$vars;
 	
 	$page = strip_bracket($page);
@@ -181,20 +181,8 @@ function tb_send($page,$data="")
 	
 	if ($h_excerpt) $title .= "/".$h_excerpt;
 	
-	//静的URLのようなURLにするか？
-	if ($use_static_url)
-	{
-		$myurl = XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html";
-		//$xml_myurl = $myurl;
-		$xml_myurl = XOOPS_WIKI_URL."/".get_pgid_by_name($up_page).".html";
-		//$xml_myurl = XOOPS_WIKI_URL."/".get_pgid_by_name($xml_title).".html";
-	}
-	else
-	{
-		$myurl = $script."?pgid=".get_pgid_by_name($page);
-		$xml_myurl = $script."?pgid=".get_pgid_by_name($up_page);
-		//$xml_myurl = $script."?".rawurlencode($xml_title);
-	}
+	$myurl = get_url_by_name($page);
+	$xml_myurl = get_url_by_name($up_page);
 	
 	$xml_title = $page_title."/".$up_page;
 	//$xml_title = $page_title."/".$xml_title;

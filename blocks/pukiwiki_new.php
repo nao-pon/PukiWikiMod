@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.17 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.18 2005/03/16 12:49:47 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -151,13 +151,7 @@ function xb_make_link($page,$alias="#/#")
 		}
 		$pgp = xb_get_pg_passage($page,FALSE);
 		if ($pgp)
-		{
-			//$retval = "<a href=\"".$pukiwiki_path."?$url\" title=\"".$name.$pgp."\">".$_name."</a>";
-			if ($use_static_url)
-				$retval = "<a href=\"".XOOPS_URL."/modules/pukiwiki/".xb_get_pgid_by_name($page).".html\" title=\"".$name.$pgp."\">$_name</a>";
-			else
-				$retval = "<a href=\"".$pukiwiki_path."?$url\" title=\"".$name.$pgp."\">$_name</a>";
-		}
+			$retval = "<a href=\"".xb_get_url_by_name($page,$use_static_url)."\" title=\"".$name.$pgp."\">$_name</a>";
 		else
 			$retval = "$_name";
 	}
@@ -370,5 +364,23 @@ function xb_get_pgid_by_name($page)
 	return $ret[0];
 }
 
+//ページ名からURLを求める
+function xb_get_url_by_name($name="",$use_static_url)
+{
+	static $ret = array();
+	
+	if(isset($ret[$name])) return $ret[$name];
+	
+	if (!$name || !is_page($name)) return $ret[$name] = XOOPS_URL."/modules/pukiwiki/";
+	
+	if ($use_static_url == 3)
+		return $ret[$name] = XOOPS_URL."/pukiwiki+._".xb_get_pgid_by_name($name).".htm";
+	else if ($use_static_url == 2)
+		return $ret[$name] = XOOPS_URL."/pukiwiki+index.pgid+_".xb_get_pgid_by_name($name).".htm";
+	else if ($use_static_url)
+		return $ret[$name] = XOOPS_URL."/modules/pukiwiki/".xb_get_pgid_by_name($name).".html";
+	else
+		return $ret[$name] = XOOPS_URL."/modules/pukiwiki/?".rawurlencode(xb_strip_bracket($name));
+}
 
 ?>

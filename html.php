@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.51 2005/03/15 02:48:50 nao-pon Exp $
+// $Id: html.php,v 1.52 2005/03/16 12:49:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -55,14 +55,13 @@ function catbody($title,$page,$body)
 	// ページを編集出来ないか
 	$_freeze = is_freeze($_page);
 	
+	$link_page = get_url_by_id($id);
 	if ($use_static_url)
 	{
-		$link_page = XOOPS_WIKI_URL."/".$pid.".html";
 		$con_str = "?";
 	}
 	else
 	{
-		$link_page = "$script?".rawurlencode(strip_bracket($_page));
 		$con_str = "&amp;";
  	}
 	
@@ -461,7 +460,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 function make_related($page,$tag='')
 {
 	global $script,$vars,$related,$rule_related_str,$related_str,$non_list;
-	global $_ul_left_margin, $_ul_margin, $_list_pad_str,$use_static_url;
+	global $_ul_left_margin, $_ul_margin, $_list_pad_str;
 	$page = strip_bracket($page);
 	$links = links_get_related($page);
 	

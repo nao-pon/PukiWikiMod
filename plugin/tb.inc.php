@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.6 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: tb.inc.php,v 1.7 2005/03/16 12:49:47 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -163,7 +163,7 @@ EOD;
 // ?__mode=rss 処理
 function tb_mode_rss($tb_id)
 {
-	global $script,$vars,$entity_pattern,$use_static_url;
+	global $script,$vars,$entity_pattern;
 	
 	$page = tb_id2page($tb_id);
 	if ($page === FALSE)
@@ -189,10 +189,7 @@ EOD;
 	}
 	
 	$title = htmlspecialchars($page);
-	if ($use_static_url)
-		$link = XOOPS_WIKI_URL."/".$tb_id.".html";
-	else
-		$link = $script."?".rawurlencode($page);
+	$link = get_url_by_id($tb_id);
 	$vars['page'] = $page;
 	$content = convert_html($page,false,true,true);
 	$excerpt = strip_htmltag($content);
@@ -226,7 +223,7 @@ function tb_mode_view($tb_id)
 	global $script,$page_title,$vars;
 	global $_tb_title,$_tb_header,$_tb_entry,$_tb_refer,$_tb_date;
 	global $_tb_header_Excerpt,$_tb_header_Weblog,$_tb_header_Tracked;
-	global $X_admin, $use_static_url;
+	global $X_admin;
 	
 	// TrackBack ID からページ名を取得
 	$page = tb_id2page($tb_id);
@@ -234,10 +231,7 @@ function tb_mode_view($tb_id)
 	{
 		return FALSE;
 	}
-	if ($use_static_url)
-		$r_page = XOOPS_WIKI_URL."/".$tb_id.".html";
-	else
-		$r_page = $script."?".rawurlencode($page);
+	$r_page = get_url_by_id($tb_id);
 	
 	$tb_title = sprintf($_tb_title,$page);
 	$tb_refer = sprintf($_tb_refer,"<a href=\"$r_page\">'$page'</a>","<a href=\"$script\">$page_title</a>");

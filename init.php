@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.40 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: init.php,v 1.41 2005/03/16 12:49:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -280,6 +280,33 @@ if (isset($vars['pwm_ping']))
 	$vars['tb_id'] = $vars['pwm_ping'];
 }
 
+
+// command 判定
+if (arg_check("preview") || $post["preview"] || $post["template"]) $vars['cmd'] = "preview";
+if (arg_check("write") || $post["write"]) $vars['cmd'] = "write";
+
+// cmd,plugin,pgid が指定されていない場合は、QUERY_STRINGをページ名かInterWikiNameであるとみなす
+if (! isset($vars['cmd']) && ! isset($vars['plugin']) && ! isset($vars['pgid'])) {
+
+	$get['cmd']  = $post['cmd']  = $vars['cmd']  = 'read';
+	
+	// & 以降を除去(SID自動付加環境対策)
+	$arg = preg_replace("/([^&]+)(&.*)?/","$1",$arg);
+	
+	$arg = rawurldecode($arg);
+	$arg = input_filter($arg);
+	
+	// _PGID の場合
+	if (preg_match("/^_([\d]+)$/",$arg,$key))
+		$vars['pgid'] = $key[1];
+	else
+	{
+		if ($arg == '') $arg = $defaultpage;
+		$arg = add_bracket($arg);
+		$get['page'] = $post['page'] = $vars['page'] = $arg;
+	}
+}
+
 // idでのアクセス
 $pgid = 0;
 if (isset($vars['pgid']))
@@ -296,25 +323,6 @@ if (isset($vars['pgid']))
 		header("Location: ".XOOPS_WIKI_URL."/");
 		exit;
 	}
-}
-
-// command 判定
-if (arg_check("preview") || $post["preview"] || $post["template"]) $vars['cmd'] = "preview";
-if (arg_check("write") || $post["write"]) $vars['cmd'] = "write";
-
-// cmdもpluginも指定されていない場合は、QUERY_STRINGをページ名かInterWikiNameであるとみなす
-if (! isset($vars['cmd']) && ! isset($vars['plugin'])) {
-
-	$get['cmd']  = $post['cmd']  = $vars['cmd']  = 'read';
-	
-	// & 以降を除去(SID自動付加環境対策)
-	$arg = preg_replace("/([^&]+)(&.*)?/","$1",$arg);
-	
-	$arg = rawurldecode($arg);
-	$arg = input_filter($arg);
-	if ($arg == '') $arg = $defaultpage;
-	$arg = add_bracket($arg);
-	$get['page'] = $post['page'] = $vars['page'] = $arg;
 }
 
 // XOOPS Mudule id

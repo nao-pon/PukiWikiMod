@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.36 2005/03/05 02:13:12 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.37 2005/03/16 12:49:47 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -405,10 +405,10 @@ $use_static_url = 0;
 $_cache_file = "cache/config.php";
 clearstatcache();
 if(file_exists($_cache_file) && is_readable($_cache_file)){
-	require_once($_cache_file);
+	require($_cache_file);
 }
 $_cache_file = "cache/adminpass.php";
 if(file_exists($_cache_file) && is_readable($_cache_file)){
-	require_once($_cache_file);
+	require($_cache_file);
 }
 ?>
