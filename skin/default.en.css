@@ -471,6 +471,12 @@ strong.word9 {
 	color:white;
 }
 
+span.wiki_this_page {
+	font-weight:bold;
+}
+
+/* for plugin */
+
 /* new.inc.php */
 .comment_date
 {
