@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.14 2003/07/16 13:47:26 nao-pon Exp $
+// $Id: html.php,v 1.15 2003/07/17 13:11:21 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -103,6 +103,7 @@ function convert_html($string)
 	global $note_id,$foot_explain,$digest,$note_hr;
 	global $user_rules,$str_rules,$line_rules,$strip_link_wall;
 	global $WikiName,$InterWikiName, $BracketName;
+	global $_table_left_margin,$_table_right_margin;
 
 	global $content_id;
 	$content_id_local = ++$content_id;
@@ -168,6 +169,7 @@ function convert_html($string)
 			{
 				$table = 0;
 				$table_style = "";
+				$div_style = "";
 				$table_sheet = "";
 				$sell_sheet = "";
 				$td_color = $td_width = $td_align = array();
@@ -351,9 +353,20 @@ function convert_html($string)
 						$out[1] = preg_replace("/TC:\(([^),]*)(,once|,1)?\)/i","",$out[1]);
 					}
 					// 配置・幅指定
-					if (preg_match("/T(LEFT|RIGHT)/i",$out[1],$reg)) $table_style .= " align=\"".strtolower($reg[1])."\"";
+					if (preg_match("/T(LEFT|RIGHT)/i",$out[1],$reg)) {
+						$table_align = strtolower($reg[1]);
+						$table_style .= " align=\"".$table_align."\"";
+						$div_style = " style=\"text-align:".$table_align."\"";
+						if ($table_align == "left"){
+							$table_sheet = "margin-left:{$_table_left_margin}px;margin-right:auto;";
+						} else {
+							$table_sheet = "margin-left:auto;margin-right:{$_table_right_margin}px;";
+						}
+					}
 					if (preg_match("/T(CENTER)/i",$out[1],$reg)) {
 						$table_style .= " align=\"".strtolower($reg[1])."\"";
+						$div_style = " style=\"text-align:".strtolower($reg[1])."\"";
+						$table_sheet = "margin-left:auto;margin-right:auto;";
 						$table_around = "";
 					}
 					if (preg_match("/T(LEFT|CENTER|RIGHT)?:([0-9]+[%]?)/i",$out[1],$reg)) {
@@ -394,7 +407,7 @@ function convert_html($string)
 					{
 						if (!$table_style) $table_style = " border=\"0\" cellspacing=\"1\"";
 						$result = array_merge($result,$saved); $saved = array();
-						array_push($result,"<div><table class=\"style_table\"$table_style style=\"$table_sheet\">");
+						array_push($result,"<div class=\"ie5\" $div_style><table class=\"style_table\"$table_style style=\"$table_sheet\">");
 						$table = count($arytable);
 					}
 

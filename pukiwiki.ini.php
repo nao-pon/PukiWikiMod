@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.7 2003/07/16 13:47:26 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.8 2003/07/17 13:11:21 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -120,6 +120,11 @@ $interwiki_target = "_top";
 $_list_left_margin = 0; // リストと画面左端との間隔(px)
 $_list_margin = 16;      // リストの階層間の間隔(px)
 $_list_pad_str = ' class="list%d" style="padding-left:%dpx;margin-left:%dpx"';
+
+/////////////////////////////////////////////////
+// リスト構造の左マージン
+$_table_left_margin = 10;		// テーブル左寄せの場合の画面左端との間隔(px)
+$_table_right_margin = 10;	// テーブル右寄せの場合の画面右端との間隔(px)
 
 /////////////////////////////////////////////////
 // テキストエリアのカラム数
