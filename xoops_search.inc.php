@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.8 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.9 2004/05/24 14:40:11 nao-pon Exp $
 
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	global $xoopsDB,$xoopsUser;
@@ -58,7 +58,7 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	if ($where)
 		$where_base = "($where_base) AND ($where)";
 	
-	$sql = "SELECT p.id,p.name,p.editedtime,p.vaids,p.vgids,p.uid,p.title FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." p LEFT JOIN ".$xoopsDB->prefix("pukiwikimod_plain")." t ON t.pgid=p.id WHERE ($where_base) ";
+	$sql = "SELECT p.id,p.name,p.editedtime,p.vaids,p.vgids,p.uid,p.title,t.plain FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." p LEFT JOIN ".$xoopsDB->prefix("pukiwikimod_plain")." t ON t.pgid=p.id WHERE ($where_base) ";
 	if ( $userid != 0 ) {
 		$sql .= "AND (p.uid=".$userid.") ";
 	}
@@ -90,6 +90,10 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 		$ret[$i]['time'] = $myrow['editedtime'];
 		$ret[$i]['uid'] = $myrow['uid'];
 		$ret[$i]['page'] = $myrow['name'];
+		if (!empty($myrow['plain']))
+		{
+			$ret[$i]['context'] = xoops_make_context($myrow['plain'],$queryarray);
+		}
 		$i++;
 	}
 	return $ret;
@@ -108,5 +112,4 @@ function pukiwikimod_X_get_groups(){
 		return XoopsGroup::getByUser($xoopsUser);
 	}
 }
-
 ?>
