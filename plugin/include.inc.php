@@ -1,5 +1,5 @@
 <?php
-// $Id: include.inc.php,v 1.4 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: include.inc.php,v 1.5 2004/05/20 14:52:48 nao-pon Exp $
 // internationalization
 function plugin_include_init() {
 	if (LANG=='ja') {
@@ -17,9 +17,8 @@ function plugin_include_init() {
 function plugin_include_convert()
 {
     global $_include_msg_see;
-	global $script,$get,$post,$vars,$WikiName,$BracketName,$hr,$digest;
+	global $script,$get,$post,$vars,$WikiName,$BracketName,$hr,$digest,$comment_no,$h_excerpt;
 	static $include_list; //処理済ページ名の配列
-	$digest_esc = $digest; //一時退避
 	if (!isset($include_list))
 		$include_list = array($vars['page']=>TRUE);
 	
@@ -42,14 +41,19 @@ function plugin_include_convert()
 		return '';
 	
 	$include_list[$page] = TRUE;
-	
+
+	//変数値退避
+	$digest_esc = $digest;
+	$_comment_no = $comment_no;
+	$_h_excerpt = $h_excerpt;
 	$tmppage = $vars['page'];
 	
+	//初期化
 	$get['page'] = $post['page'] = $vars['page'] = $page;
-
-	$body = @join('',@file(get_filename(encode($page))));
-	$body = convert_html($body);
-
+	$comment_no = 0;
+	
+	$body = convert_html($page,false,true);
+	
 	// $link = "<a href=\"$script?".rawurlencode($page)."\">".strip_bracket($page)."</a>";
 	$link = "<a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\">".strip_bracket($page)."</a>";
 	if($page == 'MenuBar'){
@@ -61,10 +65,13 @@ function plugin_include_convert()
 		}
 		$body = "$head\n$body\n";
 	}
-
-	$get['page'] = $post['page'] = $vars['page'] = $tmppage;
 	
+	//退避変数戻し
+	$get['page'] = $post['page'] = $vars['page'] = $tmppage;
+	$comment_no = $_comment_no;
+	$h_excerpt = $_h_excerpt;
 	$digest = $digest_esc; //元に戻す
+
 	return $body;
 }
 ?>
