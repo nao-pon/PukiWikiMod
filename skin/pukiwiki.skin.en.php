@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.en.php,v 1.4 2003/08/06 14:40:44 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.en.php,v 1.5 2003/09/14 13:09:04 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -25,7 +25,7 @@ if($_freeze){
 	<?php if(!$hide_navi && !$noheader){ // header ?>
 		<center><div style="width:80%;text-align:center;font-size:14px;font-weight:bold;border: #6699FF thick ridge 2px;background-color:#FFFFEE;padding:2px;"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
-		[ <a href="<?php echo "$script?".rawurlencode($vars['page']) ?>">Reload</a> ]
+		[ <a href="<?php echo "$script?".rawurlencode(strip_bracket($vars['page'])) ?>">Reload</a> ]
 		&nbsp;
 	<?php
 	$source_tag = "<a href=\"$script?plugin=source&amp;page=".rawurlencode($vars['page'])."\">Source</a>";
@@ -115,7 +115,7 @@ if($_freeze){
 	?>
 	<div style="text-align:right">
 		<?php if($is_page) { ?>
-			<a href="<?php echo "$script?".rawurlencode($vars[page]) ?>"><img src="./image/reload.gif" width="20" height="20" border="0" alt="Reload" /></a>
+			<a href="<?php echo "$script?".rawurlencode(strip_bracket($vars['page'])) ?>"><img src="./image/reload.gif" width="20" height="20" border="0" alt="Reload" /></a>
 			&nbsp;
 		  <?php if (!$_freeze){ ?>
 		  <?php if ($wiki_allow_newpage){ ?>

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: where.inc.php,v 1.3 2003/07/02 13:57:54 wellwine Exp $
+// $Id: where.inc.php,v 1.4 2003/09/14 13:09:04 nao-pon Exp $
 //
 // 指定ページへの階層をリンク付で表示するプラグイン
 //
@@ -59,13 +59,15 @@ function plugin_where_make($prefix) {
 	$page_names = array();
 	$page_names = explode("/",$prefix);
 	$title = $defaultpage.' '.get_pg_passage($defaultpage,FALSE);
-	$ret = "<a href=\"$script?cmd=read&amp;page=$defaultpage\" title=\"$title\">$_where_msg_top</a>";
+	//$ret = "<a href=\"$script?cmd=read&amp;page=$defaultpage\" title=\"$title\">$_where_msg_top</a>";
+	$ret = "<a href=\"$script?$defaultpage\" title=\"$title\">$_where_msg_top</a>";
 	$access_name = "";
 	foreach ($page_names as $page_name){
 		$access_name .= $page_name."/";
 		$name = substr($access_name,0,strlen($access_name)-1);
 		$title = $name.' '.get_pg_passage("[[".$name."]]",FALSE);
-		$href = $script.'?cmd=read&amp;page='.rawurlencode($name);
+		//$href = $script.'?cmd=read&amp;page='.rawurlencode($name);
+		$href = $script.'?'.rawurlencode(strip_bracket($name));
 		if ($prefix == $name){
 			if ($this_page) {
 				$ret .= " &gt; <b>$page_name</b>";

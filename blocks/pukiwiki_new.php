@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.3 2003/09/02 14:06:55 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.4 2003/09/14 13:09:04 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -34,8 +34,9 @@ function xb_make_link($page)
 {
 	$pukiwiki_path = XOOPS_URL."/modules/pukiwiki/index.php";
 
-	$url = rawurlencode($page);
+	//$url = rawurlencode($page);
 	$_name = $name = xb_strip_bracket($page);
+	$url = rawurlencode($name);
 
 	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name)){

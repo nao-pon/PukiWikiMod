@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.25 2003/09/02 14:09:11 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.26 2003/09/14 13:09:04 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -42,7 +42,7 @@ require("backup.php");
 require("rss.php");
 require('make_link.php');
 require('config.php');
-
+require('proxy.php');
 
 /////////////////////////////////////////////////
 // プログラムファイル読み込み
@@ -117,7 +117,7 @@ if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 	}
 	else
 	{
-		redirect_header("$script?".rawurlencode($vars["refer"]),1,$title);
+		redirect_header("$script?".rawurlencode(strip_bracket($vars["refer"])),1,$title);
 		exit();
 	}
 }
@@ -594,7 +594,7 @@ else if($post["write"])
 				//$page = str_replace('$1',make_search($post["page"]),$_title_updated);
 				//$body = convert_html($postdata);
 				//header("Location: $script?".rawurlencode($post["page"]));
-				redirect_header("$script?".rawurlencode($post["page"]),1,$title);
+				redirect_header("$script?".rawurlencode(strip_bracket($post["page"])),1,$title);
 				exit();
 			}
 			else

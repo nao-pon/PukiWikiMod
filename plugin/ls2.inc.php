@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.3 2003/09/02 14:03:16 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.4 2003/09/14 13:09:04 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -22,6 +22,8 @@ Last-Update:2002-10-29 rev.8
  ページの並び順を反転し、降順にする
 -pagename~
  パスは省いてページ名のみ表示
+-notemplate~
+ テンプレートページはリストアップしない
 */
 
 //見出しアンカーの書式
@@ -72,7 +74,7 @@ function plugin_ls2_convert() {
 	if ($prefix == '')
 		$prefix = strip_bracket($vars['page']).'/';
 
-	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'_done'=>FALSE,'pagename'=>FALSE);
+	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'_done'=>FALSE,'pagename'=>FALSE,'notemplate'=>FALSE);
 	array_walk($args, 'ls2_check_arg', &$params);
 	$title = (count($params['_args']) > 0) ?
 		join(',', $params['_args']) :
@@ -107,6 +109,9 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 	global $script, $user_rules;
 	global $_ls2_anchor, $_ls2_messages;
 	
+	// テンプレートページは表示しない場合
+	if ($params['notemplate'] && preg_match("/template\]\]$/",$page)) return;
+	
 	$ret = '';
 	$rules = '/\(\(((?:(?!\)\)).)*)\)\)/';
 	$is_done = (isset($params[$page]) and $params[$page] > 0); //ページが表示済みのときTrue
@@ -114,7 +119,8 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 	
 	$name = strip_bracket($page);
 	$title = $name.' '.get_pg_passage($page,FALSE);
-	$href = $script.'?cmd=read&amp;page='.rawurlencode($page);
+	//$href = $script.'?cmd=read&amp;page='.rawurlencode($page);
+	$href = $script.'?'.rawurlencode($name);
 
 	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 	$_name = "";
@@ -184,9 +190,11 @@ function ls2_get_child_pages($prefix) {
 	$pattern = '[['.$prefix;
 	
 	$pages = array();
-	foreach (get_existpages() as $_page)
-		if (strpos($_page,$pattern) === 0)
+	foreach (get_existpages() as $_page){
+		if (strpos($_page,$pattern) === 0){
 			$pages[$_page] = strip_bracket($_page);
+		}
+	}
 	natcasesort($pages);
 
 	return array_keys($pages);
