@@ -1,5 +1,5 @@
 <?php
-// $Id: age.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: age.inc.php,v 1.3 2004/09/07 12:07:50 nao-pon Exp $
 
 /*
  * age.inc.php
@@ -13,6 +13,8 @@
 // インラインプラグインとしての挙動
 function plugin_age_inline() {
   list($y,$m,$d,$prm) = func_get_args();
+  if (!$y || !$m || !$d) return FALSE;
+  
   if ($prm == "day"){
 		return day($y,$m,$d);
 	} else {
