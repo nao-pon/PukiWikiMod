@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.1 2004/07/31 07:09:36 nao-pon Exp $
+// $Id: aws.inc.php,v 1.2 2004/07/31 07:13:37 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -8,9 +8,9 @@
 function plugin_aws_convert()
 {
 	////// config //////
-	$xls_url = "http://www5f.biglobe.ne.jp/~nao-pon/aws/xsl/"; // XSLTファイルが置いてあるディレクトリURL
-	$amazon_dev_t = "D2OS08VR83Y4NP"; // デベロッパートークン
-	$amazon_t = "hypweb-22"; // アソシエイツID
+	$xls_url = ""; // XSLT????????????????URL
+	$amazon_dev_t = ""; // ??????????
+	$amazon_t = ""; // ??????ID
 	$amazon_xml = "http://xml-jp.amznxslt.com";
 	$cache_time = 1440; // Cache time (min)
 	////////////////////
@@ -61,7 +61,7 @@ function plugin_aws_convert()
 					fputs($fp,$ret);
 					fclose($fp);
 				}
-				// plane_text DB を更新を指示
+				// plane_text DB ?????示
 				need_update_plaindb();
 			}
 		}
