@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.27 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: html.php,v 1.28 2004/04/03 14:12:48 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -183,7 +183,9 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
 	{
 		$vals = array();
 
-		$files = get_existpages();
+		//第一階層のみ取得する
+		$files = get_existpages_db(false,"",0,"",false,true);
+		//$files = get_existpages();//すべて表示する場合はこれ
 		foreach($files as $pg_org) {
 			if($pg_org == $whatsnew) continue;
 			if(preg_match("/$non_list/",$pg_org)) continue;
