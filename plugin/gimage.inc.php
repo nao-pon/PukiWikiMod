@@ -24,7 +24,7 @@ function plugin_gimage_action()
 		$page = (isset($get['ref']))? $get['ref'] : "";
 		
 		// キャッシュファイル名
-		$filename = P_CACHE_DIR.md5($q.$qmode).".ggi";
+		$filename = P_CACHE_DIR.md5($query.$qmode).".ggi";
 		
 		$old_time = filemtime($filename);
 
