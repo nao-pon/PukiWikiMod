@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.9 2003/08/05 23:44:47 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.10 2003/09/14 13:06:08 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -119,17 +119,19 @@ function plugin_attach_action()
 	return attach_showform();
 }
 //-------- call from skin
-function attach_filelist($thumb=1)
+function attach_filelist($thumb=1,$isbn=false)
 {
 	global $vars,$_attach_messages;
 	
-	$obj = &new AttachPages($vars['page'],0,$thumb);
+	$obj = &new AttachPages($vars['page'],0,$thumb,$isbn);
 
 	if (!array_key_exists($vars['page'],$obj->pages))
 	{
 		return '';
 	}
-	return $_attach_messages['msg_file'].': '.$obj->toString($vars['page'],TRUE)."\n";
+	$_tmp = $obj->toString($vars['page'],TRUE);
+	if ($_tmp) $_tmp = $_attach_messages['msg_file'].': '.$_tmp."\n";
+	return $_tmp;
 }
 //-------- 実体
 //ファイルアップロード
@@ -732,7 +734,7 @@ class AttachPages
 {
 	var $pages = array();
 	
-	function AttachPages($page='',$age=NULL,$thumb=0)
+	function AttachPages($page='',$age=NULL,$thumb=0,$isbn=true)
 	{
 		// $thumb = 0:全てのファイル, 1:サムネイル以外, 2:サムネイルのみ
 		$dir = opendir(UPLOAD_DIR)
@@ -756,6 +758,7 @@ class AttachPages
 			{
 				$this->pages[$_page] = &new AttachFiles($_page);
 			}
+			if (!$isbn && preg_match("/^ISBN.*\.(dat|jpg)/",$_file)) continue;
 			$is_thumb = false;
 			if ($thumb){
 				$is_thumb = preg_match("/^\d\d?%/",$_file);
