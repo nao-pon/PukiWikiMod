@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.11 2004/09/12 12:45:28 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.12 2004/10/28 11:36:31 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -105,11 +105,12 @@ function plugin_isbn_inline() {
 	$text = htmlspecialchars(preg_replace('#</?a[^>]*>#i','',$option));
 	$alt = plugin_isbn_get_caption($tmpary);
 	$amazon_a = '<a href="'.str_replace('_ISBN_',$isbn,ISBN_AMAZON_SHOP).'" target="_blank" title="'.$alt.'">';
-	if ($option != 'img'){
+	if (!preg_match("/(s|l|m)?ima?ge?/i",$option,$match)){
 		if ($option) $title = $text;
 		return $amazon_a . $title . '</a>';
 	} else {
-		$url = plugin_isbn_cache_image_fetch($isbn, UPLOAD_DIR);
+		$size = (!empty($match[1]))? $match[1].":" : "";
+		$url = plugin_isbn_cache_image_fetch($size.$isbn, UPLOAD_DIR);
 		return $amazon_a.'<img src="'.$url.'" alt="'.$alt.'" /></a>';
 	}
 }
@@ -304,15 +305,24 @@ function plugin_isbn_cache_fetch($target, $dir, $check=true) {
 // 画像キャッシュがあるか調べる
 function plugin_isbn_cache_image_fetch($target, $dir, $check=true) {
 	global $vars;
-
+	$_target = $target = strtoupper($target);
 	$filename = $dir.encode($vars["page"])."_".encode("ISBN".$target.".jpg");
 
 	if (!is_readable($filename) || (is_readable($filename) && $check && ISBN_AMAZON_EXPIRE_IMG * 3600 * 24 < time() - filemtime($filename))) {
-		$url = "http://images-jp.amazon.com/images/P/" . strtoupper($target) . ".09.MZZZZZZZ.jpg";
+		$size = "M";
+		if (preg_match("/^(?:(s|m|l):)(.+)/i",$target,$match))
+		{
+			$size = strtoupper($match[1]);
+			if ($size="M") $target = $match[2];
+			$_target = $match[2];
+			$size = ($size = "S")? "THUMB" : $size."ZZZZ";
+		}
+		$url = "http://images-jp.amazon.com/images/P/" . $_target . ".09.{$size}ZZZ.jpg";
+		//echo $url;
 		if (!is_url($url)) return false; // URL 形式チェック
 		$size = @getimagesize($url);
 		if ($size[0] <= 1) {
-			$url = "http://images-jp.amazon.com/images/P/" . strtoupper($target) . ".01.MZZZZZZZ.jpg";
+			$url = "http://images-jp.amazon.com/images/P/" . $_target . ".01.{$size}ZZZ.jpg";
 			$size = @getimagesize($url);
 			if ($size[0] <= 1) $url = NOIMAGE;
 		}
@@ -364,12 +374,20 @@ function plugin_isbn_cache_save($data, $target, $dir) {
 function plugin_isbn_cache_image_save($data, $target, $dir) {
 	global $vars;
 	
-	$filename = $dir . encode($vars["page"])."_".encode("ISBN".$target.".jpg");
+	$name = "ISBN".$target.".jpg";
+	$filename = $dir . encode($vars["page"])."_".encode($name);
 	//$filename = $dir . "ISBN" . $target . ".jpg";
 
-	$fp = fopen($filename, "wb");
+	$fp = fopen($filename.".tmp", "wb");
 	fwrite($fp, $data);
 	fclose($fp);
+
+	if (!exist_plugin('attach') or !function_exists('attach_upload'))
+	{
+		exit ('attach.inc.php not found or not correct version.');
+	}
+	
+	do_upload($vars['page'],$name,$filename.".tmp");
 
 	return $filename;
 }
