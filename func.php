@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.47 2005/03/29 23:41:47 nao-pon Exp $
+// $Id: func.php,v 1.48 2005/03/30 00:27:48 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -186,9 +186,9 @@ function encode($key)
 function decode($key)
 {
 	// preg_match()       = Warning: pack(): Type H: illegal hex digit ...
-	// substr('20202020') = Avoid pack() bug
+	// (string)   : Always treat as string (not int etc).
 	return preg_match('/^[0-9a-f]+$/i', $key) ?
-		substr(pack('H*', '20202020' . $key), 4) : $key;
+		pack('H*', (string)$key) : $key;
 }
 
 // InterWikiName List の解釈(返値:２次元配列)
