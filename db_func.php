@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.1 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: db_func.php,v 1.2 2003/11/06 12:45:12 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false)
@@ -55,6 +55,42 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 	}
 	if ($nocheck == false && $page == "") $_aryret = $aryret;
 	return $aryret;
+}
+
+//DBからページ情報を得る
+function get_pg_info_db($page)
+{
+	global $xoopsDB;
+	$page = strip_bracket($page);
+	$ret = array();
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
+	$res = $xoopsDB->query($query);
+	if (!$res) return $ret;
+	$ret = mysql_fetch_array($res,MYSQL_ASSOC);
+	return $ret;
+}
+
+//ページIDからページ名を求める
+function get_pgname_by_id($id)
+{
+	global $xoopsDB;
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id=$id LIMIT 1;";
+	$res = $xoopsDB->query($query);
+	if (!$res) return "";
+	$ret = mysql_fetch_row($res);
+	return $ret[1];
+}
+
+//ページ名からページIDを求める
+function get_pgid_by_name($page)
+{
+	global $xoopsDB;
+	$page = strip_bracket($page);
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
+	$res = $xoopsDB->query($query);
+	if (!$res) return 0;
+	$ret = mysql_fetch_row($res);
+	return $ret[0];
 }
 
 // pginfo DB を更新
@@ -133,7 +169,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	// 新規作成
 	if ($action == "insert")
 	{
-		$buildtime = filemtime($file);
+		$buildtime = $editedtime;
 		
 		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_pginfo")." (name,buildtime,editedtime,aids,gids,vaids,vgids,lastediter,uid,freeze,unvisible) VALUES('$s_name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible);";
 		$result=$xoopsDB->queryF($query);
