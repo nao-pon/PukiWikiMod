@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.39 2004/10/07 03:09:18 nao-pon Exp $
+// $Id: html.php,v 1.40 2004/10/09 08:14:55 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -289,12 +289,15 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 	}
 	//echo sprintf("%01.03f",getmicrotime() - MUTIME)."<br />";
 
-
-	if ($X_admin){
-		$auther_tag = '  [ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($author_uid).'" /> ]';
-	} else {
-		$auther_tag = '<input type="hidden" name="f_author_uid" value="'.htmlspecialchars($author_uid).'" />';
-	}
+	// ページ作成者変更BOX
+	$auther_tag = ($X_admin)?
+		'&nbsp:&nbsp;[ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($author_uid).'" /> ]'
+		:'';
+	
+	// タイムスタンプ
+	$timestamp_tag = ($X_admin || (($X_uid == $author_uid) && $X_uid))?
+		'<input type="checkbox" name="notimestamp" value="true"'.$notimestamp_enable.' /><span style="small">'.$_btn_notchangetimestamp.'</span>'
+		:'';
 	
 	if($load_template_func && !$b_preview && empty($vars['id']) && !is_page($page))
 	{
@@ -354,7 +357,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
    <input type="submit" name="preview" value="'.$_btn_preview.'" accesskey="p" />
    <input type="submit" name="write" value="'.$_btn_update.'" accesskey="s" />
    '.$add_top.'
-   <input type="checkbox" name="notimestamp" value="true"'.$notimestamp_enable.' /><span style="small">'.$_btn_notchangetimestamp.'</span>
+   '.$timestamp_tag.'
    '.$auther_tag.'
   </td>
  </tr>
