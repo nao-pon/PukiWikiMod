@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.3 2003/07/22 13:36:28 nao-pon Exp $
+// $Id: paint.inc.php,v 1.4 2003/07/22 14:02:00 nao-pon Exp $
 //
 
 /*
@@ -47,7 +47,7 @@ define('PAINT_FORMAT_NOMSG',"\x08NAME\x08 \x08DATE\x08");
 
 function plugin_paint_init() {
 	if (LANG == "ja") {
-		$messages = array(
+		$messages = array('_paint_messages'=>array(
 			'field_name'    => 'お名前',
 			'field_filename'=> 'ファイル名',
 			'field_comment' => 'コメント',
@@ -59,7 +59,7 @@ function plugin_paint_init() {
 	画像とコメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
 		));
 	} else {
-		$messages = array(
+		$messages = array('_paint_messages'=>array(
 			'field_name'    => 'Name',
 			'field_filename'=> 'Filename',
 			'field_comment' => 'Comment',
@@ -69,7 +69,7 @@ function plugin_paint_init() {
 			'msg_title_collided' => 'The collision of updating broke out in the $1.',
 			'msg_collided'  => 'It seems that other user have updated the same page while you are editing this page.<br />
 		add picture and comment to page, but there may be a problem.<br />'
-		);
+		));
 	}
   set_plugin_messages($messages);
 }
