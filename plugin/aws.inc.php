@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.4 2004/09/01 14:00:11 nao-pon Exp $
+// $Id: aws.inc.php,v 1.5 2004/09/02 04:29:09 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -9,9 +9,9 @@ function plugin_aws_init()
 {
 	$data = array('plugin_aws_dataset'=>array(
 		//////// Config ///////
-		'xls_url'      => "http://www5f.biglobe.ne.jp/~nao-pon/aws/xsl/", // XSLTファイルが置いてあるディレクトリURL
-		'amazon_dev_t' => "D2OS08VR83Y4NP", // デベロッパートークン
-		'amazon_t'     => "hypweb-22", // アソシエイツID
+		'xls_url'      => "", // XSLTファイルが置いてあるディレクトリURL
+		'amazon_dev_t' => "", // デベロッパートークン
+		'amazon_t'     => "", // アソシエイツID
 		'amazon_xml'   => "http://xml-jp.amznxslt.com",
 		'cache_time'   => 360, // Cache time (min) 360m = 6h
 		//////// Config ///////
