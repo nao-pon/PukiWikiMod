@@ -1,5 +1,5 @@
 <?php
-// $Id: urlbookmark.inc.php,v 1.3 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: urlbookmark.inc.php,v 1.4 2004/12/23 14:00:22 nao-pon Exp $
 
 /*
  * PukiWiki urlbookmark プラグイン
@@ -50,7 +50,8 @@ function plugin_urlbookmark_init()
 {
 	$messages = array(
 		'_btn_url'		=> 'URL: ',
-		'_title_urlbookmark'	=> 'タイトル(省略で自動取得): ',
+		'_title_urlbookmark'	=> 'タイトル: ',
+		'_title_auto'	=> '(自動取得)',
 		'_btn_urlbookmark'	=> 'URLの追加',
 		'_msg_urlbookmark'	=> 'コメント(省略可): ',
 		'_title_urlbookmark_collided'	=> '$1 で【更新の衝突】が起きました',
@@ -63,7 +64,7 @@ function plugin_urlbookmark_action()
 {
 	global $script,$vars,$post,$now;
 	global $_title_updated;
-	global $_msg_urlbookmark_collided,$_title_urlbookmark_collided;
+	global $_msg_urlbookmark_collided,$_title_urlbookmark_collided,$_title_auto;
 	
 	$post['msg'] = preg_replace("/\n/",'',$post['msg']);
 
@@ -81,7 +82,7 @@ function plugin_urlbookmark_action()
 	}
 
 	$title = $post['title'];
-	if ($title == '')
+	if ($title == '' || $title == $_title_auto)
 	{
 		// try to get the title from the site
 		$title = plugin_urlbookmark_get_title($url);
@@ -153,7 +154,7 @@ function plugin_urlbookmark_action()
 function plugin_urlbookmark_convert()
 {
 	global $script,$vars,$digest;
-	global $_btn_urlbookmark,$_btn_url,$_msg_urlbookmark, $_title_urlbookmark;
+	global $_btn_urlbookmark,$_btn_url,$_msg_urlbookmark, $_title_urlbookmark, $_title_auto;
 	static $numbers = array();
 	
 	if (!array_key_exists($vars['page'],$numbers))
@@ -174,7 +175,7 @@ function plugin_urlbookmark_convert()
 		$titletags = "";
 	}
 	else {
-		$titletags = $_title_urlbookmark . "<input type='text' name='title' size='".URLBOOKMARK_TITLE_COLS."' /><br/>\n";
+		$titletags = $_title_urlbookmark . "<input type='text' name='title' size='".URLBOOKMARK_TITLE_COLS."' value='{$_title_auto}' /><br/>\n";
 	}
 		
 	$nodate = in_array('nodate',$options) ? '1' : '0';
@@ -196,7 +197,7 @@ function plugin_urlbookmark_convert()
   $_btn_url <input type="text" name="url" size="$url_cols" /><br/>
   $titletags
   $_msg_urlbookmark <input type="text" name="msg" size="$urlbookmark_cols" /><br/>
-  <input type="submit" name="urlbookmark" value="$_btn_urlbookmark" />
+  <input type="submit" value="$_btn_urlbookmark" />
  </div>
 </form>
 EOD;
