@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.13 2005/03/07 15:39:17 nao-pon Exp $
+// $Id: popular.inc.php,v 1.14 2005/03/11 00:00:34 nao-pon Exp $
 //
 
 /*
@@ -155,21 +155,24 @@ function plugin_popular_convert()
 		$_style = $_list_left_margin + $_list_margin;
 		$_style = " style=\"margin-left:". $_style ."px;padding-left:". $_style ."px;\"";
 		$items = '<ul class="popular_list"'.$_style.'">';
+		$new_mark = "";
 		
 		foreach ($counters as $page=>$count) {
 			$page = htmlspecialchars(substr($page,1));
 			//Newマーク付加
 			if (exist_plugin_inline("new"))
 				$new_mark = do_plugin_inline("new","{$page}/,nolink","");
-			if ($prefix)
-				$page = make_pagelink($page,preg_replace("/$prefix/","",$page));
+			
+			if ($compact)
+				$page = make_pagelink($page,"#compact#");
 			else
 			{
-				if (!$compact)
-					$page = make_pagelink($page);
+				if ($prefix)
+					$page = make_pagelink($page,preg_replace("/^$prefix/","",$page));
 				else
-					$page = make_pagelink($page,"#compact#");
-			}	
+					$page = make_pagelink($page);
+			}
+			
 			$items .= " <li>".$page."<span class=\"counter\">($count)</span>$new_mark</li>\n";
 			}
 		$items .= '</ul>';
