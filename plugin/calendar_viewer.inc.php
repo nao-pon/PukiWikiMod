@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.3 2003/06/28 16:11:13 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -74,7 +74,7 @@ function plugin_calendar_viewer_convert()
       	if ($func_vars_array[3] == "cal2"){
 			$cal2 = 1;
 		} else {
-			$date_sep = $func_vars_array[3];
+			$date_sep = htmlspecialchars($func_vars_array[3]);
 		}
     }
     if (preg_match("/[0-9]{4}".$date_sep."[0-9]{2}/",$func_vars_array[1])){
@@ -246,7 +246,7 @@ if ($cal2 == 1){
   $navi_bar .= "<table width =\"100%\" class=\"style_calendar_navi\"><tr><td align=\"left\" width=\"33%\">";
   $navi_bar .= $left_link;
   $navi_bar .= "</td><td align=\"center\" width=\"34%\">";
-  $navi_bar .= "<a href=\"".$pageurl."\"><b>".strip_bracket($pagename)."</b></a>";
+  $navi_bar .= "<a href=\"".$pageurl."\"><b>".htmlspecialchars(strip_bracket($pagename))."</b></a>";
   $navi_bar .= "</td><td align=\"right\" width=\"33%\">";
   $navi_bar .= $right_link;
   $navi_bar .= "</td></tr></table>";
@@ -334,14 +334,14 @@ function plugin_calendar_viewer_action(){
   $return_vars_array["body"] = call_user_func_array("plugin_calendar_viewer_convert",$args_array);
 
   //$return_vars_array["msg"] = "calendar_viewer ".$vars["page"]."/".$page_YM;
-  $return_vars_array["msg"] = "calendar_viewer ".$vars["page"];
+  $return_vars_array["msg"] = "calendar_viewer ".htmlspecialchars($vars["page"]);
   if ($vars["page"] != ""){
     $return_vars_array["msg"] .= "/";
   }
   if(preg_match("/\*/",$page_YM)){
     //うーん、n件表示の時はなんてページ名にしたらいい？
   }else{
-    $return_vars_array["msg"] .= $page_YM;
+    $return_vars_array["msg"] .= htmlspecialchars($page_YM);
   }
 
   $vars['page'] = $page;

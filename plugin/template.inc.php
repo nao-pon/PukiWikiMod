@@ -1,5 +1,5 @@
 <?php
-// $Id: template.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
+// $Id: template.inc.php,v 1.3 2003/06/28 16:11:13 nao-pon Exp $
 
 define("MAX_LEN",60);
 function plugin_template_action()
@@ -153,17 +153,17 @@ $retvar["body"] =  '
 			$select.= "</table><br />\n";
 			*/
 		}
-		
+		$s_refer = htmlspecialchars($vars['refer']);
 		$ret.= "<form action=\"$script\" method=\"post\">\n";
 		$ret.= "<div>\n";
 		$ret.= "<input type=\"hidden\" name=\"plugin\" value=\"template\" />\n";
-		$ret.= "<input type=\"hidden\" name=\"page\" value=\"$vars[refer]\" />\n";
-		//$ret.= "ページ名: <input type=\"text\" name=\"refer\" value=\"$vars[refer]/複製\" />\n";
+		$ret.= "<input type=\"hidden\" name=\"page\" value=\"$s_refer\" />\n";
+		//$ret.= "ページ名: <input type=\"text\" name=\"refer\" value=\"$s_refer/複製\" />\n";
 		//$ret.= "<input type=\"submit\" name=\"submit\" value=\"作成\" /><br />\n<br />\n";
 		$ret.= $begin_select;
 		$ret.= $end_select;
 		//$ret.= $select;
-		$ret.= "ページ名: <input type=\"text\" name=\"refer\" value=\"$vars[refer]/複製\" />\n";
+		$ret.= "ページ名: <input type=\"text\" name=\"refer\" value=\"$s_refer/複製\" />\n";
 		$ret.= "<input type=\"submit\" name=\"submit\" value=\"作成\" />\n";
 		$ret.= "</div>\n";
 		$ret.= "</form>\n";

@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.3 2003/06/28 16:11:13 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 function plugin_calendar2_convert()
 {
@@ -350,7 +350,7 @@ function plugin_calendar2_convert()
 	if(is_page($page)) {
 		$page_ = $vars['page'];
 		$get['page'] = $post['page'] = $vars['page'] = $page;
-		$str = "<h4>".strip_bracket($page)."の詳細</h4>";
+		$str = "<h4>".htmlspecialchars(strip_bracket($page))."の詳細</h4>";
 		$str .= convert_html(join("",file(get_filename(encode($page)))));
 		if ($anon_writable) $str .= "<hr /><a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\">$_calendar2_plugin_edit</a>";
 		$get['page'] = $post['page'] = $vars['page'] = $page_;
@@ -394,7 +394,7 @@ function plugin_calendar2_action()
 	$yy = sprintf("%04d.%02d",substr($date,0,4),substr($date,4,2));
 	
 	$aryargs = array($vars['page'],$date);
-	$ret["msg"] = "calendar ".$vars['page']."/".$yy;
+	$ret["msg"] = "calendar ".htmlspecialchars($vars['page'])."/".$yy;
 	$ret["body"] = call_user_func_array("plugin_calendar2_convert",$aryargs);
 	
 	$vars['page'] = $page;
