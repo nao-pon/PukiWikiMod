@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.22 2005/02/23 00:16:41 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.23 2005/02/28 14:44:02 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -50,6 +50,7 @@ function plugin_calendar_viewer_init() {
 			'_calendar_viewer_msg_noargs' => '引数を指定してね',
 			'_calendar_viewer_msg_edit' => '編集',
 			'_calendar_viewer_read_more' => '<< 続きを読む >>',
+			'_calendar_viewer_contents' => '<h4>タイトルリスト</h4>',
 		);
 	} else {
 		$_plugin_calendar_viewer_messages = array(
@@ -57,6 +58,7 @@ function plugin_calendar_viewer_init() {
 			'_calendar_viewer_msg_noargs' => 'argument not found',
 			'_calendar_viewer_msg_edit' => 'Edit',
 			'_calendar_viewer_read_more' => '<< Read more >>',
+			'_calendar_viewer_contents' => '<h4>Title Lists</h4>',
 		);
 	}
 	set_plugin_messages($_plugin_calendar_viewer_messages);
@@ -65,7 +67,7 @@ function plugin_calendar_viewer_init() {
 
 function plugin_calendar_viewer_convert($func_vars_array="")
 {
-  global $_calendar_viewer_msg_arg2, $_calendar_viewer_msg_noargs, $_calendar_viewer_msg_edit, $_calendar_viewer_read_more;
+  global $_calendar_viewer_msg_arg2, $_calendar_viewer_msg_noargs, $_calendar_viewer_msg_edit, $_calendar_viewer_read_more,$_calendar_viewer_contents;
   global $WikiName,$BracketName,$vars,$get,$post,$hr,$script,$trackback;
   global $anon_writable,$wiki_user_dir;
   global $comment_no,$h_excerpt,$digest,$use_xoops_comments;
@@ -102,6 +104,8 @@ function plugin_calendar_viewer_convert($func_vars_array="")
 	{
 		if (strtolower($option) == "notoday")
 			$notoday = true;
+		else if(strtolower(substr($option,0,9)) == "contents:")
+			$contents_lev = (int)substr($option,9);
 		else
 			$_options[] = $option;
 	}
@@ -319,6 +323,7 @@ if ($cal2 == 1){
   //$limit_pageの件数までインクルード
   $tmp = $limit_base;
   $kensu = 0;
+  $ct_list = "";
   while ($tmp < $limit_page){
     if (!isset($pagelist[$tmp])) break;
     $pagelist[$tmp] = preg_replace("/{$date_sep}-$/","",$pagelist[$tmp]);
@@ -333,7 +338,9 @@ if ($cal2 == 1){
 
 
 	//インクルード
-	$body = "<div class=\"style_calendar_body\" style=\"clear:both;\"><div style=\"width:100%;\">".$info_tag.include_page($page)."</div></div>";
+	list($_body,$_contents) = include_page($page,TRUE);
+	$ct_list .= $_contents;
+	$body = "<div class=\"style_calendar_body\" style=\"clear:both;\"><div style=\"width:100%;\">".$info_tag.$_body."</div></div>";
 
     $link = make_pagelink($page,preg_replace("/^.*\//","",strip_bracket($page)));
     if (check_editable($page,FALSE,FALSE)) $link .= " <a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\"><font size=\"-2\">(".$_calendar_viewer_msg_edit.")</font></a>";
@@ -342,7 +349,10 @@ if ($cal2 == 1){
     $tmp++;
     $kensu++;
   }
-
+	if ($contents_lev)
+	{
+		$return_body = "<!--contents list-->".$_calendar_viewer_contents.select_contents_by_level($ct_list,$contents_lev)."<!--/contents list-->".$return_body;
+	}
   //表示データがあったらナビバー表示
   if ($kensu) $return_body .= $navi_bar;
   

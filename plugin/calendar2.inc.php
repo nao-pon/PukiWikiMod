@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.22 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.23 2005/02/28 14:44:02 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -46,7 +46,7 @@ function plugin_calendar2_convert()
 	
 	$today_view = true;
 	$category_view = "";
-	$act = 0;
+	$contents_lev = $act = 0;
 	$args = func_get_args();
 	
 	if(func_num_args() == 0)
@@ -65,7 +65,10 @@ function plugin_calendar2_convert()
 				$today_view = false;
 			}
 			else if(strtolower(substr($arg,0,9)) == "category:"){
-				$category_view = substr($arg,8);
+				$category_view = htmlspecialchars(substr($arg,8));
+			}
+			else if(strtolower(substr($arg,0,9)) == "contents:"){
+				$contents_lev = (int)substr($arg,9);
 			}
 			else {
 				$pre = strip_bracket($arg);
@@ -191,12 +194,13 @@ function plugin_calendar2_convert()
   <tr>
     <td align="middle" class="style_td_caltop" colspan="7">
       <table style="width:100%;"><tr><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'&amp;category='.rawurlencode($category_view).'" title="'.$_calendar2_msg_prevmonth.'"><img src="./image/prev.png" alt="Prev" /></a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'&amp;ca='.rawurlencode($category_view).'&amp;co='.$contents_lev.'" title="'.$_calendar2_msg_prevmonth.'"><img src="./image/prev.png" alt="Prev" /></a>
       </td><td style="text-align:center;vertical-align:top;font-size:11px;">
        <form method="GET" action="'.$script.'">
         <input type="hidden" name="plugin" value="calendar2">
         <input type="hidden" name="file" value="'.$pre.'">
-        <input type="hidden" name="category" value="'.$category_view.'">
+        <input type="hidden" name="ca" value="'.$category_view.'">
+        <input type="hidden" name="co" value="'.$contents_lev.'">
         <select name="year" style="font-size:11px;">';
 		for ($i = 1970 ; $i < 2038 ; $i++){
 			if ($i == $year){
@@ -219,7 +223,7 @@ function plugin_calendar2_convert()
         </select>
         <input type="submit" value="Go" style="font-size:11px;">
       </td></form><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'&amp;category='.rawurlencode($category_view).'" title="'.$_calendar2_msg_nextmonth.'"><img src="./image/next.png" alt="Next" /></a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'&amp;ca='.rawurlencode($category_view).'&amp;co='.$contents_lev.'" title="'.$_calendar2_msg_nextmonth.'"><img src="./image/next.png" alt="Next" /></a>
       </td></tr></table>
       '.$today_tag.'
     </td>
@@ -259,7 +263,7 @@ function plugin_calendar2_convert()
 		if($cmd == "edit") $refer = "&amp;refer=$page_url";
 		else               $refer = "";
 		
-		$a_tag = "<a href=\"$script?plugin=calendar2&amp;file=$prefix_&amp;date=$linkdt&amp;category=".rawurlencode($category_view)."\" title=\"$title_tag\" class=\"small\">";
+		$a_tag = "<a href=\"$script?plugin=calendar2&amp;file=$prefix_&amp;date=$linkdt&amp;ca=".rawurlencode($category_view)."&amp;co={$contents_lev}\" title=\"$title_tag\" class=\"small\">";
 		$moblog_page = "[[".strip_bracket($page)."-0]]";
 		if((!is_page($page) && !is_page($moblog_page)) || ((is_page($page) || is_page($moblog_page)) && !check_readable($page,false,false))){
 			$td_style = "";
@@ -323,35 +327,36 @@ function plugin_calendar2_convert()
 	}
 
 	$ret .= "  </tr>\n</table>\n";
-  if ($today_view == true){
+	if ($today_view == true){
 		$page = sprintf("%s%4d-%02d-%02d", $prefix, $today[year], $today[mon], $today[mday]);
 		$h_date = sprintf("%4d-%02d-%02d", $today[year], $today[mon], $today[mday]);
-		//$page_url = rawurlencode($page);
 		global $trackback;
-		//$tb_tag = ($trackback)? "<div style=\"text-align:right\">[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($page)."\">TrackBack(".tb_count($page).")</a> ]</div>" : "";
-		//$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
 		$str = "<div class = \"style_calendar_date\">".$h_date."</div>";
+		$str .= "<!--contents list-->";
 		$__page = "";
 		$page_found = false;
+		$p_count = 0;
+		$ct_list = "";
 		for ($i=-1;$i<10;$i++)
 		{
 			$daynum = ($i !== -1)? "-".$i:"";
 			$_page = $page.$daynum;
 			// 閲覧権限チェック＋
-			if (is_page($_page) && check_readable($_page,false,false)) {
+			if (is_page($_page) && check_readable($_page,false,false))
+			{
+				$p_count ++;
 				$user_tag = get_pg_auther_name($_page);
 				make_user_link($user_tag);
 				$user_tag = make_link($user_tag);
 				$show_tag = "by ".$user_tag." at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/link.gif\" />");
-				//$tb_tag = ($trackback)? "<div style=\"text-align:right\">{$show_tag}  [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($_page)."\">TrackBack(".tb_count($_page).")</a> ]</div>" : "<div style=\"text-align:right\">{$show_tag}</div>";
-				
 				$comments_tag = ($use_xoops_comments)? " [ ".make_pagelink($_page,$_msg_pagecomment."(".get_pagecomment_count(get_pgid_by_name($_page)).")",'#page_comments')." ]" : "";
 				$tb_tag = ($trackback)? " [ ".make_pagelink($_page,$_msg_trackback."(".tb_count($_page).")",'#tb_body')." ]" : "";
 				$info_tag = "<div style=\"text-align:right\">by $user_tag at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/link.gif\" />")."<small>".$comments_tag.$tb_tag."</small></div>";
 				
-				
 				//インクルード
-				$str .= $info_tag.include_page($_page);
+				list($_body,$_contents) = include_page($_page,TRUE);
+				$str .= $info_tag.$_body;
+				$ct_list .= $_contents;
 				
 				if (check_editable($_page,FALSE,FALSE)) $str .= "<a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_calendar2_plugin_edit</a>";
 				$str .= "<div style=\"clear:both;\"></div><hr />";
@@ -391,24 +396,37 @@ function plugin_calendar2_convert()
 			}
 		}
 		
-  }else{
-    $str = "";
-  }
-  
-  $categorys = "";
-  if ($category_view)
-  {
+	}else{
+		$str = "";
+	}
+	
+	if ($contents_lev)
+	{
+		$str = str_replace("<!--contents list-->",select_contents_by_level($ct_list,$contents_lev),$str);
+	}
+	
+	$categorys = "";
+	if ($category_view)
+	{
 		$categorys = convert_html("****Categorys\n#ls2($category_view,pagename,notemplate,relatedcount)");
 	}
-	$ret .= "$categorys</td><td style=\"text-align:left;vertical-align:top;width:100%;\">".$str."</td></tr></table>";
-
-	if (exist_plugin_convert("calendar_viewer") && ($vars['file'] != "") && !$single_day){
-		$aryargs = "[[".$vars['file']."]],".substr($vars['date'],0,4)."-".substr($vars['date'],4,2).",view,cal2";
-		//$ret .= do_plugin_convert("calendar_viewer",$aryargs);
+	
+	$_contnts = $_body = "";
+	if (exist_plugin_convert("calendar_viewer") && ($vars['file'] != "") && !$single_day)
+	{
+		$_co_lev = ($contents_lev)? ",contents:{$contents_lev}":"";
+		$aryargs = "[[".$vars['file']."]],".substr($vars['date'],0,4)."-".substr($vars['date'],4,2).",view,cal2".$_co_lev;
 		do_plugin_init('calendar_viewer');
-		//$ret .= call_user_func_array('plugin_calendar_viewer_convert',explode(',',$aryargs));
-		$ret .= plugin_calendar_viewer_convert(explode(',',$aryargs));
+		list($_contents,$_body) = array_pad(preg_split("#<\!\-\-/contents list\-\->#",plugin_calendar_viewer_convert(explode(',',$aryargs))),2,"");
+		if (!$_body)
+		{
+			$_body = $_contents;
+			$_contents = "";
+		}
 	}
+	
+	$ret .= "$categorys</td><td style=\"text-align:left;vertical-align:top;width:100%;\">".$str.$_contents."</td></tr></table>";
+	$ret .= $_body;
 	unset($aryargs);
 
 	return $ret;
@@ -439,6 +457,11 @@ function plugin_calendar2_action()
 	
 	if (isset($vars['category']) && ($vars['category']))
 		$aryargs .= ",Category".rawurldecode($vars['category']);
+	if (isset($vars['ca']) && ($vars['ca']))
+		$aryargs .= ",Category".rawurldecode($vars['ca']);
+	
+	if (isset($vars['co']) && ($vars['co']))
+		$aryargs .= ",contents:".(int)($vars['co']);
 	
 	$ret["msg"] = "calendar ".htmlspecialchars($vars['page'])."/".$yy;
 	$ret["body"] = do_plugin_convert("calendar2",$aryargs);
