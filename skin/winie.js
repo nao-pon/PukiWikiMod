@@ -45,9 +45,55 @@ function pukiwiki_eclr(){
 	pukiwiki_elem = NULL;
 }
 
+function pukiwiki_ins(v)
+{
+	if(!pukiwiki_elem)
+	{
+		alert(pukiwiki_msg_elem);
+		return;	
+	}
+	
+	if (v == "&(){};")
+	{
+		inp = prompt(pukiwiki_msg_inline1, '');
+		if (inp == null) {pukiwiki_elem.focus();return;}
+		v = "&" + inp;
+		inp = prompt(pukiwiki_msg_inline2, '');
+		if (inp == null) {pukiwiki_elem.focus();return;}
+		v = v + "(" + inp + ")";
+		inp = prompt(pukiwiki_msg_inline3, '');
+		if (inp == null) {pukiwiki_elem.focus();return;}
+		v = v + "{" + inp + "}";
+		v = v + ";";
+	}
+	
+	if (pukiwiki_elem.type=="textarea")
+	{
+		document.body.scrollLeft=pukiwiki_scrx;
+		document.body.scrollTop=pukiwiki_scry;
+		var r=pukiwiki_elem.createTextRange();
+		r.moveToPoint(pukiwiki_rngx,pukiwiki_rngy);
+		r.text= v;
+		pukiwiki_elem.focus();
+		pukiwiki_pos();
+	}
+	else if (pukiwiki_elem.type=="text")
+	{
+		var r=pukiwiki_elem.createTextRange();
+		r.collapse();
+		r.moveStart("character",pukiwiki_elem.value.length-pukiwiki_crl);
+		r.text= v;
+		pukiwiki_elem.focus();
+	}
+}
+
 function pukiwiki_face(v)
 {
-	if(!pukiwiki_elem)return;
+	if(!pukiwiki_elem)
+	{
+		alert(pukiwiki_msg_elem);
+		return;	
+	}
 
 	if (pukiwiki_elem.type=="textarea")
 	{
@@ -70,7 +116,12 @@ function pukiwiki_face(v)
 }
 
 function pukiwiki_tag(v) {
-	if (!document.selection) return;
+	if (!document.selection || !pukiwiki_elem)
+	{
+		alert(pukiwiki_msg_elem);
+		return;	
+	}
+	
 	var str =
 		document.selection.createRange().text;
 	if (!str)
@@ -102,12 +153,17 @@ function pukiwiki_tag(v) {
 }
 
 function pukiwiki_linkPrompt(v) {
-	if (!document.selection) return;
+	if (!document.selection || !pukiwiki_elem)
+	{
+		alert(pukiwiki_msg_elem);
+		return;	
+	}
+
 	var str = document.selection.createRange().text;
 	if (!str)
 	{
-		alert(pukiwiki_msg_select);
-		return;
+		str = prompt(pukiwiki_msg_link, '');
+		if (str == null) {pukiwiki_elem.focus();return;}
 	}
 	var default_url = "http://";
 	regex = "^s?https?://[-_.!~*'()a-zA-Z0-9;/?:@&=+$,%#]+$";
@@ -119,6 +175,29 @@ function pukiwiki_linkPrompt(v) {
 		document.selection.createRange().text = '[[' + str + ':' + my_link + ']]';
 	pukiwiki_elem.focus();
 	//if (pukiwiki_elem != null) pukiwiki_elem = null;
+}
+
+function pukiwiki_charcode()
+{
+	if (!document.selection || !pukiwiki_elem)
+	{
+		alert(pukiwiki_msg_elem);
+		return;	
+	}
+
+	var str = document.selection.createRange().text;
+	if (!str)
+	{
+		alert(pukiwiki_msg_select);
+		return;
+	}
+	
+	var j ="";
+	for(var n = 0; n < str.length; n++) j += ("&#"+(str.charCodeAt(n))+";");
+	str = j;
+		
+	document.selection.createRange().text = str;
+	pukiwiki_elem.focus();
 }
 
 function pukiwiki_initTexts()

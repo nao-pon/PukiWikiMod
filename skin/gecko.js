@@ -15,11 +15,53 @@ function pukiwiki_face(v)
 		var se = pukiwiki_getSelectEnd(pukiwiki_elem);
 		var s1 = (pukiwiki_elem.value).substring(0,ss);
 		var s2 = (pukiwiki_elem.value).substring(se,pukiwiki_getTextLength(pukiwiki_elem));
-		if (!s1 && !s2) s1 = pukiwiki_elem.value;
-		pukiwiki_elem.value = s1 + pukiwiki_getMozSelection(pukiwiki_elem) + ' ' + v + ' ' + s2;
+		var s3 = pukiwiki_getMozSelection(pukiwiki_elem);
+		if (!s1 && !s2 && !s3) s1 = pukiwiki_elem.value;
+		pukiwiki_elem.value = s1 + s3 + ' ' + v + ' ' + s2;
 		se = se + v.length + 2;
 		pukiwiki_elem.setSelectionRange(se, se);
 		pukiwiki_elem.focus();
+	}
+	else
+	{
+		alert(pukiwiki_msg_elem);
+		return;	
+	}
+}
+
+function pukiwiki_ins(v)
+{
+	if (pukiwiki_elem != null)
+	{
+		if (v == "&(){};")
+		{
+			inp = prompt(pukiwiki_msg_inline1, '');
+			if (inp == null) {pukiwiki_elem.focus();return;}
+			v = "&" + inp;
+			inp = prompt(pukiwiki_msg_inline2, '');
+			if (inp == null) {pukiwiki_elem.focus();return;}
+			v = v + "(" + inp + ")";
+			inp = prompt(pukiwiki_msg_inline3, '');
+			if (inp == null) {pukiwiki_elem.focus();return;}
+			v = v + "{" + inp + "}";
+			v = v + ";";
+		}
+		
+		var ss = pukiwiki_getSelectStart(pukiwiki_elem);
+		var se = pukiwiki_getSelectEnd(pukiwiki_elem);
+		var s1 = (pukiwiki_elem.value).substring(0,ss);
+		var s2 = (pukiwiki_elem.value).substring(se,pukiwiki_getTextLength(pukiwiki_elem));
+		var s3 = pukiwiki_getMozSelection(pukiwiki_elem);
+		if (!s1 && !s2 && !s3) s1 = pukiwiki_elem.value;
+		pukiwiki_elem.value = s1 + s3 + v + s2;
+		se = se + v.length + 2;
+		pukiwiki_elem.setSelectionRange(se, se);
+		pukiwiki_elem.focus();
+	}
+	else
+	{
+		alert(pukiwiki_msg_elem);
+		return;	
 	}
 }
 
@@ -33,6 +75,9 @@ function pukiwiki_tag(v)
 		var s2 = (pukiwiki_elem.value).substring(se,pukiwiki_getTextLength(pukiwiki_elem));
 		
 		var str = pukiwiki_getMozSelection(pukiwiki_elem);
+		
+		if (!s1 && !s2 && !str) s1 = pukiwiki_elem.value;
+		
 		if (!str)
 		{
 			alert(pukiwiki_msg_select);
@@ -63,12 +108,50 @@ function pukiwiki_tag(v)
 	}
 	else
 	{
-		alert(pukiwiki_msg_select);
-		return;
+		alert(pukiwiki_msg_elem);
+		return;	
 	}
 }
 
 function pukiwiki_linkPrompt(v)
+{
+	if (pukiwiki_elem != null)
+	{
+		var ss = pukiwiki_getSelectStart(pukiwiki_elem);
+		var se = pukiwiki_getSelectEnd(pukiwiki_elem);
+		var s1 = (pukiwiki_elem.value).substring(0,ss);
+		var s2 = (pukiwiki_elem.value).substring(se,pukiwiki_getTextLength(pukiwiki_elem));
+		
+		var str = pukiwiki_getMozSelection(pukiwiki_elem);
+		
+		if (!s1 && !s2 && !str) s1 = pukiwiki_elem.value;
+		
+		if (!str)
+		{
+			str = prompt(pukiwiki_msg_link, '');
+			if (str == null) {pukiwiki_elem.focus();return;}
+		}
+		var default_url = "http://";
+		regex = "^s?https?://[-_.!~*'()a-zA-Z0-9;/?:@&=+$,%#]+$";
+		var my_link = prompt(pukiwiki_msg_url, default_url);
+		if (my_link != null)
+		{
+			str = '[[' + str + ':' + my_link + ']]';
+			pukiwiki_elem.value = s1 + str + s2;
+			se = ss + str.length;
+			pukiwiki_elem.setSelectionRange(se, se);
+			pukiwiki_elem.focus();
+		
+		}
+	}
+	else
+	{
+		alert(pukiwiki_msg_elem);
+		return;	
+	}
+}
+
+function pukiwiki_charcode()
 {
 	if (pukiwiki_elem != null)
 	{
@@ -83,23 +166,19 @@ function pukiwiki_linkPrompt(v)
 			alert(pukiwiki_msg_select);
 			return;
 		}
-		var default_url = "http://";
-		regex = "^s?https?://[-_.!~*'()a-zA-Z0-9;/?:@&=+$,%#]+$";
-		var my_link = prompt('URL: ', default_url);
-		if (my_link != null)
-		{
-			str = '[[' + str + ':' + my_link + ']]';
-			pukiwiki_elem.value = s1 + str + s2;
-			se = ss + str.length;
-			pukiwiki_elem.setSelectionRange(se, se);
-			pukiwiki_elem.focus();
+		var j ="";
+		for(var n = 0; n < str.length; n++) j += ("&#"+(str.charCodeAt(n))+";");
+		str = j;
 		
-		}
+		pukiwiki_elem.value = s1 + str + s2;
+		se = ss + str.length;
+		pukiwiki_elem.setSelectionRange(ss, se);
+		pukiwiki_elem.focus();
 	}
 	else
 	{
-		alert(pukiwiki_msg_select);
-		return;
+		alert(pukiwiki_msg_elem);
+		return;	
 	}
 }
 
