@@ -1,5 +1,5 @@
 <?php
-/* $Id: vim2html.inc.php,v 1.1 2003/06/28 06:01:54 nao-pon Exp $
+/* $Id: vim2html.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
 vimで
     :so $VIMRUNTIME/syntax/2html.vim
 これを実行して出来るhtmlをwiki内に全て又は一部を表示する。

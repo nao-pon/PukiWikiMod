@@ -5,7 +5,7 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: ls.inc.php,v 1.1 2003/06/28 06:01:55 nao-pon Exp $
+ * $Id: ls.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
  */
 
 function plugin_ls_convert()

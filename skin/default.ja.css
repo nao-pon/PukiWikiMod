@@ -484,19 +484,3 @@ input.pcmt
 	margin-right:.5em;
 	border:none;
 }
-
-/* source.inc.php */
-div.wiki_source
-{
-	border-top:    #DDDDEE 1px solid;
-	border-bottom: #888899 1px solid;
-	border-left:   #DDDDEE 1px solid;
-	border-right:  #888899 1px solid;
-	padding: .5em;
-	margin-left: 1em;
-	margin-right: 2em;
-	white-space: pre;
-	background-color: #F0F8FF;
-	color: black;
-	line-height:150%;
-}

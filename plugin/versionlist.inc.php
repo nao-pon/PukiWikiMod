@@ -5,7 +5,7 @@
  * CopyRight 2002 S.YOSHIMURA GPL2
  * http://masui.net/pukiwiki/ yosimura@excellence.ac.jp
  *
- * $Id: versionlist.inc.php,v 1.1 2003/06/28 06:01:54 nao-pon Exp $
+ * $Id: versionlist.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
  */
 
 function plugin_versionlist_convert()

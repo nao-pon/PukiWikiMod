@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: new.inc.php,v 1.1 2003/06/28 06:01:55 nao-pon Exp $
+// $Id: new.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
 //
 
 // 全体の表示フォーマット

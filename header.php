@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: header.php,v 1.1 2003/06/28 06:01:52 nao-pon Exp $
+// $Id: header.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
 
 include("../../mainfile.php");
 ?>

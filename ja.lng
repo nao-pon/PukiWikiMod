@@ -152,22 +152,6 @@ $_calendar2_plugin_empty = '%sは書いていません。(^^ゞ';
 $_attach_plugin_files = '%s件';
 
 ///////////////////////////////////////
-// PukiWikiMod (Use Define)
-// define("_MD_PUKIWIKI_","");
-define("_MD_PUKIWIKI_MAIL_FIRST","PukiWikiへ以下の投稿がありました。");
-define("_MD_PUKIWIKI_MAIL_SUBJECT","PukiWikiへの投稿:");
-define("_MD_PUKIWIKI_MAIL_URL","[URL] ");
-define("_MD_PUKIWIKI_MAIL_PAGENAME","[ページ名] ");
-define("_MD_PUKIWIKI_MAIL_POSTER","投稿者: ");
-define("_MD_PUKIWIKI_MAIL_DEL_LINES","----------削除された行------------");
-define("_MD_PUKIWIKI_MAIL_ADD_LINES","----------追加された行------------");
-define("_MD_PUKIWIKI_MAIL_ALL_LINES","----------全　文------------------");
-define("_MD_PUKIWIKI_MAIL_HEAD","----------%sで追加された行------------");
-define("_MD_PUKIWIKI_MAIL_FOOT","-------------------以上--------------------");
-define("_MD_PUKIWIKI_NO_AUTH","指定されたページを作成する権限がありません。");
-
-
-///////////////////////////////////////
 // help 'wiki format rule'.
 $rule_body = '
 <h3>テキスト整形のルール</h3>

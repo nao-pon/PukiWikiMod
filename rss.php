@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.1 2003/06/28 06:01:52 nao-pon Exp $
+// $Id: rss.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力

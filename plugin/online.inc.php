@@ -1,5 +1,5 @@
 <?php
-// $Id: online.inc.php,v 1.1 2003/06/28 06:01:53 nao-pon Exp $
+// $Id: online.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
 
 // user list file
 define(USR_LST, "counter/user.dat");

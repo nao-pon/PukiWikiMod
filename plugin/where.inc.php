@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: where.inc.php,v 1.1 2003/06/28 06:01:55 nao-pon Exp $
+// $Id: where.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
 //
 // 指定ページへの階層をリンク付で表示するプラグイン
 //

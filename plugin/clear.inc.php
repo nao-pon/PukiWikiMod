@@ -1,6 +1,6 @@
 <?php
 //
-// $Id: clear.inc.php,v 1.1 2003/06/28 06:01:53 nao-pon Exp $
+// $Id: clear.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
 //
 
 function plugin_clear_convert() {

@@ -1,5 +1,5 @@
 <?php
-// $Id: admin_header.php,v 1.1 2003/06/28 06:01:56 nao-pon Exp $
+// $Id: admin_header.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
 
 include("../../../mainfile.php");
 include_once(XOOPS_ROOT_PATH."/class/xoopsmodule.php");

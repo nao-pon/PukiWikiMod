@@ -1,35 +1,24 @@
 <?php
-// $Id: countdown.inc.php,v 1.1 2003/06/28 06:01:54 nao-pon Exp $
+// $Id: countdown.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
 
 /*
- * countdown.inc.php
+ * age.inc.php
  * License: GPL
  * Author: nao-pon http://hypweb.net
- * Last-Update: 2003-06-27
+ * Last-Update: 2003-06-11
  *
  * カウントダウンプラグイン
  */
-// 初期設定　国際化対応　ってコメントは日本語　(^^ゞ
-function plugin_countdown_init() {
-	if (LANG == "ja") {
-		$msg['_countdown_msg'] = "%1\$sまであと%2\$d%3\$s日";
-	} else {
-		$msg['_countdown_msg'] = "%2\$d%3\$sday(s) to %1\$s";
-	}
-	set_plugin_messages($msg);
-}
+
 // インラインプラグインとしての挙動
 function plugin_countdown_inline() {
-	global $_msg_week;
-	global $_countdown_msg;
-	
 	$just_day = "";
   list($y,$m,$d,$title) = func_get_args();
   //第[1-5]？曜日対応
-  $my_lng_week = "|".implode("|",$_msg_week);
-  if (preg_match("/(sun|mon|tue|wed|thu|fri|sat".$my_lng_week.")([1-5])?/",$d,$arg)) {
+  if (preg_match("/(sun|mon|tue|wed|thu|fri|sat|日|月|火|水|木|金|土)([1-5])?/",$d,$arg)) {
+		$j_week = array("日","月","火","水","木","金","土");
 		$e_week = array("sun","mon","tue","wed","thu","fri","sat");
-		if (LANG != "en") $arg[1] = str_replace($_msg_week,$e_week,$arg[1]);
+		$arg[1] = str_replace($j_week,$e_week,$arg[1]);
 		$y2=$y;
 		if (!$y2) $y2=date("Y");
 		$f_day = mktime(0,0,0,$m,1,$y2);
@@ -51,15 +40,8 @@ function plugin_countdown_inline() {
 			$y ++;
 		}
 	}
-	//日付の妥当性チェック
-	if (!checkdate($m,$d,$y)) return false;
-	
-	if ($title) {
-		$title = htmlspecialchars($title);
-		return sprintf($_countdown_msg,$title,plugin_countdown_day($y,$m,$d),$just_day);
-	} else {
-		return plugin_countdown_day($y,$m,$d).$just_day;
-	}
+	if ($title) return $title."まであと".plugin_countdown_day($y,$m,$d).$just_day."日";
+	return plugin_countdown_day($y,$m,$d).$just_day;
 }
 
 // 日算出

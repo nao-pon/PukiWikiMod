@@ -1,5 +1,5 @@
 <?php
-// $Id: include.inc.php,v 1.1 2003/06/28 06:01:56 nao-pon Exp $
+// $Id: include.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
 function plugin_include_convert()
 {
 	global $script,$get,$post,$vars,$WikiName,$BracketName,$hr,$digest;

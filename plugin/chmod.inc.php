@@ -1,5 +1,5 @@
 <?php
-// $Id: chmod.inc.php,v 1.1 2003/06/28 06:01:54 nao-pon Exp $
+// $Id: chmod.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
 if(LANG == "ja"){
 	define("CHMOD_TITLE", "パーミッションの変更");
 	define("CHMOD_EXECUTE", "実行");

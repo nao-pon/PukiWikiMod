@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.1 2003/06/28 06:01:52 nao-pon Exp $
+// $Id: index.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
  
 include("header.php");
 $xoopsOption['show_rblock'] =0;

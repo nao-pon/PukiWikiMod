@@ -1,5 +1,5 @@
 <?php
-// $Id: paint.inc.php,v 1.1 2003/06/28 06:01:54 nao-pon Exp $
+// $Id: paint.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
 /*
 Last-Update:2002-10-30 rev.20
 

@@ -1,5 +1,5 @@
 <?php
-// $Id: modinfo.php,v 1.1 2003/06/28 06:01:53 nao-pon Exp $
+// $Id: modinfo.php,v 1.2 2003/06/28 11:33:05 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_MI_PUKIWIKI_RECENT", "Recent");

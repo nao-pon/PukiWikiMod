@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.1 2003/06/28 06:01:51 nao-pon Exp $
+// $Id: html.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -122,10 +122,8 @@ function convert_html($string)
 	//$string = preg_replace("/^#freeze\n/","",$string);
 	$string = preg_replace("/^#freeze(\tuid:([0-9]+))?\n/","",$string);
 
-	//~\nは&br;に変換して1行として処理 nao-pon 03/06/25
-	$string = str_replace("~\n","&br;",$string);
-	$string = str_replace("&br; ","~\n ",$string);
-
+	//テーブルで複数行入力を可能にするための処理
+	//$string = ereg_replace("->\n","&br;",$string);
 	//表内箇所の判定のため表と表の間は空行が2行必要
 	$string = str_replace("|\n\n|","|\n\n\n|",$string);
 	//表内はすべて置換
@@ -422,18 +420,18 @@ function convert_html($string)
 								$td = preg_replace("/SC:\(([^),]*)(,once|,1)?\)/i","",$td);
 							}
 							// セル内文字揃え指定
-							if (preg_match("/^(LEFT|CENTER|RIGHT)?(:)(TOP|MIDDLE|BOTTOM)?([^\r]*)$/",$td,$tmp)) {
+							if (preg_match("/^(LEFT|CENTER|RIGHT)?:(TOP|MIDDLE|BOTTOM)?([^\r]*)$/",$td,$tmp)) {
 								if ($tmp[1]) {
 									$style = ' align="'.strtolower($tmp[1]).'"';
 								} else {
 									if ($td_name == "td") $style = $td_align[$i];
 								}
-								if ($tmp[3]) {
-									$style .= ' valign="'.strtolower($tmp[3]).'"';
+								if ($tmp[2]) {
+									$style .= ' valign="'.strtolower($tmp[2]).'"';
 								} else {
 									//まだ規定値は準備中
 								}
-								$td = (!$tmp[1] && !$tmp[3])? $tmp[2].$tmp[4] : $tmp[4];
+								$td = $tmp[3];
 							} else {
 								if ($td_name == "td") $style = $td_align[$i];
 							}
@@ -696,28 +694,13 @@ function inline_after($text)
 // インラインプラグインの処理
 function inline3($name,$arg,$body,$all)
 {
-	//&hoge(){...}; &fuga(){...}; のbodyが'...}; &fuga(){...'となるので、前後に分ける
-	$after = '';
-	if (preg_match("/^ ((?!};).*?) }; (.*?) &amp; (\w+) (?: \( ([^()]*) \) )? { (.+)$/x",$body,$matches))
-	{
-		$body = $matches[1];
-		$after = inline3($matches[3],$matches[4],$matches[5],$matches[0]);
-		$after = $matches[2].$after;
-		if ($arg) {
-			$all = "&amp;".$name."(".$arg."){".$body."};".$after;
-		} else {
-			$all = "&amp;".$name."{".$body."};".$after;
-		}
-	}
 	if(exist_plugin_inline($name)) {
 		//echo htmlspecialchars("$name:$arg:$body")."<br>";
-		$str = do_plugin_inline($name,$arg,$body);
-		if ($str !== FALSE){ //成功
-			return $str.$after;
-		}
+		return do_plugin_inline($name,$arg,$body);
+	} else {
+		return $all;
 	}
-	// プラグインが存在しないか、変換に失敗
-	return $all;
+	
 }
 // インラインプラグイン用エスケープ後処理
 function inline_out($a,$b,$c)

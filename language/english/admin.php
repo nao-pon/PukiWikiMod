@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.1 2003/06/28 06:01:53 nao-pon Exp $
+// $Id: admin.php,v 1.2 2003/06/28 11:33:05 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE1", "PukiWiki Basic Settings");

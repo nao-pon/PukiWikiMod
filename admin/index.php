@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.1 2003/06/28 06:01:56 nao-pon Exp $
+// $Id: index.php,v 1.2 2003/06/28 11:33:02 nao-pon Exp $
 
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -25,7 +25,7 @@ function changePermit($_target_dir){
 
 function writeConfig(){
 	global $xoopsConfig, $HTTP_POST_VARS;
-	global $wiki_defaultpage, $wiki_modifier, $wiki_modifierlink, $wiki_function_freeze, $wiki_adminpass, $wiki_css, $wiki_anon_writable, $wiki_hide_navi,$_wiki_mail_sw;
+	global $wiki_defaultpage, $wiki_modifier, $wiki_modifierlink, $wiki_function_freeze, $wiki_adminpass, $wiki_css, $wiki_anon_writable, $wiki_hide_navi;
 
 	$filename = _AM_WIKI_CONFIG_FILE;
 	$file = fopen($filename, "w");
@@ -36,9 +36,8 @@ function writeConfig(){
 	\$defaultpage = '$wiki_defaultpage';
 	\$modifier = '$wiki_modifier';
 	\$modifierlink = '$wiki_modifierlink';
-	\$wiki_writable = $wiki_anon_writable;
+	\$anon_writable = $wiki_anon_writable;
 	\$hide_navi = $wiki_hide_navi;
-	\$wiki_mail_sw = $_wiki_mail_sw;
 	\$function_freeze = $wiki_function_freeze;\n";
 
 	$content .= "\n?>";
@@ -98,7 +97,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $anon_writable, $hide_navi, $wiki_mail_sw;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $anon_writable, $hide_navi;
 	xoops_cp_header();
 	OpenTable();
 	checkPermit();
@@ -107,16 +106,10 @@ function displayForm(){
 	} else {
 		$_hide_navi_0 = " checked";
 	}
-	$_mail_sw_ = array();
-	if(isset($wiki_mail_sw)){
-		$_mail_sw_[$wiki_mail_sw] = " checked";
-	}
-	if($anon_writable === 0){
-		$_anon_writable_all = " checked";
-	} elseif($anon_writable === 1) {
-		$_anon_writable_regist = " checked";
+	if($anon_writable){
+		$_anon_writable = " checked";
 	} else {
-		$_anon_writable_admin = " checked";
+		$_anon_nowritable = " checked";
 	}
 	if($function_freeze){
 		$_ff_enable = " checked";
@@ -167,22 +160,14 @@ function displayForm(){
 	<tr><td valign='top'>
 		"._AM_WIKI_ANONWRITABLE."
 	</td><td>
-		<input type='radio' name='wiki_anon_writable' value='0'".$_anon_writable_all.">"._AM_WIKI_ALL."
-		<input type='radio' name='wiki_anon_writable' value='1'".$_anon_writable_regist.">"._AM_WIKI_REGIST."
-		<input type='radio' name='wiki_anon_writable' value='2'".$_anon_writable_admin.">"._AM_WIKI_ADMIN."
+		<input type='radio' name='wiki_anon_writable' value='1'".$_anon_writable.">"._AM_WIKI_LEAVE."
+		<input type='radio' name='wiki_anon_writable' value='0'".$_anon_nowritable.">"._AM_WIKI_NOLEAVE."
 	</td></tr>
 	<tr><td valign='top'>
 		"._AM_WIKI_HIDE_NAVI."
 	</td><td>
 		<input type='radio' name='wiki_hide_navi' value='1'".$_hide_navi_1.">"._AM_WIKI_NONAVI."
 		<input type='radio' name='wiki_hide_navi' value='0'".$_hide_navi_0.">"._AM_WIKI_NAVI."
-	</td></tr>
-	<tr><td valign='top'>
-		"._AM_WIKI_MAIL_SW."
-	</td><td>
-		<input type='radio' name='_wiki_mail_sw' value='2'".$_mail_sw_[2].">"._AM_WIKI_MAIL_ALL."
-		<input type='radio' name='_wiki_mail_sw' value='1'".$_mail_sw_[1].">"._AM_WIKI_MAIL_NOADMIN."
-		<input type='radio' name='_wiki_mail_sw' value='0'".$_mail_sw_[0].">"._AM_WIKI_MAIL_NONE."
 	</td></tr>
 	</table><p>
 	<input type='hidden' name='wiki_admin_mode' value='change_config'>

@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.1 2003/06/28 06:01:55 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -98,6 +98,11 @@ function plugin_pcomment_convert() {
 	if ($params['above'] || $params['up']) { $dir = 1; }
 	if ($params['below'] || $params['down']) { $dir = 0; } //両方指定されたら下に (^^;
 	
+	//メール送信オプション
+	$s_mail = 0;
+	if ($params['mail']) { $s_mail = 1; }
+	
+
 	//コメントを取得
 	list($comments, $digest) = pcmt_get_comments($_page,$count,$dir,$params['reply']);
 
@@ -135,6 +140,7 @@ function plugin_pcomment_convert() {
   <input type="hidden" name="page" value="$f_page" />
   <input type="hidden" name="nodate" value="$f_nodate" />
   <input type="hidden" name="dir" value="$dir" />
+  <input type="hidden" name="mail" value="$s_mail" />
   $radio $title $name $comment
   <input type="submit" value="$_pcmt_btn_comment" />
   </div>
@@ -254,21 +260,36 @@ function pcmt_insert($page) {
 	file_write(DATA_DIR, $page, $new);
 
 	// メール送信 by nao-pon
-	if (WIKI_MAIL_NOTISE){
+	if ($post['mail']){
 		global $xoopsConfig;
-		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_URL."XOOPS_URL/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["refer"]))."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.strip_bracket(trim($name))."\n";
-		$mail_body .= sprintf(_MD_PUKIWIKI_MAIL_HEAD,"pcomment")."\n";
+
+/* pcommentで削除されるデータｰはないので差分は必要ない。
+		//- メール用差分データの作成
+		$mail_add = $mail_del = "";
+		$diffdata_ar = array();
+		$diffdata_ar=split("\n",$diffdata);
+		foreach($diffdata_ar as $diffdata_line){
+			if (ereg("^\+(.*)",$diffdata_line,$regs)){
+				$mail_add .= $regs[1]."\n";
+			}
+			if (ereg("^\-(.*)",$diffdata_line,$regs)){
+				$mail_del .= $regs[1]."\n";
+			}
+		}
+*/
+		$mail_body = "PukiWikiへ以下の投稿がありました。\n";
+		$mail_body .= "[URL] ".XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
+		$mail_body .= "[ページ名] ".strip_bracket(trim($post["refer"]))."\n";
+		$mail_body .= "投稿者: ".strip_bracket(trim($name))."\n";
+		$mail_body .= "----------pcommentで追加された行------------\n";
 		$mail_body .= $msg;
-		$mail_body .= _MD_PUKIWIKI_MAIL_FOOT."\n";
+		$mail_body .= "-------------------以上---------------------\n";
 		$xoopsMailer =& getMailer();
 		$xoopsMailer->useMail();
 		$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
 		$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
 		$xoopsMailer->setFromName($xoopsConfig['sitename']);
-		$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["refer"])));
+		$xoopsMailer->setSubject("PukiWikiへの投稿:".strip_bracket(trim($post["refer"])));
 		$xoopsMailer->setBody($mail_body);
 		$xoopsMailer->send();
 		//メール送信ここまで by nao-pon

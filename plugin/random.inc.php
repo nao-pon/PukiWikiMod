@@ -1,5 +1,5 @@
 <?php
-// $Id: random.inc.php,v 1.1 2003/06/28 06:01:54 nao-pon Exp $
+// $Id: random.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.2
 

@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.1 2003/06/28 06:01:56 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.2 2003/06/28 11:33:05 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
