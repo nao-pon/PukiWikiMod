@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.6 2004/10/14 13:05:31 nao-pon Exp $
+// $Id: xoops_version.php,v 1.7 2004/11/24 14:19:59 nao-pon Exp $
  
 $modversion['name'] = "PukiWiki";
 $modversion['version'] = "1.0.x";

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.32 2004/11/02 00:10:12 nao-pon Exp $
+// $Id: func.php,v 1.33 2004/11/24 14:19:59 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)

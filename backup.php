@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: backup.php,v 1.4 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: backup.php,v 1.5 2004/11/24 14:19:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // バックアップデータを作成する

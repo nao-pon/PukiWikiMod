@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: proxy.php,v 1.8 2004/09/07 12:13:19 nao-pon Exp $
+// $Id: proxy.php,v 1.9 2004/11/24 14:19:59 nao-pon Exp $
 //
 
 /*

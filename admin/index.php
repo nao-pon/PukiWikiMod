@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.26 2004/11/01 09:03:55 nao-pon Exp $
+// $Id: index.php,v 1.27 2004/11/24 14:22:06 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -516,7 +516,7 @@ function db_check()
 	}
 	else
 	{
-		// title귩믁돿궢궫
+		// titleㆂ케꼴ㅇㅏ
 		$query = "select `title` FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." LIMIT 1;";
 		if(!$result=$xoopsDB->query($query))
 		{
@@ -526,7 +526,7 @@ function db_check()
 				echo $query;
 			}
 		}
-		// update귩믁돿궢궫 04/1/27
+		// updateㆂ케꼴ㅇㅏ 04/1/27
 		$query = "select `update` FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." LIMIT 1;";
 		if(!$result=$xoopsDB->query($query))
 		{
@@ -629,6 +629,4 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 		changePermit(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/".$wiki_permit_change_dir."/");
 	}
 }
-
-?>
 

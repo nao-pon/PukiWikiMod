@@ -1,5 +1,5 @@
 <?php
-// $Id: menu.php,v 1.3 2004/06/06 12:55:14 nao-pon Exp $
+// $Id: menu.php,v 1.4 2004/11/24 14:22:06 nao-pon Exp $
 
 $adminmenu[0] = array(
 	'title' => _MI_PUKIWIKI_ADMENU ,
@@ -11,4 +11,3 @@ $adminmenu[1] = array(
 	'link' => "admin/myblocksadmin.php"
 	);
 ?>
-
