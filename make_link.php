@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.28 2004/11/01 14:13:19 nao-pon Exp $
+// $Id: make_link.php,v 1.29 2004/11/02 00:10:12 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -44,7 +44,7 @@ class InlineConverter
 				'wikiname',      // WikiName
 				'autolink_a',    // AutoLink(アルファベット)
 				//'eword',
-				'escape',        // escape
+				//'escape',        // escape
 			);
 		}
 		if ($excludes !== NULL)
@@ -825,7 +825,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	if ($not_where && isset($linktag[$page.$alias])) return $linktag[$page.$alias];
 	
 	$s_page = htmlspecialchars(strip_bracket($page));
-	$s_alias = ($alias == '') ? $s_page : htmlspecialchars($alias);
+	$s_alias = ($alias == '') ? $s_page : $alias;
 	
 	if ($page == '')
 	{
@@ -873,7 +873,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	{
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 		if ($not_where && !$alias && preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name))
-			$s_alias = htmlspecialchars($f_name[1].get_heading($page));
+			$s_alias = $f_name[1].get_heading($page);
 		$passage = get_pg_passage($page,FALSE);
 		$title = $link_compact ? '' : " title=\"$s_page$passage\"";
 

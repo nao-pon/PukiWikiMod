@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.31 2004/09/29 00:04:41 nao-pon Exp $
+// $Id: func.php,v 1.32 2004/11/02 00:10:12 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -269,12 +269,13 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 	foreach($pages as $file=>$page)
 	{
 		$passage = get_pg_passage($page);
-		$_page = $page = strip_bracket($page);
+		$page = strip_bracket($page);
+		$_page = htmlspecialchars($page);
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-		if (preg_match("/^(.*\/)?[0-9\-]+$/",$page,$f_page))
+		if (preg_match("/^(.*\/)?[0-9\-]+$/",$_page,$f_page))
 			$_page = $f_page[1].get_heading($page);
 		
-		$alias = ($prefix)? substr($_page,strlen($prefix)+1):"";
+		$alias = ($prefix)? substr($_page,strlen(htmlspecialchars($prefix))+1):"";
 		
 		$chiled = get_child_counts($page);
 		$chiled = ($chiled)? " [<a href='$script?plugin=list&prefix=".rawurlencode(strip_bracket($page))."'>+$chiled</a>]":"";

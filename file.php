@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.41 2004/11/01 14:13:19 nao-pon Exp $
+// $Id: file.php,v 1.42 2004/11/02 00:10:12 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -995,7 +995,7 @@ function get_heading($page)
 	$res = $xoopsDB->query($query);
 	if (!$res) return "";
 	$ret = mysql_fetch_row($res);
-	return $ret[12];
+	return htmlspecialchars($ret[12]);
 }
 
 //ページ名から最初の見出しを得る(ファイルから)
