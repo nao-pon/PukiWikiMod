@@ -61,7 +61,7 @@ function plugin_gimage_convert()
 {
 	global $plugin_gimage_dataset,$script,$vars;
 	
-	$start = getmicrotime();
+	//$start = getmicrotime();
 	
 	$array = func_get_args();
 	
@@ -91,7 +91,8 @@ function plugin_gimage_convert()
 		$vars['mc_refresh'][] = "?plugin=gimage&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&q=".rawurlencode($query)."&m=".rawurlencode($qmode);
 	}
 	
-	return "<div>".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>"."<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."($refresh)</div>";
+	//return "<div>".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>"."<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."($refresh)</div>";
+	return "<div>".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>";
 }
 
 function plugin_gimage_search($q,$qmode,$do_refresh=FALSE)
