@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.11 2004/10/07 00:59:56 nao-pon Exp $
+// $Id: db_func.php,v 1.12 2004/10/26 14:38:52 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -167,6 +167,7 @@ function get_relaypage_by_name($page)
 	}
 	
 	$where .= "AND name NOT LIKE ':%' ";
+	$where .= "AND editedtime !=0 ";
 	
 	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id<$this_id ".$where."ORDER BY id DESC LIMIT 1;";
 	$ret = mysql_fetch_row($xoopsDB->query($query));
