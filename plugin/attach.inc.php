@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.12 2003/10/13 12:23:28 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.13 2004/02/08 13:25:07 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -13,25 +13,20 @@
  modified by PANDA <panda@arino.jp> http://home.arino.jp/
 */
 
-// upload dir(must set end of /)
-if (!defined('UPLOAD_DIR'))
-{
-	define('UPLOAD_DIR','./attach/');
-}
-
-// max file size for upload on PHP(PHP default 2MB)
-ini_set('upload_max_filesize','2M');
-
-// max file size for upload on script of PukiWiki(default 1MB)
-define('MAX_FILESIZE',1000000);
-
 // 管理者だけが添付ファイルをアップロードできるようにする
 define('ATTACH_UPLOAD_ADMIN_ONLY',FALSE); // FALSE or TRUE
-// 管理者だけが添付ファイルを削除できるようにする
-define('ATTACH_DELETE_ADMIN_ONLY',FALSE); // FALSE or TRUE
+// 管理者とページ作成者だけが添付ファイルを削除できるようにする
+define('ATTACH_DELETE_ADMIN_ONLY',TRUE); // FALSE or TRUE
+// 管理者とページ作成者が添付ファイルを削除するときは、バックアップを作らない
+// (上記 ATTACH_DELETE_ADMIN_ONLY が TRUE の場合のみ有効)
+define('ATTACH_DELETE_ADMIN_NOBACKUP',TRUE); // FALSE or TRUE 
 
 // アップロード/削除時にパスワードを要求する(ADMIN_ONLYが優先)
 define('ATTACH_PASSWORD_REQUIRE',FALSE); // FALSE or TRUE
+
+// ファイルのアクセス権 
+define('ATTACH_FILE_MODE',0644); 
+//define('ATTACH_FILE_MODE',0604); // for XREA.COM 
 
 // file icon image
 if (!defined('FILE_ICON'))
@@ -41,6 +36,16 @@ if (!defined('FILE_ICON'))
 
 // mime-typeを記述したページ
 define('ATTACH_CONFIG_PAGE_MIME','plugin/attach/mime-type');
+
+// tar
+define('TAR_HDR_LEN',512);			// ヘッダの大きさ
+define('TAR_BLK_LEN',512);			// 単位ブロック長さ
+define('TAR_HDR_NAME_OFFSET',0);	// ファイル名のオフセット
+define('TAR_HDR_NAME_LEN',100);		// ファイル名の最大長さ
+define('TAR_HDR_SIZE_OFFSET',124);	// サイズへのオフセット
+define('TAR_HDR_SIZE_LEN',12);		// サイズの長さ
+define('TAR_HDR_TYPE_OFFSET',156);	// ファイルタイプへのオフセット
+define('TAR_HDR_TYPE_LEN',1);		// ファイルタイプの長さ
 
 //-------- convert
 function plugin_attach_convert()
@@ -82,6 +87,7 @@ function plugin_attach_action()
 {
 	global $vars;
 	
+	// backward compatible
 	if (array_key_exists('openfile',$vars))
 	{
 		$vars['pcmd'] = 'open';
@@ -92,14 +98,24 @@ function plugin_attach_action()
 		$vars['pcmd'] = 'delete';
 		$vars['file'] = $vars['delfile'];
 	}
+	
+	$age = array_key_exists('age',$vars) ? $vars['age'] : 0;
+	$pcmd = array_key_exists('pcmd',$vars) ? $vars['pcmd'] : '';
+	
+	// Authentication
+	if (array_key_exists('refer',$vars) and is_pagename($vars['refer']))
+	{
+		$read_cmds = array('info','open','list');
+		in_array($pcmd,$read_cmds) ? 
+		check_readable($vars['refer']) : check_editable($vars['refer']);
+	}
+	
+	// Upload
 	if (array_key_exists('attach_file',$_FILES))
 	{
 		$pass = array_key_exists('pass',$vars) ? md5($vars['pass']) : NULL;
 		return attach_upload($_FILES['attach_file'],$vars['refer'],$pass);
 	}
-	
-	$age = array_key_exists('age',$vars) ? $vars['age'] : 0;
-	$pcmd = array_key_exists('pcmd',$vars) ? $vars['pcmd'] : '';
 	
 	switch ($pcmd)
 	{
@@ -139,12 +155,12 @@ function attach_upload($file,$page,$pass=NULL)
 {
 // $pass=NULL : パスワードが指定されていない
 // $pass=TRUE : アップロード許可
-	global $adminpass,$_attach_messages;
+	global $adminpass,$_attach_messages,$post;
 	
 	if ($file['tmp_name'] == '' or !is_uploaded_file($file['tmp_name']) or !$file['size'])
 	{
 		return array('result'=>FALSE);
-	}		
+	}
 	if ($file['size'] > MAX_FILESIZE)
 	{
 		return array('result'=>FALSE,'msg'=>$_attach_messages['err_exceed']);
@@ -159,13 +175,52 @@ function attach_upload($file,$page,$pass=NULL)
 		return array('result'=>FALSE,'msg'=>$_attach_messages['err_adminpass']);
 	}
 	
-	$obj = &new AttachFile($page,$file['name']);	
+	if ( strcasecmp(substr($file['name'],-4),".tar") == 0 && $post['untar_mode'] == "on" ) {
+		// UploadされたTarアーカイブを展開添付する
+
+		// Tarファイル展開
+		$etars = untar( $file['tmp_name'], UPLOAD_DIR);
+
+		// 展開されたファイルを全てアップロードファイルとして追加
+		foreach ( $etars as $efile ) {
+			$res = do_upload( $page,
+				mb_convert_encoding($efile['extname'], SOURCE_ENCODING,"auto"),
+				$efile['tmpname']);
+			if ( ! $res['result'] ) {
+				unlink( $efile['tmpname']);
+			}
+		}
+
+		// 最後の返り値でreturn
+		return $res;
+	} else {
+		// 通常の単一ファイル添付処理
+		return do_upload($page,$file['name'],$file['tmp_name']);
+	}
+}
+
+function do_upload($page,$fname,$tmpname)
+{
+	global $_attach_messages;
+	
+	$obj = &new AttachFile($page,$fname);
 	
 	if ($obj->exist)
 	{
 		return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
 	}
-	move_uploaded_file($file['tmp_name'],$obj->filename);
+	
+	if ( is_uploaded_file($tmpname) ) {
+		if (move_uploaded_file($tmpname,$obj->filename))
+		{
+			chmod($obj->filename,ATTACH_FILE_MODE);
+		}
+	} else {
+		if (rename($tmpname,$obj->filename))
+		{
+			chmod($obj->filename,ATTACH_FILE_MODE);
+		}
+	}
 	
 	if (is_page($page))
 	{
@@ -176,7 +231,7 @@ function attach_upload($file,$page,$pass=NULL)
 	$obj->status['pass'] = ($pass !== TRUE and $pass !== NULL) ? $pass : '';
 	$obj->putstatus();
 
-	return array('result'=>TRUE,'msg'=>$_attach_messages['msg_uploaded']);;
+	return array('result'=>TRUE,'msg'=>$_attach_messages['msg_uploaded']);
 }
 //詳細フォームを表示
 function attach_info($err='')
@@ -253,7 +308,7 @@ function attach_list()
 	$msg = $_attach_messages[$refer == '' ? 'msg_listall' : 'msg_listpage'];
 	$body = ($refer == '' or array_key_exists($refer,$obj->pages)) ?
 		$obj->toString($refer,FALSE) :
-		$_attach_messages['err_noexist'];
+		"<p>".make_pagelink($refer)."</p>\n".$_attach_messages['err_noexist'];
 	return array('msg'=>$msg,'body'=>$body);
 }
 //アップロードフォームを表示
@@ -364,6 +419,8 @@ EOD;
   {$_attach_messages['msg_file']}: <input type="file" name="attach_file" />
   $pass
   <input type="submit" value="{$_attach_messages['btn_upload']}" />
+  (Untar:<input type="checkbox" name="untar_mode">)
+
  </div>
 </form>
 EOD;
@@ -530,7 +587,7 @@ class AttachFile
 </dl>
 EOD;
 		$uid = get_pg_auther($s_page);
-		if (($X_admin || $X_uid == $uid) && $X_uid != 0){
+		if (!ATTACH_DELETE_ADMIN_ONLY || (($X_admin || $X_uid == $uid) && $X_uid != 0)){
 			$retval['body'] .= <<< EOD
 <hr />
 $s_err
@@ -572,9 +629,11 @@ EOD;
 			}
 		}
 		//バックアップ
-		if ($this->age)
+		if ($this->age or 
+			(ATTACH_DELETE_ADMIN_ONLY and ATTACH_DELETE_ADMIN_NOBACKUP))
 		{
 			@unlink($this->filename);
+			$this->del_thumb_files();
 		}
 		else
 		{
@@ -628,6 +687,10 @@ EOD;
 		
 		// for japanese (???)
 		$filename = htmlspecialchars(mb_convert_encoding($this->file,'SJIS','auto'));
+		
+		ini_set('default_charset','');
+		mb_http_output('pass');
+		
 		header('Content-Disposition: inline; filename="'.$filename.'"');
 		header('Content-Length: '.$this->size);
 		header('Content-Type: '.$this->type);
@@ -678,10 +741,16 @@ class AttachFiles
 	// ファイル一覧を取得
 	function toString($flat)
 	{
+		global $_title_cannotread;
+		
+		if (!check_readable($this->page,FALSE,FALSE))
+		{
+			return str_replace('$1',make_pagelink($this->page),$_title_cannotread);
+		}
 		if ($flat)
 		{
 			return $this->to_flat();
-		}	
+		}
 		$ret = '';
 		$files = array_keys($this->files);
 		sort($files);
@@ -797,5 +866,51 @@ class AttachPages
 		return "\n<ul>\n".$ret."</ul>\n";
 		
 	}
-}		
+}
+
+// $tname: tarファイルネーム
+// $odir : 展開先ディレクトリ
+// 返り値: 特に無し。大したチェックはせず、やるだけやって後は野となれ山となれ
+function untar( $tname, $odir)
+{
+	if (!( $fp = fopen( $tname, "rb") ) ) {
+		return;
+	}
+
+	unset($files);
+	$cnt = 0;
+	while ( strlen($buff=fread( $fp,TAR_HDR_LEN)) == TAR_HDR_LEN ) {
+		for ( $i=TAR_HDR_NAME_OFFSET,$name="";
+			$buff[$i] != "\0" && $i<TAR_HDR_NAME_OFFSET+TAR_HDR_NAME_LEN;
+			$i++) {
+			$name .= $buff[$i];
+		}
+		$name = basename(trim($name)); //ディレクトリお構い無し
+
+		for ( $i=TAR_HDR_SIZE_OFFSET,$size="";
+				$i<TAR_HDR_SIZE_OFFSET+TAR_HDR_SIZE_LEN; $i++ ) {
+			$size .= $buff[$i];
+		}
+		list($size) = sscanf("0".trim($size),"%i"); // サイズは8進数
+
+		// データブロックは512byteでパディングされている
+		$pdsz =  ((int)(($size+(TAR_BLK_LEN-1))/TAR_BLK_LEN))*TAR_BLK_LEN;
+
+		// 通常のファイルしか相手にしない
+		$type = $buff[TAR_HDR_TYPE_OFFSET];
+
+		if ( $name && $type == 0 ) {
+			$buff = fread( $fp, $pdsz);
+			$tname = tempnam( $odir, "tar" );
+			$fpw = fopen( $tname , "wb");
+			fwrite( $fpw, $buff, $size );
+			fclose( $fpw);
+			$files[$cnt  ]['tmpname'] = $tname;
+			$files[$cnt++]['extname'] = $name;
+		}
+	}
+	fclose( $fp);
+
+	return $files;	
+}
 ?>

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.18 2004/01/27 14:31:59 nao-pon Exp $
+// $Id: file.php,v 1.19 2004/02/08 13:25:07 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -507,8 +507,13 @@ function get_readings()
 			$fp = fopen($tmpfname, "w")
 				or die_message("cannot write temporary file '$tmpfname'.\n");
 			foreach ($readings as $page => $reading) {
-				if($reading=='') {
-					fputs($fp, mb_convert_encoding(strip_bracket($page)."\n", $pagereading_kanji2kana_encoding, SOURCE_ENCODING));
+				if($reading=='')
+				{
+					$s_page = strip_bracket($page);
+					//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
+					if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_page,$f_name))
+						$s_page = $f_name[1].get_heading($s_page);
+					fputs($fp, mb_convert_encoding($s_page."\n", $pagereading_kanji2kana_encoding, SOURCE_ENCODING));
 				}
 			}
 			fclose($fp);
@@ -786,7 +791,9 @@ function get_pg_allow_editer($page){
 //ページの閲覧権限を得る
 function get_pg_allow_viewer($page, $uppage=true, $clr=false){
 	static $cache_page_info = array();
-	
+	if (!$uppage && !$clr) //キャッシュをクリアー
+		get_pg_allow_viewer("",true,true);
+		
 	// キャッシュクリアー
 	if ($clr)
 	{
@@ -839,7 +846,7 @@ function get_pg_allow_viewer($page, $uppage=true, $clr=false){
 		}
 	}
 	// キャッシュを保存
-	$cache_page_info[$page] = $allows;
+	if ($uppage) $cache_page_info[$page] = $allows;
 	return $allows;
 	
 }
@@ -903,6 +910,20 @@ function get_readable(&$auth)
 	return $ret;
 }
 
+// 編集不可能なページを編集しようとしたとき
+function check_editable($page,$auth_flag=TRUE,$exit_flag=TRUE)
+{
+	global $script,$_title_cannotedit,$_msg_unfreeze;
+	
+	if (edit_auth($page,$auth_flag,$exit_flag) and is_editable($page))
+	{
+		return TRUE;
+	}
+	//if (!$exit_flag)
+	//{
+		return FALSE;
+	//}
+}
 //閲覧することができるかチェックする。
 function check_readable($page, $auth_flag=true, $exit_flag=true){
 	global $X_admin,$read_auth;
@@ -961,14 +982,23 @@ function get_heading_init($page)
 {
 	$_body = get_source($page);
 	if (!$_body) return;
-	delete_page_info($_body);
+	//delete_page_info($_body);
+	$s_page = strip_bracket($page);
+	$first_line = "";
 	foreach($_body as $line){
-		if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
+		if (!$first_line && preg_match("/^(?!(\/\/|#|\n))/",$line))
+		{
+			$first_line = $line;
+		}
+		if (preg_match("/^\*{1,6}(.*)/",$line,$reg))
+		{
 			return trim(strip_htmltag(make_link(htmlspecialchars($reg[1]),add_bracket($page))));
 			break;
 		}
 	}
-	return trim(strip_htmltag(make_link(htmlspecialchars($_body[0]),add_bracket($page))));
+	if (!$first_line) $first_line = str_replace("/","",substr($s_page,strrpos($s_page,"/")));
+	//return trim(strip_htmltag(make_link(htmlspecialchars($_body[0]),add_bracket($page))));
+	return trim(strip_htmltag(make_link(htmlspecialchars($first_line),add_bracket($page))));
 }
 
 // 指定ページのコンバート後のHTMLキャッシュファイルを削除
