@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.20 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: func.php,v 1.21 2003/12/16 04:48:52 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -91,69 +91,32 @@ function do_search($word,$type='AND',$non_format=FALSE)
 	$retval = array();
 
 	$b_type = ($type == 'AND'); // AND:TRUE OR:FALSE
-	$keys = get_search_words(preg_split('/\s+/',$word,-1,PREG_SPLIT_NO_EMPTY));
+	//$keys = get_search_words(preg_split('/\s+/',$word,-1,PREG_SPLIT_NO_EMPTY));
+	$keys = preg_split('/\s+/',$word,-1,PREG_SPLIT_NO_EMPTY);
+
+	//とりあえず未対応ということで
+	if ($non_format) return array();
 	
+	include_once("./xoops_search.inc.php");
+	$pages = wiki_search($keys, $type);
 	$_pages = get_existpages();
-	$pages = array();
-	
-	foreach ($_pages as $page)
-	{
-		if ($page == $whatsnew
-			or (!$search_non_list and preg_match("/$non_list/",$page)))
-		{
-			continue;
-		}
-		
-		$source = get_source($page);
-		if (!$non_format)
-		{
-			array_unshift($source,$page); // ページ名も検索対象に
-		}
-		
-		$b_match = FALSE;
-		foreach ($keys as $key)
-		{
-			$tmp = preg_grep("/$key/",$source);
-			$b_match = (count($tmp) > 0);
-			if ($b_match xor $b_type)
-			{
-				break;
-			}
-		}
-		if ($b_match)
-		{
-			$pages[$page] = get_filetime(encode($page));
-			if ($non_format){
-				//$page_url = rawurlencode($page);
-				$page_url = rawurlencode(strip_bracket($page));
-				$link_tag="<a href=\"$script?$page_url\">".htmlspecialchars(strip_bracket($page), ENT_QUOTES)."</a>";
-				$link_tag .= get_pg_passage($page);
-				//$tm = @filemtime(get_filename(encode($page)));
-				$tm = "t".$pages[$page];
-				$nf_ret[$tm] = $link_tag;
-			}
-		}
-	}
-	if ($non_format)
-	{
-		return $nf_ret;
-		//return array_keys($pages);
-	}
+
 	$r_word = rawurlencode($word);
 	$s_word = htmlspecialchars($word);
 	if (count($pages) == 0)
 	{
 		return str_replace('$1',$s_word,$_msg_notfoundresult);
 	}
-	ksort($pages);
+
 	$retval = "<ul>\n";
-	foreach ($pages as $page=>$time)
+	foreach ($pages as $page)
 	{
-		$page2 = strip_bracket($page);
+		$page2 = $page['page'];
 		$r_page = rawurlencode($page2);
 		$s_page = htmlspecialchars($page2);
-		$passage = get_pg_passage($page);
-		$retval .= " <li><a href=\"$script?cmd=read&amp;page=$r_page&amp;word=$r_word\">$s_page</a>$passage</li>\n";
+		$passage = get_pg_passage(add_bracket($page2));
+		$retval .= " <li><a href=\"$script?cmd=read&amp;page=$r_page&amp;word=$r_word\">$s_page</a>$passage";
+		$retval .= str_replace($page['page'],"",$page['title'])."</li>\n";
 	}
 	$retval .= "</ul>\n";
 	
@@ -290,10 +253,8 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE)
 	{
 		$passage = get_pg_passage($page);
 		$page = strip_bracket($page);
-		$r_page = rawurlencode($page);
-		$s_page = htmlspecialchars($page,ENT_QUOTES);
 		
-		$str = "   <li><a href=\"$script?cmd=$cmd&amp;page=$r_page\">$s_page</a>$passage";
+		$str = "   <li>".make_pagelink($page)."$passage";
 		
 		if ($withfilename)
 		{
@@ -842,6 +803,27 @@ function make_user_link (&$name)
 	$name = sprintf(WIKI_USER_DIR,$name);
 	$name = add_bracket(strip_bracket($name));
 	return;
+}
+
+// ページ名から作成日付を返す(カレンダー用)
+function get_makedate_byname($page,$sep="-")
+{
+	$page = strip_bracket($page);
+	$info = get_pg_info_db($page);
+	preg_match("/.*\/([0-9]+)$sep([0-9]+)$sep([0-9]+)/",$page,$page_date);
+	$make_date[1] = date("Y",$info['buildtime']);
+	$make_date[2] = date("m",$info['buildtime']);
+	$make_date[3] = date("d",$info['buildtime']);
+	$make_date[4] = date("g:i a",$info['buildtime']);
+	if ($make_date[1] != $page_date[1])
+		$ret = $make_date[1]."/".$make_date[2]."/".$make_date[3]." ".$make_date[4];
+	elseif ($make_date[2] != $page_date[2])
+		$ret = $make_date[2]."/".$make_date[3]." ".$make_date[4];
+	elseif ($make_date[3] != $page_date[3])
+		$ret = $make_date[3]." ".$make_date[4];
+	else
+		$ret = $make_date[4];
+	return $ret;
 }
 
 //////////////////////////////////////////////////////

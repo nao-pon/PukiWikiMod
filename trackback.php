@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.2 2003/11/06 12:41:08 nao-pon Exp $
+// $Id: trackback.php,v 1.3 2003/12/16 04:48:52 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -147,13 +147,16 @@ function tb_send($page,$data="")
 	$pings = str_replace("&amp;","&",$pings);
 	$pings = array_unique($pings);
 	
+	$title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
+	if ($h_excerpt) $title .= "/".$h_excerpt;
+	
 	$myurl = $script."?pgid=".get_pgid_by_name($page);
 	
 	$data = trim(strip_htmltag($data));
 	$data = preg_replace("/^".preg_quote($h_excerpt,"/")."/","",$data);
 	// 自文書の情報
 	$putdata = array(
-		'title'     => $page." ".$h_excerpt, // タイトルはページ名
+		'title'     => $title,
 		'url'       => $myurl,
 		'excerpt'   => mb_strimwidth(preg_replace("/[\r\n]/",' ',$data),0,255,'...'),
 		'blog_name' => $page_title,

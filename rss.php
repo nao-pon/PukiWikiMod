@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.6 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: rss.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -48,11 +48,13 @@ function catrss($rss,$page)
 		$desc = date("D, d M Y H:i:s T",filemtime(get_filename(encode($line))));
 		
 		if($rss==2)
-			$items.= "<item rdf:about=\"http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."\">\n";
+			//$items.= "<item rdf:about=\"http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."\">\n";
+			$items.= "<item rdf:about=\"".$script."?".rawurlencode($url)."\">\n";
 		else
 			$items.= "<item>\n";
 		$items.= " <title>$title</title>\n";
-		$items.= " <link>http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."</link>\n";
+//		$items.= " <link>http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."</link>\n";
+		$items.= " <link>".$script."?".rawurlencode($url)."</link>\n";
 		if($rss==2)
 		{
 			$items.= " <dc:date>$dcdate</dc:date>\n";

@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.13 2003/10/02 12:19:28 nao-pon Exp $
+// $Id: ref.inc.php,v 1.14 2003/12/16 04:48:52 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -135,7 +135,18 @@ function plugin_ref_convert() {
 
 //-----------------------------------------------------------------------------
 // 画像かどうか
-function is_picture($text) {
+function is_picture($text,$page) {
+	global $vars;
+	//キャッシュをチェック
+	if (is_url($text))
+	{
+		$parse = parse_url($text);
+		$name = $parse['host']."_".basename($parse['path']);
+		$filename = UPLOAD_DIR.encode($page)."_".encode($name);
+		if (is_readable($filename))
+			$text = $filename;
+	}
+
 	$size = @getimagesize($text);
 	if ($size[2] > 0 && $size[2] < 4) {
 		return true;
@@ -237,7 +248,7 @@ function plugin_ref_body($name,$args,$params){
 		$l_url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 		$fsize = sprintf('%01.1f',round(filesize($file)/1000,1)).'KB';
 
-		$is_picture = is_picture($file);
+		$is_picture = is_picture($file,$page);
 		$is_flash = ($is_picture)? false : plugin_ref_is_flash($file);
 
 		if ($is_picture) {
@@ -256,7 +267,7 @@ function plugin_ref_body($name,$args,$params){
 	$title = htmlspecialchars($title);
 
 	// ファイル種別判定
-	if (!isset($is_picture)) $is_picture = is_picture($url);
+	if (!isset($is_picture)) $is_picture = is_picture($url,$page);
 	if ($is_picture) { // 画像
 		$info = "";
 		$width=$height=0;

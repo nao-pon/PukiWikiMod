@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.14 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: index.php,v 1.15 2003/12/16 04:48:52 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -425,9 +425,20 @@ function db_check()
   `uid` mediumint(8) NOT NULL default '0',
   `freeze` tinyint(1) NOT NULL default '0',
   `unvisible` tinyint(1) NOT NULL default '0',
+  `title` varchar(255) NOT NULL default '',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `name` (`name`)
 ) TYPE=MyISAM;";
+		if(!$result=$xoopsDB->queryF($query)){
+			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo $query;
+		}
+	}
+
+	$query = "select title FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." LIMIT 1;";
+	if(!$result=$xoopsDB->query($query))
+	{
+		$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod_pginfo")."` ADD `title` VARCHAR(255) NOT NULL default '';";
 		if(!$result=$xoopsDB->queryF($query)){
 			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
 			echo $query;
@@ -472,7 +483,19 @@ function db_check()
 			echo $query;
 		}
 	}
-
+	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod_plain")." LIMIT 1;";
+	if(!$result=$xoopsDB->query($query))
+	{
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_plain")."` (
+  `pgid` int(10) NOT NULL default '0',
+  `plain` text NOT NULL,
+  PRIMARY KEY  (`pgid`)
+) TYPE=MyISAM;";
+		if(!$result=$xoopsDB->queryF($query)){
+			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo $query;
+		}
+	}
 }
 clearstatcache();
 if($_SERVER["REQUEST_METHOD"] == "GET"){

@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.32 2003/11/06 12:42:57 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.33 2003/12/16 04:48:52 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -176,8 +176,17 @@ else if(arg_check("add"))
 // 編集
 else if(arg_check("edit"))
 {
+	$freeze_check = "";
+	
+	if(!is_page($get["page"]))
+		$up_freeze_info = get_freezed_uppage($get["page"]);
+	else
+		$up_freeze_info = array("",0,null,null,0);
+		
+	if ($up_freeze_info[0]) $freeze_check = "checked ";
+
 	$postdata = @join("",get_source($get["page"]));
-	if (!WIKI_ALLOW_NEWPAGE && !$postdata){
+	if ((!WIKI_ALLOW_NEWPAGE || $up_freeze_info[4]) && !$postdata){
 		$body = $title = str_replace('$1',htmlspecialchars(strip_bracket($vars["page"])),_MD_PUKIWIKI_NO_AUTH);
 		$page = str_replace('$1',make_search($vars["page"]),_MD_PUKIWIKI_NO_AUTH);
 		$vars["page"] = "";
@@ -201,7 +210,7 @@ else if(arg_check("edit"))
 		}  
 		$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_edit);
 		$page = str_replace('$1',make_search($get["page"]),$_title_edit);
-		$body = edit_form($postdata,$get["page"]);
+		$body = edit_form($postdata,$get["page"],0,$up_freeze_info[3],$up_freeze_info[2]);
 		
 		///// ParaEdit /////
 		if ($vars['id']){
@@ -908,6 +917,14 @@ else if(arg_check("diff"))
 // 検索
 else if(arg_check("search"))
 {
+	// LANG=='ja'で、mb_convert_kanaが使える場合はmb_convert_kanaを使用
+	$convert_kana = create_function('$str,$option',
+		(LANG == 'ja' and function_exists('mb_convert_kana')) ?
+			'return mb_convert_kana($str,$option);' : 'return $str;'
+	);
+
+	$vars["word"] = $convert_kana($vars["word"],"KVas");
+
 	if($vars["word"])
 	{
 		$title = $page = str_replace('$1',htmlspecialchars($vars["word"]),$_title_result);
@@ -1211,7 +1228,6 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			}
 			else
 			{
-				//js_redirect($url);
 				header("Location: $url");
 				die();
 			}
@@ -1282,11 +1298,12 @@ if ($xoopsTpl){
 }
 
 // ** 出力処理 **
+//echo "<div class=\"pukiwiki_body\">\n";
 catbody($title,$page,$body);
-//pginfo_db_init();
+//echo "</div>\n";
 unset($title,$page,$body);//一応開放してみる
 //XOOPSフッタ
-CloseTable();
+//CloseTable();
 include(XOOPS_ROOT_PATH."/footer.php");
 // ** 終了 **
 ?>

@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.6 2003/10/31 12:22:59 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -260,7 +260,8 @@ if ($cal2 == 1){
   $navi_bar .= "<table width =\"100%\" class=\"style_calendar_navi\"><tr><td align=\"left\" width=\"33%\">";
   $navi_bar .= $left_link;
   $navi_bar .= "</td><td align=\"center\" width=\"34%\">";
-  $navi_bar .= "<a href=\"".$pageurl."\"><b>".htmlspecialchars(strip_bracket($pagename))."</b></a>";
+  //$navi_bar .= "<a href=\"".$pageurl."\"><b>".htmlspecialchars(strip_bracket($pagename))."</b></a>";
+  $navi_bar .= make_pagelink($pagename);
   $navi_bar .= "</td><td align=\"right\" width=\"33%\">";
   $navi_bar .= $right_link;
   $navi_bar .= "</td></tr></table>";
@@ -299,7 +300,7 @@ if ($cal2 == 1){
     $vars["page"] = $page;
     $user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($page)) : "[[".get_pg_auther_name($page)."]]";
 		$user_tag = make_link($user_tag);
-		$tb_tag = ($trackback)? "<div style=\"text-align:right\">by $user_tag [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]</div>" : "";
+		$tb_tag = ($trackback)? "<div style=\"text-align:right\">by $user_tag at ".get_makedate_byname($page)." ".make_pagelink($page,"<img src=\"./image/search.png\" />")." [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]</div>" : "";
 
 
     //comment_no 初期化
@@ -307,10 +308,12 @@ if ($cal2 == 1){
 
     $body = @join("",@file(get_filename(encode($page))));
     $body = "<div class=\"style_calendar_body\">".$tb_tag.convert_html($body)."</div>";
-    $link = "<a href=\"$script?cmd=read&amp;page=".rawurlencode($page)."\">".strip_bracket($page)."</a>";
+    //$link = "<a href=\"$script?cmd=read&amp;page=".rawurlencode($page)."\">".strip_bracket($page)."</a>";
+    $link = make_pagelink($page,preg_replace("/^.*\//","",strip_bracket($page)));
     if ($anon_writable) $link .= " <a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\"><font size=\"-2\">(".$_calendar_viewer_msg_edit.")</font></a>";
     //$head = "<h1>$link</h1>\n";
-    $head = "<h4>$link</h4>\n";
+    //$head = "<h4>$link</h4>\n";
+    $head = "<div class = \"style_calendar_date\">$link</div>\n";
     $return_body .= $head . $body;
     $tmp++;
     $kensu++;

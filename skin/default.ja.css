@@ -1,6 +1,13 @@
 @charset "shift_jis";
 /* this @charset is for mozilla's bug */
 
+.pukiwiki_body
+{
+	background-color: #f5f5f5;
+	border: 1px solid #CCD5DD;
+	padding: 10px;
+}
+
 pre, dl, ol, p, blockquote { line-height:130%; }
 
 li
@@ -160,6 +167,16 @@ address {
 	border: 0px;
 	background-color: #DDE5FF;
 	padding: 0px;
+}
+
+.style_calendar_date {
+	font-family:georgia, verdana, arial, sans-serif;
+	font-size: 24px;
+	background-color: #FFFFFF;
+	border-width: 2px 0px 2px 0px;
+	border-style:dashed;
+	border-color:#6666FF;
+	text-align: left;
 }
 
 .style_calendar_body {

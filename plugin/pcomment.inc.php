@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.10 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.11 2003/12/16 04:48:52 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -312,7 +312,7 @@ function pcmt_insert($page) {
 	if (WIKI_MAIL_NOTISE){
 		global $xoopsConfig;
 		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_URL."XOOPS_URL/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["refer"]))."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.strip_bracket(trim($name))."\n";
 		$mail_body .= sprintf(_MD_PUKIWIKI_MAIL_HEAD,"pcomment")."\n";

@@ -1,25 +1,28 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.12 2003/11/06 12:39:33 nao-pon Exp $
+// $Id: convert_html.php,v 1.13 2003/12/16 04:48:52 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false)
 {
-	global $vars,$related_link,$noattach,$noheader,$h_excerpt;
-
+	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins;
+	
 	$string = preg_replace("/(^|\n)#newfreeze(\n|$)/","$1",$string);
 	
 	if (is_array($string)) $string = join('',$string);
 	$body = new convert();
+	
 	$result_last = $body->to_html($string);
-
 	
 	// インライン処理(リンク付加など)
 	$result_last = $body->inline2($result_last);
 
-	if ($is_intable)
-		$result_last = preg_replace("/^#related/","\x08#related",$result_last);
-	else
-		$result_last = preg_replace("/(^|\x08)#related/e",'make_related($vars["page"],TRUE)',$result_last);
+	if (!in_array("related",$no_plugins))
+	{
+		if ($is_intable)
+			$result_last = preg_replace("/^#related/","\x08#related",$result_last);
+		else
+			$result_last = preg_replace("/(^|\x08)#related/e",'make_related($vars["page"],TRUE)',$result_last);
+	}
 
 	$tmp = $result_last;
 	$result_last = preg_replace("/^#norelated$/","",$result_last);
@@ -33,7 +36,7 @@ function convert_html($string,$is_intable=false)
 	$result_last = preg_replace("/^#noheader$/","",$result_last);
 	if($tmp != $result_last) $noheader = 1;
 	
-	unlink($tmp);
+	unset($tmp);
 	
 	
 	// 配列から戻す
@@ -64,6 +67,12 @@ class convert
 		global $WikiName,$InterWikiName, $BracketName;
 		global $_table_left_margin,$_table_right_margin;
 		global $anon_writable,$h_excerpt;
+		global $no_plugins;
+		
+		//インラインコンバーター(注釈は処理しない)
+		static $converter;
+		if (!isset($converter))
+			$converter = new InlineConverter(NULL,array('note'));
 		
 		$_freeze = is_freeze($vars['page']);
 
@@ -106,6 +115,10 @@ class convert
 		$string = str_replace("\n","\n\x08",$string);
 		$string = preg_replace("/(^|\x08)([^ *#].*)~\n/","$2\t&br;\t",$string);
 		$string = str_replace("\x08","",$string);
+		
+		// #categoryを確実にブロック要素とするため改行で挟む
+		$string = preg_replace("/(^|\n)(\#category\(.*\))(\n|$)/","$1\n$2\n$3",$string);
+		
 		//行単位の配列に格納
 		$lines = split("\n", $string);
 		// 各行の行頭書式を格納
@@ -127,6 +140,13 @@ class convert
 
 		foreach ($lines as $line)
 		{
+			// #categoryを事前にコンバート
+			if(preg_match("/^\#category\((.*)\)$/",$line,$out))
+			{
+				if(exist_plugin_convert("category"))
+					$line = do_plugin_convert("category",$out[1]);
+			}
+			
 			if(!preg_match("/^\/\/(.*)/",$line,$comment_out) && $table != 0)
 			{
 				if(!preg_match("/^\|(.+)\|(c|h)?$/",$line,$out) or
@@ -149,7 +169,7 @@ class convert
 				$_pre ++;
 			}
 
-			$comment_out = $comment_out[1];
+			$comment_out = (isset($comment_out[1]))? $comment_out[1] : "";
 
 			// 行頭書式かどうかの判定
 			$line_head = substr($line,0,1);
@@ -179,7 +199,8 @@ class convert
 				}
 
 				if(preg_match("/^\#([^\(]+)(.*)$/",$line,$out)){
-					if(exist_plugin_convert($out[1])) {
+					if(exist_plugin_convert($out[1],$no_plugins))
+					{
 						$result = array_merge($result,$saved); $saved = array();
 						
 						if($out[2]) {
@@ -199,8 +220,12 @@ class convert
 					$headform[$_cnt] = $out[1];
 					$str = inline($out[2]);
 					// <title>用
-					if (!$h_excerpt) $h_excerpt = strip_tags(make_user_rules(make_link($str)));
-					
+					if (!$h_excerpt) 
+					{
+						$_converter = $converter; // copy
+						$h_excerpt = strip_tags($_converter->convert($str, $vars['page']));
+						//$h_excerpt = strip_tags(make_user_rules(make_link($str)));
+					}
 					//$level = strlen($out[1]) + 1;
 					$level = strlen($out[1]);
 
@@ -661,7 +686,7 @@ class convert
 					$_str[] = make_user_rules(make_link($line));
 			}
 			$str = $_str;
-			unlink($_str);
+			unset($_str);
 		}
 		else
 			$str = make_user_rules(make_link($str));
@@ -689,9 +714,9 @@ class convert
 //////////////////////////////////////////////
 
 // インライン要素のパース (注釈)
-function inline($line)
+function inline($line,$remove = FALSE)
 {
-	$line = htmlspecialchars($line,$remove = FALSE);
+	$line = htmlspecialchars($line);
 	if ($remove) $line = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$line);
 	return $line;
 }

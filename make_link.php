@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.11 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: make_link.php,v 1.12 2003/12/16 04:48:52 nao-pon Exp $
 //
 
 // リンクを付加する
@@ -288,7 +288,7 @@ EOD;
 <span class="small">$note</span>
 <br />
 EOD;
-		$name = "<a id=\"notetext_$id\" href=\"#notefoot_$id\" class=\"note_super\" title=".strip_tags($note).">*$id</a>";
+		$name = "<a id=\"notetext_$id\" href=\"#notefoot_$id\" class=\"note_super\" title=\"".strip_tags($note)."\">*$id</a>";
 		
 		return parent::setParam($page,$name);
 	}
@@ -310,9 +310,9 @@ class Link_url extends Link
 		return <<<EOD
 (\[\[             # (1) open bracket
  ((?:(?!\]\]).)+) # (2) alias
- (?:&gt;|>|:)
+ (&gt;|>|:)       # (3) separator
 )?
-(                 # (3) url
+(                 # (4) url
  (?:https?|ftp|news):\/\/[!~*'();\/?:\@&=+\$,%#\w.-]+
 )
 (?($s1)\]\])      # close bracket
@@ -320,19 +320,26 @@ EOD;
 	}
 	function get_count()
 	{
-		return 3;
+		return 4;
 	}
 	function set($arr,$page)
 	{
-		list(,,$alias,$name) = $this->splice($arr);
-		return parent::setParam($page,htmlspecialchars($name),'url',$alias == '' ? $name : $alias);
+		list(,,$alias,$separator,$name) = $this->splice($arr);
+		if (!$separator) $separator = ":";
+		if ($separator == "&gt;") $separator = ">";
+		return parent::setParam($page,htmlspecialchars($name),'url',$alias == '' ? $separator.$name : $separator.$alias);
 	}
 	function toString()
 	{
 		global $link_target;
+		$separator = $this->alias{0};
+		$this->alias = substr($this->alias,1);
 		//プラグインで付加された<a href>タグを取り除く
 		$this->alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
-		return "<a href=\"{$this->name}\" target=\"$link_target\">{$this->alias}</a>";
+		if ($separator == ">")
+			return "<a href=\"{$this->name}\">{$this->alias}</a>";
+		else
+			return "<a href=\"{$this->name}\" target=\"$link_target\">{$this->alias}</a>";
 	}
 }
 // url (InterWiki definition type)
@@ -478,6 +485,7 @@ EOD;
 	}
 	function toString()
 	{
+		global $interwiki_target;
 		//プラグインで付加された<a href>タグを取り除く
 		$this->alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
 		return "<a href=\"{$this->url}{$this->anchor}\" title=\"{$this->name}\" target=\"$interwiki_target\">{$this->alias}</a>";
@@ -495,8 +503,10 @@ class Link_bracketname extends Link
 	function get_pattern()
 	{
 		//global $WikiName,$BracketName;
+		global $WikiName;
 		$BracketName = '(?!\s):?[^\r\n\t\f\[\]<>#&":]+:?(?<!\s)';
-		$WikiName = '(?:[A-Z][a-z]+){2,}(?!\w)';
+		//$WikiName = '(?:[A-Z][a-z]+){2,}(?!\w)';
+		//$WikiName = '(?<!(!|\w))(?:[A-Z][a-z]+){2,}(?!\w)';
 
 		$s2 = $this->start + 2;
 		return <<<EOD
@@ -556,6 +566,9 @@ EOD;
 	{
 		//プラグインで付加された<a href>タグを取り除く
 		$this->alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
+		//エリアスがページ名ならパン屑リスト指定
+		//if ($this->name == $this->alias) $this->alias = "#/#";
+		if ($this->name == get_fullname($this->alias,$this->page)) $this->alias = "#/#";
 		return make_pagelink(
 			$this->name,
 			$this->alias,
@@ -573,9 +586,10 @@ class Link_wikiname extends Link
 	}
 	function get_pattern()
 	{
-		//global $WikiName,$nowikiname;
-		global $nowikiname;
-		$WikiName = '(?:[A-Z][a-z]+){2,}(?!\w)';
+		global $WikiName,$nowikiname;
+		//global $nowikiname;
+		//$WikiName = '(?:[A-Z][a-z]+){2,}(?!\w)';
+		//$WikiName = '(?<!(!|\w))(?:[A-Z][a-z]+){2,}(?!\w)';
 		
 		return $nowikiname ? FALSE : "($WikiName)";
 	}
@@ -746,13 +760,17 @@ class Link_rules extends Link
 }
 */
 // ページ名のリンクを作成
-function make_pagelink($page,$alias='',$anchor='',$refer='')
+function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 {
 	global $script,$vars,$show_title,$show_passage,$link_compact,$related;
 	global $_symbol_noexists;
 	
-	$page = add_bracket($page);
+	static $linktag = array();
 	
+	$page = add_bracket($page);
+
+	if (isset($linktag[$page.$alias])) return $linktag[$page.$alias];
+
 	//echo $page;
 	
 	$s_page = htmlspecialchars(strip_bracket($page));
@@ -772,22 +790,40 @@ function make_pagelink($page,$alias='',$anchor='',$refer='')
 		$related[strip_bracket($page)] = get_filetime($page);
 		
 	}
-
-	if (is_page($page))
+	
+	if (preg_match("/#(.*)#/",$alias,$sep))
+	{
+		// パン屑リスト出力
+		$sep = htmlspecialchars($sep[1]);
+		$prefix = strip_bracket($page);
+		$page_names = array();
+		$page_names = explode("/",$prefix);
+		$access_name = "";
+		$i = 0;
+		foreach ($page_names as $page_name){
+			$access_name .= $page_name."/";
+			$name = substr($access_name,0,strlen($access_name)-1);
+			if (preg_match("/^[0-9\-]+$/",$page_name))
+			{
+				$heading = get_heading($page);
+				if ($heading) $page_name = $heading;
+			}
+			$link = make_pagelink($name,$page_name);
+			if ($i)
+				$retval .= $sep.$link;
+			else
+				$retval = $link;
+			$i++;
+		}
+	}
+	elseif (is_page($page))
 	{
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-		if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name) && !$alias){
-			$_body = get_source($page);
-			foreach($_body as $line){
-				if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
-					$s_alias = $f_name[1].trim(htmlspecialchars(str_replace(array("[[","]]"),"",$reg[1])));
-					break;
-				}
-			}
-		}
+		if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name) && !$alias)
+			$s_alias = $f_name[1].get_heading($page);
 		$passage = get_pg_passage($page,FALSE);
 		$title = $link_compact ? '' : " title=\"$s_page$passage\"";
-		return "<a href=\"$script?$r_page$anchor\"$title>$s_alias</a>";
+		$retval = "<a href=\"$script?$r_page$anchor\"$title>$s_alias</a>";
 	}
 	else
 	{
@@ -800,8 +836,9 @@ function make_pagelink($page,$alias='',$anchor='',$refer='')
 		{
 			$retval = "<span class=\"noexists\">$retval</span>";
 		}
-		return $retval;
 	}
+	$linktag[$page.$alias] = $retval;
+	return $retval;
 }
 // 相対参照を展開
 function get_fullname($name,$refer)

@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.10 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.11 2003/12/16 04:48:52 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -8,19 +8,25 @@ function plugin_calendar2_init() {
 		$_plugin_calendar2_messages = array(
 			'_calendar2_msg_nextmonth' => '前月',
 			'_calendar2_msg_prevmonth' => '次月',
-            '_calendar2_msg_detail' => '%sの詳細',
-            '_calendar2_msg_month' => '月',
-            '_calendar2_msg_day' => '日',
-            '_calendar2_msg_write' => '書き込む',
+			'_calendar2_msg_detail' => '%sの詳細',
+			'_calendar2_msg_month' => '月',
+			'_calendar2_msg_day' => '日',
+			'_calendar2_msg_write' => '[書き込む]',
+			'_calendar2_plugin_edit' => '[この日記を編集]',
+			'_calendar2_plugin_empty' => '%sは書いていません。(^^ゞ',
+			'_calendar2_msg_write_more' => '[記事を追加する]',
 		);
 	} else {
 		$_plugin_calendar2_messages = array(
 			'_calendar2_msg_nextmonth' => 'Next',
 			'_calendar2_msg_prevmonth' => 'Previous',
-            '_calendar2_msg_detail' => 'Details of %s',
-            '_calendar2_msg_month' => '/',
-            '_calendar2_msg_day' => '',
-            '_calendar2_msg_write' => 'Edit',
+			'_calendar2_msg_detail' => 'Details of %s',
+			'_calendar2_msg_month' => '/',
+			'_calendar2_msg_day' => '',
+			'_calendar2_msg_write' => '[Write]',
+			'_calendar2_plugin_edit' => '[edit]',
+			'_calendar2_plugin_empty' => '%s is empty.',
+			'_calendar2_msg_write_more' => '[Write more]',
 		);
 	}
 	set_plugin_messages($_plugin_calendar2_messages);
@@ -28,13 +34,14 @@ function plugin_calendar2_init() {
 
 function plugin_calendar2_convert()
 {
-	global $_calendar2_msg_nextmonth, $_calendar2_msg_prevmonth, $_calendar2_msg_write;
+	global $_calendar2_msg_nextmonth, $_calendar2_msg_prevmonth, $_calendar2_msg_write,$_calendar2_msg_write_more;
 	global $_calendar2_msg_detail, $_calendar2_msg_month, $_calendar2_msg_day;
 	global $script,$weeklabels,$vars,$command,$WikiName,$BracketName,$post,$get;
 	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable, $_msg_month;
 	global $wiki_user_dir;
 	
 	$today_view = true;
+	$category_view = "";
 	$args = func_get_args();
 	
 	if(func_num_args() == 0)
@@ -50,6 +57,9 @@ function plugin_calendar2_convert()
 			}
 			else if($arg == "off"){
 				$today_view = false;
+			}
+			else if(strtolower(substr($arg,0,9)) == "category:"){
+				$category_view = substr($arg,8);
 			}
 			else {
 				$pre = strip_bracket($arg);
@@ -76,8 +86,10 @@ function plugin_calendar2_convert()
 	$yr = substr($date_str,0,4);
 	$mon = substr($date_str,4,2);
 	$now_day = substr($date_str,6,2);
+	$single_day = true;
 	
 	if (!$now_day){
+		$single_day = false;
 		if($yr != date("Y") || $mon != date("m")) {
 			$now_day = 1;
 			$other_month = 1;
@@ -110,7 +122,7 @@ function plugin_calendar2_convert()
 	$prefix_url = rawurlencode($prefix_url);
 	$pre = strip_bracket($pre);
 	
-	$ret .= '<table border="0" width="100%"><tr><td valign="top">';
+	$ret .= '<table border="0" width="100%"><tr><td style="text-align:left;vertical-align:top">';
 	
 	$y = substr($date_str,0,4)+0;
 	$m = substr($date_str,4,2)+0;
@@ -171,11 +183,12 @@ function plugin_calendar2_convert()
   <tr>
     <td align="middle" class="style_td_caltop" colspan="7">
       <table style="width:100%;"><tr><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'" title="'.$_calendar2_msg_prevmonth.'">&lt;&lt;</a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'&amp;category='.rawurlencode($category_view).'" title="'.$_calendar2_msg_prevmonth.'">&lt;&lt;</a>
       </td><td style="text-align:center;vertical-align:top;font-size:11px;">
        <form method="GET" action="'.$script.'">
         <input type="hidden" name="plugin" value="calendar2">
         <input type="hidden" name="file" value="'.$pre.'">
+        <input type="hidden" name="category" value="'.$category_view.'">
         <select name="year" style="font-size:11px;">';
 		for ($i = 1970 ; $i < 2038 ; $i++){
 			if ($i == $year){
@@ -198,7 +211,7 @@ function plugin_calendar2_convert()
         </select>
         <input type="submit" value="Go" style="font-size:11px;">
       </td></form><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'" title="'.$_calendar2_msg_nextmonth.'">&gt;&gt;</a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'&amp;category='.rawurlencode($category_view).'" title="'.$_calendar2_msg_nextmonth.'">&gt;&gt;</a>
       </td></tr></table>[<a href="'.$script.'?'.$prefix_url.'">'.$pre.'.Today</a>]
     </td>
   </tr>
@@ -237,12 +250,13 @@ function plugin_calendar2_convert()
 		if($cmd == "edit") $refer = "&amp;refer=$page_url";
 		else               $refer = "";
 		
+		$a_tag = "<a href=\"$script?plugin=calendar2&amp;file=$prefix_&amp;date=$linkdt&amp;category=".rawurlencode($category_view)."\" title=\"$title_tag\" class=\"small\">";
 		if(($cmd == "read" && !is_page($page)) || (is_page($page) && !check_readable($page,false,false))){
 			$td_style = "";
-			$link = "<a href=\"$script?plugin=calendar2&amp;&amp;file=$prefix_&amp;date=$linkdt\" title=\"$title_tag\" class=\"small\"><span class=\"_DAY_STYLE_\">$day</span></a>";
+			$link = "$a_tag<span class=\"_DAY_STYLE_\">$day</span></a>";
 		}else{
 			$td_style = " style=\"background-image:url(image/pencil.gif);background-repeat:no-repeat;\"";
-			$link = "<a href=\"$script?plugin=calendar2&amp;&amp;file=$prefix_&amp;date=$linkdt\" title=\"$title_tag\" class=\"small\"><span class=\"_DAY_STYLE_\"><strong>$day</strong></span></a>";
+			$link = "$a_tag<span class=\"_DAY_STYLE_\"><strong>$day</strong></span></a>";
 		}
 
 		if($fweek)
@@ -301,10 +315,12 @@ function plugin_calendar2_convert()
 	$ret .= "  </tr>\n</table>\n";
   if ($today_view == true){
 		$page = sprintf("%s%4d-%02d-%02d", $prefix, $today[year], $today[mon], $today[mday]);
+		$h_date = sprintf("%4d-%02d-%02d", $today[year], $today[mon], $today[mday]);
 		//$page_url = rawurlencode($page);
 		global $trackback;
 		//$tb_tag = ($trackback)? "<div style=\"text-align:right\">[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($page)."\">TrackBack(".tb_count($page).")</a> ]</div>" : "";
-		$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
+		//$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
+		$str = "<div class = \"style_calendar_date\">".$h_date."</div>";
 		for ($i=0;$i<10;$i++)
 		{
 			$daynum = ($i)? "-".$i:"";
@@ -312,11 +328,11 @@ function plugin_calendar2_convert()
 			// 閲覧権限チェック＋
 			if (is_page($_page) && check_readable($_page,false,false)) {
 				$page_ = $vars['page'];
-				$get['page'] = $post['page'] = $vars['page'] = $_page;
+				$get['page'] = $post['page'] = $vars['page'] = add_bracket($_page);
 				$body = @join("",get_source($_page));
 				$user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($_page)) : "[[".get_pg_auther_name($_page)."]]";
 				$user_tag = make_link($user_tag);
-				$show_tag = "by ".$user_tag." ".make_pagelink($_page,"<img src=\"./image/search.png\" />");
+				$show_tag = "by ".$user_tag." at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/search.png\" />");
 				$tb_tag = ($trackback)? "<div style=\"text-align:right\">{$show_tag}  [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($_page)."\">TrackBack(".tb_count($_page).")</a> ]</div>" : "<div style=\"text-align:right\">{$show_tag}</div>";
 				$str .= $tb_tag.convert_html($body);
 				if ($anon_writable) $str .= "<a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_calendar2_plugin_edit</a>";
@@ -334,7 +350,7 @@ function plugin_calendar2_convert()
 					}
 					else
 					{
-						if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">"."[さらに記事を追加する]"."<span class=\"note_super\"> </span></a>";
+						if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write_more."<span class=\"note_super\"> </span></a>";
 					}
 				} else {
 					$str = "";
@@ -346,9 +362,15 @@ function plugin_calendar2_convert()
   }else{
     $str = "";
   }
-	$ret .= "</td><td valign=\"top\" width=\"100%\">".$str."</td></tr></table>";
+  
+  $categorys = "";
+  if ($category_view)
+  {
+		$categorys = convert_html("****Categorys\n#ls2($category_view,pagename,notemplate,relatedcount)");
+	}
+	$ret .= "$categorys</td><td style=\"text-align:left;vertical-align:top;width:100%;\">".$str."</td></tr></table>";
 
-	if (exist_plugin_convert("calendar_viewer") && ($vars['file'] != "")){
+	if (exist_plugin_convert("calendar_viewer") && ($vars['file'] != "") && !$single_day){
 		$aryargs = "[[".$vars['file']."]],".substr($vars['date'],0,4)."-".substr($vars['date'],4,2).",view,cal2";
 		$ret .= do_plugin_convert("calendar_viewer",$aryargs);
 	}
@@ -370,15 +392,20 @@ function plugin_calendar2_action()
 	if($vars['file']) $vars['page'] = $vars['file'];
 	
 	$date = $vars['date'];
-	if($date=='') {
+	if($date=='')
 		$date = date("Ym");
-	}
-	$yy = sprintf("%04d.%02d",substr($date,0,4),substr($date,4,2));
 	
-	//$aryargs = array($vars['page'],$date);
+	if (substr($date,6,2))
+		$yy = sprintf("%04d.%02d.%02d",substr($date,0,4),substr($date,4,2),substr($date,6,2));
+	else
+		$yy = sprintf("%04d.%02d",substr($date,0,4),substr($date,4,2));
+		
 	$aryargs = $vars['page'].",".$date;
+	
+	if (isset($vars['category']) && ($vars['category']))
+		$aryargs .= ",Category".rawurldecode($vars['category']);
+	
 	$ret["msg"] = "calendar ".htmlspecialchars($vars['page'])."/".$yy;
-	//$ret["body"] = call_user_func_array("plugin_calendar2_convert",$aryargs);
 	$ret["body"] = do_plugin_convert("calendar2",$aryargs);
 	
 	$vars['page'] = $page;

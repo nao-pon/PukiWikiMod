@@ -162,6 +162,16 @@ address {
 	padding: 0px;
 }
 
+.style_calendar_date {
+	font-family:georgia, verdana, arial, sans-serif;
+	font-size: 24px;
+	background-color: #FFFFFF;
+	border-width: 2px 0px 2px 0px;
+	border-style:dashed;
+	border-color:#6666FF;
+	text-align: left;
+}
+
 .style_calendar_body {
 	background-color: #EEF5FF;
 	margin-top:5px;

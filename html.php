@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.23 2003/11/06 12:39:33 nao-pon Exp $
+// $Id: html.php,v 1.24 2003/12/16 04:48:52 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -192,8 +192,8 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
 			   .join("\n",$vals)
 			   ."   </select>\n"
 			   ."   <input type=\"submit\" name=\"template\" value=\"$_btn_load\" accesskey=\"r\" /><br />\n";
-
-		if($vars["refer"]) $refer = $vars["refer"]."\n\n";
+		$page_s = strip_bracket($page);
+		if($vars["refer"] && $page_s{0} != ":") $refer = $vars["refer"]."\n\n";
 	}
 
 return '
@@ -252,7 +252,8 @@ function make_related($page,$tag='')
 	$links = links_get_related($page);
 	
 	if ($tag) {
-		ksort($links);
+		//ksort($links);
+		krsort($links);
 	}
 	else {
 		arsort($links);
@@ -269,7 +270,8 @@ function make_related($page,$tag='')
 		$s_page = htmlspecialchars($page);
 		$passage = get_passage(($lastmod));
 		$_links[] = $tag ?
-			"<a href=\"$script?$r_page\" title=\"$s_page $passage\">$s_page</a>" :
+//			"<a href=\"$script?$r_page\" title=\"$s_page $passage\">$s_page</a>" :
+			make_pagelink($page) :
 			"<a href=\"$script?$r_page\">$s_page</a>$passage";
 	}
 	

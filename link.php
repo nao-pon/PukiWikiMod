@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: link.php,v 1.1 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: link.php,v 1.2 2003/12/16 04:48:52 nao-pon Exp $
 // ORG: link.php,v 1.6 2003/07/29 09:09:20 arino Exp $
 //
 
@@ -277,6 +277,23 @@ function &links_get_objects($page,$refresh=FALSE)
 		$obj = &new InlineConverter(NULL,array('note'));
 	}
 	
-	return $obj->get_objects(join('',preg_grep('/^(?!\/\/|\s)./',get_source($page))),$page);
+	$_line = array();
+	$lines = get_source($page);
+	foreach($lines as $line)
+	{
+		$line = rtrim($line);
+		// #categoryを事前にコンバート
+		if(preg_match("/^\#category\((.*)\)$/",$line,$out)){
+			if(exist_plugin_convert("category"))
+			{
+				$line = do_plugin_convert("category",$out[1]);
+			}
+		}
+		$_line[] = $line."\n";
+	}
+	unlink($lines,$line);
+	
+	return $obj->get_objects(join('',preg_grep('/^(?!\/\/|\s)./',$_line)),$page);
+	//return $obj->get_objects(join('',preg_grep('/^(?!\/\/|\s)./',get_source($page))),$page);
 }
 ?>

@@ -189,16 +189,6 @@ $_btn_insert = 'add';
 $_btn_memo_update = 'update';
 
 ///////////////////////////////////////
-// recent
-$_recent_plugin_frame = '<h5 class="side_label">recent(%d)</h5><span class="small">%s</span>';
-$_recent_plugin_li = '.';
-
-///////////////////////////////////////
-// calendar2
-$_calendar2_plugin_edit = '[edit]';
-$_calendar2_plugin_empty = '%s is empty.';
-
-///////////////////////////////////////
 // attach
 $_attach_plugin_files = '%s downloads';
 

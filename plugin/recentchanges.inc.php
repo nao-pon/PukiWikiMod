@@ -1,5 +1,5 @@
 <?php
-// $Id: recentchanges.inc.php,v 1.2 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: recentchanges.inc.php,v 1.3 2003/12/16 04:48:52 nao-pon Exp $
 
 function plugin_recentchanges_action()
 {

@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.13 2003/11/06 12:42:07 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.14 2003/12/16 04:48:52 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -19,7 +19,7 @@ if($_freeze){
 		<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">
 	<?php } ?>
 	<script language=javascript src="skin/default.js"></script>
-<table border=0 width="100%" cellspacing="5"><tr><td>
+<table border=0 cellspacing="5" style="width:100%;"><tr><td class="pukiwiki_body">
 	<?php if(!$hide_navi && !$noheader){ // header ?>
 		<center><div style="width:80%;text-align:center;font-size:14px;font-weight:bold;border: #6699FF thick ridge 2px;background-color:#FFFFEE;padding:2px;"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
@@ -81,20 +81,22 @@ if($_freeze){
 		$tb_tag = ($trackback)? "&nbsp;&nbsp;[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]" : "";
 		$sended_ping_tag = ($trackback)? "[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."#sended_ping\">送信したPing(".tb_count($vars['page'],".ping").")</a> ]" : "";
 	
+		echo "<div style=\"float:left\">";
 		if (strip_bracket($vars['page']) != $defaultpage) {
 			require_once(PLUGIN_DIR.'where.inc.php');
 			echo do_plugin_inline("where").$tb_tag;
 		}
 		else
 			echo $tb_tag;
+		echo "</div>";
 		require_once(PLUGIN_DIR.'counter.inc.php');
-		echo "<div style=\"float:right\">".do_plugin_convert("counter")."</div>";
-		echo $hr;
+		echo "<div style=\"text-align:right\">".do_plugin_convert("counter")."</div>";
+		echo "<div style=\"clear: both;\">".$hr;
 	}
 	?>
 	
 	<?php if($is_page) { ?>
-		<table cellspacing="1" cellpadding="0" border="0" width="100%">
+		<table cellspacing="1" cellpadding="0" border="0" style="width:100%;">
 			<tr>
 			<td valign="top" style="word-break:break-all;">
 	<?php } ?>

@@ -19,10 +19,10 @@ function plugin_recent_init()
 {
 	if (LANG == "ja") {
 		$_plugin_recent_messages = array(
-    '_recent_plugin_frame '=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">最新の%d件</h5><div class="small" style="margin-left:.8em;margin-right:.8em">%s</div>');
+    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">最新の%d件</h5><div class="small" style="margin-left:.8em;margin-right:.8em">%s</div>');
   } else {
 		$_plugin_recent_messages = array(
-    '_recent_plugin_frame '=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">Recent(%d)</h5><div class="small" style="margin-left:.8em;margin-right:.8em">%s</div>');
+    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">Recent(%d)</h5><div class="small" style="margin-left:.8em;margin-right:.8em">%s</div>');
 	}
   set_plugin_messages($_plugin_recent_messages);
 }
@@ -83,7 +83,7 @@ function plugin_recent_convert()
 					$date = date("Y-n-j",$data[3]);
 					$items .= "<div class=\"recent_date\">".$date."</div><ul class=\"recent_list\">";
 			}
-			$items .="<li>".make_pagelink($data[1])."</a></li>\n";
+			$items .="<li>".make_pagelink($data[1])."</li>\n";
 			$cnt++;
 		}
 	}

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ping.php,v 1.1 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: ping.php,v 1.2 2003/12/16 04:48:52 nao-pon Exp $
 /////////////////////////////////////////////////
 
 //XOOPS設定読み込み
@@ -38,7 +38,27 @@ $filename = CACHE_DIR.encode($page).".tbf";
 if (file_exists($filename))
 {
 	unlink($filename);
-	tb_send($page,true);
+	
+	//ソースを取得
+	$data = get_source($page);
+	
+	//処理しないプラグインを削除
+	if ($notb_plugin)
+	{
+		// 念のため quote
+		$notb_plugin = preg_quote($notb_plugin,"/");
+		// 正規表現形式へ
+		$notb_plugin = str_replace(",","|",$notb_plugin);
+		
+		// 該当プラグインを削除
+		$data = preg_replace("/#($notb_plugin)(\(((?!#[^(]+\()(?!\),).)*\))?/","",$data);
+	}
+
+	$data = join("",$data);
+	//delete_page_info($data);
+	$data = convert_html($data);
+
+	tb_send($page,$data);
 }
 
 header("Content-Type: image/gif");

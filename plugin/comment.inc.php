@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.8 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: comment.inc.php,v 1.9 2003/12/16 04:48:52 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -174,7 +174,7 @@ function plugin_comment_action()
 		// メール送信 by nao-pon
 		global $xoopsConfig;
 		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_URL."XOOPS_URL/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["refer"]))."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.strip_bracket(trim($name))."\n";
 		$mail_body .= sprintf(_MD_PUKIWIKI_MAIL_HEAD,"comment")."\n";

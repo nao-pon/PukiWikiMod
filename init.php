@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.14 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: init.php,v 1.15 2003/12/16 04:48:52 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -29,7 +29,9 @@ if($script == "") {
 }
 
 //$WikiName = '[A-Z][a-z]+(?:[A-Z][a-z]+)+';
-$WikiName = '(?<!(!|\w))[A-Z][a-z]+(?:[A-Z][a-z]+)+';
+//$WikiName = '(?<!(!|\w))[A-Z][a-z]+(?:[A-Z][a-z]+)+';
+//$WikiName = '(?<!(!|\w))(?:[A-Z][a-z]+){2,}(?!\w)';
+$WikiName = '(?:[A-Z][a-z]+){2,}(?!\w)';
 $BracketName = '\[\[(?!\/|\.\/|\.\.\/)(:?[^\s\]#&<>":]+:?)\]\](?<!\/\]\])';
 $InterWikiName = "\[\[(\[*[^\s\]]+?\]*):(\[*[^>\]]+?\]*)\]\]";
 

@@ -1,5 +1,5 @@
 <?php
-// $Id: memo.inc.php,v 1.4 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: memo.inc.php,v 1.5 2003/12/16 04:48:52 nao-pon Exp $
 
 /////////////////////////////////////////////////
 // テキストエリアのカラム数
@@ -13,16 +13,14 @@ function plugin_memo_action()
 	global $post,$vars,$script,$cols,$rows,$del_backup,$do_backup;
 	global $_title_collided,$_msg_collided,$_title_updated;
 
-	$post["msg"] = preg_replace("/(\x0D\x0A)/","\n",$post["msg"]);
-	$post["msg"] = preg_replace("/(\x0D)/","\n",$post["msg"]);
-	$post["msg"] = preg_replace("/(\x0A)/","\n",$post["msg"]);
+	$post["msg"] = preg_replace("/(\x0D\x0A|\x0D|\x0A)/","\n",$post["msg"]);
 
-	if($post["msg"])
-	{
+	//if($post["msg"])
+	//{
 		$post["msg"] = str_replace("\n","\\n",$post["msg"]);
 
 		$postdata = "";
-		$postdata_old  = file(get_filename(encode($post["refer"])));
+		$postdata_old  = get_source($post["refer"]);
 		$memo_no = 0;
 
 		$memo_body = $post["msg"];
@@ -31,7 +29,8 @@ function plugin_memo_action()
 		{
 			if(preg_match("/^#memo\(?.*\)?$/",$line))
 			{
-				if($memo_no == $post["memo_no"] && $post["msg"]!="")
+				//if($memo_no == $post["memo_no"] && $post["msg"]!="")
+				if($memo_no == $post["memo_no"])
 				{
 					$postdata .= "#memo($memo_body)\n";
 					$line = "";
@@ -42,11 +41,11 @@ function plugin_memo_action()
 		}
 
 		$postdata_input = "$memo_body\n";
-	}
-	else
-		return;
+	//}
+	//else
+	//	return;
 	
-	if(md5(@join("",@file(get_filename(encode($post["refer"]))))) != $post["digest"])
+	if(md5(@join("",get_source($post["refer"]))) != $post["digest"])
 	{
 		$title = $_title_collided;
 		

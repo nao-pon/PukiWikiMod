@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.6 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -75,7 +75,7 @@ function plugin_ls2_convert() {
 		//$prefix = strip_bracket($vars['page']).'/';
 		$prefix = strip_bracket($vars['page']);
 		
-	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'_done'=>FALSE,'pagename'=>FALSE,'notemplate'=>FALSE);
+	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'_done'=>FALSE,'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE);
 	array_walk($args, 'ls2_check_arg', &$params);
 	$title = (count($params['_args']) > 0) ?
 		join(',', $params['_args']) :
@@ -160,6 +160,9 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 	}
 	
 	if ($_name) $name = $_name;
+	
+	if ($params['relatedcount'])
+		$name .= " (".links_get_related_count($page).")";
 	
 	if ($include) { $ret .= 'include '; }
 	$ret .= '<a id="list_'.$params[$page].'" href="'.$href.'" title="'.$title.'">'.htmlspecialchars($name).'</a>';

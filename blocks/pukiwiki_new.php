@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.6 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -60,28 +60,77 @@ function b_pukiwiki_new_show($option) {
 }
 
 //ページ名からリンクを作成
-function xb_make_link($page)
+function xb_make_link($page,$alias="#/#")
 {
+	static $linktag = array();
+
 	$pukiwiki_path = XOOPS_URL."/modules/pukiwiki/index.php";
 
-	//$url = rawurlencode($page);
 	$_name = $name = $page;
 	$page = xb_add_bracket($page);
+	
+	if (isset($linktag[$page.$alias])) return $linktag[$page.$alias];
+	
 	$url = rawurlencode($name);
-
-	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name,$f_name)){
-		$body = xb_get_source($page);
-		foreach($body as $line){
-			if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
-				$_name = $f_name[1].trim(htmlspecialchars(str_replace(array("[[","]]"),"",$reg[1])));
-				break;
+	if (preg_match("/#(.*)#/",$alias,$sep))
+	{
+		// パン屑リスト出力
+		$sep = htmlspecialchars($sep[1]);
+		$prefix = xb_strip_bracket($page);
+		$page_names = array();
+		$page_names = explode("/",$prefix);
+		$access_name = "";
+		$i = 0;
+		foreach ($page_names as $page_name){
+			$access_name .= $page_name."/";
+			$name = substr($access_name,0,strlen($access_name)-1);
+			if (preg_match("/^[0-9\-]+$/",$page_name))
+			{
+				$heading = xb_get_heading($page);
+				if ($heading) $page_name = $heading;
 			}
+			$link = xb_make_link($name,$page_name);
+			if ($i)
+				$retval .= $sep.$link;
+			else
+				$retval = $link;
+			$i++;
 		}
 	}
-	$pgp = xb_get_pg_passage($page,FALSE);
-	//return "<a href=\"".$pukiwiki_path."?$url\" title=\"".$date."\">".htmlspecialchars($name)."</a> ";
-	return "<a href=\"".$pukiwiki_path."?$url\" title=\"".$name.$pgp."\">".$_name."</a> ";
+	else
+	{
+		if ($alias) $_name = $alias;
+		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
+		if (preg_match("/^(.*\/)?[0-9\-]+$/",$name,$f_name)){
+			$_name = xb_get_heading($page);
+		}
+		$pgp = xb_get_pg_passage($page,FALSE);
+		$retval = "<a href=\"".$pukiwiki_path."?$url\" title=\"".$name.$pgp."\">".$_name."</a>";
+	}
+	
+	$linktag[$page.$alias] = $retval;
+	return $retval;
+}
+
+//ページ名から最初の見出しを得る
+function xb_get_heading($page)
+{
+/*
+	$_body = xb_get_source($page);
+	foreach($_body as $line){
+		if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
+			return trim(htmlspecialchars(str_replace(array("[[","]]"),"",$reg[1])));
+			break;
+		}
+	}
+*/
+	global $xoopsDB;
+	$page = addslashes(xb_strip_bracket($page));
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
+	$res = $xoopsDB->query($query);
+	if (!$res) return "";
+	$ret = mysql_fetch_row($res);
+	return $ret[12];
 }
 
 // ページ名のエンコード

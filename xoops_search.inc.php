@@ -22,21 +22,9 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.6 2003/10/31 12:22:59 nao-pon Exp $
-
-$_cache_file = XOOPS_ROOT_PATH."/modules/pukiwiki/cache/config.php";
-if(file_exists($_cache_file) && is_readable($_cache_file)){
-	require($_cache_file);
-}
-require (XOOPS_ROOT_PATH."/modules/pukiwiki/db_func.php");
-// pcomment のコメントページ名
-define ("PCMT_PAGE",$pcmt_page_name);
-// 閲覧制限を使用するか
-define("PUKIWIKI_READ_AUTH",$read_auth);
+// $Id: xoops_search.inc.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
 
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
-	//$files = get_existpages_db();
-	
 	global $xoopsDB,$xoopsUser;
 	
 	$X_uid = $X_admin = 0;
@@ -49,450 +37,61 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	}
 
 	$nocheck=false;
-	$page="";
-	$d_limit=0;
-	$order=" ORDER BY editedtime DESC";
 	$nolisting=true;
+	
+	$where_base = "p.name NOT LIKE ':config/%' AND p.name != 'RenameLog'";
 	
 	if ($nocheck || $X_admin)
 		$where = "";
 	else
 	{
-		$where = "";
-		if ($X_uid) $where .= "  (uid = $X_uid) OR";
-		$where .= " (vaids LIKE '%all%') OR (vgids LIKE '%&3&%')";
-		if ($X_uid) $where .= " OR (vaids LIKE '%&{$X_uid}&%')";
-		foreach(X_get_groups() as $gid)
+		$where = "(p.vaids LIKE '%all%') OR (p.vgids LIKE '%&3&%')";
+		if ($X_uid) $where .= " OR (p.uid = $X_uid) OR (p.vaids LIKE '%&{$X_uid}&%')";
+		foreach(pukiwikimod_X_get_groups() as $gid)
 		{
-			$where .= " OR (vgids LIKE '%&{$gid}&%')";
+			$where .= " OR (p.vgids LIKE '%&{$gid}&%')";
 		}
 	}
-	if ($page)
-	{
-		$page = strip_bracket($page);
-		if ($where)
-			$where = " (name LIKE '$page%') AND ($where)";
-		else
-			$where = " name LIKE '$page%'";
-	}
-	if ($nolisting)
-	{
-		if ($where)
-			$where = " (name NOT LIKE ':%') AND ($where)";
-		else
-			$where = " (name NOT LIKE ':%')";
-	}
-	if ($userid)
-	{
-		if ($where)
-			$where = " (uid = $userid) AND ($where)";
-		else
-			$where = " (uid = $userid)";
-	}
-	if ($where) $where = " WHERE".$where;
-	$d_limit = ($d_limit)? " LIMIT $d_limit" : "";
 	
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")."$where$order$d_limit;";
-	$res = $xoopsDB->query($query);
-	if ($res)
-	{
-		while($data = mysql_fetch_row($res))
-		{
-			$aryret[add_bracket($data[1])] = $data[9];
-		}
+	if ($where)
+		$where_base = "($where_base) AND ($where)";
+	
+	$sql = "SELECT p.id,p.name,p.editedtime,p.vaids,p.vgids,p.uid,p.title FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." p LEFT JOIN ".$xoopsDB->prefix("pukiwikimod_plain")." t ON t.pgid=p.id WHERE ($where_base) ";
+	if ( $userid != 0 ) {
+		$sql .= "AND (p.uid=".$userid.") ";
 	}
-
-
-	if (!isset($vars["page"])) $vars["page"]="";
-	$non_format = 1;
-	$ret_count = 0;
+	// because count() returns 1 even if a supplied variable
+	// is not an array, we must check if $querryarray is really an array
+	if ( is_array($queryarray) && $count = count($queryarray) ) {
+		$sql .= "AND ((p.name LIKE '%$queryarray[0]%' OR t.plain LIKE '%$queryarray[0]%')";
+		for($i=1;$i<$count;$i++){
+			$sql .= " $andor ";
+			$sql .= "(p.name LIKE '%$queryarray[$i]%' OR t.plain LIKE '%$queryarray[$i]%')";
+		}
+		$sql .= ") ";
+	}
+	$sql .= "ORDER BY p.editedtime DESC";
+	$result = $xoopsDB->query($sql,$limit,$offset);
 	$ret = array();
-	$arywords = $queryarray;
-	$result_word= "";
-	if (is_array($queryarray)){
-		foreach($queryarray as $tmp){
-			$result_word .= "$tmp ";
-		}
-	} else {
-		$result_word = $queryarray;
-	}
-	$type = $andor;
-	$whatsnew = "RecentChanges";
-	$cnt = 0;
-	//foreach($files as $name=>$ftime) {
-	foreach($aryret as $name=>$author_uid) {
-		$cnt++;
-		if($name == $whatsnew) continue;
-		if($name == $vars["page"] && $non_format) continue;
-		$lines = get_source($name);
-		$lines = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$lines);
-		if (!count($lines)) continue;
-
-		$line = strtolower(join("\n",$lines));
-		$line = preg_replace("/(^|\n)(#freeze|#unvisible|\/\/ author:)([^\n]*)?/","",$line);
-		$line = preg_replace("/^\n+/","",$line);
-		
-		$hit = 0;
-
-		if($userid <= 0)
-		{
-			foreach($arywords as $word)
-			{
-				//nao-pon
-				$word = strtolower($word);
-				if($type=="AND")
-				{
-					if(strpos($line,$word) === FALSE)
-					{
-						$hit = 0;
-						break;
-					}
-					else
-					{
-						$hit = 1;
-					}
-				}
-				else if($type=="OR")
-				{
-					if(strpos($line,$word) !== FALSE)
-						$hit = 1;
-				}
-			}
-			if($hit==1 || strpos($name,$word)!==FALSE)
-			{
-				$name2 = strip_bracket($name);
-				$page_url = rawurlencode($name2);
-				$word_url = rawurlencode($word);
-				$str = get_pg_passage($name);
-
-				$ret[$ret_count]['link'] = "index.php?cmd=read&amp;page=$page_url&amp;word=$word_url";
-				$ret[$ret_count]['title'] = htmlspecialchars($name2, ENT_QUOTES);
-				$ret[$ret_count]['image'] = "image/search.gif";
-				$ret[$ret_count]['time'] = "$str";
-				$ret[$ret_count]['uid'] = $author_uid;
-				$ret_count++;
-			}
-		}
-		else
-		{
-			if($author_uid == $userid)
-			{
-				$name2 = htmlspecialchars(strip_bracket($name));
-				$page_url = rawurlencode($name);
-				//$word_url = htmlspecialchars(rawurlencode($word));
-				$str = get_pg_passage($name);
-
-				$ret[$ret_count]['link'] = "index.php?$page_url";
-				$ret[$ret_count]['title'] = htmlspecialchars($name2, ENT_QUOTES);
-				$ret[$ret_count]['image'] = "image/search.gif";
-				$ret[$ret_count]['time'] = "$str";
-				$ret[$ret_count]['uid'] = $author_uid;
-				$ret[$ret_count]['queries'] = "";
-				$ret_count++;
-			}
-		}
-	}
-	if ($limit==0) {
-		return array_slice($ret,$offset);
-	} else {
-		return array_slice($ret,$offset,$limit);
-	}
-}
-
-function get_existpages()
-{
-	$aryret = array();
-	if ($dir = @opendir(XOOPS_ROOT_PATH."/modules/pukiwiki/wiki/"))
-	{
-		while($file = readdir($dir))
-		{
-			if($file == ".." || $file == "." || strstr($file,".txt")===FALSE) continue;
-			$page = decode(trim(preg_replace("/\.txt$/"," ",$file)));
-			//array_push($aryret[$page],get_pg_passage($page,false));
-			if (check_readable($page,false,false)) $aryret[$page]=get_pg_passage($page);
-		}
-		closedir($dir);
-	}
-	arsort($aryret);
-	return $aryret;
-}
-
-function decode($key)
-{
-	$dekey = '';
-	
-	for($i=0;$i<strlen($key);$i+=2)
-	{
-		$ch = substr($key,$i,2);
-		$dekey .= chr(intval("0x".$ch,16));
-	}
-	return $dekey;
-}
-
-function get_source($page,$row=0)
-{	
-	$page = add_bracket($page);
-	if(page_exists($page)) {
-		if ($row){
-			$ret = array();
-			$f_name = get_filename(encode($page));
-			$fp = fopen($f_name,"r");
-			if (!$fp) return file(get_filename(encode($page)));
-			while (!feof($fp)) {
-				$ret[] = fgets($fp, 4096);
-				$row--;
-				if ($row < 1) break;
-			}
-			fclose($fp);
-		} else {
-			$ret = file(get_filename(encode($page)));
-		}
-		$ret = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$ret);
-		return $ret;
-  }
-  return array();
-}
-
-function page_exists($page)
-{
-	return file_exists(get_filename(encode($page)));
-}
-
-function get_filename($pagename)
-{
-	global $xoopsModule;
-	return (XOOPS_ROOT_PATH."/modules/pukiwiki/wiki/".$pagename.".txt");
-}
-
-function encode($key)
-{
-	$enkey = '';
-	$arych = preg_split("//", $key, -1, PREG_SPLIT_NO_EMPTY);
-	
-	foreach($arych as $ch)
-	{
-		$enkey .= sprintf("%02X", ord($ch));
-	}
-
-	return $enkey;
-}
-
-function strip_bracket($str)
-{
-	global $strip_link_wall;
-	
-	//if($strip_link_wall)
-	//{
-	  if(preg_match("/^\[\[(.*)\]\]$/",$str,$match)) {
-	    $str = $match[1];
-	  }
-	//}
-	return $str;
-}
-
-function add_bracket($str){
-	$WikiName = '(?<!(!|\w))[A-Z][a-z]+(?:[A-Z][a-z]+)+';
-	if (!preg_match("/^".$WikiName."$/",$str)){
-		if (!preg_match("/\[\[.*\]\]/",$str)) $str = "[[".$str."]]";
-	}
-	return $str;
-}
-
-function get_pg_passage($page,$sw=true)
-{
-	global $_pg_passage,$show_passage;
-//	global $xoopsUser;
-
-//	if(!$show_passage) return "";
-
-	if(isset($_pg_passage[$page]))
-	{
-		if($sw)
-			return $_pg_passage[$page]["str"];
-		else
-			return $_pg_passage[$page]["label"];
-	}
-	if($pgdt = @filemtime(get_filename(encode($page))))
-	{
-//		$pgdt = UTIME - $pgdt;
-//		$pgdt = time() - $pgdt;
-//echo "page => ".$page."<br>";
-//echo "pgdt => ".$pgdt."<br>";
-//return ceil($pgdt / 60 / 60 / 24);
-//echo "==>".ceil($xoopsUser->vars['timezone_offset']['value'])*3600;
-//return ($pgdt + (ceil($xoopsUser->vars['timezone_offset']['value'])*3600));
-return $pgdt;
-		if(ceil($pgdt / 60) < 60)
-			$_pg_passage[$page]["label"] = "(".ceil($pgdt / 60)."m)";
-		else if(ceil($pgdt / 60 / 60) < 24)
-			$_pg_passage[$page]["label"] = "(".ceil($pgdt / 60 / 60)."h)";
-		else
-			$_pg_passage[$page]["label"] = "(".ceil($pgdt / 60 / 60 / 24)."d)";
-		
-		$_pg_passage[$page]["str"] = "<small>".$_pg_passage[$page]["label"]."</small>";
-	}
-	else
-	{
-		$_pg_passage[$page]["label"] = "";
-		$_pg_passage[$page]["str"] = "";
-	}
-
-	if($sw)
-		return $_pg_passage[$page]["str"];
-	else
-		return $_pg_passage[$page]["label"];
-}
-
-//ページの閲覧権限を得る
-function get_pg_allow_viewer($page, $uppage=true, $clr=false){
-	static $cache_page_info = array();
-	
-	// キャッシュクリアー
-	if ($clr)
-	{
-		$cache_page_info = array();
-		return;
-	}
-	
-	// pcoment のコメントページ調整
-	if (preg_match("/^\[\[(.*\/)%s\]\]/",PCMT_PAGE,$arg))
-	{
-		$page = str_replace($arg[1],"",$page);
-	}
-	
-	// キャッシュがあればキャッシュを返す
-	if (isset($cache_page_info[$page])) 
-		return $cache_page_info[$page];
-
-	$lines = get_source($page,2);
-
-	$allows['owner'] = "";
-	$allows['group'] = "3,";
-	$allows['user'] = "all";
-	foreach($lines as $line)
-	{
-		if (preg_match("/^#unvisible(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+|all))?(?:\tgid:([0-9,]+))?\n/",$line,$arg)){
-			if (!$arg[2]) $arg[2]=0;
-			if (!$arg[3]) $arg[3]=0;
-			$allows['owner'] = $arg[1];
-			if ($arg[2] !== "all") $allows['user'] = $arg[2].",";
-			$allows['group'] = $arg[3].",";
-			break;
-		}
-	}
-	if (!$allows['owner'] && $uppage)
-	//このページに設定がないので上位ページをみる
-	{
-		// 上位ページ名を得る
-		if (preg_match("/^(.*)\/[^\/]*$/",$page,$arg))
-			$uppage_name = $arg[1];
-		else
-			$uppage_name = "";
-
-		// 上位ページがあればその権限を得る(再帰処理)キャッシュチェックする
-		if ($uppage_name)
-		{
-			if (isset($cache_page_info[$uppage_name]))
-				$allows = $cache_page_info[$uppage_name];
-			else
-				$allows = get_pg_allow_viewer($uppage_name,true);
-		}
-	}
-	// キャッシュを保存
-	$cache_page_info[$page] = $allows;
-	return $allows;
-	
-}
-
-//閲覧権限を得る
-function get_readable(&$auth)
-{
-	static $_X_uid, $_X_gids;
-	if (!isset($_X_uid))
-	{
-		global $xoopsUser;
-		if ( $xoopsUser ) {
-			$X_uid = $xoopsUser->uid();
-		} else {
-			$X_uid = 0;
-		}
-		$_X_uid = $X_uid;
-	}
-	if (!isset($_X_gids)) $_X_gids = X_get_groups();
-
-	$ret = false;
-	
-	$aids = explode(",",$auth['user']);
-	$gids = explode(",",$auth['group']);
-	
-	// 閲覧制限されていない
-	if ($auth['owner'] === "" || $auth['user'] == "all") $ret = true;
-	
-	// 非ログインユーザー
-	elseif (!$_X_uid) $ret = (in_array("3",$gids))? true : false;
-	
-	//ログインユーザーは権限チェック
-	
-	// 自分で制限したページ
-	elseif ($auth['owner'] == $_X_uid) $ret = true;
-	
-	// ユーザー権限があるか
-	elseif (in_array($_X_uid,$aids)) $ret = true;
-	
-	else
-	{
-		// グループ権限があるか？
-		$gid_match = false;
-		foreach ($_X_gids as $gid)
-		{
-			if (in_array($gid,$gids))
-			{
-				$gid_match = true;
-				break;
-			}
-		}
-		if ($gid_match) $ret = true;
+	$i = 0;
+	if (!$queryarray) $queryarray = array();
+	$word_url = rawurlencode(join(' ',$queryarray));
+	while($myrow = $xoopsDB->fetchArray($result)){
+		$title = ($myrow['title'])? " [".$myrow['title']."]" : "";
+		$page_url = rawurlencode($myrow['name']);
+		$ret[$i]['link'] = "index.php?cmd=read&amp;page=$page_url&amp;word=$word_url";
+		$ret[$i]['title'] = htmlspecialchars($myrow['name'].$title, ENT_QUOTES);
+		$ret[$i]['image'] = "image/search.gif";
+		$ret[$i]['time'] = $myrow['editedtime'];
+		$ret[$i]['uid'] = $myrow['uid'];
+		$ret[$i]['page'] = $myrow['name'];
+		$i++;
 	}
 	return $ret;
 }
 
-//閲覧することができるかチェックする。
-function check_readable($page, $auth_flag=true, $exit_flag=true){
-
-	static $_X_admin,$_read_auth;
-	
-	if (!isset($_X_admin))
-	{
-		global $xoopsUser;
-		$X_admin = 0;
-		if ( $xoopsUser ) {
-			$xoopsModule = XoopsModule::getByDirname("pukiwiki");
-			if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
-				$X_admin = 1;
-			}
-		}
-		$_X_admin = $X_admin;
-	}
-	if (!isset($_read_auth)) $_read_auth = PUKIWIKI_READ_AUTH;
-	
-	if (!$_read_auth) return true;
-	
-	$ret = false;
-	
-	// 管理者はすべてOK
-	if ($_X_admin) $ret = true;
-	
-	else
-	{
-		$auth = get_pg_allow_viewer(strip_bracket($page),true);
-		$ret = get_readable($auth);
-	}
-	
-	return $ret;
-
-}
 // ユーザーが所属するグループIDを得る
-function X_get_groups(){
+function pukiwikimod_X_get_groups(){
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
 		global $X_uid,$xoopsDB;

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.13 2003/11/06 12:44:28 nao-pon Exp $
+// $Id: file.php,v 1.14 2003/12/16 04:48:52 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -38,7 +38,8 @@ function page_exists($page)
 // ページの更新時刻を得る
 function get_filetime($page)
 {
-	return filemtime(get_filename(encode(add_bracket($page)))) - LOCALZONE;
+	//return filemtime(get_filename(encode(add_bracket($page)))) - LOCALZONE;
+	return filemtime(get_filename(encode(add_bracket($page))));
 }
 
 // ページの出力
@@ -197,7 +198,8 @@ function is_page($page,$reload=false)
 	global $InterWikiName,$_ispage;
 	
 	$page = add_bracket($page);
-	if(($_ispage[$page] === true || $_ispage[$page] === false) && !$reload) return $_ispage[$page];
+	//if(($_ispage[$page] === true || $_ispage[$page] === false) && !$reload) return $_ispage[$page];
+	if(isset($_ispage[$page]) && !$reload) return $_ispage[$page];
 
 	if(preg_match("/($InterWikiName)/",$page))
 		$_ispage[$page] = false;
@@ -220,7 +222,7 @@ function is_editable($page)
 		$_editable = false;
 	elseif(!preg_match("/^$BracketName$/",$page) && !preg_match("/^$WikiName$/",$page))
 		$_editable = false;
-	else if(in_array($page,$cantedit))
+	elseif(in_array($page,$cantedit))
 		$_editable = false;
 	else
 		$_editable = true;
@@ -480,6 +482,23 @@ function get_existfiles($dir,$ext)
 	return $aryret;
 }
 
+//あるページの関連ページ数を得る
+function links_get_related_count($page)
+{
+	global $non_list;
+	$links = links_get_related($page);
+	$_links = array();
+	foreach ($links as $_page=>$lastmod)
+	{
+		if (preg_match("/$non_list/",$_page))
+		{
+			continue;
+		}
+		$_links[$_page] = $lastmod;
+	}
+	return count($_links);
+}
+
 //あるページの関連ページを得る
 function links_get_related($page)
 {
@@ -497,7 +516,8 @@ function links_get_related($page)
 	$links[$page] = ($page == strip_bracket($vars['page'])) ? $related : array();
 	
 	// データベースから関連ページを得る
-	$links[$page] += links_get_related_db(strip_bracket($vars['page']));
+	//$links[$page] += links_get_related_db(strip_bracket($vars['page']));
+	$links[$page] += links_get_related_db($page);
 	
 	return $links[$page];
 }
@@ -533,7 +553,7 @@ function get_pg_auther_name($page)
 	return $user->getVar("uname");
 }
 
-//継承編集権限がセットされている上位ページ凍結情報を得る
+//編集権限継承がセットされている上位ページ凍結情報を得る
 function get_freezed_uppage($page)
 //継承設定 #newfreeze
 //戻り値配列 0:ページ名, 1:オーナー, 2:許可ユーザー(配列), 3:許可グループ(配列), 4:編集権限がない(0 or 1)
@@ -736,6 +756,33 @@ function delete_page_info(&$str)
 	$str = preg_replace("/^\n+/","",$str);
 	//$str = trim($str);
 	return;
+}
+
+//ページ名から最初の見出しを得る
+function get_heading($page)
+{
+	global $xoopsDB;
+	$page = addslashes(strip_bracket($page));
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
+	$res = $xoopsDB->query($query);
+	if (!$res) return "";
+	$ret = mysql_fetch_row($res);
+	return $ret[12];
+}
+
+//ページ名から最初の見出しを得る(ファイルから)
+function get_heading_init($page)
+{
+	$_body = get_source($page);
+	if (!$_body) return;
+	delete_page_info($_body);
+	foreach($_body as $line){
+		if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
+			return trim(strip_htmltag(make_link(htmlspecialchars($reg[1]),add_bracket($page))));
+			break;
+		}
+	}
+	return trim(strip_htmltag(make_link(htmlspecialchars($_body[0]),add_bracket($page))));
 }
 
 //EXIFデータを得る
