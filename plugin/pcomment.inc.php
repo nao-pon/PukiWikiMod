@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.6 2003/07/04 14:57:29 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.7 2003/07/09 01:21:27 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -50,23 +50,43 @@ define("PCMT_FORMAT","\x08MSG\x08 -- \x08NAME\x08 \x08DATE\x08");
 
 function plugin_pcomment_init() {
 	
-	// ページ名のデフォルト(%sに$vars['page']が入る)
-	if (!defined('PCMT_PAGE')) define('PCMT_PAGE','[[コメント/%s]]');
-	
-	// ページのカテゴリ(新規作成時に挿入)
-	if (!defined('PCMT_CATEGORY')) define('PCMT_CATEGORY','[[:Comment]]');
-	
-	$_plugin_pcmt_messages = array(
-		'_pcmt_btn_name' => 'お名前: ',
-		'_pcmt_btn_comment' => 'コメントの挿入',
-		'_pcmt_msg_comment' => 'コメント: ',
-		'_pcmt_msg_recent' => '最新の%d件を表示しています。',
-		'_pcmt_msg_all' => 'コメントページを参照',
-		'_pcmt_msg_none' => 'コメントはありません。',
-		'_title_pcmt_collided' => '$1 で【更新の衝突】が起きました',
-		'_msg_pcmt_collided' => 'あなたがこのページを編集している間に、他の人が同じページを更新してしまったようです。<br />
-コメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
-	);
+	if (LANG == "ja") {
+		// ページ名のデフォルト(%sに$vars['page']が入る)
+		if (!defined('PCMT_PAGE')) define('PCMT_PAGE','[[コメント/%s]]');
+		
+		// ページのカテゴリ(新規作成時に挿入)
+		if (!defined('PCMT_CATEGORY')) define('PCMT_CATEGORY','[[:Comment]]');
+		
+		$_plugin_pcmt_messages = array(
+			'_pcmt_btn_name' => 'お名前: ',
+			'_pcmt_btn_comment' => 'コメントの挿入',
+			'_pcmt_msg_comment' => 'コメント: ',
+			'_pcmt_msg_recent' => '最新の%d件を表示しています。',
+			'_pcmt_msg_all' => 'コメントページを参照',
+			'_pcmt_msg_none' => 'コメントはありません。',
+			'_title_pcmt_collided' => '$1 で【更新の衝突】が起きました',
+			'_msg_pcmt_collided' => 'あなたがこのページを編集している間に、他の人が同じページを更新してしまったようです。<br />
+			コメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
+		);
+	} else {
+		// Default page name (replace %s to $vars['page'])
+		if (!defined('PCMT_PAGE')) define('PCMT_PAGE','[[Comments/%s]]');
+		
+		// Category of page (inserted when creating a new page.)
+		if (!defined('PCMT_CATEGORY')) define('PCMT_CATEGORY','[[:Comment]]');
+		
+		$_plugin_pcmt_messages = array(
+			'_pcmt_btn_name' => 'Name:',
+			'_pcmt_btn_comment' => 'Post comment',
+			'_pcmt_msg_comment' => 'Comment: ',
+			'_pcmt_msg_recent' => 'The newest %d comments',
+			'_pcmt_msg_all' => 'See comment page',
+			'_pcmt_msg_none' => 'No comments yet',
+			'_title_pcmt_collided' => 'Conflicts found in $1',
+			'_msg_pcmt_collided' => 'Other user has updated the page you are editing.<br />
+			Your comment was added anyway but may be at wrong line.<br />',
+		);
+	}
   set_plugin_messages($_plugin_pcmt_messages);
 }
 function plugin_pcomment_action() {
