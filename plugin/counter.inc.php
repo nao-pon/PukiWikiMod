@@ -5,14 +5,19 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: counter.inc.php,v 1.3 2003/10/31 12:22:59 nao-pon Exp $
+ * $Id: counter.inc.php,v 1.4 2004/01/27 14:31:18 nao-pon Exp $
  */
 
 function plugin_counter_convert()
 {
 	global $vars,$HTTP_SERVER_VARS;
 
-	if (arg_check("add") || arg_check("edit") || arg_check("preview") || $vars['preview'] != '' || $vars['write'] != '') {
+	if (arg_check("add") || 
+		arg_check("edit") || 
+		arg_check("preview") || 
+		$vars['preview'] != '' || 
+		$vars['write'] != '' || 
+		!is_page($vars['page'])) {
 		return "";
 	}
 
@@ -20,14 +25,16 @@ function plugin_counter_convert()
 	if(!file_exists($file))
 	{
 		$nf = fopen($file, "w");
+		flock($nf, LOCK_EX);
 		fputs($nf,"0\n0\n0\n0\n\n");
+		flock($nf, LOCK_UN);
 		fclose($nf);
 	}
 	$array = file($file);
-	$count = rtrim($array[0]);
+	$count = (int)rtrim($array[0]);
 	$today = rtrim($array[1]);
-	$today_count = rtrim($array[2]);
-	$yesterday_count = rtrim($array[3]);
+	$today_count = (int)rtrim($array[2]);
+	$yesterday_count = (int)rtrim($array[3]);
 	$ip = rtrim($array[4]);
 	if($ip != $HTTP_SERVER_VARS["REMOTE_ADDR"] && !(arg_check("add") || arg_check("edit") || arg_check("preview") || $vars['preview'] != '' || $vars['write'] != '')) {
 		$t = date("Y/m/d");
@@ -42,11 +49,13 @@ function plugin_counter_convert()
 	
 	$ip = $HTTP_SERVER_VARS["REMOTE_ADDR"];
 	$nf = fopen($file, "w");
+	flock($nf, LOCK_EX);
 	fputs($nf,"$count\n");
 	fputs($nf,"$today\n");
 	fputs($nf,"$today_count\n");
 	fputs($nf,"$yesterday_count\n");
 	fputs($nf,"$ip\n");
+	flock($nf, LOCK_UN);
 	fclose($nf);
 	
 	// DB¤ò¹¹¿·
