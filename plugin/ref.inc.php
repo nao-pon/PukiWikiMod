@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.14 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: ref.inc.php,v 1.15 2004/01/12 13:18:12 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -235,15 +235,25 @@ function plugin_ref_body($name,$args,$params){
 			$page = add_bracket(get_fullname($matches[1],$page));
 			$name = $matches[2];
 		}
+		/*
 		if (!is_page($page)) { 
 			$rets['_error'] = 'page not found.';
 			return $rets;
 		}
+		*/
 		$ext = $name;
 		$file = UPLOAD_DIR.encode($page).'_'.encode($name);
 		if (!is_file($file)) {
-			$rets['_error'] = 'not found.';
-			return $rets;
+			if (!is_page($page))
+			{ 
+				$rets['_error'] = 'page not found.';
+				return $rets;
+			}
+			else
+			{
+				$rets['_error'] = 'not found.';
+				return $rets;
+			}
 		}
 		$l_url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 		$fsize = sprintf('%01.1f',round(filesize($file)/1000,1)).'KB';
@@ -359,10 +369,10 @@ function plugin_ref_body($name,$args,$params){
 				}
 			}
 			$info = "width=\"$width\" height=\"$height\" ";
-			$ret .= "<a href=\"$l_url\" title=\"$title\"><img src=\"$url\" alt=\"$title\" title=\"$title\" $info/></a>";
+			$ret .= "<a href=\"$l_url\" title=\"$title\"><img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info/></a>";
 		} else {
 			if ($org_w and $org_h) $info = "width=\"$org_w\" height=\"$org_h\" ";
-			$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info/>";
+			$ret .= "<img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info/>";
 		}
 	} else if ($is_flash) { //	Flashファイル
 		//初期化
