@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.28 2004/09/12 23:20:49 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.29 2004/09/29 02:33:07 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -126,7 +126,7 @@ $interwiki_target = "_top";
 /////////////////////////////////////////////////
 // URLリンク指定時にステータスバーに
 // URLを表示せずに対象文字列を表示する
-$alias_set_status = 1;
+$alias_set_status = 0;
 
 /////////////////////////////////////////////////
 // リスト構造の左マージン
