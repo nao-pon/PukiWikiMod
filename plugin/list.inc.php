@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: list.inc.php,v 1.2 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: list.inc.php,v 1.3 2004/11/03 14:17:27 nao-pon Exp $
 //
 // 一覧の表示
 function plugin_list_action()
@@ -23,7 +23,11 @@ function get_list($withfilename,$prefix="")
 {
 	global $non_list,$whatsnew;
 	if ($prefix)
+	{
 		$pages = array_diff(get_existpages_db(false,$prefix."/",0,"",false,true),array($whatsnew));
+		if (!count($pages))
+			$pages = array_diff(get_existpages_db(false,$prefix."/",0,"",false,false),array($whatsnew));
+	}
 	else
 		$pages = array_diff(get_existpages_db(false,"",0,"",false,true),array($whatsnew));
 	if (!$withfilename)
