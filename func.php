@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.42 2005/03/08 15:23:05 nao-pon Exp $
+// $Id: func.php,v 1.43 2005/03/09 12:10:20 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1195,6 +1195,15 @@ function wordwrap4tolong_sub($str)
 	return $str;
 }
 
+// リファラチェック $blank = 1 で未設定も不許可(デフォルトで未設定は許可)
+function pukiwiki_refcheck($blank = 0)
+{
+	$ref = xoops_getenv('HTTP_REFERER');
+	if (!$blank && !$ref) return true;
+	if (strpos($ref, XOOPS_URL) !== 0 ) return false;
+	
+	return true;
+}
 
 //////////////////////////////////////////////////////
 //
