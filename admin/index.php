@@ -1,6 +1,6 @@
 <?php
-// $Id: index.php,v 1.9 2003/07/05 15:04:24 nao-pon Exp $
-
+// $Id: index.php,v 1.10 2003/07/07 14:41:08 nao-pon Exp $
+define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
 include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/pukiwiki.ini.php");
@@ -127,10 +127,12 @@ function displayForm(){
 	
 	if($hide_navi){
 		$_hide_navi_1 = " checked";
+		$_hide_navi_0 = "";
 	} else {
 		$_hide_navi_0 = " checked";
+		$_hide_navi_1 = "";
 	}
-	$_mail_sw_ = array();
+	$_mail_sw_[0] = $_mail_sw_[1] = $_mail_sw_[2] = "";
 	if(isset($wiki_mail_sw)){
 		$_mail_sw_[$wiki_mail_sw] = " checked";
 	} else {
@@ -138,17 +140,27 @@ function displayForm(){
 	}
 	if($wiki_writable === 0){
 		$_anon_writable_all = " checked";
+		$_anon_writable_regist = "";
+		$_anon_writable_admin = "";
 	} elseif($wiki_writable === 1) {
 		$_anon_writable_regist = " checked";
+		$_anon_writable_all = "";
+		$_anon_writable_admin = "";
 	} else {
 		$_anon_writable_admin = " checked";
+		$_anon_writable_all = "";
+		$_anon_writable_regist = "";
 	}
 	if($function_freeze){
 		$_ff_enable = " checked";
+		$_ff_enable = "";
+		$_ff_disable = " checked";
 	} else {
 		$_ff_disable = " checked";
+		$_ff_enable = "";
 	}
 	$_wiki_css_file = @file(_AM_WIKI_CSS_FILE);
+	$wiki_css = "";
 	foreach($_wiki_css_file as $__wiki){
 		$wiki_css .= $__wiki;
 	}
