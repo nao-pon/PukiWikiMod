@@ -22,7 +22,7 @@
  *
  * ÈòÆñ½ê       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.12 2004/08/24 12:49:27 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.13 2004/08/24 13:04:44 nao-pon Exp $
  *
  */
 
@@ -158,7 +158,7 @@ EOD;
 }
 class ShowRSS_html_menubar extends ShowRSS_html
 {
-	var $class = '';
+	var $class = ' class="wiki_showrss"';
 
 	function format_link($link)
 	{
@@ -171,7 +171,7 @@ class ShowRSS_html_menubar extends ShowRSS_html
 }
 class ShowRSS_html_recent extends ShowRSS_html
 {
-	var $class = '';
+	var $class = ' class="wiki_showrss"';
 
 	function format_link($link)
 	{
