@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.20 2004/09/29 00:55:46 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.21 2004/10/05 12:46:47 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -36,6 +36,9 @@ if (!defined('FILE_ICON'))
 
 // mime-typeを記述したページ
 define('ATTACH_CONFIG_PAGE_MIME','plugin/attach/mime-type');
+
+// 詳細情報・ファイル一覧(イメージモード)で使用する ref プラグインの追加オプション
+define('ATTACH_CONFIG_REF_OPTION',',mw:160,mh:120');
 
 // tar
 define('TAR_HDR_LEN',512);			// ヘッダの大きさ
@@ -107,7 +110,7 @@ function plugin_attach_action()
 	// Authentication
 	if (array_key_exists('refer',$vars) and is_pagename($vars['refer']))
 	{
-		$read_cmds = array('info','open','list');
+		$read_cmds = array('info','open','list','imglist');
 		$check = in_array($pcmd,$read_cmds) ? 
 		check_readable($vars['refer']) : check_editable($vars['refer']);
 		if (!$check) return array('result'=>FALSE,'msg'=>$_attach_messages['err_noparm']);
@@ -127,6 +130,7 @@ function plugin_attach_action()
 		case 'delete':  return attach_delete();
 		case 'open':    return attach_open();
 		case 'list':    return attach_list();
+		case 'imglist':return attach_list('imglist');
 		case 'freeze':  return attach_freeze(TRUE);
 		case 'unfreeze':return attach_freeze(FALSE);
 		case 'upload':  return attach_showform();
@@ -140,17 +144,18 @@ function plugin_attach_action()
 	return attach_showform();
 }
 //-------- call from skin
-function attach_filelist($thumb=1,$isbn=false)
+function attach_filelist($isbn=false)
 {
 	global $vars,$_attach_messages;
 	
-	$obj = &new AttachPages($vars['page'],0,$thumb,$isbn);
+	$obj = &new AttachPages($vars['page'],0,$isbn,20);
+	if ($obj->err === 1) return '<span style="color:red;font-size:150%;font-weight:bold;">DB ERROR!: Please initialize an attach file database on an administrator screen.</span>';
 
 	if (!array_key_exists($vars['page'],$obj->pages))
 	{
 		return '';
 	}
-	$_tmp = $obj->toString($vars['page'],TRUE,20);
+	$_tmp = $obj->toString($vars['page'],TRUE);
 	if ($_tmp) $_tmp = $_attach_messages['msg_file'].': '.$_tmp."\n";
 	return $_tmp;
 }
@@ -241,6 +246,7 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL)
 	$obj->status['pass'] = ($pass !== TRUE and $pass !== NULL) ? $pass : '';
 	$obj->status['copyright'] = $copyright;
 	$obj->status['owner'] = $X_uid;
+	$obj->action = "insert";
 	$obj->putstatus();
 
 	return array('result'=>TRUE,'msg'=>$_attach_messages['msg_uploaded']);
@@ -331,11 +337,11 @@ function attach_open()
 	return $obj->getstatus() ? $obj->open() : array('msg'=>$_attach_messages['err_notfound']);
 }
 //一覧取得
-function attach_list()
+function attach_list($mode="")
 {
 	global $vars,$noattach;
 	global $_attach_messages;
-	global $X_admin;
+	global $X_admin,$X_uid;
 	
 	$refer = array_key_exists('refer',$vars) ? $vars['refer'] : '';
 	
@@ -343,9 +349,19 @@ function attach_list()
 	
 	$msg = $_attach_messages[$refer == '' ? 'msg_listall' : 'msg_listpage'];
 	
-	if (!$X_admin) return array('msg'=>$msg,'body'=>"現在、ファイルリストは休止しています。");
+	//if (!$X_uid && !$refer) return array('msg'=>$msg,'body'=>"サーバ負荷軽減のため、登録ユーザー以外には全ページの添付ファイル一覧を休止させて頂いています。");
 	
-	$obj = &new AttachPages($refer);
+	$max = ($refer)? 50 : 20;
+	$max = (isset($vars['max']))? (int)$vars['max'] : $max;
+	$max = min(50,$max);
+	$start = (isset($vars['start']))? (int)$vars['start'] : 0;
+	$start = max(0,$start);
+	$f_order = (isset($vars['order']))? $vars['order'] : "";
+	$mode = ($mode == "imglist")? $mode : "";
+
+	$obj = &new AttachPages($refer,NULL,TRUE,$max,$start,FALSE,$f_order,$mode);
+	if ($obj->err === 1) return array('msg'=>'DB ERROR!','body'=>'Please initialize an attach file database on an administrator screen.');
+	
 	
 	$body = ($refer == '' or array_key_exists($refer,$obj->pages)) ?
 		$obj->toString($refer,FALSE) :
@@ -506,14 +522,17 @@ class AttachFile
 	var $page,$file,$age,$basename,$filename,$logname,$copyright;
 	var $time = 0;
 	var $size = 0;
+	var $pgid = 0;
 	var $time_str = '';
 	var $size_str = '';
 	var $owner_str = '';
 	var $status = array('count'=>array(0),'age'=>'','pass'=>'','freeze'=>FALSE,'copyright'=>FALSE,'owner'=>0);
+	var $action = 'update';
 	
-	function AttachFile($page,$file,$age=0)
+	function AttachFile($page,$file,$age=0,$pgid=0)
 	{
 		$this->page = $page;
+		$this->pgid = ($pgid)? $pgid : get_pgid_by_name($page);
 		$this->file = basename(str_replace("\\","/",$file));
 		$this->age = is_numeric($age) ? $age : 0;
 		
@@ -554,6 +573,7 @@ class AttachFile
 	//ステータス保存
 	function putstatus()
 	{
+		$this->update_db();
 		$this->status['count'] = join(',',$this->status['count']);
 		$fp = fopen($this->logname,'wb')
 			or die_message('cannot write '.$this->logname);
@@ -565,12 +585,31 @@ class AttachFile
 		flock($fp,LOCK_UN);
 		fclose($fp);
 	}
+	// attach DB 更新
+	function update_db()
+	{
+		if ($this->action == "insert")
+		{
+			$this->size = filesize($this->filename);
+			$this->type = attach_mime_content_type($this->filename);
+			$this->time = filemtime($this->filename) - LOCALZONE;
+		}
+		$data['pgid'] = $this->pgid;
+		$data['name'] = $this->file;
+		$data['mtime'] = $this->time;
+		$data['size'] = $this->size;
+		$data['type'] = $this->type;
+		$data['status'] = $this->status;
+
+		attach_db_write($data,$this->action);
+		
+	}
 	// 日付の比較関数
 	function datecomp($a,$b)
 	{
 		return ($a->time == $b->time) ? 0 : (($a->time > $b->time) ? -1 : 1);
 	}
-	function toString($showicon,$showinfo)
+	function toString($showicon,$showinfo,$mode)
 	{
 		global $script,$date_format,$time_format,$weeklabels;
 		global $_attach_messages;
@@ -582,17 +621,32 @@ class AttachFile
 		$label = ($showicon ? FILE_ICON : '').htmlspecialchars($this->file);
 		if ($this->age)
 		{
-			$label .= ' (backup No.'.$this->age.')';
+			if ($mode == "imglist")
+				$label = 'backup No.'.$this->age;
+			else
+				$label .= ' (backup No.'.$this->age.')';
 		}
+		
 		$info = $count = '';
 		if ($showinfo)
 		{
 			$_title = str_replace('$1',rawurlencode($this->file),$_attach_messages['msg_info']);
-			$info = "\n<span class=\"small\">[<a href=\"$script?plugin=attach&amp;pcmd=info$param\" title=\"$_title\">{$_attach_messages['btn_info']}</a>]</span>";
+			if ($mode == "imglist")
+				$info = "[ [[{$_attach_messages['btn_info']}:{$script}?plugin=attach&pcmd=info".str_replace("&amp;","&",$param)."]] ]";
+			else
+				$info = "\n<span class=\"small\">[<a href=\"$script?plugin=attach&amp;pcmd=info$param\" title=\"$_title\">{$_attach_messages['btn_info']}</a>]</span>";
 			$count = ($showicon and !empty($this->status['count'][$this->age])) ?
 				sprintf($_attach_messages['msg_count'],$this->status['count'][$this->age]) : '';
 		}
-		return "<a href=\"$script?plugin=attach&amp;pcmd=open$param\" title=\"$title\">$label</a>$count$info";
+		if ($mode == "imglist")
+		{
+			if ($this->age)
+				return "&size(12){".$label.$info."};";
+			else
+				return "&size(12){&ref(\"".strip_bracket($this->page)."/".$this->file."\"".ATTACH_CONFIG_REF_OPTION.");~\n".$info."};";
+		}
+		else
+			return "<a href=\"$script?plugin=attach&amp;pcmd=open$param\" title=\"$title\">$label</a>$count$info";
 	}
 	// 情報表示
 	function info($err)
@@ -603,6 +657,7 @@ class AttachFile
 		$s_page = htmlspecialchars($this->page);
 		$s_file = htmlspecialchars($this->file);
 		$s_err = ($err == '') ? '' : '<p style="font-weight:bold">'.$_attach_messages[$err].'</p>';
+		$ref = "";
 		
 		//$uid = get_pg_auther($this->page);
 		$pass = '';
@@ -623,6 +678,7 @@ class AttachFile
 		}
 		else
 		{
+			$ref .= "<dd><hr /></dd><dd>".convert_html("&ref(\"".strip_bracket($this->page)."/".$this->file."\"".ATTACH_CONFIG_REF_OPTION.");")."</dd>\n";
 			if ($this->status['freeze'])
 			{
 				$msg_freezed = "<dd>{$_attach_messages['msg_isfreeze']}</dd>";
@@ -673,6 +729,7 @@ class AttachFile
  <dd>{$_attach_messages['msg_date']}:{$this->time_str}</dd>
  <dd>{$_attach_messages['msg_dlcount']}:{$this->status['count'][$this->age]}</dd>
  <dd>{$_attach_messages['msg_owner']}:{$this->owner_str}</dd>
+ $ref
  $exif_tags
  $msg_freezed
 </dl>
@@ -740,6 +797,7 @@ EOD;
 		{
 			@unlink($this->filename);
 			$this->del_thumb_files();
+			attach_db_write(array('pgid'=>$this->pgid,'name'=>$this->file),"delete");
 		}
 		else
 		{
@@ -831,7 +889,7 @@ EOD;
 	
 	function del_thumb_files(){
 		// 該当ファイルのサムネイルを削除
-		$dir = opendir(UPLOAD_DIR)
+		$dir = opendir(UPLOAD_DIR."s/")
 			or die('directory '.UPLOAD_DIR.' is not exist or not readable.');
 		
 		$page_pattern = ($this->page == '') ? '(?:[0-9A-F]{2})+' : preg_quote(encode($this->page),'/');
@@ -859,7 +917,12 @@ EOD;
 class AttachFiles
 {
 	var $page;
+	var $pgid;
 	var $files = array();
+	var $count = 0;
+	var $max = 50;
+	var $start = 0;
+	var $order = "";
 	
 	function AttachFiles($page)
 	{
@@ -867,12 +930,12 @@ class AttachFiles
 	}
 	function add($file,$age)
 	{
-		$this->files[$file][$age] = &new AttachFile($this->page,$file,$age);
+		$this->files[$file][$age] = &new AttachFile($this->page,$file,$age,$this->pgid);
 	}
 	// ファイル一覧を取得
-	function toString($flat,$max=0,$start=0)
+	function toString($flat,$fromall=FALSE,$mode="")
 	{
-		global $_title_cannotread;
+		global $_title_cannotread,$script;
 		
 		if (!check_readable($this->page,FALSE,FALSE))
 		{
@@ -880,19 +943,58 @@ class AttachFiles
 		}
 		if ($flat)
 		{
-			return $this->to_flat($max,$start);
+			return $this->to_flat();
 		}
 		$ret = '';
 		$files = array_keys($this->files);
-		sort($files);
-		if ($max) $files = array_slice($files,$start,$max);
-		//echo count($files);exit;
+		$navi = "";
+		$pcmd = ($mode == "imglist")? "imglist" : "list";
+		$pcmd2 = ($mode == "imglist")? "list" : "imglist";
+		if (!$fromall)
+		{
+			$url = $script."?plugin=attach&amp;pcmd={$pcmd}&amp;refer=".rawurlencode($this->page)."&amp;order=".$this->order."&amp;start=";
+			$url2 = $script."?plugin=attach&amp;pcmd={$pcmd}&amp;refer=".rawurlencode($this->page)."&amp;start=";
+			$url3 = $script."?plugin=attach&amp;pcmd={$pcmd2}&amp;refer=".rawurlencode($this->page)."&amp;order=".$this->order."&amp;start=".$this->start;
+			$sort_time = ($this->order == "name")? " [ <a href=\"{$url2}0&amp;order=time\">Sort by time</a> |" : " [ <b>Sort by time</b> |";
+			$sort_name = ($this->order == "name")? " <b>Sort by name</b> ] " : " <a href=\"{$url2}0&amp;order=name\">Sort by name</a> ] ";
+			$mode_tag = ($mode == "imglist")? "[ <a href=\"$url3\">List view<a> ]":"[ <a href=\"$url3\">Image view</a> ]";
+			
+			if ($this->max < $this->count)
+			{
+				$_start = $this->start + 1;
+				$_end = $this->start + $this->max;
+				$_end = min($_end,$this->count);
+				$now = $this->start / $this->max + 1;
+				$total = ceil($this->count / $this->max);
+				$navi = array();
+				for ($i=1;$i <= $total;$i++)
+				{
+					if ($now == $i)
+						$navi[] = "<b>$i</b>";
+					else
+						$navi[] = "<a href=\"".$url.($i - 1) * $this->max."\">$i</a>";
+				}
+				$navi = join(' | ',$navi);
+				
+				$prev = max(0,$now - 1);
+				$next = $now;
+				$prev = ($prev)? "<a href=\"".$url.($prev - 1) * $this->max."\" title=\"Prev\"> <img src=\"./image/prev.png\" width=\"6\" height=\"12\" alt=\"Prev\"> </a>|" : "";
+				$next = ($next < $total)? "|<a href=\"".$url.$next * $this->max."\" title=\"Next\"> <img src=\"./image/next.png\" width=\"6\" height=\"12\" alt=\"Next\"> </a>" : "";
+				
+				$navi = "<div class=\"wiki_page_navi\">| $navi |<br />[{$prev} $_start - $_end / ".$this->count." files {$next}]<br />{$sort_time}{$sort_name}{$mode_tag}</div>";
+			}
+			else
+			{
+				$navi = "<div class=\"wiki_page_navi\">{$sort_time}{$sort_name}{$mode_tag}</div>";
+			}
+		}
+		$col = 1;
 		foreach ($files as $file)
 		{
 			$_files = array();
 			foreach (array_keys($this->files[$file]) as $age)
 			{
-				$_files[$age] = $this->files[$file][$age]->toString(FALSE,TRUE);
+				$_files[$age] = $this->files[$file][$age]->toString(FALSE,TRUE,$mode);
 			}
 			if (!array_key_exists(0,$_files))
 			{
@@ -901,18 +1003,48 @@ class AttachFiles
 			ksort($_files);
 			$_file = $_files[0];
 			unset($_files[0]);
-			$ret .= " <li>$_file\n";
-			if (count($_files))
+			if ($mode == "imglist")
 			{
-				$ret .= "<ul>\n<li>".join("</li>\n<li>",$_files)."</li>\n</ul>\n";
+				$ret .= "|$_file";
+				if (count($_files))
+				{
+					$ret .= "~\n".join("~\n-",$_files);
+				}
+				$mod = $col % 4;
+				if ($mod === 0)
+				{
+					$ret .= "|\n";
+					$col = 0;
+				}
+				$col++;
 			}
-			$ret .= " </li>\n";
+			else
+			{
+				$ret .= " <li>$_file\n";
+				if (count($_files))
+				{
+					$ret .= "<ul>\n<li>".join("</li>\n<li>",$_files)."</li>\n</ul>\n";
+				}
+				$ret .= " </li>\n";
+			}
 		}
-		return make_pagelink($this->page)."\n<ul>\n$ret</ul>\n";
+		
+		if ($mode == "imglist")
+		{
+			if ($mod) $ret .= str_repeat("|>",4-$mod)."|\n";
+			//if ($mod) $ret .= "|\n";
+			$ret = "|TCENTER:704 CENTER:MIDDLE:176|CENTER:MIDDLE:176|CENTER:MIDDLE:176|CENTER:MIDDLE:176|c\n".$ret;
+		 	$ret = convert_html($ret);
+		}
+		
+		$showall = ($fromall && $this->max < $this->count)? " [ <a href=\"{$script}?plugin=attach&amp;pcmd={$pcmd}&amp;refer=".rawurlencode($this->page)."\">Show All</a> ]" : "";
+		$allpages = ($fromall)? "" : " [ <a href=\"?plugin=attach&amp;pcmd={$pcmd}\" />All Pages</a> ]";
+		return $navi.($navi? "<hr />":"")."<div class=\"wiki_filelist_page\">".make_pagelink($this->page)."<small> (".$this->count." file".(($this->count==1)?"":"s").")".$showall.$allpages."</small></div>\n<ul>\n$ret</ul>".($navi? "<hr />":"")."$navi\n";
 	}
 	// ファイル一覧を取得(inline)
-	function to_flat($max=0,$start=0)
+	function to_flat()
 	{
+		global $script;
 		$ret = '';
 		$files = array();
 		foreach (array_keys($this->files) as $file)
@@ -923,82 +1055,172 @@ class AttachFiles
 			}
 		}
 		uasort($files,array('AttachFile','datecomp'));
-		if ($max) $files = array_slice($files,$start,$max);
+		//if ($max) $files = array_slice($files,$start,$max);
 		
 		foreach (array_keys($files) as $file)
 		{
 			$ret .= $files[$file]->toString(TRUE,TRUE).' ';
 		}
-		
-		return $ret;
+		$more = $this->count - $this->max;
+		$more = ($this->count > $this->max)? "... more ".$more." files. [ <a href=\"{$script}?plugin=attach&amp;pcmd=list&amp;refer=".rawurlencode($this->page)."\">Show All</a> ]" : "";
+		return $ret.$more;
 	}
 }
 // ページコンテナ
 class AttachPages
 {
 	var $pages = array();
+	var $start = 0;
+	var $max = 50;
+	var $mode = "";
+	var $err = 0;
 	
-	function AttachPages($page='',$age=NULL,$thumb=0,$isbn=true)
+	function AttachPages($page='',$age=NULL,$isbn=true,$max=50,$start=0,$fromall=FALSE,$f_order="time",$mode="")
 	{
-		// $thumb = 0:全てのファイル, 1:サムネイル以外, 2:サムネイルのみ
-		$dir = opendir(UPLOAD_DIR)
-			or die('directory '.UPLOAD_DIR.' is not exist or not readable.');
-		
-		$page_pattern = ($page == '') ? '(?:[0-9A-F]{2})+' : preg_quote(encode($page),'/');
-		$age_pattern = ($age === NULL) ?
-			'(?:\.([0-9]+))?' : ($age ?  "\.($age)" : '');
-		$pattern = "/^({$page_pattern})_((?:[0-9A-F]{2})+){$age_pattern}$/";
-		
-		while ($file = readdir($dir))
+		global $xoopsDB,$X_admin,$X_uid;
+		$this->mode = $mode;
+		if ($page)
 		{
-			if (!preg_match($pattern,$file,$matches))
-			{
-				continue;
-			}
-			$_page = decode($matches[1]);
-			
 			// 閲覧権限チェック
-			if (!check_readable($_page,false,false)) continue;
+			if (!$fromall && !check_readable($page,false,false)) return;
 			
-			$_file = decode($matches[2]);
-			$_age = array_key_exists(3,$matches) ? $matches[3] : 0;
-			if (!array_key_exists($_page,$this->pages))
+			$this->pages[$page] = &new AttachFiles($page);
+			
+			$pgid = get_pgid_by_name($page);
+			$this->pages[$page]->pgid = $pgid;
+			
+			// WHERE句
+			$where = array();
+			$where[] = "`pgid` = {$pgid}";
+			if (!$isbn) $where[] = "`mode` != '1'";
+			if (!is_null($age)) $where[] = "`age` = $age";
+			//if ($mode == "imglist") $where[] = "`type` LIKE 'image%' AND `age` = 0";
+			//if ($mode == "imglist") $where[] = "`age` = 0";
+			$where = " WHERE ".join(' AND ',$where);
+			
+			// このページの添付ファイル数取得
+			$query = "SELECT count(*) as count FROM `".$xoopsDB->prefix(pukiwikimod_attach)."`{$where};";
+			if (!$result = $xoopsDB->query($query))
+				{
+					$this->err = 1;
+					return;
+				}
+			$_row = mysql_fetch_row($result);
+			if (!$_row[0]) return;
+			
+			$this->pages[$page]->count = $_row[0];
+			$this->pages[$page]->max = $max;
+			$this->pages[$page]->start = $start;
+			$this->pages[$page]->order = $f_order;
+			
+			// ファイル情報取得
+			$order = ($f_order == "name")? " ORDER BY name ASC" : " ORDER BY mtime DESC";
+			$limit = " LIMIT {$start},{$max}";
+			$query = "SELECT name,age FROM `".$xoopsDB->prefix(pukiwikimod_attach)."`{$where}{$order}{$limit};";
+			$result = $xoopsDB->query($query);
+			while($_row = mysql_fetch_row($result))
 			{
-				$this->pages[$_page] = &new AttachFiles($_page);
-			}
-			if (!$isbn && preg_match("/^ISBN.*\.(dat|jpg)/",$_file)) continue;
-			$is_thumb = false;
-			if ($thumb){
-				$is_thumb = preg_match("/^\d\d?%/",$_file);
-			}
-			if ($thumb == 0){
-				$this->pages[$_page]->add($_file,$_age);
-			} elseif ($thumb == 1 && !$is_thumb) {
-				$this->pages[$_page]->add($_file,$_age);
-			} elseif ($thumb == 2 && $is_thumb) {
-				$this->pages[$_page]->add($_file,$_age);
+				$_file = $_row[0];
+				$_age = $_row[1];
+				$this->pages[$page]->add($_file,$_age);
 			}
 		}
-		closedir($dir);
+		else
+		{
+			// WHERE句
+			if ($X_admin)
+				$where = "";
+			else
+			{
+				$where = "";
+				if ($X_uid) $where .= " (p.uid = $X_uid) OR";
+				$where .= " (p.vaids LIKE '%all%') OR (p.vgids LIKE '%&3&%')";
+				if ($X_uid) $where .= " OR (p.vaids LIKE '%&{$X_uid}&%')";
+				foreach(X_get_groups() as $gid)
+				{
+					$where .= " OR (p.vgids LIKE '%&{$gid}&%')";
+				}
+				$where = " WHERE".$where;
+			}
+			
+			// 添付ファイルのあるページ数カウント
+			$query = "SELECT p.id FROM ".$xoopsDB->prefix(pukiwikimod_pginfo)." p INNER JOIN ".$xoopsDB->prefix(pukiwikimod_attach)." a ON p.id=a.pgid{$where} GROUP BY a.pgid;";
+			$result = $xoopsDB->query($query);
+			
+			$this->count = 0;
+			while($_row = mysql_fetch_row($result))
+			{
+				$this->count++;
+			}
+			$this->max = $max;
+			$this->start = $start;
+			$this->order = $f_order;
+			
+			// ページ情報取得
+			$order = ($f_order == "name")? " ORDER BY p.name ASC" : " ORDER BY p.editedtime DESC";
+			$limit = " LIMIT $start,$max";
+			
+			$query = "SELECT p.name,p.editedtime FROM ".$xoopsDB->prefix(pukiwikimod_pginfo)." p INNER JOIN ".$xoopsDB->prefix(pukiwikimod_attach)." a ON p.id=a.pgid{$where} GROUP BY a.pgid{$order}{$limit};";
+			if (!$result = $xoopsDB->query($query)) echo "QUERY ERROR : ".$query;
+			
+			
+			while($_row = mysql_fetch_row($result))
+			{
+				$this->AttachPages(add_bracket($_row[0]),$age,$isbn,20,0,TRUE,$f_order,$mode);
+			}
+		}
 	}
-	function toString($page='',$flat=FALSE,$max=20)
+	function toString($page='',$flat=FALSE)
 	{
+		global $script;
 		if ($page != '')
 		{
 			if (!array_key_exists($page,$this->pages))
 			{
 				return '';
 			}
-			return $this->pages[$page]->toString($flat,$max);
+			return $this->pages[$page]->toString($flat,FALSE,$this->mode);
 		}
-		$ret = '';
+		$pcmd = ($this->mode == "imglist")? "imglist" : "list";
+		$pcmd2 = ($this->mode == "imglist")? "list" : "imglist";
+		$url = $script."?plugin=attach&amp;pcmd={$pcmd}&amp;order=".$this->order."&amp;start=";
+		$url2 = $script."?plugin=attach&amp;pcmd={$pcmd}&amp;start=";
+		$url3 = $script."?plugin=attach&amp;pcmd={$pcmd2}&amp;order=".$this->order."&amp;start=".$this->start;
+		$sort_time = ($this->order == "name")? " [ <a href=\"{$url2}0&amp;order=time\">Sort by time</a> |" : " [ <b>Sort by time</b> |";
+		$sort_name = ($this->order == "name")? " <b>Sort by name</b> ] " : " <a href=\"{$url2}0&amp;order=name\">Sort by name</a> ] ";
+		$mode_tag = ($this->mode == "imglist")? "[ <a href=\"$url3\">List view<a> ]":"[ <a href=\"$url3\">Image view</a> ]";
+		
+		$_start = $this->start + 1;
+		$_end = $this->start + $this->max;
+		$_end = min($_end,$this->count);
+		$now = $this->start / $this->max + 1;
+		$total = ceil($this->count / $this->max);
+		$navi = array();
+		
+		for ($i=1;$i <= $total;$i++)
+		{
+			if ($now == $i)
+				$navi[] = "<b>$i</b>";
+			else
+				$navi[] = "<a href=\"".$url.($i - 1) * $this->max."\">$i</a>";
+		}
+		$navi = join(' | ',$navi);
+		$prev = max(0,$now - 1);
+		$next = $now;
+		$prev = ($prev)? "<a href=\"".$url.($prev - 1) * $this->max."\" title=\"Prev\"> <img src=\"./image/prev.png\" width=\"6\" height=\"12\" alt=\"Prev\"> </a>|" : "";
+		$next = ($next < $total)? "|<a href=\"".$url.$next * $this->max."\" title=\"Next\"> <img src=\"./image/next.png\" width=\"6\" height=\"12\" alt=\"Next\"> </a>" : "";
+		$navi = "<div class=\"wiki_page_navi\">| $navi |<br />[{$prev} $_start - $_end / ".$this->count." pages {$next}]<br />{$sort_time}{$sort_name}{$mode_tag}</div>";
+		
+		$ret = "";
 		$pages = array_keys($this->pages);
-		sort($pages);
+		//sort($pages);
 		foreach ($pages as $page)
 		{
-			$ret .= '<li>'.$this->pages[$page]->toString($flat)."</li>\n";
+			//$ret .= '<li>'.$this->pages[$page]->toString($flat)."</li>\n";
+			$ret .= $this->pages[$page]->toString($flat,TRUE,$this->mode)."\n";
 		}
-		return "\n<ul>\n".$ret."</ul>\n";
+		//return "\n<ul>\n".$ret."</ul>\n";
+		return "\n$navi".($navi? "<hr />":"")."\n$ret\n".($navi? "<hr />":"")."$navi\n";
 		
 	}
 }

@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.52 2004/09/28 14:20:12 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.53 2004/10/05 12:46:48 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -538,6 +538,9 @@ else if($post["write"])
 				}
 			}
 			
+			// とりあえずページIDを記憶
+			$pgid = get_pgid_by_name($post["page"]);
+			
 			// ページの出力
 			page_write($post["page"],$postdata,$post['notimestamp'],$freeze_aid,$freeze_gid,$unvisible_aid,$unvisible_gid,$post["freeze"],$post["unvisible"]);
 			
@@ -545,8 +548,11 @@ else if($post["write"])
 			{
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_updated);
 				
+				// 新規作成時はIDが入っていないので
+				if (!$pgid) $pgid = get_pgid_by_name($post["page"]);
+				
 				if ($use_static_url)
-					$pg_link_url = XOOPS_WIKI_URL."/".get_pgid_by_name($post["page"]).".html";
+					$pg_link_url = XOOPS_WIKI_URL."/".$pgid.".html";
 				else
 					$pg_link_url = "$script?".rawurlencode(strip_bracket($post["page"]));
 				
@@ -561,7 +567,7 @@ else if($post["write"])
 				if ($X_admin)
 				{
 					// 添付ファイル・カウンタファイル削除のリンク表示
-					$body .= "\n<hr />\n<a href=\"$script?plugin=filesdel&amp;tgt=".encode($post['page'])."\">$_msg_filesdel</a>";
+					$body .= "\n<hr />\n<a href=\"$script?plugin=filesdel&amp;tgt=".encode($post['page'])."&amp;_pgid=".$pgid."\">$_msg_filesdel</a>";
 				}
 				// TrackBackデータ削除
 				tb_delete($post["page"]);

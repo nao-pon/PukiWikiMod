@@ -1,10 +1,10 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.9 2004/09/01 12:10:59 nao-pon Exp $
+// $Id: db_func.php,v 1.10 2004/10/05 12:46:48 nao-pon Exp $
 
 // 全ページ名を配列にDB版
-function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false)
+function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
 {
 	static $_aryret = array();
 	if ($_aryret && $nocheck == false && $page == "") return $_aryret;
@@ -58,6 +58,13 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 			$where = " (name NOT LIKE ':%') AND ($where)";
 		else
 			$where = " (name NOT LIKE ':%')";
+	}
+	if ($nodelete)
+	{
+		if ($where)
+			$where = " (editedtime !=0) AND ($where)";
+		else
+			$where = " (editedtime !=0)";
 	}
 	if ($where) $where = " WHERE".$where;
 	$limit = ($limit)? " LIMIT $limit" : "";
@@ -369,7 +376,27 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	{
 		$buildtime = $editedtime;
 		
-		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_pginfo")." (name,buildtime,editedtime,aids,gids,vaids,vgids,lastediter,uid,freeze,unvisible,title) VALUES('$s_name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible,'$title');";
+		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name = '$s_name' LIMIT 1;";
+		if (!$result=$xoopsDB->query($query))
+		{
+			// 以前に削除したページ
+			$value = "editedtime=$editedtime";
+			$value .= ",buildtime=$buildtime";
+			$value .= ",title='$title'";
+			$value .= ",lastediter=$lastediter";
+			$value .= ",aids='$aids'";
+			$value .= ",gids='$gids'";
+			$value .= ",vaids='$vaids'";
+			$value .= ",vgids='$vgids'";
+			$value .= ",uid=$uid";
+			$value .= ",freeze=$freeze";
+			$value .= ",unvisible=$unvisible";
+			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE name = '$s_name';";
+		}
+		else
+		{
+			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_pginfo")." (name,buildtime,editedtime,aids,gids,vaids,vgids,lastediter,uid,freeze,unvisible,title) VALUES('$s_name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible,'$title');";
+		}
 		$result=$xoopsDB->queryF($query);
 		plain_db_write($page,"insert");
 	}
@@ -404,7 +431,11 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	// ページ削除
 	elseif ($action == "delete")
 	{
-		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name = '$s_name';";
+
+		//$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name = '$s_name';";
+		$value = "editedtime=0";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE name = '$s_name';";
+		
 		$result=$xoopsDB->queryF($query);
 		plain_db_write($page,"delete");
 	}
@@ -451,6 +482,71 @@ function plain_db_write($page,$action)
 	elseif ($action == "delete")
 	{
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_plain")." WHERE pgid = $pgid;";
+		$result=$xoopsDB->queryF($query);
+		if (!$result) echo $query."<hr>";
+	}
+	else
+		return false;
+	
+	return true;
+}
+
+// attach DB を更新
+function attach_db_write($data,$action)
+{
+	global $xoopsDB,$post,$get,$vars;
+	
+	//if (!$pgid = $data['pgid']) return false;
+	
+	$pgid = (int)$data['pgid'];
+	$name = $data['name'];
+	$type = $data['type'];
+	$mtime = (int)$data['mtime'];
+	$size = (int)$data['size'];
+	// $mode normal=0, isbn=1, thumb=2
+	$mode = (preg_match("/^ISBN.*\.(dat|jpg)/",$name))? 1 : ((preg_match("/^\d\d?%/",$name))? 2 : 0);
+	$age = (int)$data['status']['age'];
+	$count = (int)$data['status']['count'][$age];
+	$pass = $data['status']['pass'];
+	$freeze = (int)$data['status']['freeze'];
+	$copyright = (int)$data['status']['copyright'];
+	$owner = (int)$data['status']['owner'];
+	
+	// 新規作成
+	if ($action == "insert")
+	{
+		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_attach")." (pgid,name,type,mtime,size,mode,count,age,pass,freeze,copyright,owner) VALUES($pgid,'$name','$type',$mtime,$size,'$mode',$count,$age,'$pass',$freeze,$copyright,$owner);";
+		$result=$xoopsDB->queryF($query);
+		if (!$result) echo $query."<hr>";
+	}
+	
+	// 更新
+	elseif ($action == "update")
+	{
+		$value = "pgid=$pgid"
+		.",name='$name'"
+		.",type='$type'"
+		.",mtime=$mtime"
+		.",size=$size"
+		.",mode=$mode"
+		.",count=$count"
+		.",age=$age"
+		.",pass='$pass'"
+		.",freeze=$freeze"
+		.",copyright=$copyright"
+		.",owner=$owner";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_attach")." SET $value WHERE pgid=$pgid AND name='$name' LIMIT 1;";
+		$result=$xoopsDB->queryF($query);
+		if (!$result) echo $query."<hr>";
+	}
+	
+	// ファイル削除
+	elseif ($action == "delete")
+	{
+		$q_name = ($name)? " AND name='{$name}' LIMIT 1" : "";
+		
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_attach")." WHERE pgid = {$pgid}{$q_name};";
+		
 		$result=$xoopsDB->queryF($query);
 		if (!$result) echo $query."<hr>";
 	}

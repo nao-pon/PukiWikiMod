@@ -4,7 +4,7 @@
 //
 //
 // ref.inc.php,v 1.20をベースに作成
-// $Id: exifshowcase.inc.php,v 1.4 2004/08/24 12:51:45 nao-pon Exp $
+// $Id: exifshowcase.inc.php,v 1.5 2004/10/05 12:46:47 nao-pon Exp $
 // ORG: exifshowcase.inc.php,v 1.20 2004/01/17 12:52:01 m-arai Exp $
 //
 
@@ -103,7 +103,7 @@ function plugin_exifshowcase_convert()
 
 function plugin_exifshowcase_body($args,$page)
 {
-	global $script,$WikiName,$BracketName;
+	global $script,$WikiName,$BracketName,$vars,$xoopsDB;
 	
 	// 戻り値
 	$params = array();
@@ -164,52 +164,47 @@ function plugin_exifshowcase_body($args,$page)
 		return $params;
 	}
 	
-	$_files = plugin_exifshowcase_glob( UPLOAD_DIR.encode($page).'_*'."(".encode(".jpg")."|".encode(".JPG")."|".encode(".jpeg")."|".encode(".JPEG").encode(".png")."|".encode(".PNG").")");
-	$dlen = strlen( UPLOAD_DIR.encode($page).'_' );
-	$files = $aname = array();
+	$where = $files = $aname = array();
 	
-	if ($params['sort']) sort($_files);
+	$where[] = "`pgid` = ".get_pgid_by_name($page);
+	$where[] = "`type` LIKE 'image%'";
+	$where[] = "`age` = 0";
+	if ($pattern)
+		$where[] = "`name` REGEXP '{$pattern}'";
 	
-	for ( $i=0; $_files[$i]; $i++) {
-		$_aname = decode( substr($_files[$i], $dlen));
-		if (!preg_match("/^[\d]+%/",$_aname))
-		{
-			$aname[] = $_aname;
-			$files[] = $_files[$i];
-		}
+	$where = join(' AND ',$where);
+	
+	// 並べ替え
+	if ($row)
+	{
+		// ランダム表示？
+		$show_count = $row * $colmn;
+		$order = " ORDER BY RAND() LIMIT {$show_count}";
 	}
-
-	if ($pattern) {
-		for ( $i=count($files)-1; $i>=0; $i--) {
-			if (!ereg($pattern, $aname[$i])) {
-				array_splice( $files, $i, 1);
-				array_splice( $aname, $i, 1);
-			}
-		}
+	else if ($params['sort'])
+	{
+		// ファイル名順
+		$order = " ORDER BY `name` ASC";
 	}
-
+	else
+	{
+		// タイムスタンプ順
+		$order = " ORDER BY `mtime` ASC";
+	}
+	
+	$query = "SELECT name FROM `".$xoopsDB->prefix(pukiwikimod_attach)."` WHERE {$where}{$order};";
+	
+	$result = $xoopsDB->query($query);
+	while($_row = mysql_fetch_row($result))
+	{
+		$aname[] = $_row[0];
+		$files[] = UPLOAD_DIR.encode($page).'_'.encode($_row[0]);
+	}
+	
 	if( !$files) {
 
 		$params['_body'] .= "対象画像 (".($pattern?$pattern:"*.jp(e)g").") がありません。";
 		return $params;
-	}
-	
-	//ランダム表示？
-	if ($row)
-	{
-		$_aname = $_files = array();
-		$show_count = $row * $colmn;
-		for ($i=0; $i < $show_count; $i++)
-		{
-			$r_cnt = rand(1,count($files));
-			//echo $r_cnt." ";
-			$tmp = array_splice ( $files, $r_cnt, 1);
-			$_files[] = $tmp[0];
-			$tmp = array_splice ( $aname, $r_cnt, 1);
-			$_aname[] = $tmp[0];
-		}
-		$files = $_files;
-		$aname = $_aname;
 	}
 
 	if ( $params['reverse']) {

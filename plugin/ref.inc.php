@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.17 2004/06/11 12:53:39 nao-pon Exp $
+// $Id: ref.inc.php,v 1.18 2004/10/05 12:46:47 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -50,6 +50,42 @@ if (!defined('REF_DEFAULT_ALIGN')) define('REF_DEFAULT_ALIGN','left'); // 'left'
 if (!defined('REF_WRAP_TABLE')) define('REF_WRAP_TABLE',FALSE); // TRUE,FALSE
 
 
+function plugin_ref_action()
+{
+	global $X_admin,$vars;
+	if (!$X_admin || $vars['pmode'] != "move_thumb") return(array("redirect" => XOOPS_WIKI_URL."/"));
+	$counter = 0;
+	if ($dir = @opendir(UPLOAD_DIR))
+	{
+		$page_pattern = '(?:[0-9A-F]{2})+';
+		$age_pattern = '(?:\.([0-9]+))?';
+		$pattern = "/^({$page_pattern})_((?:[0-9A-F]{2})+){$age_pattern}$/";
+		
+		$count = 0;
+		while($file = readdir($dir))
+		{
+			if (!preg_match($pattern,$file,$matches))
+			{
+				continue;
+			}
+			$page = decode($matches[1]);
+			$name = decode($matches[2]);
+			$age = array_key_exists(3,$matches) ? $matches[3] : 0;
+			
+			if (preg_match("/^\d\d?%/",$name))
+			{
+				//echo "$name<br>";
+				@unlink(UPLOAD_DIR."s/".$file);
+				@rename(UPLOAD_DIR.$file,UPLOAD_DIR."s/".$file);
+				@unlink(UPLOAD_DIR.$file.".log");
+				$count++;
+			}
+		}
+		closedir($dir);
+	}
+	return array('msg'=>"Moved thumb files.","body"=>"$count files ware moved.");
+
+}
 
 function plugin_ref_inline() {
 
@@ -358,7 +394,7 @@ function plugin_ref_body($name,$args,$params){
 		if ( !strstr($_SERVER["HTTP_USER_AGENT"], "MSIE")) $title = str_replace("&#13;&#10;"," ",$title);
 		
 		if ($width && $height) {
-			$s_file = UPLOAD_DIR.encode($page).'_'.encode($zoom."%".$name);
+			$s_file = UPLOAD_DIR."s/".encode($page).'_'.encode($zoom."%".$name);
 			if (!file_exists($s_file) && ($zoom < 90) && (!$params['nocache'])) {
 				//サムネイル作成
 				$url = plugin_ref_make_thumb($url,$s_file,$width,$height,$org_w,$org_h);

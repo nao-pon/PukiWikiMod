@@ -53,3 +53,23 @@ CREATE TABLE pukiwikimod_tb (
   KEY `page_id` (`tb_id`),
   KEY `page_name` (`page_name`)
 ) TYPE=MyISAM;
+
+# --------------------------------------------------------
+
+CREATE TABLE `pukiwikimod_attach` (
+ `id` int(11) NOT NULL auto_increment,
+ `pgid` int(11) NOT NULL default '0',
+ `name` varchar(255) binary NOT NULL default '',
+ `type` varchar(255) NOT NULL default '',
+ `mtime` int(11) NOT NULL default '0',
+ `size` int(11) NOT NULL default '0',
+ `mode` varchar(20) NOT NULL default '',
+ `count` int(11) NOT NULL default '0',
+ `age` tinyint(4) NOT NULL default '0',
+ `pass` varchar(16) binary NOT NULL default '',
+ `freeze` tinyint(1) NOT NULL default '0',
+ `copyright` tinyint(1) NOT NULL default '0',
+ `owner` int(11) NOT NULL default '0',
+ UNIQUE KEY `id` (`id`)
+) TYPE=MyISAM;
+

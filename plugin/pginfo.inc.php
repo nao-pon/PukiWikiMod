@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pginfo.inc.php,v 1.4 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: pginfo.inc.php,v 1.5 2004/10/05 12:46:47 nao-pon Exp $
 //
 
 // メッセージ設定
@@ -12,9 +12,13 @@ function plugin_pginfo_init()
 		'_links_messages'=>array(
 			'title_update'  => 'ページ情報DB更新',
 			'msg_adminpass' => '管理者パスワード',
-			'msg_init' => 'DBをすべて初期化&再設定',
-			'msg_retitle' => 'タイトル情報再設定のみ',
-			'msg_plain_init' => '検索用PlainDBの初期化&再設定のみ',
+			'msg_all' => 'DBをすべて初期化&再設定',
+			'msg_select' => '以下から選択して初期化&再設定',
+			'msg_hint' => '初期導入時はすべてにチェックをつけて実行してください。',
+			'msg_init' => 'ページ基本情報DB',
+			'msg_retitle' => 'タイトル情報DB',
+			'msg_plain_init' => '検索用PlainDB',
+			'msg_attach_init' => '添付ファイル情報DB',
 			'btn_submit'    => '実行',
 			'msg_done'      => 'ページ情報DBの更新が完了しました。',
 			'msg_usage'     => "
@@ -49,11 +53,14 @@ function plugin_pginfo_action()
  <div>
   <input type="hidden" name="plugin" value="pginfo" />
   <input type="hidden" name="action" value="update" />
-  <input type="radio" name="mode" value="init" checked="true" />{$_links_messages['msg_init']}<br />
+  <input type="hidden" name="mode" value="select" />
+  {$_links_messages['msg_hint']}
   <div style="margin-left:20px;">
-  <input type="radio" name="mode" value="retitle" />{$_links_messages['msg_retitle']}<br />
-  <input type="radio" name="mode" value="plain_init" />{$_links_messages['msg_plain_init']}<br />
-  </div>
+  <input type="checkbox" name="init" value="on" checked="true" />{$_links_messages['msg_init']}<br />
+  <input type="checkbox" name="title" value="on" checked="true" />{$_links_messages['msg_retitle']}<br />
+  <input type="checkbox" name="plain" value="on" checked="true" />{$_links_messages['msg_plain_init']}<br />
+  <input type="checkbox" name="attach" value="on" checked="true" />{$_links_messages['msg_attach_init']}<br />
+ </div>
   <br />
   <input type="submit" value="{$_links_messages['btn_submit']}" />
  </div>
@@ -65,31 +72,15 @@ EOD;
 			'body'=>$body
 		);
 	}
-	else if ($vars['action'] == 'update' && $vars['mode'] == 'init')
+	else if ($vars['action'] == 'update' && ($vars['mode'] == 'all' || $vars['mode'] == 'select'))
 	{
 		//error_reporting(E_ALL);
 		echo "<html><body>\n";
-		pginfo_db_init();
-		pginfo_db_retitle();
-		//plain_db_init();
+		if ($vars['mode'] == 'all' || !empty($vars['init'])) pginfo_db_init();
+		if ($vars['mode'] == 'all' || !empty($vars['title'])) pginfo_db_retitle();
+		if ($vars['mode'] == 'all' || !empty($vars['plain'])) plain_db_init();
+		if ($vars['mode'] == 'all' || !empty($vars['attach'])) attach_db_init();
 		
-		redirect_header("$script?plugin=pginfo",3,$_links_messages['msg_done']);
-		exit();
-	}
-	else if ($vars['action'] == 'update' && $vars['mode'] == 'retitle')
-	{
-		//error_reporting(E_ALL);
-		echo "<html><body>\n";
-		pginfo_db_retitle();
-		
-		redirect_header("$script?plugin=pginfo",3,$_links_messages['msg_done']);
-		exit();
-	}
-	else if ($vars['action'] == 'update' && $vars['mode'] == 'plain_init')
-	{
-		//error_reporting(E_ALL);
-		echo "<html><body>\n";
-		plain_db_init();
 		redirect_header("$script?plugin=pginfo",3,$_links_messages['msg_done']);
 		exit();
 	}
@@ -384,6 +375,72 @@ function plain_db_init()
 		$post['page']=$get['page']=$vars['page'] = "";
 	}
 	echo " ( Done ".$counter." Pages !)<hr />";
+	echo "</div>";
+	//echo "</body></html>";
+}
+
+// 添付ファイル DB 再設定
+function attach_db_init()
+{
+	global $xoopsDB,$vars,$post,$get;
+	
+	// 実行時間を制限しない
+	set_time_limit(0);
+	// 出力をバッファリングしない
+	ob_end_clean();
+	echo str_pad('',256);//for IE
+	//echo "<html><body>";
+	echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_attach' Now converting... </b>( * = 10 Pages)<hr>";
+	flush();
+	
+	include_once(PLUGIN_DIR."attach.inc.php");
+
+	$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_attach");
+	$result=$xoopsDB->queryF($query);
+	if ($dir = @opendir(UPLOAD_DIR))
+	{
+		$counter = 0;
+		
+		$page_pattern = '(?:[0-9A-F]{2})+';
+		$age_pattern = '(?:\.([0-9]+))?';
+		$pattern = "/^({$page_pattern})_((?:[0-9A-F]{2})+){$age_pattern}$/";
+		
+		while($file = readdir($dir))
+		{
+			if (!preg_match($pattern,$file,$matches))
+			{
+				continue;
+			}
+			$page = decode($matches[1]);
+			$name = decode($matches[2]);
+			$age = array_key_exists(3,$matches) ? $matches[3] : 0;
+			
+			// サムネイルは除外
+			if (preg_match("/^\d\d?%/",$name)) continue;
+			
+			$obj = &new AttachFile($page,$name,$age);
+			$obj->getstatus();
+			
+			$data['pgid'] = get_pgid_by_name($page);
+			$data['name'] = $name;
+			$data['mtime'] = $obj->time;
+			$data['size'] = $obj->size;
+			$data['type'] = $obj->type;
+			$data['status'] = $obj->status;
+
+			if (attach_db_write($data,"insert"))
+			{
+				$counter++;
+				if (($counter/10) == (floor($counter/10))){
+					echo "*";
+					flush();
+				}
+				if (($counter/100) == (floor($counter/100))) echo " ( Done ".$counter." Files !)<br />";
+			}
+		}
+		closedir($dir);
+	}
+	echo " ( Done ".$counter." Files !)<hr />";
 	echo "</div>";
 	//echo "</body></html>";
 }

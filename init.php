@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.35 2004/09/12 23:22:19 nao-pon Exp $
+// $Id: init.php,v 1.36 2004/10/05 12:46:48 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -265,7 +265,7 @@ if (isset($vars['pwm_ping']))
 if (isset($vars['pgid']))
 {
 	$vars['page'] = get_pgname_by_id($vars['pgid']);
-	if ($vars['page'])
+	if (is_page($vars['page']))
 		$vars['cmd'] = "read";
 	else
 	{

@@ -28,7 +28,10 @@ function plugin_filesdel_action()
 	}
 	else
 	{
-		//添付ファイル
+		// 添付ファイルDB
+		attach_db_write(array('pgid'=>($vars['_pgid'])),'delete');
+		
+		// 添付ファイル
 		$msg = "<hr />\nAttach files:<br />\n";
 		$pattern = $vars['tgt'];
 		if ($dir = @opendir(UPLOAD_DIR)) {
@@ -37,6 +40,20 @@ function plugin_filesdel_action()
 				if (strpos($name, $pattern) === 0) {
 					$msg .= $name."<br />";
 					unlink(UPLOAD_DIR.$name);
+				}
+			}
+			closedir($dir);
+		}
+		
+		//サムネイル
+		$msg .= "<hr />\nThumbnail files:<br />\n";
+		$pattern = $vars['tgt'];
+		if ($dir = @opendir(UPLOAD_DIR."s/")) {
+			while ($name = readdir($dir)) {
+				if ($name == '..' || $name == '.') { continue; }
+				if (strpos($name, $pattern) === 0) {
+					$msg .= $name."<br />";
+					unlink(UPLOAD_DIR."s/".$name);
 				}
 			}
 			closedir($dir);
