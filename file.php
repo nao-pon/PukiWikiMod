@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.39 2004/10/20 12:30:12 nao-pon Exp $
+// $Id: file.php,v 1.40 2004/10/21 01:55:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -1123,7 +1123,8 @@ function get_pagename_aliases()
 	$_aliases = array();
 	foreach(get_source(':config/aliases') as $_line)
 	{
-		if (preg_match("/\[(.+):([^:]+)\]/",$_line,$_match) && is_page($_match[2]))
+		//if (preg_match("/\[(.+):([^:]+)\]/",$_line,$_match) && is_page($_match[2]))
+		if (preg_match("/\[(.+) ([^ ]+)\]/",$_line,$_match) && is_page($_match[2]))
 		{
 			$_aliases[$_match[1]] = $_match[2];
 		}
