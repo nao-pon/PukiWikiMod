@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.27 2004/07/31 06:48:04 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.28 2004/09/12 23:20:49 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -37,7 +37,7 @@ if($xoopsConfig['language'] == "japanese"){
 
 /////////////////////////////////////////////////
 // スキンファイルの場所。
-if (empty($vars['xoops_block'])) 
+if (empty($_GET['xoops_block'])) 
 	define("SKIN_FILE","./skin/pukiwiki.skin.".LANG.".php");
 else
 	define("SKIN_FILE","./skin/xoops_block.skin.".LANG.".php");
@@ -45,6 +45,7 @@ else
 /////////////////////////////////////////////////
 // 言語ファイルの読み込み(編集しないでください)
 require(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/".LANG.".lng");
+//require(XOOPS_ROOT_PATH."/modules/pukiwiki/".LANG.".lng");
 
 /////////////////////////////////////////////////
 // ファイルアップロード関連
@@ -278,6 +279,7 @@ $str_rules = array(
 /////////////////////////////////////////////////
 // ユーザ定義ルール(コンバート時に置換、直接しない)
 $line_rules = array(
+//"/!([A-Z][a-z]+(?:[A-Z][a-z]+)+)/" => "$1",
 );
 
 /////////////////////////////////////////////////
