@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.6 2003/07/02 00:56:44 nao-pon Exp $
+// $Id: func.php,v 1.7 2003/07/08 13:59:37 nao-pon Exp $
 /////////////////////////////////////////////////
 // 検索語を展開する
 function get_search_words($words,$special=FALSE)
@@ -518,6 +518,7 @@ function auto_br($msg){
 		//余分な~を削除
 		$msg = preg_replace("/~(->)?\n([#\-+*|:>\n])/","\\1\n\\2",$msg);
 		$msg = preg_replace("/((?:^|\n)[^ ][^\n~]*)~((:?->)?\n )/","\\1\\2",$msg);
+		$msg = preg_replace("/((?:^|\n)----(?:.*)?)~((:?->)?\n)/","\\1\\2",$msg);
 		$msg = preg_replace("/~$/","",$msg);
 
 		//前処理制御文字へ置換
