@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.42 2005/02/28 14:45:17 nao-pon Exp $
+// $Id: convert_html.php,v 1.43 2005/03/05 02:13:52 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -114,6 +114,9 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		keyword_to_strong($str,$wiki_strong_words);
 		$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 	}
+	
+	// <a>タグ内の長すぎる英単語をワードラップ
+	wordwrap4tolong($str);
 	
 	//ゲストアカウントでページコンバート指定時
 	if (!$X_uid && $page_cvt && !$cache && empty($vars['xoops_block']))
