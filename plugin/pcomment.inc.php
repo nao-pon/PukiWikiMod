@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.17 2004/08/19 04:02:33 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.18 2004/09/04 01:14:47 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -143,7 +143,7 @@ function plugin_pcomment_convert() {
 
 	$_page = get_fullname($page,$vars['page']);
 	if (!preg_match("/^$BracketName$/",$_page))
-		return 'invalid page name.';
+		return 'invalid page name: '.htmlspecialchars($_page);
 	
 	// ±ÜÍ÷¸¢¸Â
 	if (!check_readable($_page,false,false))
