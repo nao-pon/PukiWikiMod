@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.55 2004/10/11 14:03:30 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.56 2004/10/12 14:41:45 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -339,6 +339,9 @@ else if($post["write"])
 	$post["msg"] = $post["msg_before"].$post["msg"].$post["msg_after"];
 
 	if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
+		// とりあえず pgid を振る(添付ファイル処理用)
+		check_pginfo($vars['page']);
+		
 		//添付ファイルあり
 		include_once (PLUGIN_DIR.'attach.inc.php');
 
