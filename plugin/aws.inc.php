@@ -1,22 +1,57 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.5 2004/09/02 04:29:09 nao-pon Exp $
+// $Id: aws.inc.php,v 1.6 2004/10/07 03:12:15 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
 
 function plugin_aws_init()
 {
-	$data = array('plugin_aws_dataset'=>array(
-		//////// Config ///////
-		'xls_url'      => "", // XSLTファイルが置いてあるディレクトリURL
-		'amazon_dev_t' => "", // デベロッパートークン
-		'amazon_t'     => "", // アソシエイツID
-		'amazon_xml'   => "http://xml-jp.amznxslt.com",
-		'cache_time'   => 360, // Cache time (min) 360m = 6h
-		//////// Config ///////
+	$msg = array('plugin_aws_dataset'=>array(
 		'msg_notfound'  => '※ Amazonで検索しましたがヒットしませんでした。',
+		'err_setconfig'  => '※ 設定エラー: [ '.PLUGIN_DATA_DIR.'aws/config.php ] に設定情報を記入してください。',
+		'err_nonwritable'  => '※ 設定エラー: ディレクトリ [ '.PLUGIN_DATA_DIR.'aws/ ] に書き込み権限がありません。',
+		'writable_check'  => 1,
 	));
+	
+	// config 読み込み
+	$config_file = PLUGIN_DATA_DIR."aws/config.php";
+	if (file_exists($config_file))
+	{
+		include($config_file);
+	}
+	else
+	{
+		if(!is_writable(PLUGIN_DATA_DIR."aws/"))
+		{
+			$msg['plugin_aws_dataset']['writable_check'] = 0;
+			$data['plugin_aws_dataset'] = array();
+		}
+		else
+		{
+			// 以下は設定個所ではありません。
+			// 設定個所は、plugin_data/aws/config.php です。
+			$data = <<<EOT
+<?php
+\$data = array('plugin_aws_dataset'=>array(
+	//////// Config ///////
+	'xls_url'      => "", // XSLTファイルが置いてあるディレクトリURL
+	'amazon_dev_t' => "", // デベロッパートークン
+	'amazon_t'     => "", // アソシエイツID
+	'amazon_xml'   => "http://xml-jp.amznxslt.com",
+	'cache_time'   => 360, // Cache time (min) 360m = 6h
+	//////// Config ///////
+));
+?>
+EOT;
+			$fp = fopen($config_file,"wb");
+			fputs($fp,$data);
+			fclose($fp);
+			include($config_file);
+		}
+	}
+	
+	$data['plugin_aws_dataset'] = $data['plugin_aws_dataset'] + $msg['plugin_aws_dataset'];
 	
 	set_plugin_messages($data);
 }
@@ -109,6 +144,12 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 	$amazon_t = $plugin_aws_dataset['amazon_t']; // アソシエイツID
 	$amazon_xml = $plugin_aws_dataset['amazon_xml'];
 	$cache_time = $plugin_aws_dataset['cache_time']; // Cache time (min)
+	
+	if (!$plugin_aws_dataset['writable_check'])
+		return array($plugin_aws_dataset['err_nonwritable'],false);
+	
+	if (!$xls_url || !$amazon_dev_t || !$amazon_t)
+		return array($plugin_aws_dataset['err_setconfig'],false);
 	
 	$refresh = FLASE;
 	$ret = "";

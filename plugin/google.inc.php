@@ -2,24 +2,61 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.7 2004/09/02 04:29:09 nao-pon Exp $
+// $Id: google.inc.php,v 1.8 2004/10/07 03:12:15 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
 
 function plugin_google_init()
 {
-	$data = array('plugin_google_dataset'=>array(
-	'license_key'   => '', // GoogleAPIsライセンスキー
-	'cache_time'    => 6,                                  // キャッシュ有効時間(h)
-	'def_max'       => 10,                                 // デフォルト表示数
-	'max_limit'     => 50,                                 // 最大表示数
-	'head_msg'      => '<h4>検索結果: %s <span class="small">by Google</span></h4><p class="empty"></p>',
-	'research'      => 'さらに Google で探す',
-	'err_nolicense'  => 'Googleライセンスキーが未設定です。<br />plugin/google.inc.php にて設定してください。',
-	'err_noresult'  => 'Google では見つかりませんでした。',
-	'err_noconnect' => 'Google に接続できませんでした。',
+	$msg = array('plugin_google_dataset'=>array(
+		'cache_time'    => 6,                                  // キャッシュ有効時間(h)
+		'def_max'       => 10,                                 // デフォルト表示数
+		'max_limit'     => 50,                                 // 最大表示数
+		'head_msg'      => '<h4>検索結果: %s <span class="small">by Google</span></h4><p class="empty"></p>',
+		'research'      => 'さらに Google で探す',
+		'err_nolicense'  => 'Googleライセンスキーが未設定です。<br />'.PLUGIN_DATA_DIR.'google/config.php にて設定してください。',
+		'err_noresult'  => 'Google では見つかりませんでした。',
+		'err_noconnect' => 'Google に接続できませんでした。',
+		'err_nonwritable' => '※ 設定エラー: ディレクトリ [ '.PLUGIN_DATA_DIR.'google/ ] に書き込み権限がありません。',
+		'writable_check'  => 1,
 	));
+	
+	// config 読み込み
+	$config_file = PLUGIN_DATA_DIR."google/config.php";
+	if (file_exists($config_file))
+	{
+		include($config_file);
+	}
+	else
+	{
+		if(!is_writable(PLUGIN_DATA_DIR."google/"))
+		{
+			$msg['plugin_google_dataset']['writable_check'] = 0;
+			$data['plugin_google_dataset'] = array();
+		}
+		else
+		{
+			// 以下は設定個所ではありません。
+			// 設定個所は、plugin_data/google/config.php です。
+			$data = <<<EOT
+<?php
+\$data = array('plugin_google_dataset'=>array(
+	//////// Config ///////
+	'license_key'   => '', // GoogleAPIsライセンスキー
+	//////// Config ///////
+));
+?>
+EOT;
+			$fp = fopen($config_file,"wb");
+			fputs($fp,$data);
+			fclose($fp);
+			include($config_file);
+		}
+	}
+	
+	$data['plugin_google_dataset'] = $data['plugin_google_dataset'] + $msg['plugin_google_dataset'];
+	
 	set_plugin_messages($data);
 }
 
@@ -70,7 +107,12 @@ function plugin_google_convert()
 {
 	global $plugin_google_dataset,$vars,$script;
 	
-	if (!$plugin_google_dataset['license_key']) return $plugin_google_dataset['err_nolicense'];
+	if (!$plugin_google_dataset['writable_check'])
+		return $plugin_google_dataset['err_nonwritable'];
+	
+	if (!$plugin_google_dataset['license_key'])
+		return $plugin_google_dataset['err_nolicense'];
+	
 	$array = func_get_args();
 	
 	$query = "";
