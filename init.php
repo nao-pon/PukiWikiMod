@@ -1,15 +1,17 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.31 2004/09/07 12:16:24 nao-pon Exp $
+// $Id: init.php,v 1.32 2004/09/12 13:31:07 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
-define("INI_FILE","./pukiwiki.ini.php");
+define('INI_FILE','./pukiwiki.ini.php');
 
-//** 初期設定 **
+// PukiWikiMod Version
+require('./version.php');
 
-define("_XOOPS_WIKI_VERSION", "1.0.2");
+// Copyright.
 define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2004 <a href=\"http://ishii.mydns.jp/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.");
+
 //文字エンコード
 define('SOURCE_ENCODING','EUC-JP');
 
@@ -27,6 +29,84 @@ define("CACHE_DIR","./cache/");
 //プラグイン用キャッシュディレクトリ
 define("P_CACHE_DIR",CACHE_DIR."p/");
 
+/////////////////////////////////////////////////
+// 初期設定 (サーバ変数)
+foreach (array('SCRIPT_NAME', 'SERVER_ADMIN', 'SERVER_NAME',
+	'SERVER_PORT', 'SERVER_SOFTWARE') as $key) {
+	define($key, isset($_SERVER[$key]) ? $_SERVER[$key] : '');
+	unset(${$key}, $_SERVER[$key], $HTTP_SERVER_VARS[$key]);
+}
+
+/////////////////////////////////////////////////
+// 初期設定 (グローバル変数)
+
+$foot_explain = array();	// 脚注
+$related      = array();	// 関連するページ
+$head_tags    = array();	// <head>内に追加するタグ
+$h_excerpt    = "";	// <title>用
+$update_exec = "";
+$content_id = 0;
+$noattach = 0;
+$noheader = 0;
+$vars['is_rsstop'] = 0;
+$wiki_head_keywords = array();
+
+// 設定ファイルの読込
+if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
+	die_message(INI_FILE." is not found.");
+require(INI_FILE);
+
+if(!file_exists(LANG.".lng")||!is_readable(LANG.".lng"))
+	die_message(LANG.".lng(language file) is not found.");
+
+// XOOPSデータ読み込み
+// $anon_writable:編集可能(Yes:1 No:0)
+// $X_uid:XOOPSユーザーID
+// $X_admin:PukiWikiモジュール管理者(Yes:1 No:0)
+// 
+$X_admin =0;
+$X_uid =0;
+$wiki_ads_shown = 0;
+// ゲストユーザーの名称
+$no_name = $xoopsConfig['anonymous'];
+
+if ( $xoopsUser ) {
+	$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+	if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
+		$X_admin = 1;
+	}
+	$X_uid = $xoopsUser->uid();
+	$X_uname = $xoopsUser->uname();
+} else {
+	$X_uname = (!empty($_COOKIE["pukiwiki_un"]))? $_COOKIE["pukiwiki_un"] : $no_name;
+}
+
+// UserCode with cookie
+$X_ucd = (isset($_COOKIE["pukiwiki_uc"]))? $_COOKIE["pukiwiki_uc"] : "";
+//user-codeの発行
+// ↓この方式はやめた
+//if(!$X_ucd){ $X_ucd = substr(crypt(md5(getenv("REMOTE_ADDR").$adminpass.gmdate("Ymd", time()+9*60*60)),'id'),-12); }
+if(!$X_ucd || strlen($X_ucd) == 12){ $X_ucd = md5(getenv("REMOTE_ADDR").$adminpass.gmdate("Ymd", time()+9*60*60)); }
+setcookie("pukiwiki_uc", $X_ucd, time()+86400*365);//1年間
+$X_ucd = substr(crypt($X_ucd,($adminpass)? $adminpass : 'id'),-12);
+define('PUKIWIKI_UCD',$X_ucd); //定数化
+unset ($X_ucd);
+
+/////////////////////////////////////////////////
+// 編集権限セット
+if ($X_admin || ($wiki_writable === 0) || (($X_uid && ($wiki_writable < 2)))) {
+	$anon_writable = 1;
+} else {
+	$anon_writable = 0;
+}	
+// 新規作成権限セット
+if ($X_admin || ($wiki_allow_new === 0) || (($X_uid && ($wiki_allow_new < 2)))) {
+	define("WIKI_ALLOW_NEWPAGE",TRUE);
+} else {
+	define("WIKI_ALLOW_NEWPAGE",FALSE);
+}	
+$wiki_allow_newpage = WIKI_ALLOW_NEWPAGE; //Skin用に残す
+
 
 if($script == "") {
 	$script = (getenv('SERVER_PORT')==443?'https://':('http://')).getenv('SERVER_NAME').(getenv('SERVER_PORT')==80?'':(':'.getenv('SERVER_PORT'))).getenv('SCRIPT_NAME');
@@ -40,79 +120,171 @@ $WikiName = '(?:[A-Z][a-z]+){2,}(?![A-Za-z0-9_])';
 $BracketName = '\[\[(?!\/|\.\/|\.\.\/)(:?[^\s\]#&<>":]+:?)\]\](?<!\/\]\])';
 $InterWikiName = "\[\[(\[*[^\s\]]+?\]*):(\[*[^>\]]+?\]*)\]\]";
 
-//** 入力値の整形 **
+/////////////////////////////////////////////////
+// 外部からくる変数のチェック
 
-$cookie = $HTTP_COOKIE_VARS;
+// Prohibit $_GET attack
+foreach (array('msg', 'pass') as $key) {
+	if (isset($_GET[$key])) die_message("Sorry, already reserved: $key=");
+}
 
-if(get_magic_quotes_gpc())
+// Expire risk
+unset($HTTP_GET_VARS, $HTTP_POST_VARS);	//, 'SERVER', 'ENV', 'SESSION', ...
+unset($_REQUEST);	// Considered harmful
+
+// Remove null character etc.
+$_GET    = input_filter($_GET);
+$_POST   = input_filter($_POST);
+$_COOKIE = input_filter($_COOKIE);
+
+// 文字コード変換 ($_POST)
+// <form> で送信された文字 (ブラウザがエンコードしたデータ) のコードを変換
+// POST method は常に form 経由なので、必ず変換する
+//
+if (isset($_POST['encode_hint']) && $_POST['encode_hint'] != '') {
+	// html.php の中で、<form> に encode_hint を仕込んでいるので、
+	// encode_hint を用いてコード検出する。
+	// 全体を見てコード検出すると、機種依存文字や、妙なバイナリ
+	// コードが混入した場合に、コード検出に失敗する恐れがある。
+	$encode = mb_detect_encoding($_POST['encode_hint']);
+	mb_convert_variables(SOURCE_ENCODING, $encode, $_POST);
+
+} else if (isset($_POST['charset']) && $_POST['charset'] != '') {
+	// TrackBack Ping で指定されていることがある
+	// うまくいかない場合は自動検出に切り替え
+	if (mb_convert_variables(SOURCE_ENCODING,
+	    $_POST['charset'], $_POST) !== $_POST['charset']) {
+		mb_convert_variables(SOURCE_ENCODING, 'auto', $_POST);
+	}
+
+} else if (! empty($_POST)) {
+	// 全部まとめて、自動検出／変換
+	mb_convert_variables(SOURCE_ENCODING, 'auto', $_POST);
+}
+
+// 文字コード変換 ($_GET)
+// GET method は form からの場合と、<a href="http://script/?key=value> の場合がある
+// <a href...> の場合は、サーバーが rawurlencode しているので、コード変換は不要
+if (isset($_GET['encode_hint']) && $_GET['encode_hint'] != '')
 {
-	foreach($HTTP_GET_VARS as $key => $value) {
-		$get[$key] = stripslashes($HTTP_GET_VARS[$key]);
-	}
-	foreach($HTTP_POST_VARS as $key => $value) {
-		if (is_array($HTTP_POST_VARS[$key])){
-			foreach($HTTP_POST_VARS[$key] as $key2 => $value2){
-				$post[$key][$key2] =stripslashes($HTTP_POST_VARS[$key][$key2]);
-			}
-		} else {
-			$post[$key] = stripslashes($HTTP_POST_VARS[$key]);
-		}
-	}
-	foreach($HTTP_COOKIE_VARS as $key => $value) {
-		$cookie[$key] = stripslashes($HTTP_COOKIE_VARS[$key]);
-	}
-}
-else {
-	$post = $HTTP_POST_VARS;
-	$get = $HTTP_GET_VARS;
+	// form 経由の場合は、ブラウザがエンコードしているので、コード検出・変換が必要。
+	// encode_hint が含まれているはずなので、それを見て、コード検出した後、変換する。
+	// 理由は、post と同様
+	$encode = mb_detect_encoding($_GET['encode_hint']);
+	mb_convert_variables(SOURCE_ENCODING, $encode, $_GET);
 }
 
-// 外部からくる変数をサニタイズ
-$get    = sanitize_null_character($get);
-$post   = sanitize_null_character($post);
-$cookie = sanitize_null_character($cookie);
 
-if($post["msg"])
+/////////////////////////////////////////////////
+// QUERY_STRINGを取得
+
+// cmdもpluginも指定されていない場合は、QUERY_STRINGを
+// ページ名かInterWikiNameであるとみなす
+$arg = '';
+if (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING']) {
+	$arg = $_SERVER['QUERY_STRING'];
+} else if (isset($_SERVER['argv']) && count($_SERVER['argv'])) {
+	$arg = $_SERVER['argv'][0];
+}
+$arg = input_filter($arg); // \0 除去
+
+// unset QUERY_STRINGs
+foreach (array('QUERY_STRING', 'argv', 'argc') as $key) {
+	unset(${$key}, $_SERVER[$key], $HTTP_SERVER_VARS[$key]);
+}
+// $_SERVER['REQUEST_URI'] is used at func.php NOW
+unset($REQUEST_URI, $HTTP_SERVER_VARS['REQUEST_URI']);
+
+// mb_convert_variablesのバグ(?)対策: 配列で渡さないと落ちる
+$arg = array($arg);
+mb_convert_variables(SOURCE_ENCODING, 'auto', $arg);
+$arg = $arg[0];
+
+/////////////////////////////////////////////////
+// QUERY_STRINGを分解してコード変換し、$_GET に上書き
+
+// URI を urlencode せずに入力した場合に対処する
+$matches = array();
+foreach (explode('&', $arg) as $key_and_value) {
+	if (preg_match('/^([^=]+)=(.+)/', $key_and_value, $matches) &&
+	    mb_detect_encoding($matches[2]) != 'ASCII') {
+		$_GET[$matches[1]] = $matches[2];
+	}
+}
+unset($matches);
+
+/////////////////////////////////////////////////
+// GET, POST, COOKIE
+
+$get    = & $_GET;
+$post   = & $_POST;
+$cookie = & $_COOKIE;
+
+// GET + POST = $vars
+if (empty($_POST)) {
+	$vars = & $_GET;  // Major pattern: Read-only access via GET
+} else if (empty($_GET)) {
+	$vars = & $_POST; // Minor pattern: Write access via POST etc.
+} else {
+	$vars = array_merge($_GET, $_POST); // Considered reliable than $_REQUEST
+}
+
+// 入力チェック: cmd, plugin の文字列は英数字以外ありえない
+foreach(array('cmd', 'plugin') as $var) {
+	if (array_key_exists($var, $vars) &&
+	    ! preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $vars[$var])) {
+		unset($get[$var], $post[$var], $vars[$var]);
+	}
+}
+
+// 整形: page, add_bracket()
+if (isset($vars['page'])) {
+	$get['page'] = $post['page'] = $vars['page']  = add_bracket($vars['page']);
+} else {
+	$get['page'] = $post['page'] = $vars['page'] = '';
+}
+
+// 整形: msg, 改行を取り除く
+if (isset($vars['msg'])) {
+	$get['msg'] = $post['msg'] = $vars['msg'] = str_replace("\r", '', $vars['msg']);
+}
+
+// 後方互換性 (?md5=...)
+if (isset($vars['md5']) && $vars['md5'] != '') {
+	$get['cmd'] = $post['cmd'] = $vars['cmd'] = 'md5';
+}
+
+// pwm_ping受信
+if (isset($vars['pwm_ping']))
 {
-	$post["msg"] = preg_replace("/((\x0D\x0A)|(\x0D)|(\x0A))/","\n",$post["msg"]);
-}
-//if($get["page"]) $get["page"] = add_bracket(rawurldecode($get["page"]));
-//if($post["page"]) $post["page"] = add_bracket(rawurldecode($post["page"]));
-if(isset($get["page"])) $get["page"] = rawurldecode($get["page"]);
-if(isset($post["page"])) $post["page"] = rawurldecode($post["page"]);
-if(isset($post["word"])) $post["word"] = rawurldecode($post["word"]);
-if(isset($get["word"])) $get["word"] = rawurldecode($get["word"]);
-
-$vars = array_merge($post,$get);
-
-if ($vars['cmd'] == "edit"){
-	if(isset($get["page"])) $get["page"] = add_bracket($get["page"]);
-	if(isset($post["page"])) $post["page"] = add_bracket($post["page"]);
-	if(isset($vars["page"])) $vars["page"] = add_bracket($vars["page"]);
+	$vars['plugin'] = "tb";
+	$vars['tb_id'] = $vars['pwm_ping'];
 }
 
-$arg = rawurldecode((getenv('QUERY_STRING') != '')?
-		    getenv('QUERY_STRING') :
-		    $HTTP_SERVER_VARS["argv"][0]);
+// idでのアクセス
+if (isset($vars['pgid']))
+{
+	$vars['page'] = get_pgname_by_id($vars['pgid']);
+	if ($vars['page'])
+		$vars['cmd'] = "read";
+	else
+	{
+		header("Location: ".XOOPS_WIKI_URL."/");
+		exit;
+	}
+}
 
-$arg = sanitize_null_character($arg);
+// cmdもpluginも指定されていない場合は、QUERY_STRINGをページ名かInterWikiNameであるとみなす
+if (! isset($vars['cmd']) && ! isset($vars['plugin'])) {
 
-//** 初期処理 **
-$update_exec = "";
-$content_id = 0;
-$noattach = 0;
-$noheader = 0;
-$vars['is_rsstop'] = 0;
-$wiki_head_keywords = array();
+	$get['cmd']  = $post['cmd']  = $vars['cmd']  = 'read';
 
-
-// 設定ファイルの読込
-if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
-	die_message(INI_FILE." is not found.");
-require(INI_FILE);
-
-if(!file_exists(LANG.".lng")||!is_readable(LANG.".lng"))
-	die_message(LANG.".lng(language file) is not found.");
+	if ($arg == '') $arg = $defaultpage;
+	$arg = rawurldecode($arg);
+	$arg = strip_bracket($arg);
+	$arg = input_filter($arg);
+	$get['page'] = $post['page'] = $vars['page'] = $arg;
+}
 
 /////////////////////////////////////////////////
 // 文字実体参照　正規表現
