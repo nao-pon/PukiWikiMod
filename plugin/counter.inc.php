@@ -5,7 +5,7 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: counter.inc.php,v 1.5 2004/03/20 07:21:17 nao-pon Exp $
+ * $Id: counter.inc.php,v 1.6 2004/11/03 14:01:29 nao-pon Exp $
  */
 
 function plugin_counter_convert()
@@ -22,34 +22,38 @@ function plugin_counter_convert()
 	}
 
 	$file = COUNTER_DIR.encode($vars["page"]).".count";
+	$array = @file($file);
+	if (!$array) unlink($file);
+	
 	if(!file_exists($file))
 	{
-		$nf = fopen($file, "w");
-		flock($nf, LOCK_EX);
-		fputs($nf,"0\n0\n0\n0\n\n");
-		flock($nf, LOCK_UN);
-		fclose($nf);
-	}
-	if ($array = @file($file))
-	{
-		$count = (int)rtrim($array[0]);
-		$today = rtrim($array[1]);
-		$today_count = (int)rtrim($array[2]);
-		$yesterday_count = (int)rtrim($array[3]);
-		$ip = rtrim($array[4]);
-		if($ip != $HTTP_SERVER_VARS["REMOTE_ADDR"] && !(arg_check("add") || arg_check("edit") || arg_check("preview") || $vars['preview'] != '' || $vars['write'] != '')) {
-			$t = date("Y/m/d");
-			if($t != $today) {
-				$yesterday_count = $today_count;
-				$today_count = 0;
-				$today = $t;
-			}
-			++$count;
-			++$today_count;
+		if($nf = fopen($file, "wb"))
+		{
+			flock($nf, LOCK_EX);
+			fputs($nf,"0\n0\n0\n0\n\n");
+			flock($nf, LOCK_UN);
+			fclose($nf);
 		}
-		
-		$ip = $HTTP_SERVER_VARS["REMOTE_ADDR"];
-		$nf = fopen($file, "w");
+	}
+	$count = (int)rtrim($array[0]);
+	$today = rtrim($array[1]);
+	$today_count = (int)rtrim($array[2]);
+	$yesterday_count = (int)rtrim($array[3]);
+	$ip = rtrim($array[4]);
+	if($ip != $HTTP_SERVER_VARS["REMOTE_ADDR"] && !(arg_check("add") || arg_check("edit") || arg_check("preview") || $vars['preview'] != '' || $vars['write'] != '')) {
+		$t = date("Y/m/d");
+		if($t != $today) {
+			$yesterday_count = $today_count;
+			$today_count = 0;
+			$today = $t;
+		}
+		++$count;
+		++$today_count;
+	}
+	
+	$ip = $HTTP_SERVER_VARS["REMOTE_ADDR"];
+	if($nf = fopen($file, "wb"))
+	{
 		flock($nf, LOCK_EX);
 		fputs($nf,"$count\n");
 		fputs($nf,"$today\n");
@@ -58,7 +62,7 @@ function plugin_counter_convert()
 		fputs($nf,"$ip\n");
 		flock($nf, LOCK_UN);
 		fclose($nf);
-		
+	
 		// DB¤ò¹¹¿·
 		global $xoopsDB;
 		$name = strip_bracket($vars["page"]);
@@ -76,12 +80,8 @@ function plugin_counter_convert()
 			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_count")." (name,count,today,today_count,yesterday_count,ip) VALUES('$s_name',$count,'$today',$today_count,$yesterday_count,'$ip');";
 			$result=$xoopsDB->queryF($query);
 		}
+	}
 
-		return "<span class=\"counter\">Counter: $count, today: $today_count, yesterday: $yesterday_count</span>";
-	}
-	else
-	{
-		return "";
-	}
+	return "<span class=\"counter\">Counter: $count, today: $today_count, yesterday: $yesterday_count</span>";
 }
 ?>
