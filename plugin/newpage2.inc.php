@@ -5,7 +5,7 @@
 // newpage.inc.php の改造版です。 
 //     modified by XZR rev.5 (2004030401)
 // Based on
-// $Id: newpage2.inc.php,v 1.2 2004/09/06 08:42:40 nao-pon Exp $
+// $Id: newpage2.inc.php,v 1.3 2004/10/31 23:27:46 nao-pon Exp $
 //////////////////////////////////////////////////////////////////////
 // 引数：
 // #newpage2(表示名,ディレクトリ,......)
@@ -153,7 +153,7 @@ function plugin_newpage2_action()
 
 	if($vars["prefix"]) {
 		$vars["prefix"] = ereg_replace("/*$", '', $vars["prefix"]);
-		$vars["page"] = $vars["prefix"].'/'.$vars["page"];
+		$vars["page"] = $vars["prefix"].'/'.strip_bracket($vars["page"]);
 	}
 
 	//if(!preg_match("/^($BracketName)|($InterWikiName)$/",$vars["page"]))
