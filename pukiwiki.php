@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.9 2003/07/05 14:44:25 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.10 2003/07/06 11:56:11 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -950,9 +950,21 @@ else
 
 	header_lastmod($vars["page"]);
 }
+// <title>にページ名をプラス
+// XOOPS 1 用 XOOPS/include/functions.php の改造が必要
+global $xoops_mod_add_title;
+if ($vars["page"]) $xoops_mod_add_title = " - ".strip_bracket($vars["page"]);
 
 include("header.php");
 
+// <title>にページ名をプラス
+// XOOPS 2 用
+global $xoopsTpl;
+if ($xoopsTpl){
+	$xoops_pagetitle = $xoopsModule->name();
+	if ($vars["page"]) $xoops_pagetitle .= " - ".strip_bracket($vars["page"]);
+	$xoopsTpl->assign("xoops_pagetitle",$xoops_pagetitle);
+}
 // ** 出力処理 **
 catbody($title,$page,$body);
 
