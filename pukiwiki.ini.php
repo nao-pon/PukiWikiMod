@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.32 2004/11/24 14:19:59 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.33 2004/12/23 14:46:41 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -10,25 +10,31 @@
 // ディレクトリ指定 最後に / が必要 属性は 777
 /////////////////////////////////////////////////
 // データの格納ディレクトリ
-define("DATA_DIR","./wiki/");
+define("DATA_DIR",XOOPS_WIKI_PATH."/wiki/");
 /////////////////////////////////////////////////
 // 差分ファイルの格納ディレクトリ
-define("DIFF_DIR","./diff/");
+define("DIFF_DIR",XOOPS_WIKI_PATH."/diff/");
 /////////////////////////////////////////////////
 // バックアップファイル格納先ディレクトリ
-define("BACKUP_DIR","./backup/");
+define("BACKUP_DIR",XOOPS_WIKI_PATH."/backup/");
 /////////////////////////////////////////////////
 // プラグインファイル格納先ディレクトリ
-define("PLUGIN_DIR","./plugin/");
+define("PLUGIN_DIR",XOOPS_WIKI_PATH."/plugin/");
 /////////////////////////////////////////////////
 // プラグイン用データファイル格納先ディレクトリ
-define("PLUGIN_DATA_DIR","./plugin_data/");
+define("PLUGIN_DATA_DIR",XOOPS_WIKI_PATH."/plugin_data/");
 /////////////////////////////////////////////////
 // counter file
-define("COUNTER_DIR","./counter/");
+define("COUNTER_DIR",XOOPS_WIKI_PATH."/counter/");
 /////////////////////////////////////////////////
 // ページHTMLキャッシュディレクトリ
-define("PAGE_CACHE_DIR","./pagehtml/");
+define("PAGE_CACHE_DIR",XOOPS_WIKI_PATH."/pagehtml/");
+/////////////////////////////////////////////////
+// キャッシュディレクトリ
+define("CACHE_DIR",XOOPS_WIKI_PATH."/cache/");
+/////////////////////////////////////////////////
+// プラグイン用キャッシュディレクトリ
+define("P_CACHE_DIR",CACHE_DIR."p/");
 
 /////////////////////////////////////////////////
 // Language
@@ -47,8 +53,13 @@ else
 	
 /////////////////////////////////////////////////
 // 言語ファイルの読み込み(編集しないでください)
-require(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/".LANG.".lng");
-//require(XOOPS_ROOT_PATH."/modules/pukiwiki/".LANG.".lng");
+if(
+	!file_exists(XOOPS_WIKI_PATH."/".LANG.".lng")
+	||
+	!is_readable(XOOPS_WIKI_PATH."/".LANG.".lng")
+	)
+	die_message(LANG.".lng(language file) is not found.");
+require(XOOPS_WIKI_PATH."/".LANG.".lng");
 
 /////////////////////////////////////////////////
 // ファイルアップロード関連
@@ -68,7 +79,6 @@ define("MAX_FILESIZE",10000000);
 /////////////////////////////////////////////////
 // index.php などに変更した場合のスクリプト名の設定
 // とくに設定しなくても問題なし
-define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/pukiwiki');
 $script = XOOPS_WIKI_URL.'/index.php';
 
 /////////////////////////////////////////////////

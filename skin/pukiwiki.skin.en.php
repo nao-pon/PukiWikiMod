@@ -1,19 +1,9 @@
 <?php 
-// $Id: pukiwiki.skin.en.php,v 1.8 2004/11/11 23:34:00 nao-pon Exp $
+// $Id: pukiwiki.skin.en.php,v 1.9 2004/12/23 14:46:41 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
 <!-- pukiwikimod -->
-
-	<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">
-<?php if (WIKI_THEME_CSS){ ?>
-	<link rel="stylesheet" href="<?php echo WIKI_THEME_CSS ?>" type="text/css" media="screen" charset="shift_jis">
-<?php } else { ?>
-	<link rel="stylesheet" href="skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">
-<?php } ?>
-<?php if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css")){ ?>
-	<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">
-<?php } ?>
 	<script type="text/javascript">
 	<!--
 	var pukiwiki_root_url = "";
@@ -83,13 +73,19 @@ if (!defined('DATA_DIR')) exit;
 
 	<?php if($is_read) { ?>
 	
-	<div style="text-align:left;">
-	<?php echo $where.$tb_tag; ?>
+	<div class="wiki_page_where">
+	<?php echo $where ?>
 	</div>
 	
-	<div style="text-align:right;clear:both;">
+	<div style="float:left;text-align:left;width:49%;">
+	<?php echo "<small>".$comments_tag.$tb_tag."</small>" ?>
+	</div>	
+	
+	<div style="float:right;text-align:right;width:50%;">
 	<?php echo $counter ?>
 	</div>
+	
+	<div style="clear:both;"></div>
 	
 	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev"> <img src="./image/next.png" width="6" height="12" alt="Next"> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
 	
@@ -159,6 +155,7 @@ if (!defined('DATA_DIR')) exit;
 	</tr>
 	</table>
 	<?php } ?>
+	<?php if(!$use_xoops_tpl){ ?>
 	<br />
 	<address>
 		Modified by <a href="<?php echo $modifierlink ?>"><?php echo $modifier ?></a><br /><br />
@@ -167,6 +164,7 @@ if (!defined('DATA_DIR')) exit;
 		Powered by PHP <?php echo PHP_VERSION ?><br /><br />
 		HTML convert time to <?php echo $taketime ?> sec.
 	</address>
+	<?php } ?>
 
   </td>
  </tr>

@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.30 2004/12/02 13:56:15 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.31 2004/12/23 14:46:41 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -73,13 +73,19 @@ if (!defined('DATA_DIR')) exit;
 
 	<?php if($is_read) { ?>
 	
-	<div style="text-align:left;">
-	<?php echo $where.$tb_tag; ?>
+	<div class="wiki_page_where">
+	<?php echo $where ?>
 	</div>
 	
-	<div style="text-align:right;clear:both;">
+	<div style="float:left;text-align:left;width:49%;">
+	<?php echo "<small>".$comments_tag.$tb_tag."</small>" ?>
+	</div>	
+	
+	<div style="float:right;text-align:right;width:50%;">
 	<?php echo $counter ?>
 	</div>
+	
+	<div style="clear:both;"></div>
 	
 	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev"> <img src="./image/next.png" width="6" height="12" alt="Next"> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
 	
@@ -149,6 +155,7 @@ if (!defined('DATA_DIR')) exit;
 	</tr>
 	</table>
 	<?php } ?>
+	<?php if(!$use_xoops_tpl){ ?>
 	<br />
 	<address>
 		Modified by <a href="<?php echo $modifierlink ?>"><?php echo $modifier ?></a><br /><br />
@@ -157,6 +164,7 @@ if (!defined('DATA_DIR')) exit;
 		Powered by PHP <?php echo PHP_VERSION ?><br /><br />
 		HTML convert time to <?php echo $taketime ?> sec.
 	</address>
+	<?php } ?>
 
   </td>
  </tr>

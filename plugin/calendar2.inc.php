@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.20 2004/12/02 13:56:15 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.21 2004/12/23 14:46:41 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -42,8 +42,11 @@ function plugin_calendar2_convert()
 	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable, $_msg_month;
 	global $wiki_user_dir,$comment_no,$h_excerpt,$digest;
 	
+	global $use_xoops_comments,$_msg_pagecomment,$_msg_trackback;
+	
 	$today_view = true;
 	$category_view = "";
+	$act = 0;
 	$args = func_get_args();
 	
 	if(func_num_args() == 0)
@@ -56,6 +59,7 @@ function plugin_calendar2_convert()
 		foreach ($args as $arg){
 			if(is_numeric($arg) && (strlen($arg) >= 6 && strlen($arg) <= 8)){
 				$date_str = $arg;
+				$act = 1;
 			}
 			else if($arg == "off"){
 				$today_view = false;
@@ -74,6 +78,9 @@ function plugin_calendar2_convert()
 			$prefix = strip_bracket($vars['page'])."/";
 		}
 	}
+	
+	$today_tag = ($act)? "<small>[".make_pagelink($pre,$pre.".".Today)."]</small>" : "";
+	
 	if($pre == "*") {
 		$prefix = '';
 		$pre = '';
@@ -144,7 +151,7 @@ function plugin_calendar2_convert()
   <tr>
     <td align="middle" class="style_td_caltop" colspan="7">
       <table style="width:100%;"><tr><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'" title="'.$_calendar2_msg_prevmonth.'">&lt;&lt;</a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'" title="'.$_calendar2_msg_prevmonth.'"><img src="./image/prev.png" alt="Prev" /></a>
       </td><td style="text-align:center;vertical-align:top;font-size:11px;">
        <form method="GET" action="'.$script.'">
         <input type="hidden" name="plugin" value="calendar2">
@@ -171,7 +178,7 @@ function plugin_calendar2_convert()
         </select>
         <input type="submit" value="Go" style="font-size:11px;">
        </td></form><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'" title="'.$_calendar2_msg_nextmonth.'">&gt;&gt;</a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'" title="'.$_calendar2_msg_nextmonth.'"><img src="./image/next.png" alt="Next" /></a>
       </td></tr></table>
     </td>
   </tr>
@@ -184,7 +191,7 @@ function plugin_calendar2_convert()
   <tr>
     <td align="middle" class="style_td_caltop" colspan="7">
       <table style="width:100%;"><tr><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'&amp;category='.rawurlencode($category_view).'" title="'.$_calendar2_msg_prevmonth.'">&lt;&lt;</a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'&amp;category='.rawurlencode($category_view).'" title="'.$_calendar2_msg_prevmonth.'"><img src="./image/prev.png" alt="Prev" /></a>
       </td><td style="text-align:center;vertical-align:top;font-size:11px;">
        <form method="GET" action="'.$script.'">
         <input type="hidden" name="plugin" value="calendar2">
@@ -212,8 +219,9 @@ function plugin_calendar2_convert()
         </select>
         <input type="submit" value="Go" style="font-size:11px;">
       </td></form><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'&amp;category='.rawurlencode($category_view).'" title="'.$_calendar2_msg_nextmonth.'">&gt;&gt;</a>
-      </td></tr></table>[<a href="'.$script.'?'.$prefix_url.'">'.$pre.'.Today</a>]
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'&amp;category='.rawurlencode($category_view).'" title="'.$_calendar2_msg_nextmonth.'"><img src="./image/next.png" alt="Next" /></a>
+      </td></tr></table>
+      '.$today_tag.'
     </td>
   </tr>
   <tr>
@@ -331,13 +339,19 @@ function plugin_calendar2_convert()
 			$_page = $page.$daynum;
 			// 閲覧権限チェック＋
 			if (is_page($_page) && check_readable($_page,false,false)) {
-				$user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($_page)) : "[[".get_pg_auther_name($_page)."]]";
+				$user_tag = get_pg_auther_name($_page);
+				make_user_link($user_tag);
 				$user_tag = make_link($user_tag);
 				$show_tag = "by ".$user_tag." at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/link.gif\" />");
-				$tb_tag = ($trackback)? "<div style=\"text-align:right\">{$show_tag}  [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($_page)."\">TrackBack(".tb_count($_page).")</a> ]</div>" : "<div style=\"text-align:right\">{$show_tag}</div>";
+				//$tb_tag = ($trackback)? "<div style=\"text-align:right\">{$show_tag}  [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($_page)."\">TrackBack(".tb_count($_page).")</a> ]</div>" : "<div style=\"text-align:right\">{$show_tag}</div>";
+				
+				$comments_tag = ($use_xoops_comments)? " [ ".make_pagelink($_page,$_msg_pagecomment."(".get_pagecomment_count(get_pgid_by_name($_page)).")",'#page_comments')." ]" : "";
+				$tb_tag = ($trackback)? " [ ".make_pagelink($_page,$_msg_trackback."(".tb_count($_page).")",'#tb_body')." ]" : "";
+				$info_tag = "<div style=\"text-align:right\">by $user_tag at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/link.gif\" />")."<small>".$comments_tag.$tb_tag."</small></div>";
+				
 				
 				//インクルード
-				$str .= $tb_tag.include_page($_page);
+				$str .= $info_tag.include_page($_page);
 				
 				if (check_editable($_page,FALSE,FALSE)) $str .= "<a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_calendar2_plugin_edit</a>";
 				$str .= "<div style=\"clear:both;\"></div><hr />";
@@ -349,11 +363,11 @@ function plugin_calendar2_convert()
 				{
 					if (!$other_month) {
 						if ($i === 0 && !$__page)
-							$page_url = $page."-1";
+							$page_url = rawurlencode($page."-1");
 						else
 							$page_url = ($__page)? rawurlencode($__page) : rawurlencode($_page);
 						
-						$up_freeze_info = get_freezed_uppage($__page);
+						$up_freeze_info = get_freezed_uppage($page);
 						
 						if (!$page_found)
 						{

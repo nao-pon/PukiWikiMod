@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.20 2004/12/02 13:56:15 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.21 2004/12/23 14:46:41 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -68,7 +68,10 @@ function plugin_calendar_viewer_convert()
   global $_calendar_viewer_msg_arg2, $_calendar_viewer_msg_noargs, $_calendar_viewer_msg_edit, $_calendar_viewer_read_more;
   global $WikiName,$BracketName,$vars,$get,$post,$hr,$script,$trackback;
   global $anon_writable,$wiki_user_dir;
-  global $comment_no,$h_excerpt,$digest;
+  global $comment_no,$h_excerpt,$digest,$use_xoops_comments;
+  
+  global $_msg_pagecomment,$_msg_trackback;
+  
   //return false;
   //*デフォルト値をセット
   //基準となるページ名
@@ -323,10 +326,13 @@ if ($cal2 == 1){
 		$user_tag = get_pg_auther_name($page);
 		make_user_link($user_tag);
 		$user_tag = make_link($user_tag);
-		$tb_tag = ($trackback)? "<div style=\"text-align:right\">by $user_tag at ".get_makedate_byname($page)." ".make_pagelink($page,"<img src=\"./image/link.gif\" />")." [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($page)."\">TrackBack(".tb_count($page).")</a> ]</div>" : "";
+		$comments_tag = ($use_xoops_comments)? " [ ".make_pagelink($page,$_msg_pagecomment."(".get_pagecomment_count(get_pgid_by_name($page)).")",'#page_comments')." ]" : "";
+		$tb_tag = ($trackback)? " [ ".make_pagelink($page,$_msg_trackback."(".tb_count($page).")",'#tb_body')." ]" : "";
+		$info_tag = "<div style=\"text-align:right\">by $user_tag at ".get_makedate_byname($page)." ".make_pagelink($page,"<img src=\"./image/link.gif\" />")."<small>".$comments_tag.$tb_tag."</small></div>";
+
 
 	//インクルード
-	$body = "<div class=\"style_calendar_body\" style=\"clear:both;\"><div style=\"width:100%;\">".$tb_tag.include_page($page)."</div></div>";
+	$body = "<div class=\"style_calendar_body\" style=\"clear:both;\"><div style=\"width:100%;\">".$info_tag.include_page($page)."</div></div>";
 
     $link = make_pagelink($page,preg_replace("/^.*\//","",strip_bracket($page)));
     if (check_editable($page,FALSE,FALSE)) $link .= " <a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\"><font size=\"-2\">(".$_calendar_viewer_msg_edit.")</font></a>";

@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.16 2004/12/09 13:34:26 nao-pon Exp $
+// $Id: db_func.php,v 1.17 2004/12/23 14:46:41 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -632,5 +632,32 @@ function check_pginfo($page)
 	
 	return;
 	
+}
+
+// ページコメント件数取得
+function get_pagecomment_count($pgid,$link="",$str="")
+{
+	global $xoopsDB,$pukiwiki_mid;
+	
+	/*
+	$count = "";
+	$sql = "SELECT count(*) FROM " . $xoopsDB->prefix('xoopscomments') . " WHERE `com_modid`=$pukiwiki_mid AND `com_itemid`=$pgid;";
+	//echo $sql;
+	if ($result = $xoopsDB->query($sql))
+	{
+		$count = mysql_result($result,0);
+	}
+	*/
+	
+	$count = xoops_comment_count($pukiwiki_mid,$pgid);
+	
+	if ($str)
+		$str = str_replace('$1',$count,$str);
+	if ($link)
+	{
+		$link = str_replace('$1',$count,$link);
+		$count = "<a href=\"$link\">$str</a>";
+	}
+	return $count;
 }
 ?>

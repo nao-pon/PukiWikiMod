@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.38 2004/10/21 13:04:34 nao-pon Exp $
+// $Id: init.php,v 1.39 2004/12/23 14:46:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -24,10 +24,14 @@ define("PHP_SELF",$HTTP_SERVER_VARS["PHP_SELF"]);
 define("SERVER_NAME",$HTTP_SERVER_VARS["SERVER_NAME"]);
 define("MUTIME",getmicrotime());
 
-// キャッシュディレクトリ
-define("CACHE_DIR","./cache/");
-//プラグイン用キャッシュディレクトリ
-define("P_CACHE_DIR",CACHE_DIR."p/");
+// PukiWikiMod ディレクトリ名
+define("PUKIWIKI_DIR_NAME", $xoopsModule->dirname());
+
+// PukiWikiMod ルートDir
+define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
+
+// PukiWikiMod ルートURL
+define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/pukiwiki');
 
 /////////////////////////////////////////////////
 // 初期設定 (サーバ変数)
@@ -56,8 +60,6 @@ if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
 	die_message(INI_FILE." is not found.");
 require(INI_FILE);
 
-if(!file_exists(LANG.".lng")||!is_readable(LANG.".lng"))
-	die_message(LANG.".lng(language file) is not found.");
 
 // XOOPSデータ読み込み
 // $anon_writable:編集可能(Yes:1 No:0)
@@ -70,8 +72,9 @@ $wiki_ads_shown = 0;
 // ゲストユーザーの名称
 $no_name = $xoopsConfig['anonymous'];
 
-if ( $xoopsUser ) {
-	$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+if ( $xoopsUser && is_object($xoopsModule))
+{
+	//$xoopsModule = XoopsModule::getByDirname("pukiwiki");
 	if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
 		$X_admin = 1;
 	}
@@ -262,11 +265,16 @@ if (isset($vars['pwm_ping']))
 }
 
 // idでのアクセス
+$pgid = 0;
 if (isset($vars['pgid']))
 {
+	$vars['pgid'] = (int)$vars['pgid'];
 	$vars['page'] = get_pgname_by_id($vars['pgid']);
 	if (is_page($vars['page']))
+	{
 		$vars['cmd'] = "read";
+		$pgid = $vars['pgid'];
+	}
 	else
 	{
 		header("Location: ".XOOPS_WIKI_URL."/");
@@ -284,14 +292,18 @@ if (! isset($vars['cmd']) && ! isset($vars['plugin'])) {
 	$get['cmd']  = $post['cmd']  = $vars['cmd']  = 'read';
 	
 	// & 以降を除去(SID自動付加環境対策)
-	$arg = preg_replace("/([^&]+)(&.+)?/","$1",$arg);
+	$arg = preg_replace("/([^&]+)(&.*)?/","$1",$arg);
 	
-	if ($arg == '') $arg = $defaultpage;
 	$arg = rawurldecode($arg);
-	$arg = strip_bracket($arg);
 	$arg = input_filter($arg);
+	if ($arg == '') $arg = $defaultpage;
+	$arg = add_bracket($arg);
 	$get['page'] = $post['page'] = $vars['page'] = $arg;
 }
+
+// XOOPS Mudule id
+if (!$pgid) $pgid = get_pgid_by_name($vars["page"]);
+$pukiwiki_mid = $xoopsModule->mid();
 
 /////////////////////////////////////////////////
 // 文字実体参照　正規表現

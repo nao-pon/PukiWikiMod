@@ -1,17 +1,33 @@
 <?php
-// $Id: index.php,v 1.29 2004/12/09 00:46:18 nao-pon Exp $
+// $Id: index.php,v 1.30 2004/12/23 14:46:41 nao-pon Exp $
+
+
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
-include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/pukiwiki.ini.php");
-include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/config.php");
-include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/html.php");
-include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/file.php");
-include(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/func.php");
+
+error_reporting(E_ALL);
+
+// PukiWikiMod ディレクトリ名
+define("PUKIWIKI_DIR_NAME", $xoopsModule->dirname());
+
+// PukiWikiMod ルートDir
+define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
+
+// PukiWikiMod ルートURL
+define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/pukiwiki');
+
+
+include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/pukiwiki.ini.php");
+include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/cache/config.php");
+include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/html.php");
+include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/file.php");
+include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/func.php");
 define("_AM_WIKI_CONFIG_FILE", "../cache/config.php");
 define("_AM_WIKI_ADMIN_PASS", "../cache/adminpass.php");
-define("_AM_WIKI_CSS_FILE", XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css");
+define("_AM_WIKI_CSS_FILE", XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/cache/css.css");
 define("_WIKI_AM_TEXT_SIZE", "50");
+
 
 function wiki_synchronize_allusers($id="",$type="all users")
 {
@@ -85,7 +101,7 @@ function changePermit($_target_dir){
 }
 
 function writeConfig(){
-	global $xoopsConfig, $HTTP_POST_VARS;
+	global $xoopsConfig, $HTTP_POST_VARS, $xoopsModule;
 
 	foreach($HTTP_POST_VARS as $k => $v)
 	{
@@ -94,6 +110,7 @@ function writeConfig(){
 
 	$filename = _AM_WIKI_CONFIG_FILE;
 	$file = fopen($filename, "wb");
+	
 	$gids = implode(",",$gids);
 	$aids = implode(",",$aids);
 	$freeze = (isset($freeze))? 1 : 0;
@@ -104,6 +121,9 @@ function writeConfig(){
 	$f_use_static_url = (int)$f_use_static_url;
 	$f_jp_pagereading = (int)$f_jp_pagereading;
 	$fixed_heading_anchor = (int)$fixed_heading_anchor;
+	$f_countup_xoops = (int)$f_countup_xoops;
+	$f_use_xoops_comments = (int)$f_use_xoops_comments;
+	
 	if ($f_jp_pagereading == 2)
 	{
 		$f_pagereading_kanji2kana_converter = 'kakasi';
@@ -134,6 +154,7 @@ function writeConfig(){
 	$content = "";
 	$content .= "<?php";
 	$content .= "
+	\$pukiwiki_dir_name = '".PUKIWIKI_DIR_NAME."';
 	\$page_title = '$wiki_site_name';
 	\$defaultpage = '$wiki_defaultpage';
 	\$modifier = '$wiki_modifier';
@@ -165,6 +186,10 @@ function writeConfig(){
 	\$fixed_heading_anchor = $fixed_heading_anchor;
 	\$trackback_encoding = '$trackback_encoding';
 	\$countup_xoops = $f_countup_xoops;
+	\$use_xoops_comments = $f_use_xoops_comments;
+	\$pukiwiki_dirs = array(
+		'wiki' => '".DATA_DIR."',
+	);
 	";
 	$content .= "\n?>";
 
@@ -192,22 +217,22 @@ function writeConfig(){
 function checkPermit(){
 	global $xoopsModule;
 	$wiki_error = array();
-	$_check_list = array(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/attach/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/attach/s/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/backup/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/p/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/counter/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/diff/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/pagehtml/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/plugin_data/painter/tmp/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/trackback/",
-		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/wiki/");
+	$_check_list = array(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/attach/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/attach/s/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/backup/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/cache/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/cache/p/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/counter/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/diff/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/pagehtml/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/plugin_data/painter/tmp/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/trackback/",
+		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/wiki/");
 
-	if ($dir = @opendir(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/wiki/")) {
+	if ($dir = @opendir(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/wiki/")) {
 		while($file = readdir($dir)) {
 			if($file == ".." || $file == ".") continue;
-			array_push($_check_list, XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/wiki/".$file);
+			array_push($_check_list, XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/wiki/".$file);
 		}
 		closedir($dir);
 	}
@@ -228,7 +253,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor,$trackback_encoding,$countup_xoops;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor,$trackback_encoding,$countup_xoops,$use_xoops_comments;
 	
 	// 認証チケット発行
 	$tiket = md5(chr(mt_rand(ord('a'), ord('z'))).UTIME.chr(mt_rand(ord('a'), ord('z'))));
@@ -350,6 +375,12 @@ function displayForm(){
 		$_countup_xoops[1] = " checked";
 	else
 		$_countup_xoops[0] = " checked";
+	
+	$_use_xoops_comments = array("","");
+	if ($use_xoops_comments)
+		$_use_xoops_comments[1] = " checked";
+	else
+		$_use_xoops_comments[0] = " checked";
 
 	echo "
 	| "._AM_SYSTEM_ADMENU." | <a href='./myblocksadmin.php'>"._AM_SYSTEM_ADMENU2."</a> |
@@ -406,6 +437,12 @@ function displayForm(){
 	</td><td>
 		<input type='radio' name='f_countup_xoops' value='1'".$_countup_xoops[1].">"._AM_WIKI_ENABLE."
 		<input type='radio' name='f_countup_xoops' value='0'".$_countup_xoops[0].">"._AM_WIKI_DISABLE."
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_USE_XOOPS_COMMENTS."
+	</td><td>
+		<input type='radio' name='f_use_xoops_comments' value='1'".$_use_xoops_comments[1].">"._AM_WIKI_ENABLE."
+		<input type='radio' name='f_use_xoops_comments' value='0'".$_use_xoops_comments[0].">"._AM_WIKI_DISABLE."
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_FUNCTION_TRACKBACK."
@@ -735,7 +772,7 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 	}
 	else if($wiki_admin_mode == "change_permit")
 	{
-		changePermit(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/".$wiki_permit_change_dir."/");
+		changePermit(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/".$wiki_permit_change_dir."/");
 	}
 	else if($wiki_admin_mode == "synchronize")
 	{

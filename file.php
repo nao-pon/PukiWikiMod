@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.43 2004/12/02 13:56:15 nao-pon Exp $
+// $Id: file.php,v 1.44 2004/12/23 14:46:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -527,11 +527,8 @@ function get_readings()
 			fclose($fp);
 
 			// ChaSen/KAKASI を実行
-			switch($pagereading_kanji2kana_converter) {
+			switch(strtolower($pagereading_kanji2kana_converter)) {
 			case 'chasen':
-			case 'CHASEN':
-			case 'Chasen':
-			case 'ChaSen':
 				if(!file_exists($pagereading_chasen_path)) {
 					unlink($tmpfname);
 					die_message("CHASEN not found: $pagereading_chasen_path");
@@ -543,13 +540,6 @@ function get_readings()
 				}
 				break;
 			case 'kakasi':
-			case 'KAKASI':
-			case 'Kakasi':
-			case 'KaKaSi':
-			case 'kakashi':
-			case 'KAKASHI':
-			case 'Kakashi':
-			case 'KaKaShi':
 				if(!file_exists($pagereading_kakasi_path)) {
 					unlink($tmpfname);
 					die_message("KAKASI not found: $pagereading_kakasi_path");
@@ -593,6 +583,50 @@ function get_readings()
 	}
 
 	return $readings;
+}
+
+// ページ読みを取得
+function get_reading($page)
+{
+	global $pagereading_config_page;
+	$page = strip_bracket($page);
+	$ret = "";
+	$readings = join('',get_source($pagereading_config_page));
+	if (preg_match("/\-\[\[".preg_quote($page,"/")."\]\] (.+)\n/",$readings,$match))
+		$ret = $match[1];
+	return $ret;
+}
+
+// ページ読みを更新
+function put_reading($page,$reading)
+{
+	global $pagereading_config_page;
+	if (!is_page($page)) return;
+	
+	foreach (get_source($pagereading_config_page) as $line) {
+		$line = preg_replace('/[\s\r\n]+$/', '', $line);
+		if(preg_match('/^-\[\[([^]]+)\]\]\s(.+)$/', $line, $matches)
+		   and isset($readings[$matches[1]])) {
+			$readings[$matches[1]] = $matches[2];
+		}
+	}
+	
+	$page = strip_bracket($page);
+	
+	//書き換え
+	$readings[$page] = $reading;
+	
+	// 読みでソート
+	asort($readings);
+
+	// ページを書き込み
+	$body = '';
+	foreach ($readings as $page => $reading) {
+		$body .= "-[[$page]] $reading\n";
+	}
+	page_write($pagereading_config_page, $body);
+	
+	return;
 }
 
 // 全ページ名を配列に

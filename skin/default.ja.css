@@ -25,6 +25,15 @@
 	border-bottom: 1px solid #FF0000;
 }
 
+.pukiwiki_footer
+{
+	background-color: transparent;
+	border: none;
+	padding: 10px;
+	word-break:normal;
+	line-height:1.5;
+}
+
 div.wiki_body_block
 {
 	background-color: #F5F5F5;
@@ -128,6 +137,16 @@ div.wiki_body_block_tate h3
 div.wiki_body_block_tate h4
 {
  	border-top:     18px solid #DDEEFF;
+}
+
+div.wiki_page_where
+{
+	text-align:left;
+	background-color:white;
+	border-bottom:  2px dashed #6699FF;
+	margin-bottom:  2px;
+	margin-top:     0px;
+	font-size:120%;
 }
 
 div.wiki_page_title
@@ -313,7 +332,9 @@ input.copyButton {
 	font-weight:bold;
 }
 
-.pukiwiki_body address {
+.pukiwiki_body address,
+.pukiwiki_footer address
+{
 	font-style:normal;
 	font-family:Verdana;
 	font-size:9px;

@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.7 2004/12/09 00:46:18 nao-pon Exp $
+// $Id: admin.php,v 1.8 2004/12/23 14:46:41 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE0", "PukiWikiMod initial setting.");
@@ -75,4 +75,7 @@ define("_AM_WIKI_CONFIG_SUBMIT","Basic setup update");
 define("_AM_WIKI_PERM_SUBMIT","Permission change");
 define("_AM_WIKI_SYNC_SUBMIT","Re-count all user");
 define("_AM_WIKI_SYNC_MSG","<p>The number of contribution of the basic function of XOOPS is re-counted.<br />Please do not click this button, when you are not counting up the page creation by PukiWikiMod.<br />In proportion to the number of users, processing time becomes long. Please wait without haste until it ends.</p><p>The objects re-counted here are the number of contribution of a forum, and the standard comment number of cases for XOOPS and the number of page creation of PukiWikiMod.");
+
+// ver 1.1.0
+define("_AM_WIKI_USE_XOOPS_COMMENTS","A page comment (comment function of XOOPS) is confirmed.");
 ?>

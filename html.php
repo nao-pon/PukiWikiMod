@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.47 2004/11/24 14:17:51 nao-pon Exp $
+// $Id: html.php,v 1.48 2004/12/23 14:46:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -27,7 +27,9 @@ function catbody($title,$page,$body)
 	global $foot_explain, $note_hr, $_msg_word, $search_word_color,$use_static_url;
 	
 	global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $wiki_allow_newpage;
-	global $X_admin,$X_uname,$noattach,$noheader,$trackback;
+	global $X_admin,$X_uname,$noattach,$noheader,$trackback,$xoopsTpl,$pgid,$use_xoops_comments;
+	
+	global $_msg_pagecomment,$_msg_trackback,$_msg_pings;
 	
 	//名前欄置換
 	if (empty($vars['xoops_block']))
@@ -76,13 +78,15 @@ function catbody($title,$page,$body)
 	$link_attachlist = "$script?plugin=attach&amp;pcmd=list&amp;page=".$_rpage;
 
 
-	if($is_read)
+	if($is_read && empty($vars['xoops_block']))
 	{
 		$fmt = @filemtime(get_filename(encode($_page)));
 		
-		$tb_tag = ($trackback)? "&nbsp;&nbsp;[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]" : "";
+		$comments_tag = ($use_xoops_comments)? " [ ".get_pagecomment_count($pgid,'#page_comments',$_msg_pagecomment.'($1)')." ]" : "";
+		$tb_count = $_msg_trackback."(".tb_count($vars['page']).")";
+		$tb_tag = ($trackback)? " [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\" name=\"tb_body\">{$tb_count}</a> ]" : "";
 		
-		$sended_ping_tag = ($trackback)? "[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."#sended_ping\">送信したPing(".tb_count($vars['page'],".ping").")</a> ]" : "";
+		$sended_ping_tag = ($trackback)? "[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."#sended_ping\">$_msg_pings(".tb_count($vars['page'],".ping").")</a> ]" : "";
 		
 		if (strip_bracket($_page) != $defaultpage) {
 			require_once(PLUGIN_DIR.'where.inc.php');
@@ -105,13 +109,14 @@ function catbody($title,$page,$body)
 		{
 			$trackback_body = <<<EOT
 	<div class="outer">
-	  <div class="head">{$_msg_trackback} {$tb_tag}</div>
+	  <div class="head"><a name="tb_body"></a>{$_msg_trackback}{$tb_tag}</div>
 	  <div class="blog">
 	   {$trackback_body}
 	  </div>
 	</div>
 	<hr />
 EOT;
+			$tb_tag = " [ <a href=\"#tb_body\">{$tb_count}</a> ]";
 		}
 	}
 	
@@ -130,7 +135,7 @@ EOT;
 	{
 		$related = make_related($_page);
 	}
-
+	
 	//単語検索
 	if ($search_word_color and array_key_exists('word',$vars))
 	{
@@ -158,13 +163,31 @@ EOT;
 		}
 		$body = "<div class=\"small\">$_msg_word$search_word</div>$hr\n$body";
 	}
-
-	$taketime = sprintf("%01.03f",getmicrotime() - MUTIME);
-
+	
 	if ($foot_explain)
-		//$body .= "\n$note_hr\n".join("\n",convert::inline2($foot_explain));
 		$body .= "\n$note_hr\n".join("\n",$foot_explain);
-
+	
+	$taketime = sprintf("%01.03f",getmicrotime() - MUTIME);
+	
+	// XOOPS テンプレート
+	$use_xoops_tpl = 0;
+	if (is_object($xoopsTpl))
+	{
+		$use_xoops_tpl = 1;
+		
+		$xoopsTpl->assign('modifierlink',$modifierlink);
+		$xoopsTpl->assign('modifier',$modifier);
+		$xoopsTpl->assign('xoops_wiki_copyright',_XOOPS_WIKI_COPYRIGHT);
+		$xoopsTpl->assign('s_copyright',S_COPYRIGHT);
+		$xoopsTpl->assign('php_version',PHP_VERSION);
+		$xoopsTpl->assign('taketime',$taketime);
+		
+		$xoopsTpl->assign('is_read', $is_read);
+		
+		$xoopsTpl->assign('trackback_body', $trackback_body);
+		$trackback_body = "";
+	}
+	
 	if(!file_exists(SKIN_FILE)||!is_readable(SKIN_FILE))
 	  die_message(SKIN_FILE."(skin file) is not found.");
 	require(SKIN_FILE);
@@ -194,12 +217,14 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 	global $_btn_addtop,$_btn_preview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp,$_btn_enter_enable,$_btn_autobracket_enable,$_btn_freeze_enable,$_btn_auther_id;
 	global $whatsnew,$_btn_template,$_btn_load,$non_list,$load_template_func;
 	global $X_admin,$X_uid,$freeze_tag,$wiki_writable;
-	global $unvisible_tag,$_btn_unvisible_enable,$_btn_v_allow_memo,$read_auth;
+	global $unvisible_tag,$_btn_unvisible_enable,$_btn_v_allow_memo,$read_auth,$pagereading_enable;
 	
 	$b_preview = array_key_exists('preview',$vars); // プレビュー中 TRUE
 	
 	// 各種初期値設定
 	$refer = "";
+	$reading_tag = "";
+	
 	if (!$b_preview)
 	{
 		// ページ編集時
@@ -230,6 +255,14 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 		$notimestamp_enable = "";
 		$v_gids = $v_aids = NULL;
 		$paraedit_tag = "";
+
+		if ($pagereading_enable && (($X_uid && $X_uid == $author_uid) || $X_admin))
+		{
+			// ページ名読みBOX
+			$reading_tag = "<hr /><div>ページ読み: ".'<input type="text" name="f_page_reading" size="60" value="'.get_reading($page).'" /><br />';
+			$reading_tag .= '&nbsp;&nbsp;&nbsp;<input type="checkbox" name="c_page_reading" value=" checked" />ページ読みを更新する (未入力で自動取得)</div>';
+
+		}
 	}
 	else
 	{
@@ -248,6 +281,13 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 		//paraedit
 		$paraedit_tag  = "   <input type=\"hidden\" name=\"msg_before\" value=\"".htmlspecialchars($vars["msg_before"])."\">\n";
 		$paraedit_tag .= "   <input type=\"hidden\" name=\"msg_after\"  value=\"".htmlspecialchars($vars["msg_after"])."\">\n";
+		
+		if ($pagereading_enable && (($X_uid && $X_uid == $author_uid) || $X_admin))
+		{
+			// ページ名読みBOX
+			$reading_tag = "<hr /><div>ページ読み: ".'<input type="text" name="f_page_reading" size="60" value="'.$vars["f_page_reading"].'" /><br />';
+			$reading_tag .= '&nbsp;&nbsp;&nbsp;<input type="checkbox" name="c_page_reading" value=" checked"'.$vars["c_page_reading"].' />ページ読みを更新する (未入力で自動取得)</div>';
+		}
 	}
 
 	if($add)
@@ -369,6 +409,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
   </td>
  </tr>
 </table>
+'.$reading_tag.'
 '.$allow_edit_tag.$allow_view_tag.'
 </form>
 ' . $help;

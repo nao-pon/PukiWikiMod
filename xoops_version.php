@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.8 2004/12/02 13:45:11 nao-pon Exp $
+// $Id: xoops_version.php,v 1.9 2004/12/23 14:46:41 nao-pon Exp $
  
 $modversion['name'] = "PukiWiki";
 $modversion['version'] = "1.0.x";
@@ -53,7 +53,8 @@ $modversion['blocks'][2]['name'] = "PukiWiki Page#1";
 $modversion['blocks'][2]['description'] = "Show A PukiWiki's page.";
 $modversion['blocks'][2]['show_func'] = "b_pukiwiki_page_show";
 $modversion['blocks'][2]['edit_func'] = "b_pukiwiki_page_edit";
-$modversion['blocks'][3]['options'] = "|5|1";
+$modversion['blocks'][2]['options'] = "|5|1";
+$modversion['blocks'][2]['can_clone'] = true ;
 
 $modversion['blocks'][3]['file'] = "pukiwiki_page.php";
 $modversion['blocks'][3]['name'] = "PukiWiki Page#2";
@@ -68,4 +69,27 @@ $modversion['blocks'][4]['description'] = "Show A PukiWiki's page.";
 $modversion['blocks'][4]['show_func'] = "b_pukiwiki_page_show";
 $modversion['blocks'][4]['edit_func'] = "b_pukiwiki_page_edit";
 $modversion['blocks'][4]['options'] = "|5|3";
+
+// Templates
+$modversion['templates'][1]['file'] = 'pukiwiki_index.html';
+$modversion['templates'][1]['description'] = '';
+$modversion['templates'][2]['file'] = 'pukiwiki_comments.html';
+$modversion['templates'][2]['description'] = '';
+
+// Comments
+$modversion['hasComments'] = 1;
+$modversion['comments']['pageName'] = 'index.php';
+$modversion['comments']['itemName'] = 'pgid';
+// Comment callback functions
+$modversion['comments']['callbackFile'] = 'include/comment_functions.php';
+//$modversion['comments']['callback']['approve'] = 'pukiwiki_com_approve';
+$modversion['comments']['callback']['update'] = 'pukiwiki_com_update';
+
+$xoopsModuleConfig['com_anonpost'] = 1;
+
+// On Update
+if( ! empty( $_POST['fct'] ) && ! empty( $_POST['op'] ) && $_POST['fct'] == 'modulesadmin' && $_POST['op'] == 'update_ok' && $_POST['dirname'] == $modversion['dirname'] ) {
+	include dirname( __FILE__ ) . "/include/onupdate.inc.php" ;
+}
+
 ?>

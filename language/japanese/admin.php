@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.16 2004/12/09 00:46:18 nao-pon Exp $
+// $Id: admin.php,v 1.17 2004/12/23 14:46:41 nao-pon Exp $
 
 define("_AM_WIKI_TITLE0", "PukiWiki 初期設定");
 define("_AM_WIKI_INFO0", "初期設定を完了するために次の２つのリンク先にアクセスして処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
@@ -23,7 +23,7 @@ define("_AM_WIKI_ERROR01", "書き込み権限がありません。");
 define("_AM_WIKI_DEFAULTPAGE", "デフォルトページ");
 define("_AM_WIKI_MODIFIER", "編集者の名前");
 define("_AM_WIKI_MODIFIERLINK", "編集者のホームページ");
-define("_AM_WIKI_FUNCTION_FREEZE", "凍結機能を有効にしますか");
+define("_AM_WIKI_FUNCTION_FREEZE", "凍結機能を有効にする");
 define("_AM_WIKI_ADMINPASS", "凍結解除用の管理者パスワード<br>（パスワードを変更する場合のみ記入してください）");
 define("_AM_WIKI_CSS", "スタイルシートのオーバーライド<br />（テーマによって見出し等が非常に見づらくなったり、<br />Wikiの色を変えたい時に有効です）");
 
@@ -42,12 +42,12 @@ define("_AM_WIKI_WRITABLE", "上記設定の<b>編集を許可するユーザー</b>");
 define("_AM_WIKI_ANONWRITABLE_MSG", "<dl><dt>(説明) 編集を許可するユーザー</dt><dd>不許可において下の「<b>ページごとの編集権限</b>」より優先します。<br />例えば・・・<br />「<b>管理者のみ</b>」を選択した場合、「<b>ページごとの編集権限</b>」に関わらず、すべてのページが管理者のみしか編集できません。<br />「<b>すべての訪問者</b>」を選択すると、「<b>ページごとの編集権限</b>」で各ページの編集権限をコントロールできるようになります。</dd></dl>");
 define("_AM_WIKI_ALLOW_NEW", "ページの新規作成を許可するユーザー");
 
-define("_AM_WIKI_FUNCTION_UNVISIBLE", "ページごとの閲覧制限機能を有効にしますか");
+define("_AM_WIKI_FUNCTION_UNVISIBLE", "ページごとの閲覧制限機能を有効にする");
 define("_AM_WIKI_BACKUP_TIME", "定期バックアップの間隔(時間(hour)で指定[0で更新毎])");
 define("_AM_WIKI_BACKUP_AGE", "バックアップの最大世代数");
 define("_AM_WIKI_PCMT_PAGE", 'pcommentプラグインでの新規作成ページ名のデフォルト (%sに設置ページ名が入る)');
 define("_AM_WIKI_USER_DIR", 'フォームでの名前入力時のフォーマット<br />(%1$sに投稿時のNameが入る)<br />例: <b>[[%1$s>user/%1$s]]</b><br />ここで設定しない場合は各プラグインでの設定が適用されます。');
-define("_AM_WIKI_FUNCTION_JPREADING", "ChaSen, KAKASI による、ページ名の読み取得を有効にしますか");
+define("_AM_WIKI_FUNCTION_JPREADING", "ChaSen, KAKASI による、ページ名の読み取得を有効にする");
 define("_AM_WIKI_KANJI2KANA_ENCODING", "ChaSen/KAKASI との受け渡しに使う漢字コード (UNIX系は EUC-JP、Win系は S-JIS が基本)");
 define("_AM_WIKI_PAGEREADING_CHASEN_PATH", "ChaSen の実行ファイルパス (各自の環境に合わせて設定)");
 define("_AM_WIKI_PAGEREADING_KAKASI_PATH", "KAKASI の実行ファイルパス (各自の環境に合わせて設定)");
@@ -79,4 +79,6 @@ define("_AM_WIKI_PERM_SUBMIT","パーミッションを変更する");
 define("_AM_WIKI_SYNC_SUBMIT","全ユーザーの投稿数を再カウントする");
 define("_AM_WIKI_SYNC_MSG","<p>XOOPSの基本機能の投稿数を再カウントします。<br />PukiWikiModでのページ作成をカウントアップしてない場合は、このボタンをクリックしないでください。<br />ユーザー数に比例して処理時間が長くなります。終了するまで気長にお待ちください。</p><p>ここで再カウントされる対象は、フォーラムの投稿数、XOOPS標準のコメント件数とPukiWikiModのページ作成数です。<br />".XOOPS_ROOT_PATH."/modules/system/admin/users/users.php を独自に改造して、他のモジュールもカウント対象にしている場合は、同様に ".XOOPS_ROOT_PATH."/modules/pukiwiki/admin/index.php の29行目あたりを改造してください。</p>");
 
+// ver 1.1.0
+define("_AM_WIKI_USE_XOOPS_COMMENTS","ページコメント(XOOPSのコメント機能)を有効にする");
 ?>

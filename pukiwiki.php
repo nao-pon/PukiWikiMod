@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.61 2004/12/10 13:30:41 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.62 2004/12/23 14:46:41 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -556,6 +556,12 @@ else if($post["write"] || ($_SERVER['REQUEST_METHOD'] == "POST" && arg_check("wr
 			// ページの出力
 			page_write($post["page"],$postdata,$post['notimestamp'],$freeze_aid,$freeze_gid,$unvisible_aid,$unvisible_gid,$post["freeze"],$post["unvisible"]);
 			
+			// ページ読みを更新
+			if ($pagereading_enable  && !empty($post['c_page_reading']) && isset($post['f_page_reading']) && ($X_admin || ($X_uid && $X_uid == $author_uid)))
+			{
+				put_reading($post['page'],$post['f_page_reading']);
+			}
+			
 			if($postdata)
 			{
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_updated);
@@ -726,10 +732,10 @@ else if(arg_check("diff"))
 			$diffdata = preg_replace("/^(\-)(.*)/","<span class=\"diff_removed\"> $2</span>",$diffdata);
 			$diffdata = preg_replace("/^(\+)(.*)/","<span class=\"diff_added\"> $2</span>",$diffdata);
 			
-			$body .= "<pre>\n"
-				.join("",$diffdata)
+			$body .= "<div class=\"wiki_source\">\n"
+				.nl2br(join("",$diffdata))
 				."\n"
-				."</pre>\n";
+				."</div>\n";
 		}
 	}
 }
@@ -947,16 +953,21 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	{
 		if (check_readable($get["page"],false,false))
 		{
-			//$postdata = join("",get_source($get["page"]));
-			//$postdata = convert_html($postdata);
-			//$postdata = get_page_html($get["page"]);
-			$postdata = convert_html($get["page"],false,true);
+			if (isset($get['com_mode']))
+			{
+				$noattach = 1;
+				$page_comment_mode = "*ページコメント表示モード\n\n-ページコメント表示モードのため本文(ページ内容)を表示していません。\n-本文を表示するには、[[こちら>__PAGE__]]へアクセスしてください。";
+				
+				$postdata = convert_html(str_replace("__PAGE__",strip_bracket($vars['page']),$page_comment_mode));
+			}
+			else
+				$postdata = convert_html($get["page"],false,true);
 
 			$title = htmlspecialchars(strip_bracket($get["page"]));
 			$page = make_search($get["page"]);
 			$body = tb_get_rdf($vars['page'])."\n";
 			
-			$r_page = rawurlencode(strip_bracket($post["page"]));
+			$r_page = rawurlencode(strip_bracket($get["page"]));
 			//ping送出データーがあればランチャー起動
 			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".tbf"))
 				$body .= "<img style=\"float:left\" src=\"".XOOPS_URL."/modules/pukiwiki/ping.php?$r_page\" width=1 height=1/>";
@@ -967,6 +978,8 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			
 			$body .= $postdata;
 			header_lastmod($vars["page"]);
+			//echo $pgid;;
+			$show_comments = true;
 		}
 		else
 		{
@@ -1161,6 +1174,30 @@ if (empty($vars['xoops_block']))
 // ** 出力処理 **
 catbody($title,$page,$body);
 unset($title,$page,$body);//一応開放してみる
+
+
+if (empty($vars['xoops_block']))
+{
+	// XOOPSテンプレート
+	$xoopsOption['template_main'] = 'pukiwiki_index.html';
+	$xoopsTpl->assign('body', ob_get_contents());
+	ob_end_clean();
+
+	// XOOPSコメント
+	if ($use_xoops_comments && $show_comments)
+	{
+		$_GET['pgid'] = $pgid;
+		
+		// ゲスト投稿権限
+		$xoopsModuleConfig['com_anonpost'] = 1;
+		
+		$xoopsTpl->assign('show_comments', true);
+		$xoopsTpl->assign('comments_title', 'ページコメント');
+		include_once XOOPS_ROOT_PATH.'/include/comment_view.php';
+	}
+}
+
+
 // XOOPSフッタ
 if (empty($vars['xoops_block'])) include(XOOPS_ROOT_PATH."/footer.php");
 // ** 終了 **

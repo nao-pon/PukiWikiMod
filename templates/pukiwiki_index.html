@@ -1,0 +1,18 @@
+<{$body}>
+<{if $show_comments }>
+<{include file='db:pukiwiki_comments.html'}>
+<{/if}>
+<{if $is_read }>
+<{$trackback_body}>
+<{/if}>
+<div class="pukiwiki_footer">
+	<address>
+		<p>Modified by <a href="<{$modifierlink}>"><{$modifier}></a></p>
+		<p>
+		<{$xoops_wiki_copyright}><br />
+		<{$s_copyright}><br />
+		Powered by PHP <{$php_version}>
+		</p>
+		<p>HTML convert time to <{$taketime}> sec.</p>
+	</address>
+</div>
