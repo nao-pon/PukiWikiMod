@@ -1,21 +1,15 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.3 2003/06/28 15:52:58 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.4 2003/07/02 00:54:09 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
-global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable;
-if(is_freeze($vars['page'])){
-	if($hide_navi){
-		if($xoopsUser){
-			foreach($xoopsUser->groups as $_gid){
-				if($_gid == 1){
-					$hide_navi = 0;
-				}
-			}
-		}
-	}
-} else {
-	$hide_navi = 0;
+global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $_freeze;
+
+$_freeze = is_freeze($vars[page]);
+if($_freeze){
+	// 凍結ページなら
+	$hide_navi = ($X_admin)? 0 : $hide_navi;
 }
+
 ?>
 <meta http-equiv="content-style-type" content="text/css">
 	<meta http-equiv="content-script-type" content="text/javascript">
@@ -34,12 +28,11 @@ if(is_freeze($vars['page'])){
 		[ <a href="<?php echo "$script?".rawurlencode($vars['page']) ?>">リロード</a> ]
 		&nbsp;
 	<?php
-	$isfreeze =is_freeze($vars[page]);
 	
 	if ($anon_writable){
 		echo "
 		[ <a href=\"$script?plugin=newpage\">新規</a>";
-		if (!$isfreeze) echo "
+		if (!$_freeze) echo "
 		| <a href=\"$link_edit\">編集</a>
 		| <a href=\"$link_diff\">差分</a>
 		| <a href=\"$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page'])."\">添付</a>
@@ -49,7 +42,7 @@ if(is_freeze($vars['page'])){
 		&nbsp;";
 	} else {
 		$source_tag = "<a href=\"$script?plugin=source&amp;page=".rawurlencode($vars['page'])."\">ソース</a>";
-		if (is_freeze($vars[page])){
+		if ($_freeze){
 			echo "[ ".$source_tag." ]&nbsp;";
 		} else {
 			if ($wiki_writable < 2) {
@@ -82,11 +75,10 @@ if(is_freeze($vars['page'])){
 	if ($is_page) {
 		if (strip_bracket($vars['page']) != $defaultpage) {
 			require_once(PLUGIN_DIR.'where.inc.php');
-			echo plugin_where_convert();
+			echo do_plugin_convert("where");
 		}
 		require_once(PLUGIN_DIR.'counter.inc.php');
-		echo "<div style=\"float:right\">".plugin_counter_convert()."</div>";
-		//echo "<br clear=all />";
+		echo "<div style=\"float:right\">".do_plugin_convert("counter")."</div>";
 		echo $hr;
 	}
 	?>
