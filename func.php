@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.40 2005/03/05 02:13:12 nao-pon Exp $
+// $Id: func.php,v 1.41 2005/03/05 07:16:39 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1175,12 +1175,23 @@ function wordwrap4tolong(&$str)
 {
 
 	$str = str_replace('\"','\\\"',$str);
-	//$str = preg_replace("/(<[^>]+>)?([!~*\"'();\/?:\@&=+\$,%#\w.-]+)/e","'$1'.wordwrap('$2',36,'&#173;',1)",$str);
-	$str = preg_replace("/(<\s*a[^>]+>)?([!~*\"'();\/?:\@&=+\$,%#\w.-]+?)(<\/a>)/e","'$1'.wordwrap('$2',36,'&#173;',1).'$3'",$str);
+	//$str = preg_replace("/(<[^>]+>)?([!~*\"'();\/?:\@&=+\$,%#\w.-]*)/e","'$1'.wordwrap('$2',36,'&#173;',1)",$str);
+	$str = preg_replace("/(<\s*a[^>]+>)?([!~*\"'();\/?:\@&=+\$,%#\w.-]+?)(<\/a>)/e","'$1'.wordwrap4tolong_sub('$2').'$3'",$str);
 	$str = str_replace(array('\&#173;','\"'),array('&#173;','"'),$str);
 	return $str;
 
 }
+function wordwrap4tolong_sub($str)
+{
+	global $entity_pattern;
+	$str = str_replace('\"','"',$str);
+	// 実体参照文字列が含まれる場合はパス
+	if (preg_match('/&(#[0-9]+|#x[0-9a-f]+|'.$entity_pattern.');/',$str)) return $str;
+	// 26文字ごとに &#173; を挿入
+	$str = wordwrap($str,36,'&#173;',1);
+	return $str;
+}
+
 
 //////////////////////////////////////////////////////
 //
