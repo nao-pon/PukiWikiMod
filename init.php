@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.33 2004/09/12 14:01:24 nao-pon Exp $
+// $Id: init.php,v 1.34 2004/09/12 14:06:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
