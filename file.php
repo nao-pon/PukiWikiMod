@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.4 2003/07/04 08:43:54 nao-pon Exp $
+// $Id: file.php,v 1.5 2003/07/11 14:17:38 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -11,6 +11,7 @@ function get_source($page,$row=0)
 			$ret = array();
 			$f_name = get_filename(encode($page));
 			$fp = fopen($f_name,"r");
+			if (!$fp) return file(get_filename(encode($page)));
 			while (!feof($fp)) {
 				$ret[] = fgets($fp, 4096);
 				$row--;
