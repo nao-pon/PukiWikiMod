@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.6 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: trackback.php,v 1.7 2004/04/03 14:13:47 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -201,7 +201,7 @@ function tb_send($page,$data="")
 				}
 				$result = http_request($tb_id,'POST','',$putdata);
 				//echo htmlspecialchars($tb_id).":auto<hr />";
-				if ($result['rc'] === 200)
+				if ($result['rc'] === 200 || strpos($result['data'],"<error>0</error>") !== false)
 					$sended[] = $tb_id;
 
 				// FIXME: エラー処理を行っても、じゃ、どうする？だしなぁ...
