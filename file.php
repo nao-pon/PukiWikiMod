@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.26 2004/05/22 14:00:17 nao-pon Exp $
+// $Id: file.php,v 1.27 2004/05/22 15:59:31 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -239,14 +239,8 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	
 	if ($dir === DATA_DIR)
 	{
-		// linkデータベースを更新
-		links_update($page);
-		
 		// pginfo DBを更新
 		pginfo_db_write($page,$action,$aids,$gids,$vaids,$agids,$freeze,$unvisible);
-		
-		// ページHTMLキャッシュとRSSキャッシュを削除
-		delete_page_html($page);
 		
 		// for autolink
 		if ($autolink)
@@ -282,6 +276,12 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			$X_admin = $_X_admin;
 			$X_uid = $_X_uid;
 		}
+		
+		// linkデータベースを更新
+		links_update($page);
+		
+		// ページHTMLキャッシュとRSSキャッシュを削除
+		delete_page_html($page);
 		
 		if (!$notimestamp && !$unvisible)
 		{
