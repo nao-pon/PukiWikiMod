@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.1 2003/07/14 09:02:01 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.2 2003/07/14 14:01:15 nao-pon Exp $
 //
 // tracker.inc.php beta-release rev.10
 
@@ -270,6 +270,9 @@ class Tracker_field_title extends Tracker_field_text
 	function format_cell($str)
 	{
 		//make_heading($str);
+		$str = str_replace("[[","",$str);
+		$str = str_replace("]]","",$str);
+		$str = preg_replace("/\(\(.*\)\)/","",$str);
 		return $str;
 	}
 }
