@@ -1,5 +1,5 @@
 <?php
-// $Id: vote.inc.php,v 1.7 2004/04/03 14:15:56 nao-pon Exp $
+// $Id: vote.inc.php,v 1.8 2004/11/17 13:53:34 nao-pon Exp $
 
 function plugin_vote_init()
 {
@@ -53,7 +53,7 @@ function plugin_vote_action()
 			$celldata = array();
 			foreach($__line as $line)
 			{
-				if(preg_match("/^(.*)?#vote\((.*)\)$/i",$line,$arg))
+				if(preg_match("/^(.*)?#vote\((.*)\)(.*)$/i",$line,$arg))
 				{
 					$celltag = $arg[1];
 					if ($celltag) $celltag = cell_format_tag_del($celltag);
@@ -61,6 +61,7 @@ function plugin_vote_action()
 					if(($vote_no == $post["vote_no"]) && !$celltag)
 					{
 						$args = explode(",",$arg[2]);
+						$lefts = empty($arg[3]) ? '' : $arg[3];
 						$lastvote = "";
 						foreach($args as $item)
 						{
@@ -124,7 +125,7 @@ function plugin_vote_action()
 								$votes[] = $item;
 						}
 
-						$vote_str = "$arg[1]#vote(" . "#lastvote:" . $thisvote .",". @join(",",$votes) . ")";
+						$vote_str = "$arg[1]#vote(" . "#lastvote:" . $thisvote .",". @join(",",$votes) . ")" . $lefts;
 
 						$postdata_input = $vote_str;
 						$celldata[] = $vote_str;
@@ -291,7 +292,7 @@ function plugin_vote_convert()
 		if($tdcnt++ % 2) $cls = "vote_td1";
 		else           $cls = "vote_td2";
 		
-		if ($cnt_tag) $cnt_tag = "<td align=\"center\" class=\"$cls\" nowrap=\"nowrap\"></td>";
+		if ($sort) $cnt_tag = "<td align=\"center\" class=\"$cls\" nowrap=\"nowrap\">New!</td>";
 		
 		if (!$addcnt) $addcnt = 30;
 		
