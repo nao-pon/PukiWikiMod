@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.24 2004/09/23 14:04:10 nao-pon Exp $
+// $Id: make_link.php,v 1.25 2004/09/23 14:27:57 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -738,7 +738,7 @@ class Link_autolink_a extends Link_autolink
 }
 
 // ページ名のリンクを作成
-function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
+function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$get_heading=TRUE)
 {
 	global $script,$vars,$show_title,$show_passage,$link_compact,$related;
 	global $_symbol_noexists,$use_static_url,$vars;
@@ -779,7 +779,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 		foreach ($page_names as $page_name){
 			$access_name .= $page_name."/";
 			$name = substr($access_name,0,strlen($access_name)-1);
-			if (preg_match("/^[0-9\-]+$/",$page_name))
+			if ($get_heading && preg_match("/^[0-9\-]+$/",$page_name))
 			{
 				$heading = get_heading($page);
 				if ($heading) $page_name = $heading;
@@ -797,7 +797,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 	elseif (is_page($page))
 	{
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-		if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name) && !$alias)
+		if ($get_heading && !$alias && preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name))
 			$s_alias = $f_name[1].get_heading($page);
 		$passage = get_pg_passage($page,FALSE);
 		$title = $link_compact ? '' : " title=\"$s_page$passage\"";
