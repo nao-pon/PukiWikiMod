@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.19 2004/05/25 14:43:57 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.20 2004/05/27 14:07:54 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -131,6 +131,7 @@ if($_freeze){
 		  <?php if (!$_freeze){ ?>
 		  <?php if ($wiki_allow_newpage){ ?>
 			<a href="<?php echo $script ?>?plugin=newpage"><img src="./image/new.gif" width="20" height="20" border="0" alt="¿·µ¬" /></a>
+			<a href="<?php echo $script ?>?plugin=template&refer=<?php echo rawurlencode(strip_bracket($vars['page']))?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="¥³¥Ô¡¼" /></a>
 			<?php } ?>
 			<a href="<?php echo $link_edit ?>"><img src="./image/edit.gif" width="20" height="20" border="0" alt="ÊÔ½¸" /></a>
 			<a href="<?php echo $link_diff ?>"><img src="./image/diff.gif" width="20" height="20" border="0" alt="º¹Ê¬" /></a>
