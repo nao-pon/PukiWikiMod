@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.22 2004/08/29 12:23:43 nao-pon Exp $
+// $Id: make_link.php,v 1.23 2004/09/23 07:10:17 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -741,7 +741,7 @@ class Link_autolink_a extends Link_autolink
 function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 {
 	global $script,$vars,$show_title,$show_passage,$link_compact,$related;
-	global $_symbol_noexists,$use_static_url;
+	global $_symbol_noexists,$use_static_url,$vars;
 	
 	static $linktag = array();
 	
@@ -802,15 +802,15 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 		$passage = get_pg_passage($page,FALSE);
 		$title = $link_compact ? '' : " title=\"$s_page$passage\"";
 
-		//if ($vars['page'] !== $page)
-		//{
+		if ($vars['page'] !== $page)
+		{
 			if ($use_static_url)
 				$retval = "<a href=\"".XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html{$anchor}\"$title>$s_alias</a>";
 			else
 				$retval = "<a href=\"$script?$r_page$anchor\"$title>$s_alias</a>";
-		//}
-		//else
-		//	$retval = "$s_alias";
+		}
+		else
+			$retval = "<b>$s_alias</b>";
 	}
 	else
 	{
