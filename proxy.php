@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: proxy.php,v 1.6 2004/06/20 13:45:26 nao-pon Exp $
+// $Id: proxy.php,v 1.7 2004/07/31 06:48:04 nao-pon Exp $
 //
 
 /*
@@ -111,7 +111,7 @@ function http_request($url,$method='GET',$headers='',$post=array(),
 	{
 		$_response = fread($fp,4096);
 		$_status = socket_get_status($fp);
-		if ($_status['timed_out'] === false && $_response)
+		if ($_status['timed_out'] === false)
 		{
 			$response .= $_response;
 		}

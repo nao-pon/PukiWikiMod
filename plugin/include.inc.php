@@ -1,5 +1,5 @@
 <?php
-// $Id: include.inc.php,v 1.5 2004/05/20 14:52:48 nao-pon Exp $
+// $Id: include.inc.php,v 1.6 2004/07/31 06:48:05 nao-pon Exp $
 // internationalization
 function plugin_include_init() {
 	if (LANG=='ja') {
@@ -42,19 +42,9 @@ function plugin_include_convert()
 	
 	$include_list[$page] = TRUE;
 
-	//変数値退避
-	$digest_esc = $digest;
-	$_comment_no = $comment_no;
-	$_h_excerpt = $h_excerpt;
-	$tmppage = $vars['page'];
+	//インクルード
+	$body = include_page($page);
 	
-	//初期化
-	$get['page'] = $post['page'] = $vars['page'] = $page;
-	$comment_no = 0;
-	
-	$body = convert_html($page,false,true);
-	
-	// $link = "<a href=\"$script?".rawurlencode($page)."\">".strip_bracket($page)."</a>";
 	$link = "<a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\">".strip_bracket($page)."</a>";
 	if($page == 'MenuBar'){
 		$head = "<span align=\"center\"><h5 class=\"side_label\">$link</h5></span>";
@@ -66,12 +56,6 @@ function plugin_include_convert()
 		$body = "$head\n$body\n";
 	}
 	
-	//退避変数戻し
-	$get['page'] = $post['page'] = $vars['page'] = $tmppage;
-	$comment_no = $_comment_no;
-	$h_excerpt = $_h_excerpt;
-	$digest = $digest_esc; //元に戻す
-
 	return $body;
 }
 ?>

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.29 2004/06/09 13:11:57 nao-pon Exp $
+// $Id: file.php,v 1.30 2004/07/31 06:48:04 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -201,7 +201,8 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	
 	$timestamp = FALSE;
 	
-	$time = is_page($page,TRUE) ? get_filetime($page) : 0;
+	if ($dir === DATA_DIR)
+		$time = is_page($page,TRUE) ? get_filetime($page) : 0;
 
 	if($str == "")
 	{
@@ -353,6 +354,7 @@ function get_filename($pagename)
 // ページが存在するかしないか
 function is_page($page,$reload=FALSE)
 {
+	if ($reload) clearstatcache();
 	return file_exists(get_filename(encode(add_bracket($page))));
 }
 

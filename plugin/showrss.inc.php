@@ -22,7 +22,7 @@
  *
  * 避難所       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.10 2004/06/22 13:33:05 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.11 2004/07/31 06:48:05 nao-pon Exp $
  *
  */
 
@@ -193,7 +193,7 @@ function plugin_showrss_get_rss($target,$usecache)
 		plugin_showrss_cache_expire($usecache);
 
 		// キャッシュがあれば取得する
-		$filename = CACHE_DIR . encode($target) . '.tmp';
+		$filename = P_CACHE_DIR . encode($target) . '.srs';
 		if (is_readable($filename))
 		{
 			$buf = join('',file($filename));
@@ -217,6 +217,8 @@ function plugin_showrss_get_rss($target,$usecache)
 			fwrite($fp,$buf);
 			fclose($fp);
 		}
+		// plane_text DB を更新を指示
+		need_update_plaindb();
 	}
 
 	// parse
@@ -228,14 +230,14 @@ function plugin_showrss_cache_expire($usecache)
 {
 	$expire = $usecache * 60 * 60; // Hour
 
-	$dh = dir(CACHE_DIR);
+	$dh = dir(P_CACHE_DIR);
 	while (($file = $dh->read()) !== FALSE)
 	{
-		if (substr($file,-4) != '.tmp')
+		if (substr($file,-4) != '.srs')
 		{
 			continue;
 		}
-		$file = CACHE_DIR.$file;
+		$file = P_CACHE_DIR.$file;
 		$last = time() - filemtime($file);
 
 		if ($last > $expire)
@@ -281,6 +283,8 @@ class ShowRSS_XML
 		// その後もっかい"< > &"などを"&lt; &gt; &amp;"にする  ＜ XSS対策？
 		$str = strtr($str, array_flip(get_html_translation_table(ENT_COMPAT)));
 		$str = htmlspecialchars($str);
+		// &amp; -> & by nao-pon
+		$str = str_replace('&amp;','&',$str);
 
 		// 文字コード変換
 		$str = mb_convert_encoding($str, SOURCE_ENCODING, 'auto');

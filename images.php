@@ -1,0 +1,47 @@
+<?php
+// PukiWiki - Yet another WikiWikiWeb clone.
+// $Id: images.php,v 1.1 2004/07/31 06:48:04 nao-pon Exp $
+/////////////////////////////////////////////////
+
+if (!isset($_GET['q'])) exit;
+
+$file = get_image_filename($_GET['q']);
+
+if (!$file) exit;
+
+$img = getimagesize($file);
+
+header('Content-Type: '.$img['mime']);
+
+readfile($file);
+
+exit;
+
+function get_image_filename($q)
+{
+	error_reporting(0);
+	$dir = "./plugin_cache/";
+	$file = $dir.md5($q).".tig";
+	if (file_exists($file))
+		return $file;
+	
+	include_once("proxy.php");
+	
+	$result =  http_request("http://images-partners.google.com/images?q=".$q);
+	if ($result['rc'] != 200) return "";
+	$contents = $result['data'];
+	
+	// ƒLƒƒƒbƒVƒ…•Û‘¶
+	if ($contents)
+	{
+		$fp = fopen($file, "wb");
+		fwrite($fp, $contents);
+		fclose($fp);
+	}
+	
+	return $file;
+	
+}
+
+
+?>

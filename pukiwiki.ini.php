@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.26 2004/06/20 13:48:34 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.27 2004/07/31 06:48:04 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -219,12 +219,12 @@ $auto_template_rules[] = array('\[\[((.+)\/([^\/]+))\]\]' => '[[:'.$auto_templat
 /////////////////////////////////////////////////
 // TrackBackでのPing先URL抽出時に除外するプラグイン
 // カンマ区切りで、#をつけずに記述
-$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,aws,blogs,google";
+$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,aws,blogs,google,gimage,newsclip";
 
 /////////////////////////////////////////////////
 // 検索用Plainソース作成時に除外するプラグイン
 // カンマ区切りで、#をつけずに記述
-$noplain_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,ls2,ls,recent,popular,pcomment,contents,showrss,tenki,ref,exrate,xoopsblock,attachref,related,blogs";
+$noplain_plugin = "include,calendar2,calendar_viewer,bugtrack_list,tracker_list,ls2,ls,recent,popular,pcomment,contents,tenki,ref,exrate,xoopsblock,attachref,related";
 
 /////////////// ParaEdit //////////////////
 // ParaEdit 改行の代替文字列
@@ -297,12 +297,12 @@ $facemark_rules = array(
 "\s(;(?:-)?\()" => " <img src=\"".XOOPS_WIKI_URL."/face/sad.gif\" alt=\"\\1\" />",
 "\s(\:(?:-)?\()" => " <img src=\"".XOOPS_WIKI_URL."/face/sad.gif\" alt=\"\\1\" />",
 "\s(\:(?:-)?\?)" => " <img src=\"".XOOPS_WIKI_URL."/face/confused.gif\" alt=\"\\1\" />",
-'&amp;(smile;)' => ' <img src="'.XOOPS_WIKI_URL.'"/face/smile.png" alt="&$1" />',
-'&amp;(bigsmile;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/bigsmile.png" alt="&$1" />',
-'&amp;(huh;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/huh.png" alt="&$1" />',
-'&amp;(oh;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/oh.png" alt="&$1" />',
-'&amp;(wink;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/wink.png" alt="&$1" />',
-'&amp;(sad;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/sad.png" alt="&$1" />',
+'&amp;(smile;)' => ' <img src="'.XOOPS_WIKI_URL.'"/face/smile.gif" alt="&$1" />',
+'&amp;(bigsmile;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/bigsmile.gif" alt="&$1" />',
+'&amp;(huh;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/huh.gif" alt="&$1" />',
+'&amp;(oh;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/oh.gif" alt="&$1" />',
+'&amp;(wink;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/wink.gif" alt="&$1" />',
+'&amp;(sad;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/sad.gif" alt="&$1" />',
 '&amp;(heart;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/heart.gif" alt="&$1" />',
 '&amp;(hammer;)' => ' <img src="'.XOOPS_WIKI_URL.'/face/hammer.gif" alt="&$1" />',
 );

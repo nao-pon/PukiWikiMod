@@ -73,6 +73,7 @@ $_msg_week = array("日","月","火","水","木","金","土");
 $_msg_content_back_to_top = '<span class="super_index">↑</span>';
 $_msg_word = 'これらのキーワードがハイライトされています： ';
 $_msg_filesdel = '添付ファイル・カウンターファイルの削除(ワンクリックで削除されます)';
+$_msg_read_more = '<< 続きを読む >>';
 
 ///////////////////////////////////////
 // symbols

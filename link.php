@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: link.php,v 1.5 2004/06/09 13:11:57 nao-pon Exp $
+// $Id: link.php,v 1.6 2004/07/31 06:48:04 nao-pon Exp $
 // ORG: link.php,v 1.6 2003/07/29 09:09:20 arino Exp $
 //
 
@@ -39,17 +39,13 @@ function links_get_related_db($page)
 //ページの関連を更新する
 function links_update($page,$time=null)
 {
-	static $processed = array();
-	
-	$processed[] = $page;
-	
 	if (is_null($time)) $time = is_page($page,TRUE) ? get_filetime($page) : 0;
 	
 	$page = strip_bracket($page);
 	
 	$rel_old = array();
 	$rel_file = CACHE_DIR.encode($page).'.rel';
-	if ($rel_file_exist = file_exists($rel_file))
+	if (file_exists($rel_file))
 	{
 		$lines = file($rel_file);
 		if (array_key_exists(0,$lines))
@@ -84,15 +80,12 @@ function links_update($page,$time=null)
 	$rel_new = array_merge($rel_new,$rel_auto);
 	
 	// .rel:$pageが参照しているページの一覧
-	if ($time) // ページが存在している
+	if (count($rel_new))
 	{
-		if (count($rel_new))
-		{
-			$fp = fopen($rel_file,'w')
-				or die_message('cannot write '.htmlspecialchars($rel_file));
-			fputs($fp,join("\t",$rel_new));
-			fclose($fp);
-		}
+		$fp = fopen($rel_file,'wb')
+			or die_message('cannot write '.htmlspecialchars($rel_file));
+		fputs($fp,join("\t",$rel_new));
+		fclose($fp);
 	}
 	// .ref:$_pageを参照しているページの一覧
 	links_add($page,array_diff($rel_new,$rel_old),$rel_auto);
@@ -100,7 +93,7 @@ function links_update($page,$time=null)
 	
 	global $WikiName,$autolink,$nowikiname,$search_non_list,$wiki_common_dirs;
 	// $pageが新規作成されたページで、AutoLinkの対象となり得る場合
-	if (!$time and !$rel_file_exist and $autolink
+	if (!$time and $autolink
 		and (preg_match("/^$WikiName$/",$page) ? $nowikiname : strlen($page) >= $autolink))
 	{
 		// $pageを参照していそうなページを一斉更新する(おい)
@@ -120,14 +113,14 @@ function links_update($page,$time=null)
 			}
 		}
 		// 検索実行
-		$pages = array_diff(do_search($lookup_page,'AND',TRUE),$processed);
 		$pages = do_search($lookup_page,'AND',TRUE);
 		
 		foreach ($pages as $_page)
 		{
 			if ($_page != $page)
 			{
-				links_update($_page);
+				//echo "$_page:$page<br>";
+				links_update($_page,null);
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.7 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: db_func.php,v 1.8 2004/07/31 06:48:04 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false)
@@ -457,5 +457,25 @@ function plain_db_write($page,$action)
 		return false;
 	
 	return true;
+}
+
+// プラグインからplane_text DB を更新を指示(コンバート時)
+function need_update_plaindb($page = null)
+{
+	global $vars;
+	if (is_null($page)) $page = $vars['page'];
+	
+	if (is_page($page))
+	{
+		$page =strip_bracket($page);
+		// ランチャーファイル作成
+		$filename = CACHE_DIR.encode($page).".udp";
+		if (!($fp = fopen($filename,'w')))
+		{
+			return;
+		}
+		fclose($fp);
+	}
+	return;
 }
 ?>

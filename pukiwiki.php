@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.46 2004/06/22 14:34:34 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.47 2004/07/31 06:48:04 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -107,6 +107,11 @@ if (isset($vars['pgid']))
 	$vars['page'] = get_pgname_by_id($vars['pgid']);
 	if ($vars['page'])
 		$vars['cmd'] = "read";
+	else
+	{
+		header("Location: ".XOOPS_WIKI_URL."/");
+		exit;
+	}
 }
 
 // pwm_ping受信
@@ -1104,6 +1109,8 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	if($arg != "" && $vars["page"] == "" && $vars["cmd"] == "")
 	{
 		$arg = mb_convert_encoding(trim($arg),SOURCE_ENCODING,"AUTO");
+		//文字化けして正常動作しない場合は以下を試してみてください
+		//$arg = mb_convert_encoding(trim($arg),SOURCE_ENCODING,"ASCII,EUC-JP,UTF-8,JIS,SJIS");
 		$post["page"] = $arg;
 		$get["page"] = $arg;
 		$vars["page"] = $arg;
@@ -1130,12 +1137,14 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			$page = make_search($get["page"]);
 			$body = tb_get_rdf($vars['page'])."\n";
 			
+			$r_page = rawurlencode(strip_bracket($post["page"]));
 			//ping送出データーがあればランチャー起動
 			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".tbf"))
-			{
-				$r_page = rawurlencode(strip_bracket($post["page"]));
 				$body .= "<img style=\"float:left\" src=\"".XOOPS_URL."/modules/pukiwiki/ping.php?$r_page\" width=1 height=1/>";
-			}
+				
+			//PlainTXT DB 更新の必要がある場合
+			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".udp"))
+				$body .= "<img style=\"float:left\" src=\"".XOOPS_URL."/modules/pukiwiki/ud_plain.php?$r_page\" width=1 height=1/>";
 			
 			$body .= $postdata;
 			header_lastmod($vars["page"]);

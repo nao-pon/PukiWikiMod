@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pginfo.inc.php,v 1.3 2004/01/27 14:34:02 nao-pon Exp $
+// $Id: pginfo.inc.php,v 1.4 2004/07/31 06:48:05 nao-pon Exp $
 //
 
 // メッセージ設定
@@ -106,6 +106,10 @@ function pginfo_db_init()
 	global $xoopsDB,$whatsnew;
 	if ($dir = @opendir(DATA_DIR))
 	{
+		//name テーブルの属性を BINARY にセット(検索で大文字・小文字を区別する)
+		$query = 'ALTER TABLE `'.$xoopsDB->prefix("pukiwikimod_pginfo").'` CHANGE `name` `name` VARCHAR( 255 ) BINARY NOT NULL ';
+		$result=$xoopsDB->queryF($query);
+		
 		//$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_pginfo");
 		//$result=$xoopsDB->queryF($query);
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_count");

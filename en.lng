@@ -68,6 +68,7 @@ $_msg_month = array(1 => "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
 $_msg_week = array("Sun","Mon","Tue","Wed","Thu","Fri","Sat");
 $_msg_content_back_to_top = '<span class="super_index">[back to top]</span>';
 $_msg_filesdel = 'Delete attach files & counter file now.';
+$_msg_read_more = '<< Read more >>';
 
 ///////////////////////////////////////
 // symbols

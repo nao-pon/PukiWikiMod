@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.26 2004/05/22 14:50:25 nao-pon Exp $
+// $Id: func.php,v 1.27 2004/07/31 06:48:04 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -977,6 +977,47 @@ function ltrim_pagename($page,$num)
 			break;
 	}
 	return $page;
+}
+
+// 指定ページをインクルードする
+function include_page($page)
+{
+	global $vars,$post,$get,$comment_no,$h_excerpt,$digest;
+	global $_msg_read_more;
+	
+	//変数値退避
+	$tmppage = $vars["page"];
+	$_comment_no = $comment_no;
+	$_h_excerpt = $h_excerpt;
+	$_digest = $digest;
+	
+	//comment_no 初期化
+	$comment_no = 0;
+	
+	//現ページ名書き換え
+	$vars["page"] = $post["page"] = $get["page"] = add_bracket($page);
+	
+	$body = join("",get_source($page));
+	if (preg_match("/\n#more(\([^)]*\))?\n/",$body))
+	{
+		$body = preg_replace("/\n#more\(\s*off\s*\).*?(\n#more\(\s*on\s*\)\n|$)/s","\n",$body);
+		if (preg_match("/(.*?)\n#more(\([^)]*\))?\n/s",$body,$match))
+			$body = $match[1];
+		$body .= "\n\nRIGHT:[[$_msg_read_more>$page]]";
+		$body = convert_html($body);
+	}
+	else
+	{
+		$body = convert_html($page,false,true);
+	}
+	
+	//退避変数値戻し
+	$vars["page"] = $post["page"] = $get["page"] = $tmppage;
+	$comment_no = $_comment_no;
+	$h_excerpt = $_h_excerpt;
+	$digest = $_digest;
+	
+	return $body;
 }
 
 //////////////////////////////////////////////////////

@@ -172,6 +172,10 @@ em {
 	font-style:italic;
 }
 
+rt {
+	font-weight:100;
+}
+
 strong {
 	font-weight:bold;
 }

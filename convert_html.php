@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.25 2004/05/23 13:37:28 nao-pon Exp $
+// $Id: convert_html.php,v 1.26 2004/07/31 06:48:05 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -806,7 +806,8 @@ class convert
 function inline($line,$remove = FALSE)
 {
 	$line = htmlspecialchars($line);
-	if ($remove) $line = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$line);
+	//if ($remove) $line = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$line);
+	if ($remove) $line = make_link(preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$line));
 	return $line;
 }
 

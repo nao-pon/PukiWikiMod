@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.26 2004/05/22 14:00:17 nao-pon Exp $
+// $Id: init.php,v 1.27 2004/07/31 06:48:04 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -8,7 +8,7 @@ define("INI_FILE","./pukiwiki.ini.php");
 
 //** 初期設定 **
 
-define("_XOOPS_WIKI_VERSION", "0.08b6");
+define("_XOOPS_WIKI_VERSION", "0.08 Final");
 define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2004 <a href=\"http://ishii.mydns.jp/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.");
 //文字エンコード
 define('SOURCE_ENCODING','EUC-JP');
@@ -22,7 +22,11 @@ define("PHP_SELF",$HTTP_SERVER_VARS["PHP_SELF"]);
 define("SERVER_NAME",$HTTP_SERVER_VARS["SERVER_NAME"]);
 define("MUTIME",getmicrotime());
 
+// キャッシュディレクトリ
 define("CACHE_DIR","./cache/");
+//プラグイン用キャッシュディレクトリ
+define("P_CACHE_DIR",CACHE_DIR."p/");
+
 
 if($script == "") {
 	$script = (getenv('SERVER_PORT')==443?'https://':('http://')).getenv('SERVER_NAME').(getenv('SERVER_PORT')==80?'':(':'.getenv('SERVER_PORT'))).getenv('SCRIPT_NAME');

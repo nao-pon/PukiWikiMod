@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.12 2004/03/20 07:21:18 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.13 2004/07/31 06:48:05 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -49,12 +49,14 @@ function plugin_calendar_viewer_init() {
 			'_calendar_viewer_msg_arg2' => '第二引数が変だよ',
 			'_calendar_viewer_msg_noargs' => '引数を指定してね',
 			'_calendar_viewer_msg_edit' => '編集',
+			'_calendar_viewer_read_more' => '<< 続きを読む >>',
 		);
 	} else {
 		$_plugin_calendar_viewer_messages = array(
 			'_calendar_viewer_msg_arg2' => 'check the second argument',
 			'_calendar_viewer_msg_noargs' => 'argument not found',
 			'_calendar_viewer_msg_edit' => 'Edit',
+			'_calendar_viewer_read_more' => '<< Read more >>',
 		);
 	}
 	set_plugin_messages($_plugin_calendar_viewer_messages);
@@ -63,7 +65,7 @@ function plugin_calendar_viewer_init() {
 
 function plugin_calendar_viewer_convert()
 {
-  global $_calendar_viewer_msg_arg2, $_calendar_viewer_msg_noargs, $_calendar_viewer_msg_edit;
+  global $_calendar_viewer_msg_arg2, $_calendar_viewer_msg_noargs, $_calendar_viewer_msg_edit, $_calendar_viewer_read_more;
   global $WikiName,$BracketName,$vars,$get,$post,$hr,$script,$trackback;
   global $anon_writable,$wiki_user_dir;
   global $comment_no,$h_excerpt,$digest;
@@ -294,16 +296,8 @@ if ($cal2 == 1){
   
   //ナビバー作成ここまで
 
-  //echo count($pagelist);
   //*ここからインクルード開始
 
-  //変数値退避
-  $tmppage = $vars["page"];
-  $_comment_no = $comment_no;
-	$_h_excerpt = $h_excerpt;
-	$_digest = $digest;
-  
-  //$tmp_related = $related;
   $return_body = "";
   
   //ナビバー
@@ -326,23 +320,15 @@ if ($cal2 == 1){
     $pagelist[$tmp] = preg_replace("/{$date_sep}-$/","",$pagelist[$tmp]);
     $page = "[[" . $pagelist[$tmp] .  "]]";
 
-    $vars["page"] = $post["page"] = $get["page"] = $page;
     $user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($page)) : "[[".get_pg_auther_name($page)."]]";
 		$user_tag = make_link($user_tag);
 		$tb_tag = ($trackback)? "<div style=\"text-align:right\">by $user_tag at ".get_makedate_byname($page)." ".make_pagelink($page,"<img src=\"./image/search.png\" />")." [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]</div>" : "";
 
+	//インクルード
+	$body = "<div class=\"style_calendar_body\">".$tb_tag.include_page($page)."</div>";
 
-    //comment_no 初期化
-    $comment_no = 0;
-
-    //$body = @join("",@file(get_filename(encode($page))));
-    //$body = "<div class=\"style_calendar_body\">".$tb_tag.convert_html($body)."</div>";
-    $body = "<div class=\"style_calendar_body\">".$tb_tag.convert_html($page,false,true)."</div>";
-    //$link = "<a href=\"$script?cmd=read&amp;page=".rawurlencode($page)."\">".strip_bracket($page)."</a>";
     $link = make_pagelink($page,preg_replace("/^.*\//","",strip_bracket($page)));
     if ($anon_writable) $link .= " <a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\"><font size=\"-2\">(".$_calendar_viewer_msg_edit.")</font></a>";
-    //$head = "<h1>$link</h1>\n";
-    //$head = "<h4>$link</h4>\n";
     $head = "<div class = \"style_calendar_date\">$link</div>\n";
     $return_body .= $head . $body;
     $tmp++;
@@ -352,14 +338,6 @@ if ($cal2 == 1){
   //表示データがあったらナビバー表示
   if ($kensu) $return_body .= $navi_bar;
   
-  $vars["page"] = $post["page"] = $get["page"] = $tmppage;
-  $comment_no = $_comment_no;
-	$h_excerpt = $_h_excerpt;
-	$digest = $_digest;
-  //$related = $tmp_related;
-
-
-
   return $return_body;
 }
 

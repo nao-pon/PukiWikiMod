@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.15 2004/03/20 07:21:18 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.16 2004/07/31 06:48:05 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -15,6 +15,7 @@ function plugin_calendar2_init() {
 			'_calendar2_plugin_edit' => '[この日記を編集]',
 			'_calendar2_plugin_empty' => '%sは書いていません。(^^ゞ',
 			'_calendar2_msg_write_more' => '[記事を追加する]',
+			'_calendar2_msg_read_more' => '<< 続きを読む >>',
 		);
 	} else {
 		$_plugin_calendar2_messages = array(
@@ -27,6 +28,7 @@ function plugin_calendar2_init() {
 			'_calendar2_plugin_edit' => '[edit]',
 			'_calendar2_plugin_empty' => '%s is empty.',
 			'_calendar2_msg_write_more' => '[Write more]',
+			'_calendar2_msg_read_more' => '<< Read more >>',
 		);
 	}
 	set_plugin_messages($_plugin_calendar2_messages);
@@ -34,7 +36,7 @@ function plugin_calendar2_init() {
 
 function plugin_calendar2_convert()
 {
-	global $_calendar2_msg_nextmonth, $_calendar2_msg_prevmonth, $_calendar2_msg_write,$_calendar2_msg_write_more;
+	global $_calendar2_msg_nextmonth, $_calendar2_msg_prevmonth, $_calendar2_msg_write,$_calendar2_msg_write_more,$_calendar2_msg_read_more;
 	global $_calendar2_msg_detail, $_calendar2_msg_month, $_calendar2_msg_day;
 	global $script,$weeklabels,$vars,$command,$WikiName,$BracketName,$post,$get;
 	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable, $_msg_month;
@@ -329,26 +331,16 @@ function plugin_calendar2_convert()
 			$_page = $page.$daynum;
 			// 閲覧権限チェック＋
 			if (is_page($_page) && check_readable($_page,false,false)) {
-				$page_ = $vars['page'];
-				$_h_excerpt = $h_excerpt;
-				$_digest = $digest;
-				$get['page'] = $post['page'] = $vars['page'] = add_bracket($_page);
-				//comment_no 初期化
-				$_comment_no = $comment_no;
-				$comment_no = 0;
-				//$body = @join("",get_source($_page));
 				$user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($_page)) : "[[".get_pg_auther_name($_page)."]]";
 				$user_tag = make_link($user_tag);
 				$show_tag = "by ".$user_tag." at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/search.png\" />");
 				$tb_tag = ($trackback)? "<div style=\"text-align:right\">{$show_tag}  [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($_page)."\">TrackBack(".tb_count($_page).")</a> ]</div>" : "<div style=\"text-align:right\">{$show_tag}</div>";
-				//$str .= $tb_tag.convert_html($body);
-				$str .= $tb_tag.convert_html($_page,false,true);
+				
+				//インクルード
+				$str .= $tb_tag.include_page($_page);
+				
 				if ($anon_writable) $str .= "<a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_calendar2_plugin_edit</a>";
 				$str .= "<hr />";
-				$get['page'] = $post['page'] = $vars['page'] = $page_;
-				$comment_no = $_comment_no;
-				$h_excerpt = $_h_excerpt;
-				$digest = $_digest;
 				$page_found = true;
 			}
 			else

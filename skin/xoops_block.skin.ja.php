@@ -1,4 +1,4 @@
-<?php // $Id: xoops_block.skin.ja.php,v 1.3 2004/05/27 14:12:59 nao-pon Exp $
+<?php // $Id: xoops_block.skin.ja.php,v 1.4 2004/07/31 06:48:05 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -11,6 +11,8 @@ if($_freeze){
 }
 
 $pukiwiki_url = XOOPS_URL."/modules/".$xoopsModule->dirname()."/";
+// イメージタグのURLを訂正
+$body = preg_replace("/(<img[^>]+src=('|\")?)\.\//","$1".$pukiwiki_url,$body);
 ?>
 	<?php if (WIKI_THEME_CSS){ ?>
 		<link rel="stylesheet" href="<?php echo WIKI_THEME_CSS ?>" type="text/css" media="screen" charset="shift_jis">

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.9 2004/02/08 13:23:28 nao-pon Exp $
+// $Id: popular.inc.php,v 1.10 2004/07/31 06:48:05 nao-pon Exp $
 //
 
 /*
@@ -18,11 +18,13 @@
  * #popular(20)
  * #popular(20,FrontPage|MenuBar)
  * #popular(20,FrontPage|MenuBar,true)
+ * #popular(20,FrontPage|MenuBar,true,XOOPS)
  *
  * [引数]
  * 1 - 表示する件数                             default 10
  * 2 - 表示させないページの正規表現             default なし
  * 3 - 今日(true)か通算(false)の一覧かのフラグ  default false
+ * 4 - 集計対象の仮想階層ページ名               default なし
  */
 
 
@@ -52,8 +54,12 @@ function plugin_popular_convert()
 
 	$array = func_get_args();
 	$today = FALSE;
+	$prefix = "";
 
 	switch (func_num_args()) {
+	case 4:
+		$prefix = $array[3];
+		$prefix = preg_replace("/\/$/","",$prefix);
 	case 3:
 		if ($array[2])
 			$today = get_date('Y/m/d');
@@ -65,10 +71,13 @@ function plugin_popular_convert()
 	}
 
 	$nopage = "";
-	$excepts = explode("|",$except);
-	foreach(explode("|",$except) as $_except)
+	if ($except)
 	{
-		$nopage .= " AND (p.name NOT LIKE '%$_except%')";
+		$excepts = explode("|",$except);
+		foreach(explode("|",$except) as $_except)
+		{
+			$nopage .= " AND (p.name NOT LIKE '%$_except%')";
+		}
 	}
 	$counters = array();
 
@@ -87,16 +96,16 @@ function plugin_popular_convert()
 			$where .= " OR (vgids LIKE '%&{$gid}&%')";
 		}
 	}
-	/*
-	if ($page)
+
+	if ($prefix)
 	{
-		$page = strip_bracket($page);
+		$prefix = strip_bracket($prefix);
 		if ($where)
-			$where = " (name LIKE '$page/%') AND ($where)";
+			$where = " (p.name LIKE '$prefix/%') AND ($where)";
 		else
-			$where = " name LIKE '$page/%'";
+			$where = " p.name LIKE '$prefix/%'";
 	}
-	*/
+
 	if ($where) $where = " AND ($where)";
 	if ($today)
 	{
@@ -126,6 +135,11 @@ function plugin_popular_convert()
 
 
 	$items = '';
+	if ($prefix)
+	{
+		$prefix .= "/";
+		$prefix = preg_quote($prefix,"/");
+	}
 	if (count($counters)) {
 		$items = '<ul class="recent_list">';
 		
@@ -134,8 +148,12 @@ function plugin_popular_convert()
 			//Newマーク付加
 			if (exist_plugin_inline("new"))
 				$new_mark = do_plugin_inline("new","{$page}/,nolink","");
-			
-			$items .= " <li>".make_pagelink($page)."<span class=\"counter\">($count)</span>$new_mark</li>\n";
+			if ($prefix)
+				$page = make_pagelink($page,preg_replace("/$prefix/","",$page));
+			else
+				$page = make_pagelink($page);
+				
+			$items .= " <li>".$page."<span class=\"counter\">($count)</span>$new_mark</li>\n";
 			}
 		$items .= '</ul>';
 	}

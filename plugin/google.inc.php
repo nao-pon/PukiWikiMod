@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.4 2004/06/09 13:05:00 nao-pon Exp $
+// $Id: google.inc.php,v 1.5 2004/07/31 06:48:05 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -109,9 +109,9 @@ function plugin_google_result_google_api($word,$max=10,$start=0)
 	$cache_time = $plugin_google_dataset['cache_time'];
 	
 	// キャッシュファイル名
-	$c_file = CACHE_DIR.md5($word.$max.$start).".ggl";
+	$c_file = P_CACHE_DIR.md5($word.$max.$start).".ggl";
 	
-	if (file_exists($c_file) && $cache_time * 3600 < time() - filemtime($filename))
+	if (file_exists($c_file) && $cache_time * 3600 > time() - filemtime($c_file))
 	{
 		return array(
 			'query'  => $query, // Query String
@@ -180,7 +180,9 @@ function plugin_google_result_google_api($word,$max=10,$start=0)
 	$fp = fopen($c_file, "wb");
 	fwrite($fp, $resp[1]);
 	fclose($fp);
-
+	
+	// plane_text DB を更新を指示
+	need_update_plaindb();
 	
 	return array(
 		'query'  => $query,             // Query String
