@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tenki.inc.php,v 1.3 2003/06/28 15:57:18 nao-pon Exp $
+// $Id: tenki.inc.php,v 1.4 2003/07/15 13:21:48 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -25,7 +25,10 @@ function plugin_tenki_inline()
 
 	if ($args[0] == "now?") $args[0] = "";
 	if ($args[0]){
-		$img_arg = plugin_tenki_cache_image_fetch($url, CACHE_DIR, $args[0].$picid);
+		$id = $args[0].$picid;
+		$id = str_replace(" ","",$id);
+		$id = encode($id);
+		$img_arg = plugin_tenki_cache_image_fetch($url, CACHE_DIR, $id);
 		$url = $img_arg[0];
 		$size = $img_arg[1];
 	} else {
@@ -40,8 +43,6 @@ function plugin_tenki_inline()
 }
 // 画像キャッシュがあるか調べる
 function plugin_tenki_cache_image_fetch($target, $dir, $id) {
-	$id = str_replace(" ","",$id);
-	$id = encode($id);
 	$filename = $dir.$id."_tenki.gif";
 	if (!is_readable($filename)) {
 		$file = fopen($target, "rb"); // たぶん size 取得よりこちらが原始的だからやや速い

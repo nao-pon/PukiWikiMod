@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.7 2003/07/09 01:21:27 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.8 2003/07/15 13:21:48 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -147,7 +147,8 @@ function plugin_pcomment_convert() {
 	if ($params['below'] || $params['down']) { $dir = 0; } //両方指定されたら下に (^^;
 	
 	//コメントを取得
-	list($comments, $digest) = pcmt_get_comments($_page,$count,$dir,$params['reply']);
+	$data = @file(get_filename(encode($_page)));
+	list($comments, $digest) = pcmt_get_comments($data,$count,$dir,$params['reply']);
 
 	// xoops //
 	global $xoopsUser;
@@ -345,9 +346,7 @@ function pcmt_check_arg($val, $key, &$params) {
 	}
 	$params['arg'][] = $val;
 }
-function pcmt_get_comments($page,$count,$dir,$reply) {
-	$data = @file(get_filename(encode($page)));
-
+function pcmt_get_comments($data,$count,$dir,$reply) {
 	if (!is_array($data)) { return array('',0); }
 
 	$digest = md5(join('',$data));

@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.4 2003/07/09 14:45:51 wellwine Exp $
+// $Id: calendar2.inc.php,v 1.5 2003/07/15 13:21:48 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -372,31 +372,31 @@ function plugin_calendar2_convert()
 
 	$ret .= "  </tr>\n</table>\n";
   if ($today_view == true){
-	$page = sprintf("[[%s%4d-%02d-%02d]]", $prefix, $today[year], $today[mon], $today[mday]);
-	$page_url = rawurlencode($page);
-	if(is_page($page)) {
-		$page_ = $vars['page'];
-		$get['page'] = $post['page'] = $vars['page'] = $page;
-		$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
-		$str .= convert_html(join("",file(get_filename(encode($page)))));
-		if ($anon_writable) $str .= "<hr /><a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\">$_calendar2_plugin_edit</a>";
-		$get['page'] = $post['page'] = $vars['page'] = $page_;
-	}
-	else if (!$other_month) {
-		$str = "<h4>".sprintf($_calendar2_msg_detail, sprintf('%s%4d-%02d-%02d',$prefix, $today[year], $today[mon], $today[mday]))."</h4><br />";
-		//$str .= sprintf($_calendar2_plugin_empty,make_link(sprintf('[[%s%4d-%02d-%02d]]',$prefix, $today[year], $today[mon], $today[mday])));
-		$str .= sprintf($_calendar2_plugin_empty,make_link($today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day));
-		if ($anon_writable) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" title=\"$name\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
-	} else {
-		$str = "";
-	}
+		$page = sprintf("[[%s%4d-%02d-%02d]]", $prefix, $today[year], $today[mon], $today[mday]);
+		$page_url = rawurlencode($page);
+		if(is_page($page)) {
+			$page_ = $vars['page'];
+			$get['page'] = $post['page'] = $vars['page'] = $page;
+			$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
+			$body = @join("",@file(get_filename(encode($page))));
+			$str .= convert_html(&$body);
+			if ($anon_writable) $str .= "<hr /><a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\">$_calendar2_plugin_edit</a>";
+			$get['page'] = $post['page'] = $vars['page'] = $page_;
+		}
+		else if (!$other_month) {
+			$str = "<h4>".sprintf($_calendar2_msg_detail, sprintf('%s%4d-%02d-%02d',$prefix, $today[year], $today[mon], $today[mday]))."</h4><br />";
+			//$str .= sprintf($_calendar2_plugin_empty,make_link(sprintf('[[%s%4d-%02d-%02d]]',$prefix, $today[year], $today[mon], $today[mday])));
+			$str .= sprintf($_calendar2_plugin_empty,make_link($today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day));
+			if ($anon_writable) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" title=\"$name\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
+		} else {
+			$str = "";
+		}
   }else{
     $str = "";
   }
 	$ret .= "</td><td valign=\"top\" width=\"100%\">".$str."</td></tr></table>";
 	if (exist_plugin_convert("calendar_viewer") && ($vars['file'] != "")){
 		$aryargs = "[[".$vars['file']."]],".substr($vars['date'],0,4)."-".substr($vars['date'],4,2).",view,cal2";
-//echo $aryargs;
 		$ret .= do_plugin_convert("calendar_viewer",$aryargs);
 	}
 	return $ret;
@@ -420,9 +420,11 @@ function plugin_calendar2_action()
 	}
 	$yy = sprintf("%04d.%02d",substr($date,0,4),substr($date,4,2));
 	
-	$aryargs = array($vars['page'],$date);
+	//$aryargs = array($vars['page'],$date);
+	$aryargs = $vars['page'].",".$date;
 	$ret["msg"] = "calendar ".htmlspecialchars($vars['page'])."/".$yy;
-	$ret["body"] = call_user_func_array("plugin_calendar2_convert",$aryargs);
+	//$ret["body"] = call_user_func_array("plugin_calendar2_convert",$aryargs);
+	$ret["body"] = do_plugin_convert("calendar2",$aryargs);
 	
 	$vars['page'] = $page;
 	
