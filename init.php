@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.12 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: init.php,v 1.13 2003/10/13 14:20:24 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -224,6 +224,6 @@ $now = "$ins_date $ins_week $ins_time";
 
 // catch/config の設定を定数に
 define('WIKI_USER_DIR',$wiki_user_dir);
-define('PCMT_PAGE',$pcmt_page_name);
+define('PCMT_PAGE',add_bracket($pcmt_page_name));
 
 ?>
