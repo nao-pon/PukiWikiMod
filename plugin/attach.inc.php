@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.22 2004/10/05 13:11:58 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.23 2004/10/29 14:28:08 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -75,7 +75,7 @@ function plugin_attach_convert()
 	if (!$nolist)
 	{
 		$obj = &new AttachPages($vars['page']);
-		$ret .= $obj->toString($vars['page'],TRUE);
+		$ret .= $obj->toString($vars['page'],FALSE);
 	}
 	if (!$noform)
 	{
