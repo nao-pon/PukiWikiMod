@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.15 2004/01/12 13:18:12 nao-pon Exp $
+// $Id: ref.inc.php,v 1.16 2004/04/03 14:17:54 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -372,7 +372,10 @@ function plugin_ref_body($name,$args,$params){
 			$ret .= "<a href=\"$l_url\" title=\"$title\"><img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info/></a>";
 		} else {
 			if ($org_w and $org_h) $info = "width=\"$org_w\" height=\"$org_h\" ";
-			$ret .= "<img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info/>";
+			if (!$params['nocache'])
+				$ret .= "<img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info/>";
+			else
+				$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info/>";
 		}
 	} else if ($is_flash) { //	Flashファイル
 		//初期化
