@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.22 2004/09/06 08:51:15 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.23 2004/09/07 13:27:51 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -101,7 +101,7 @@ if($_freeze){
 
 	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> &lt;&lt;---&gt;&gt; <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
 	<?php } ?>
-	<div class="wiki_content" id="body">
+	<div class="wiki_content" id="body" style="width:100%;">
 	<?php echo $body ?>
 	</div>
 	<?php if($is_page) { ?>
