@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.31 2005/01/29 03:13:54 nao-pon Exp $
+// $Id: make_link.php,v 1.32 2005/02/23 14:55:15 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -923,6 +923,12 @@ function get_fullname($name,$refer)
 	if ($name == '')
 	{
 		return $refer;
+	}
+	
+	//PageId¤òÅ¸³«
+	if ($name{0} == '#')
+	{
+		$name = preg_replace("/^#([\d]+)/e","get_pgname_by_id($1)",$name);
 	}
 	
 	if ($name{0} == '/')
