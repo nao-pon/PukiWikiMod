@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.33 2004/08/04 13:58:56 nao-pon Exp $
+// $Id: html.php,v 1.34 2004/08/23 13:32:38 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -658,12 +658,14 @@ function fontset_js_tag()
 EOD;
 
 	$loaded ++;
-
+	
+	$url = XOOPS_WIKI_URL; //Add for XOOPS Block
+	
 	return <<<EOD
 $map
 <script type="text/javascript">
 <!--
-	pukiwiki_show_fontset_img();
+	pukiwiki_show_fontset_img("$url");
 -->
 </script>
 EOD;

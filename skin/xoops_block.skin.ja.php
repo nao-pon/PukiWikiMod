@@ -1,4 +1,4 @@
-<?php // $Id: xoops_block.skin.ja.php,v 1.4 2004/07/31 06:48:05 nao-pon Exp $
+<?php // $Id: xoops_block.skin.ja.php,v 1.5 2004/08/23 13:32:38 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -22,7 +22,7 @@ $body = preg_replace("/(<img[^>]+src=('|\")?)\.\//","$1".$pukiwiki_url,$body);
 	<?php if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css")){ ?>
 		<link rel="stylesheet" href="<?php echo $pukiwiki_url ?>cache/css.css" type="text/css" media="screen" charset="shift_jis">
 	<?php } ?>
-	<script language=javascript src="<?php echo $pukiwiki_url ?>skin/default.js"></script>
-	<div class="wiki_content">
+	<script language=javascript src="<?php echo $pukiwiki_url ?>skin/default.ja.js"></script>
+	<div class="wiki_content" onmouseup="pukiwiki_pos();" onkeyup="pukiwiki_pos();">
 	<?php echo $body ?>
 	</div>
