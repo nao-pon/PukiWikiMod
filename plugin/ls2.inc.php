@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.14 2004/02/10 04:58:09 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.15 2004/03/20 07:21:18 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: yetlist.inc.php,v 1.4 2004/01/15 13:13:37 nao-pon Exp $
+// $Id: yetlist.inc.php,v 1.5 2004/03/20 07:21:17 nao-pon Exp $
 //
 function plugin_yetlist_init() {
 	if (LANG == "ja"){
@@ -23,7 +23,6 @@ function plugin_yetlist_action()
 	);
 	
 	$refer = array();
-	$exists = get_existpages();
 	$pages = array_diff(get_existpages(CACHE_DIR,'.ref'),get_existpages());
 	foreach ($pages as $page)
 	{

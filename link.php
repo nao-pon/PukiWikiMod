@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: link.php,v 1.2 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: link.php,v 1.3 2004/03/20 07:21:17 nao-pon Exp $
 // ORG: link.php,v 1.6 2003/07/29 09:09:20 arino Exp $
 //
 
@@ -30,7 +30,7 @@ function links_get_related_db($page)
 		foreach (file($ref_name) as $line)
 		{
 			list($_page) = explode("\t",rtrim($line));
-			if (check_readable($_page,false,false))
+			if ($_page && check_readable($_page,false,false))
 				$links[$_page] = get_filetime($_page);
 		}
 	}
@@ -183,7 +183,7 @@ function links_init()
 			continue;
 		}
 		$arr = array_unique($arr);
-		$fp = fopen(CACHE_DIR.encode($page).'.ref','w')
+		$fp = fopen(CACHE_DIR.encode($page).'.ref','wb')
 			or die_message('cannot write '.htmlspecialchars(CACHE_DIR.encode($page).'.ref'));
 		foreach ($arr as $ref_page)
 		{
@@ -215,16 +215,16 @@ function links_add($page,$add,$rel_auto)
 				{
 					$all_auto = FALSE;
 				}
-				if ($ref_page != $page)
+				if ($ref_page && $ref_page != $page)
 				{
-					$ref .= $line;
+					$ref .= trim($line)."\n";
 				}
 			}
 			unlink($ref_file);
 		}
 		if ($is_page or !$all_auto)
 		{
-			$fp = fopen($ref_file,'w')
+			$fp = fopen($ref_file,'wb')
 				 or die_message('cannot write '.htmlspecialchars($ref_file));
 			fputs($fp,$ref);
 			fclose($fp);

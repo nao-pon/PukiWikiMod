@@ -1,5 +1,5 @@
 <?php
-// $Id: xoopsblock.inc.php,v 1.3 2004/01/12 13:13:47 nao-pon Exp $
+// $Id: xoopsblock.inc.php,v 1.4 2004/03/20 07:21:18 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -20,19 +20,31 @@ function plugin_xoopsblock_init() {
 function plugin_xoopsblock_convert() {
 
 	list($tgt,$option1,$option2) = func_get_args();
+	
+	unset($tgt_bid);
+	if (preg_match("/^\d+$/",$tgt))
+		$tgt_bid = $tgt;
 
 	$align = "left";
 	$around = false;
+	$width = "";
 	if (preg_match("/^(left|center|right)$/i",$option2,$arg))
 		$align = $arg[1];
 	if (preg_match("/^(left|center|right)$/i",$option1,$arg))
 		$align = $arg[1];
-	if (preg_match("/^(around|float)$/i",$option2))
-		$around = true;
-	if (preg_match("/^(around|float)$/i",$option1))
-		$around = true;
-		
-	$style = " style='float:{$align};'";
+	if (preg_match("/^(around|float)(:?w?([\d]+%?))?$/i",$option2,$arg))
+	{
+		if ($arg[1]) $around = true;
+		$width = (!strstr($arg[3],"%"))? $arg[3]."px" : $arg[3];
+		$width = ",width:".$arg[3].";";
+	}
+	if (preg_match("/^(around|float)(:?w?([\d]+%?))?$/i",$option1,$arg))
+	{
+		if ($arg[1]) $around = true;
+		$width = (!strstr($arg[3],"%"))? $arg[3]."px" : $arg[3];
+		$width = " width:".$width.";";
+	}
+	$style = " style='float:{$align};{$width}'";
 	$clear = ($around)? "" : "<div style='clear:both;'></div>";
 
 	global $xoopsUser;
@@ -57,17 +69,63 @@ function plugin_xoopsblock_convert() {
 	}
 	
 	$ret = "";
-	
+	if (file_exists(XOOPS_ROOT_PATH.'/class/template.php'))
+	{
+		// XOOPS 2 Œn—p
+		require_once XOOPS_ROOT_PATH.'/class/template.php';
+		$xoopsTpl = new XoopsTpl();
+	}
 	foreach ( $arr as $myblock ) {
 		$block = array();
-		$name = ($myblock->getVar("type") != "C") ? $myblock->getVar("name") : $myblock->getVar("title");
+		$block_type = ($myblock->getVar("type"))? $myblock->getVar("type") : $myblock->getVar("block_type");
+		//$name = ($myblock->getVar("type") != "C") ? $myblock->getVar("name") : $myblock->getVar("title");
+		$name = ($block_type != "C") ? $myblock->getVar("name") : $myblock->getVar("title");
+		$bid = $myblock->getVar('bid');
 
 		if ($tgt == "?"){
-			$ret .= "<li>".$name."</li>";
+			$ret .= "<li>(".$bid.")".$name."</li>";
 		} else {
-			if ($tgt == $name){
+			if ($tgt_bid === $bid || $tgt == $name){
 				$block = $myblock->buildBlock();
-				$ret = $block['content'];
+				if (!is_object($xoopsTpl))
+					// XOOPS 1 Œn—p
+					$ret = $block['content'];
+				else
+				{
+					// XOOPS 2 Œn—p
+					$bcachetime = $myblock->getVar('bcachetime');
+					if (empty($bcachetime)) {
+						$xoopsTpl->xoops_setCaching(0);
+					} else {
+						$xoopsTpl->xoops_setCaching(2);
+						$xoopsTpl->xoops_setCacheTime($bcachetime);
+					}
+					$btpl = $myblock->getVar('template');
+					if ($btpl != '') {
+						if (empty($bcachetime) || !$xoopsTpl->is_cached('db:'.$btpl)) {
+							if (!$block) {
+								$ret = "";
+							}
+							$xoopsTpl->assign_by_ref('block', $block);
+							$bcontent =& $xoopsTpl->fetch('db:'.$btpl);
+							$xoopsTpl->clear_assign('block');
+						} else {
+							$bcontent =& $xoopsTpl->fetch('db:'.$btpl);
+						}
+					} else {
+						if (empty($bcachetime) || !$xoopsTpl->is_cached('db:system_dummy.html', 'blk_'.$bid)) {
+							if (!$block) {
+								$ret = "";
+							}
+							$xoopsTpl->assign_by_ref('dummy_content', $block['content']);
+							$bcontent =& $xoopsTpl->fetch('db:system_dummy.html', 'blk_'.$bid);
+							$xoopsTpl->clear_assign('block');
+						} else {
+							$bcontent =& $xoopsTpl->fetch('db:system_dummy.html', 'blk_'.$bid);
+						}
+					}
+					$ret = $bcontent;
+				}
 				unset($myblock);
 				unset($block);
 				break;

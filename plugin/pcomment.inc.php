@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.13 2004/01/27 14:27:19 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.14 2004/03/20 07:21:18 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -363,6 +363,8 @@ function pcmt_check_arg($val, $key, &$params) {
 	$params['arg'][] = $val;
 }
 function pcmt_get_comments($data,$count,$dir,$reply) {
+	global $script;
+	
 	if (!is_array($data)) { return array('',0); }
 
 	$digest = md5(join('',$data));
@@ -390,10 +392,17 @@ function pcmt_get_comments($data,$count,$dir,$reply) {
 	unset($cmts);
 
 	//コメントより前のデータを取り除く。
-	while (count($data) > 0 and substr($data[0],0,1) != '-') { array_shift($data); }
+	while (count($data) > 0 and (substr($data[0],0,1) != '-')) { array_shift($data); }
+	
+	//areaedit用スタートマーカーセット
+	//echo $data[0];
+	$start = md5(rtrim(preg_replace("/\x01\d+\x02/","",$data[0])));
 
 	//html変換
 	$comments = convert_html(join('', $data));
+
+	//areaedit用スタートマーカー付加
+	$comments = str_replace("<a href=\"".$script."?plugin=areaedit","<a href=\"".$script."?plugin=areaedit&amp;start=$start",$comments);
 	unset($data);
 
 	//コメントにラジオボタンの印をつける

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.17 2004/02/08 13:22:11 nao-pon Exp $
+// $Id: convert_html.php,v 1.18 2004/03/20 07:21:17 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false)
 {
@@ -166,7 +166,9 @@ class convert
 		$colors_reg = "aqua|navy|black|olive|blue|purple|fuchsia|red|gray|silver|green|teal|lime|white|maroon|yellow|transparent";
 
 		$table = 0;
-
+		
+		$pre_id = $c_pre_line = 0;
+		
 		if(preg_match("/#contents/",$string))
 			$top_link = "<a href=\"#contents_$content_id_local\">$top</a>";
 
@@ -195,11 +197,19 @@ class convert
 			}
 			if($line == "<<<")
 			{
-				array_push($result, "<pre>");
+				if ($_pre === 0)
+				{
+					array_push($result, "<pre style=\"\">");
+					$pre_id ++;
+				}
+				else
+					array_push($result, "<pre>");
 				$line = "";
 				if (!$_pre) $_pre_headform = $headform[$_cnt-1];
 				$_pre ++;
 			}
+			if ($_pre)
+				$c_pre_line ++;
 
 			$comment_out = (isset($comment_out[1]))? $comment_out[1] : "";
 
@@ -581,14 +591,23 @@ class convert
 			else if($line == ">>>" && $_pre)
 			{
 				$_pre --;
-				if (!$_pre) $headform[$_cnt] = $_pre_headform;
+				$j_script = "";
+				if (!$_pre)
+				{
+					$c_pre_line = ($c_pre_line-2) * 14 + 32;
+					if ($c_pre_line > 420) $c_pre_line = 420;
+					array_splice ($result, array_search ( "<pre style=\"\">", $result), 1, "<pre id=\"code_area{$content_id}_{$pre_id}\" style=\"height:".$c_pre_line."px;\" class=\"multi\">");
+					$c_pre_line = 0;
+					$j_script = "<script type=\"text/javascript\"><!--\nh_pukiwiki_make_copy_button('code_area".$content_id."_".$pre_id."');\n--></script>";
+					$headform[$_cnt] = $_pre_headform;
+				}
 				$_result = array_pop($result);
 				if ($_result == "</pre>")
-					array_push($result, "</pre></pre>");
+					array_push($result, "</pre></pre>".$j_script);
 				else
 				{
 					array_push($result, $_result);
-					array_push($result, "</pre>");
+					array_push($result, "</pre>".$j_script);
 				}
 			}
 			else

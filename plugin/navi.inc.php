@@ -1,5 +1,5 @@
 <?php
-// $Id: navi.inc.php,v 1.3 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: navi.inc.php,v 1.4 2004/03/20 07:21:18 nao-pon Exp $
 /*
 Last-Update:2002-12-05 rev.3
 
@@ -40,8 +40,12 @@ function plugin_navi_convert() {
 	$home = $vars['page'];
 	if (func_num_args()) {
 		list($home) = func_get_args();
+		$home = strip_bracket($home);
+		//フルパスを得る
+		$home = get_fullname($home,$vars['page']);
+
 		if (!preg_match("/^($WikiName|$BracketName)$/",$home))
-			$home = "[[$home]]";
+			$home = add_bracket($home);
 		if (!is_page($home))
 			return 'no page.';
 	}

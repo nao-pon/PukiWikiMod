@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.11 2004/02/09 12:39:30 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.12 2004/03/20 07:21:18 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -54,7 +54,7 @@ function b_pukiwiki_new_show($option) {
 	}
 
 	$block['title'] = _MI_PUKIWIKI_BTITLE;
-	$block['content'] = "<small>$items</small>";
+	$block['content'] = "<div style=\"word-break: break-all;\"><small>$items</small></div>";
 
 	return $block;
 }

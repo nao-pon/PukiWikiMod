@@ -4,7 +4,7 @@
 //
 //
 // ref.inc.php,v 1.20をベースに作成
-// $Id: exifshowcase.inc.php,v 1.1 2004/02/08 13:25:08 nao-pon Exp $
+// $Id: exifshowcase.inc.php,v 1.2 2004/03/20 07:21:17 nao-pon Exp $
 // ORG: exifshowcase.inc.php,v 1.20 2004/01/17 12:52:01 m-arai Exp $
 //
 
@@ -37,6 +37,8 @@ Exif情報表示を行なわない
 表示順を逆にする
 --col:整数値~
 複数列指定。この場合、Exif情報は表示されない。
+--row:整数値
+行数指定。画像をランダムに表示する。
 --mw:整数値
 表示画像最大幅
 --mh:整数値
@@ -111,6 +113,7 @@ function plugin_exifshowcase_body($args,$page)
 		'right'     => FALSE, // 右寄せ
 		'around'    => FALSE, // 回り込み許可
 		'col'       => 1,     // 表示列数
+		'row'       => 0,     // 表示行数
 		'mw'        => FALSE, // 画像表示幅(最大)
 		'mh'        => FALSE, // 画像表示高(最大)
 		'nofilename'=> FALSE, // ファイル名を表示しない
@@ -118,6 +121,7 @@ function plugin_exifshowcase_body($args,$page)
 		'nokash'    => FALSE, // カシミールLMLサーバへのリンクを張らない
 		'noexif'    => FALSE, // Exif情報を表示しない
 		'reverse'   => FALSE, // 表示順を逆に
+		'page'      => $page, // ページ名
 		'_args'     => array(),
 		'_done'     => FALSE,
 		'_error'    => ''
@@ -129,6 +133,9 @@ function plugin_exifshowcase_body($args,$page)
 	array_walk($args, 'exifshowcase_check_arg', &$params);
 	
 	$colmn = $params['col']; // 表示列数
+	$row = $params['row']; // 表示行数（指定時ランダム表示
+	
+	$page = add_bracket($params['page']);
 	
 	//全体の配置
 	if ($params['left'])
@@ -146,7 +153,7 @@ function plugin_exifshowcase_body($args,$page)
 	if (!$params['mh'])
 		$params['mh'] = EXIFSHOWCASE_DEFAULT_MH;
 	
-	$exif_extension = ($colmn == 1) && (!$params['noexif']) && extension_loaded('exif');
+	$exif_extension = ($colmn == 1) && (!$row) && (!$params['noexif']) && extension_loaded('exif');
 	
 	if (!is_dir(UPLOAD_DIR))
 	{
@@ -180,6 +187,24 @@ function plugin_exifshowcase_body($args,$page)
 
 		$params['_body'] .= "対象画像 (".($pattern?$pattern:"*.jp(e)g").") がありません。";
 		return $params;
+	}
+	
+	//ランダム表示？
+	if ($row)
+	{
+		$_aname = $_files = array();
+		$show_count = $row * $colmn;
+		for ($i=0; $i < $show_count; $i++)
+		{
+			$r_cnt = rand(1,count($files));
+			//echo $r_cnt." ";
+			$tmp = array_splice ( $files, $r_cnt, 1);
+			$_files[] = $tmp[0];
+			$tmp = array_splice ( $aname, $r_cnt, 1);
+			$_aname[] = $tmp[0];
+		}
+		$files = $_files;
+		$aname = $_aname;
 	}
 
 	if ( $params['reverse']) {
@@ -312,7 +337,7 @@ EOD;
 			$sz = $sz."Bytes";
 		}
 
-		$img = make_link("&ref({$aname[$cnt]},mw:".$params['mw'].",mh:".$params['mh'].");");
+		$img = make_link("&ref({$page}/{$aname[$cnt]},mw:".$params['mw'].",mh:".$params['mh'].");");
 
 		$params['_body'] .= 
 			(( $cnt % $colmn) == 0 ?"<tr class=\"style_td\">":'').
@@ -459,9 +484,13 @@ function  plugin_exifshowcase_glob ($pattern)
 	$dir = opendir ("{$path_parts['dirname']}/");
 	while ($file = readdir ($dir))
 	{
-		if (ereg ($pattern, $file)) $result[] = "{$path_parts['dirname']}/$file"; 
+		if (ereg ($pattern, $file))
+		{
+			$result[$path_parts['dirname']."/".$file] = filemtime($path_parts['dirname']."/".$file);
+		}
 	}
 	closedir ($dir);
-	return $result;
+	asort($result);
+	return array_keys($result);
 } 
 ?>

@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.11 2004/01/30 14:49:42 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.12 2004/03/20 07:21:18 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -283,12 +283,12 @@ if ($cal2 == 1){
 }
   //past modeは<<新 旧>> 他は<<旧 新>>
   $pageurl = $script."?".rawurlencode("[[".strip_bracket($pagename)."]]");
-  $navi_bar .= "<table width =\"100%\" class=\"style_calendar_navi\"><tr><td align=\"left\" width=\"33%\">";
+  $navi_bar .= "<table style=\"width:100%;\" class=\"style_calendar_navi\"><tr><td align=\"left\" style=\"width:33%;\">";
   $navi_bar .= $left_link;
-  $navi_bar .= "</td><td align=\"center\" width=\"34%\">";
+  $navi_bar .= "</td><td align=\"center\" style=\"width:34%;\">";
   //$navi_bar .= "<a href=\"".$pageurl."\"><b>".htmlspecialchars(strip_bracket($pagename))."</b></a>";
   $navi_bar .= make_pagelink($pagename);
-  $navi_bar .= "</td><td align=\"right\" width=\"33%\">";
+  $navi_bar .= "</td><td align=\"right\" style=\"width:33%;\">";
   $navi_bar .= $right_link;
   $navi_bar .= "</td></tr></table>";
   

@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.14 2004/01/24 14:47:50 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.15 2004/03/20 07:21:18 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -122,7 +122,7 @@ function plugin_calendar2_convert()
 	$prefix_url = rawurlencode($prefix_url);
 	$pre = strip_bracket($pre);
 	
-	$ret .= '<table border="0" width="100%"><tr><td style="text-align:left;vertical-align:top">';
+	$ret .= '<table border="0" style="width:100%;"><tr><td style="text-align:left;vertical-align:top">';
 	
 	$y = substr($date_str,0,4)+0;
 	$m = substr($date_str,4,2)+0;
@@ -138,7 +138,7 @@ function plugin_calendar2_convert()
 	
 	if($prefix == "") {
 		$ret .= '
-<table class="style_calendar" cellspacing="1" width="150" border="0">
+<table class="style_calendar" cellspacing="1" border="0" style="width:150px;">
   <tr>
     <td align="middle" class="style_td_caltop" colspan="7">
       <table style="width:100%;"><tr><td style="text-align:left;vertical-align:top;" nowrap>
@@ -179,7 +179,6 @@ function plugin_calendar2_convert()
 	else {
 		$ret .= '
 <table class="style_calendar" cellspacing="1" border="0">
-  <tbody>
   <tr>
     <td align="middle" class="style_td_caltop" colspan="7">
       <table style="width:100%;"><tr><td style="text-align:left;vertical-align:top;" nowrap>
@@ -252,7 +251,7 @@ function plugin_calendar2_convert()
 		
 		$a_tag = "<a href=\"$script?plugin=calendar2&amp;file=$prefix_&amp;date=$linkdt&amp;category=".rawurlencode($category_view)."\" title=\"$title_tag\" class=\"small\">";
 		$moblog_page = "[[".strip_bracket($page)."-0]]";
-		if(($cmd == "read" && !is_page($page) && !is_page($moblog_page)) || ((is_page($page) || is_page($moblog_page)) && !check_readable($page,false,false))){
+		if((!is_page($page) && !is_page($moblog_page)) || ((is_page($page) || is_page($moblog_page)) && !check_readable($page,false,false))){
 			$td_style = "";
 			$link = "$a_tag<span class=\"_DAY_STYLE_\">$day</span></a>";
 		}else{

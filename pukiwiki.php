@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.38 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.39 2004/03/20 07:21:17 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -734,6 +734,11 @@ else if($post["write"])
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_deleted);
 				$page = str_replace('$1',make_search($post["page"]),$_title_deleted);
 				$body = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_deleted);
+				if ($X_admin)
+				{
+					// 添付ファイル・カウンタファイル削除のリンク表示
+					$body .= "\n<hr />\n<a href=\"$script?plugin=filesdel&amp;tgt=".encode($post['page'])."\">$_msg_filesdel</a>";
+				}
 				// TrackBackデータ削除
 				tb_delete($post["page"]);
 			}
@@ -1259,7 +1264,7 @@ else
 }
 // <title>にページ名をプラス
 $xoops_pagetitle = $xoopsModule->name();
-$xoops_pagetitle = "$title $h_excerpt($xoops_pagetitle)";
+$xoops_pagetitle = "$h_excerpt-$title-$xoops_pagetitle";
 // XOOPS 1 用 XOOPS/include/functions.php の改造が必要
 global $xoops_mod_add_title,$xoops_mod_add_header;
 $xoops_mod_add_title = $xoops_pagetitle;
@@ -1283,7 +1288,7 @@ if (empty($vars['xoops_block'])) include("header.php");
 global $xoopsTpl;
 if ($xoopsTpl){
 	$xoopsTpl->assign("xoops_pagetitle",$xoops_pagetitle);
-	$xoopsTpl->assign("$xoops_module_header",$xoops_mod_add_header);
+	$xoopsTpl->assign("xoops_module_header",$xoops_mod_add_header);
 }
 
 // ** 出力処理 **

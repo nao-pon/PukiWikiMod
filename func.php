@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.23 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: func.php,v 1.24 2004/03/20 07:21:17 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -312,7 +312,7 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 	
 	$cnt = 0;
 	$arr_index = array();
-	$retval .= "<ul>\n";
+	//$retval .= "<ul>\n";
 	foreach ($list as $head=>$pages)
 	{
 		if ($head === $symbol)
@@ -328,16 +328,18 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 		{
 			$cnt++;
 			$arr_index[] = "<a id=\"top_$cnt\" href=\"#head_$cnt\"><strong>$head</strong></a>";
-			$retval .= " <li><a id=\"head_$cnt\" href=\"#top_$cnt\"><strong>$head</strong></a>\n  <ul>\n";
+			$retval .= " <div class=\"page_list_word\"><a id=\"head_$cnt\" href=\"#top_$cnt\"><strong class=\"page_list_word\">$head</strong></a>\n </div>\n";
 		}
 		ksort($pages);
+		$retval .= " <ul>\n";
 		$retval .= join("\n",$pages);
-		if ($list_index)
-		{
-			$retval .= "\n  </ul>\n </li>\n";
-		}
+		$retval .= "\n </ul>\n";
+//		if ($list_index)
+//		{
+//			$retval .= "\n  </ul>\n </li>\n";
+//		}
 	}
-	$retval .= "</ul>\n";
+	//$retval .= "</ul>\n";
 	if ($list_index and $cnt > 0)
 	{
 		$top = array();

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.19 2004/02/08 13:25:07 nao-pon Exp $
+// $Id: file.php,v 1.20 2004/03/20 07:21:17 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -47,11 +47,17 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 {
 	global $do_backup,$del_backup;
 	global $X_uid,$X_admin,$X_uname,$wiki_mail_sw,$xoopsConfig;
+	global $pagereading_config_page;
 	
 	// メールオプション抽出
-	$mail_mode = (isset($mail_op['mode']))? explode("&",$mail_op['mode']):$mail_mode = array("del","add","all");
-	$plugin_title = (isset($mail_op['plugin']))? sprintf(_MD_PUKIWIKI_MAIL_HEAD,$mail_op['plugin'])."\n":"";
-	$add_text = (isset($mail_op['text']))? $mail_op['text'] : "";
+	if ($mail_op == "nomail")
+		$wiki_mail_sw = 0;
+	else
+	{
+		$mail_mode = (isset($mail_op['mode']))? explode("&",$mail_op['mode']):$mail_mode = array("del","add","all");
+		$plugin_title = (isset($mail_op['plugin']))? sprintf(_MD_PUKIWIKI_MAIL_HEAD,$mail_op['plugin'])."\n":"";
+		$add_text = (isset($mail_op['text']))? $mail_op['text'] : "";
+	}
 	
 	if ($postdata) $postdata = rtrim($postdata)."\n";
 
@@ -82,6 +88,13 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	// メール送信先のセット
 	$pukiwiki_send_mails = "";
 	$pukiwiki_pg_auther_mail = get_pg_auther_mail($page);
+	
+	$s_page = strip_bracket($page);
+	
+	// メールを送信しないページ
+	if ($s_page == $pagereading_config_page)
+		$wiki_mail_sw = 0;
+	
 	if ($wiki_mail_sw === 2)
 	{
 		//無条件
@@ -130,7 +143,6 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 				$mail_del .= $regs[1]."\n";
 			}
 		}
-		$s_page = strip_bracket($page);
 		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode($s_page)."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.$s_page."\n";
@@ -612,7 +624,7 @@ function get_existpages($nocheck=false,$page="",$limit=0,$order="",$nolisting=fa
 	{
 		if (preg_match("/$pattern/",$file,$matches))
 		{
-			$aryret[$file] = decode($matches[1]);
+			$aryret[$file] = add_bracket(decode($matches[1]));
 		}
 	}
 	closedir($dp);
@@ -990,8 +1002,9 @@ function get_heading_init($page)
 		{
 			$first_line = $line;
 		}
-		if (preg_match("/^\*{1,6}(.*)/",$line,$reg))
+		if (preg_match("/(?:^|\|}?)\*{1,6}([^\|]*)/",$line,$reg))
 		{
+			$reg[1] = preg_replace("/->$/","",rtrim($reg[1]));
 			return trim(strip_htmltag(make_link(htmlspecialchars($reg[1]),add_bracket($page))));
 			break;
 		}

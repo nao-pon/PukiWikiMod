@@ -67,6 +67,7 @@ $_msg_help = 'View rules of text formatting';
 $_msg_month = array(1 => "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
 $_msg_week = array("Sun","Mon","Tue","Wed","Thu","Fri","Sat");
 $_msg_content_back_to_top = '<span class="super_index">[back to top]</span>';
+$_msg_filesdel = 'Delete attach files & counter file now.';
 
 ///////////////////////////////////////
 // symbols
@@ -206,6 +207,8 @@ $_tracker_messages = array(
 	'btn_refer' => 'Refer page',
 	'btn_update' => 'Update',
 	'btn_past' => 'Past',
+	'msg_done' => 'Registration was completed.',
+	'msg_guestauth' => 'Since recognition by the administrator is necessity, the contents of contribution are not displayed until it is recognized.',
 );
 
 ///////////////////////////////////////

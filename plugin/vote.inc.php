@@ -1,12 +1,14 @@
 <?php
-// $Id: vote.inc.php,v 1.5 2004/01/24 14:50:27 nao-pon Exp $
+// $Id: vote.inc.php,v 1.6 2004/03/20 07:21:18 nao-pon Exp $
 
 function plugin_vote_init()
 {
   $_plugin_vote_messages = array(
+    '_vote_plugin_rank' => '順位',
     '_vote_plugin_choice' => '選択肢',
     '_vote_plugin_votes' => '投票',
     '_vote_plugin_deny' => '無効な値です',
+    '_vote_plugin_bad' => '重複投票はできません',
     );
   set_plugin_messages($_plugin_vote_messages);
 }
@@ -15,7 +17,7 @@ function plugin_vote_action()
 {
 	global $post,$vars,$script,$cols,$rows,$del_backup,$do_backup;
 	global $_title_collided,$_msg_collided,$_title_updated;
-	global $_vote_plugin_choice, $_vote_plugin_votes, $_vote_plugin_deny;
+	global $_vote_plugin_choice, $_vote_plugin_votes, $_vote_plugin_deny, $_vote_plugin_bad;
 
 	if (preg_match("/^(#add|#(k)?sort|#notimestamp)(\[\d+\])?$/i",$post['vote_newitem']))
 	{
@@ -26,6 +28,7 @@ function plugin_vote_action()
 	$postdata_old  = get_source($post["refer"]);
 	$vote_no = 0;
 	$notimestamp = FALSE;
+	$nomail = FALSE;
 
 	// エスケープ＆文字実体参照へ)
 	$post['vote_newitem'] = htmlspecialchars($post['vote_newitem']);
@@ -58,8 +61,14 @@ function plugin_vote_action()
 					if(($vote_no == $post["vote_no"]) && !$celltag)
 					{
 						$args = explode(",",$arg[2]);
+						$lastvote = "";
 						foreach($args as $item)
 						{
+							if(preg_match("/^#lastvote:(.+)$/",$item,$arg))
+							{
+								$lastvote = $arg[1];
+								continue;
+							}
 							if(preg_match("/^(.+)\[(\d+)\]$/",$item,$match))
 							{
 								$item = $match[1];
@@ -71,6 +80,11 @@ function plugin_vote_action()
 								if (strtolower($item) == "#notimestamp")
 								{
 									$notimestamp = TRUE;
+									$is_cmd = 1;
+								}
+								elseif (strtolower($item) == "#nomail")
+								{
+									$nomail = TRUE;
 									$is_cmd = 1;
 								}
 								elseif (strtolower($item) == "#sort" || strtolower($item) == "#ksort")
@@ -89,9 +103,20 @@ function plugin_vote_action()
 									$post["vote_$e_arg"] = $_vote_plugin_votes;
 								}
 								if (strtolower($item) == "#add" && $post['vote_newitem'] && strtolower($post['vote_newitem']) != "#add")
+								{
 									$votes[] = $post['vote_newitem'].'[1]';
+									$notimestamp = $nomail = FALSE;
+								}
 								elseif($post["vote_$e_arg"]==$_vote_plugin_votes)
+								{
+									$thisvote = md5($item.$_SERVER["REMOTE_ADDR"]);
+									if ($thisvote == $lastvote)
+									{
+										$retvars["msg"] = $_vote_plugin_bad;
+										return $retvars;
+									}
 									$cnt++;
+								}
 
 								$votes[] = $item.'['.$cnt.']';
 							}
@@ -99,7 +124,7 @@ function plugin_vote_action()
 								$votes[] = $item;
 						}
 
-						$vote_str = "$arg[1]#vote(" . @join(",",$votes) . ")";
+						$vote_str = "$arg[1]#vote(" . "#lastvote:" . $thisvote .",". @join(",",$votes) . ")";
 
 						$postdata_input = $vote_str;
 						$celldata[] = $vote_str;
@@ -149,8 +174,8 @@ function plugin_vote_action()
 			$oldposttime = filemtime(get_filename(encode($post["refer"])));
 		else
 			$oldposttime = time();
-
-		page_write($post["refer"],$postdata,$notimestamp,"","","","","","",array('plugin'=>'vote','mode'=>'del&add'));
+		$mail_op = ($nomail)? "nomail" : array('plugin'=>'vote','mode'=>'del&add');
+		page_write($post["refer"],$postdata,$notimestamp,"","","","","","",$mail_op);
 
 		$title = $_title_updated;
 	}
@@ -166,25 +191,12 @@ function plugin_vote_action()
 function plugin_vote_convert()
 {
 	global $script,$vars,$digest;
-	global $_vote_plugin_choice, $_vote_plugin_votes;
+	global $_vote_plugin_choice, $_vote_plugin_votes, $_vote_plugin_rank;
 	static $vote_no = 0;
 
 	$args = func_get_args();
 
 	if(!func_num_args()) return FALSE;
-
-	$string = ""
-		. "<form action=\"$script\" method=\"post\">\n"
- 		. "<table cellspacing=\"0\" cellpadding=\"2\" class=\"style_table\">\n"
- 		. "<tr>\n"
- 		. "<td align=\"left\" class=\"vote_label\" style=\"padding-left:1em;padding-right:1em\"><strong>$_vote_plugin_choice</strong>"
-		. "<input type=\"hidden\" name=\"plugin\" value=\"vote\" />\n"
-		. "<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($vars["page"])."\" />\n"
-		. "<input type=\"hidden\" name=\"vote_no\" value=\"".htmlspecialchars($vote_no)."\" />\n"
-		. "<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($digest)."\" />\n"
-		. "</td>\n"
-		. "<td align=\"center\" class=\"vote_label\"><strong>$_vote_plugin_votes</strong></td>\n"
-		. "</tr>\n";
 
 	$tdcnt = 0;
 	$lines = $s_items = $items = $cnts = array();
@@ -192,6 +204,8 @@ function plugin_vote_convert()
 	
 	foreach($args as $arg)
 	{
+		if (substr($arg,0,10) == "#lastvote:") continue;
+		if (strtolower($arg) == "#nomail") continue;
 		if (strtolower($arg) == "#sort") $sort = 1;
 		elseif (strtolower($arg) == "#ksort") $ksort = 1;
 		elseif (strtolower($arg) != "#notimestamp")
@@ -235,7 +249,25 @@ function plugin_vote_convert()
 												$cnts,SORT_NUMERIC, SORT_DESC,
 												$items,$links);
 	}
+
+	$count_label = ($sort)? "<td align=\"left\" class=\"vote_label\" style=\"padding-left:1em;padding-right:1em\"><strong>$_vote_plugin_rank</strong>" : "";
+	$string = ""
+		. "<form action=\"$script\" method=\"post\">\n"
+ 		. "<table cellspacing=\"0\" cellpadding=\"2\" class=\"style_table\">\n"
+ 		. "<tr>\n"
+ 		. $count_label
+ 		. "<td align=\"left\" class=\"vote_label\" style=\"padding-left:1em;padding-right:1em\"><strong>$_vote_plugin_choice</strong>"
+		. "<input type=\"hidden\" name=\"plugin\" value=\"vote\" />\n"
+		. "<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($vars["page"])."\" />\n"
+		. "<input type=\"hidden\" name=\"vote_no\" value=\"".htmlspecialchars($vote_no)."\" />\n"
+		. "<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($digest)."\" />\n"
+		. "</td>\n"
+		. "<td align=\"center\" class=\"vote_label\"><strong>$_vote_plugin_votes</strong></td>\n"
+		. "</tr>\n";
+
 	$line = 0;
+	$cnt_tag = "";
+	$bef_point = 0;
 	foreach($items as $arg)
 	{
 		$cnt = $cnts[$line];
@@ -245,7 +277,11 @@ function plugin_vote_convert()
 		if($tdcnt++ % 2) $cls = "vote_td1";
 		else           $cls = "vote_td2";
 		
-		$string .= "<tr>"
+		$cnt_point = ($cnt != $bef_point)? $tdcnt:"&middot;";
+		$bef_point = $cnt;
+		if ($sort) $cnt_tag = "<td align=\"center\" class=\"$cls\" nowrap=\"nowrap\">$cnt_point</td>";
+		
+		$string .= "<tr>".$cnt_tag
 			.  "<td align=\"left\" class=\"$cls\" style=\"padding-left:1em;padding-right:1em;\">$link</td>"
 			.  "<td align=\"right\" class=\"$cls\" nowrap=\"nowrap\">$cnt&nbsp;&nbsp;<input type=\"submit\" name=\"vote_".htmlspecialchars($e_arg)."\" value=\"$_vote_plugin_votes\" class=\"submit\" /></td>"
 			.  "</tr>\n";
@@ -255,9 +291,11 @@ function plugin_vote_convert()
 		if($tdcnt++ % 2) $cls = "vote_td1";
 		else           $cls = "vote_td2";
 		
+		if ($cnt_tag) $cnt_tag = "<td align=\"center\" class=\"$cls\" nowrap=\"nowrap\"></td>";
+		
 		if (!$addcnt) $addcnt = 30;
 		
-		$string .= "<tr>"
+		$string .= "<tr>".$cnt_tag
 			.  "<td align=\"left\" class=\"$cls\" style=\"padding-left:1em;padding-right:1em;\"><input type=\"text\" name=\"vote_newitem\" size=\"$addcnt\"/></td>"
 			.  "<td align=\"right\" class=\"$cls\" nowrap=\"nowrap\">0&nbsp;&nbsp;<input type=\"submit\" name=\"vote_".htmlspecialchars($e_arg)."\" value=\"$_vote_plugin_votes\" class=\"submit\" /></td>"
 			.  "</tr>\n";

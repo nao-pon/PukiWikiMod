@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: font.inc.php,v 1.2 2004/01/24 14:48:37 nao-pon Exp $
+// $Id: font.inc.php,v 1.3 2004/03/20 07:21:18 nao-pon Exp $
 //
 
 function plugin_font_inline()
@@ -48,9 +48,11 @@ function plugin_font_inline()
 			}
 		}
 		elseif (preg_match('/^(\d+)$/',$prm,$size))
-			$style .= "font-size:".htmlspecialchars($size[1])."px;display:inline-block;line-height:130%;text-indent:0px;";
+			//$style .= "font-size:".htmlspecialchars($size[1])."px;display:inline-block;line-height:130%;text-indent:0px;";
+			$style .= "font-size:".htmlspecialchars($size[1])."px;line-height:130%;";
 		elseif (preg_match('/^(\d+(%|px|pt|em))$/',$prm,$size))
-			$style .= "font-size:".htmlspecialchars($size[1]).";display:inline-block;line-height:130%;text-indent:0px;";
+			//$style .= "font-size:".htmlspecialchars($size[1]).";display:inline-block;line-height:130%;text-indent:0px;";
+			$style .= "font-size:".htmlspecialchars($size[1]).";line-height:130%;";
 		
 	}
 	if (count($decoration))

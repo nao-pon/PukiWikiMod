@@ -3,16 +3,16 @@
 
 .pukiwiki_body
 {
-	background-color: #f5f5f5;
+	background-color: #F5F5F5;
 	border: 1px solid #CCD5DD;
 	padding: 10px;
+	word-break:normal;
 }
 
 pre, dl, ol, p, blockquote { line-height:130%; }
 
 li
 {
-	margin-bottom:5px;
 }
 
 h1
@@ -97,12 +97,28 @@ pre {
 	border-bottom: #888899 1px solid;
 	border-left:   #DDDDEE 1px solid;
 	border-right:  #888899 1px solid;
-	padding: .5em;
-	margin-left: 1em;
-	margin-right: 2em;
+	font-size:12px;
+	line-height:14px;
+	padding:5px 0px 0px 10px;
+	margin: 5px 0px 0px 30px;
 	white-space: pre;
 	background-color: #F0F8FF;
 	color: black;
+}
+
+pre.multi {
+	width: 700px;
+	overflow: auto;
+}
+
+input.copyButton {
+	border: 1px solid #5E5D63;
+	margin: 0px 0px 0px 30px;
+	color: #000000;
+	font-family: verdana, tahoma, arial, helvetica, sans-serif;
+	font-size: 10px;
+	text-align:center;
+	background-color:EEF8FD;
 }
 
 img {
@@ -111,8 +127,6 @@ img {
 }
 
 ul {
-	margin-top: .5em;
-	margin-bottom: .5em;
 	line-height:130%;
 }
 
@@ -430,6 +444,19 @@ div.p_right{
 .clear{
 	margin:0px;
 	clear:both;
+}
+
+div.page_list_word {
+	border-top:1px solid;
+	border-bottom:1px dotted;
+	width:80px;
+	text-align:center;
+}
+
+strong.page_list_word {
+	color:maroon;
+	font-size:120%;
+	padding-top:10px;
 }
 
 strong.word0 {

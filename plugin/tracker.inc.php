@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.8 2004/01/24 14:50:27 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.9 2004/03/20 07:21:18 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -31,7 +31,6 @@ function plugin_tracker_convert()
 				$config_name = $args[0];
 		}
 	}
-	
 	$config = new Config('plugin/tracker/'.$config_name);
 	
 	if (!$config->read())
@@ -45,6 +44,7 @@ function plugin_tracker_convert()
 	
 	$retval = convert_html(plugin_tracker_get_source($config->page.'/form'));
 	$hiddens = '';
+	if (in_array("guestauth",$options)) $hiddens .= "<input type=\"hidden\" name=\"guestauth\" value=\"1\" />";
 	
 	foreach (array_keys($fields) as $name)
 	{
@@ -65,8 +65,10 @@ EOD;
 }
 function plugin_tracker_action()
 {
-	global $script,$post,$vars,$now,$X_uid,$X_uname;
+	global $script,$post,$vars,$now,$X_uid,$X_uname,$_tracker_messages;
 	
+	// ゲストは承認必要？
+	$guestauth = (!empty($post['guestauth']))? 1:0;
 	$config_name = array_key_exists('_config',$post) ? $post['_config'] : '';
 	
 	$config = new Config('plugin/tracker/'.$config_name);
@@ -171,12 +173,27 @@ function plugin_tracker_action()
 	//page_write($page,$postdata);
 	// ファイルの書き込み
 	$postdata = join('',$postdata);
-	page_write($page,$postdata,NULL,"","","","","","",array('plugin'=>'tracker','mode'=>'all'));
 	
-	$r_page = rawurlencode($page);
+	if (!$guestauth || $X_uid)
+	{
+		//登録ユーザーは承認なし
+		page_write($page,$postdata,NULL,"","","","","","",array('plugin'=>'tracker','mode'=>'all'));
+		$r_page = rawurlencode($page);
+		
+		header("Location: $script?$r_page");
+		exit;
+	}
+	else
+	{
+		//ゲストは承認が必要
+		$postdata = "#unvisible\tuid:1\taid:0\tgid:0\n".$postdata;
+		page_write($page,$postdata,NULL,"","","","","","1",array('plugin'=>'tracker','mode'=>'all'));
+		return array(
+			'msg'=>$_tracker_messages['msg_done'],
+			'body'=>$_tracker_messages[msg_guestauth']
+		);
+	}
 	
-	header("Location: $script?$r_page");
-	exit;
 }
 function plugin_tracker_inline()
 {
