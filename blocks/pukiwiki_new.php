@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.2 2003/06/28 11:33:05 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.3 2003/09/02 14:06:55 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -12,7 +12,7 @@ function b_pukiwiki_new_show($option) {
 	// プログラムファイル読み込み
 	$pukiwiki_path = XOOPS_ROOT_PATH."/modules/pukiwiki/";
 
-	$postdata = file($pukiwiki_path."/wiki/".xb_encode($puki_new_name).".txt");
+	$postdata = xb_get_source($puki_new_name);
 
 	$block['title'] = _MI_PUKIWIKI_BTITLE;
 	$block['content'] = "<small>";
@@ -23,24 +23,33 @@ function b_pukiwiki_new_show($option) {
 			$block['content'] .= "&nbsp;<strong>".substr($show_line[0],1)."</strong><br />";
 			$d = substr($show_line[0],1);
 		}
-		$block['content'] .= "&nbsp;&nbsp;<strong><big>&middot;</big></strong>&nbsp;".xb_make_link($show_line[4],substr($show_line[0],6)." $show_line[1] $show_line[2]")."<br />";
+		$block['content'] .= "&nbsp;&nbsp;<strong><big>&middot;</big></strong>&nbsp;".xb_make_link(trim($show_line[4]))."<br />";
 	}
 	$block['content'] .= "</small>";
 	return $block;
 }
 
 //ページ名からリンクを作成
-function xb_make_link($page,$date)
+function xb_make_link($page)
 {
 	$pukiwiki_path = XOOPS_URL."/modules/pukiwiki/index.php";
 
-	$url = rawurlencode(trim($page));
-	if(preg_match("/^\[\[(.*)\]\]\s$/",$page,$match)) {
-		$page = $match[1];
-	}
-	$name = $page;
+	$url = rawurlencode($page);
+	$_name = $name = xb_strip_bracket($page);
 
-	return "<a href=\"".$pukiwiki_path."?$url\" title=\"".$date."\">".htmlspecialchars($name)."</a> ";
+	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
+	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name)){
+		$body = xb_get_source($page);
+		foreach($body as $line){
+			if (preg_match("/^\*{1,3}(.*)/",$line,$reg)){
+				$_name = str_replace(array("[[","]]"),"",$reg[1]);
+				break;
+			}
+		}
+	}
+	$pgp = xb_get_pg_passage($page,FALSE);
+	//return "<a href=\"".$pukiwiki_path."?$url\" title=\"".$date."\">".htmlspecialchars($name)."</a> ";
+	return "<a href=\"".$pukiwiki_path."?$url\" title=\"".$name.$pgp."\">".htmlspecialchars($_name)."</a> ";
 }
 
 // ページ名のエンコード
@@ -56,4 +65,64 @@ function xb_encode($key)
 
 	return $enkey;
 }
+
+// [[ ]] を取り除く
+function xb_strip_bracket($str)
+{
+	if(preg_match("/^\[\[(.*)\]\]$/",$str,$match)) {
+		$str = $match[1];
+	}
+	return $str;
+}
+
+// ファイル名を得る(エンコードされている必要有り)
+function xb_get_filename($pagename)
+{
+	return XOOPS_ROOT_PATH."/modules/pukiwiki/wiki/".$pagename.".txt";
+}
+
+// ページが存在するか？
+function xb_page_exists($page)
+{
+	return file_exists(xb_get_filename(xb_encode($page)));
+}
+
+// ソースを取得
+function xb_get_source($page)
+{	
+	if(xb_page_exists($page)) {
+		$ret = file(xb_get_filename(xb_encode($page)));
+		$ret = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$ret);
+		return $ret;
+  }
+  return array();
+}
+
+// 指定されたページの経過時刻
+function xb_get_pg_passage($page,$sw=true)
+{
+	if($pgdt = @filemtime(xb_get_filename(xb_encode($page))))
+	{
+		$pgdt = time() - $pgdt;
+		if(ceil($pgdt / 60) < 60)
+			$_pg_passage[$page]["label"] = "(".ceil($pgdt / 60)."m)";
+		else if(ceil($pgdt / 60 / 60) < 24)
+			$_pg_passage[$page]["label"] = "(".ceil($pgdt / 60 / 60)."h)";
+		else
+			$_pg_passage[$page]["label"] = "(".ceil($pgdt / 60 / 60 / 24)."d)";
+		
+		$_pg_passage[$page]["str"] = "<small>".$_pg_passage[$page]["label"]."</small>";
+	}
+	else
+	{
+		$_pg_passage[$page]["label"] = "";
+		$_pg_passage[$page]["str"] = "";
+	}
+
+	if($sw)
+		return $_pg_passage[$page]["str"];
+	else
+		return $_pg_passage[$page]["label"];
+}
+
 ?>

@@ -117,6 +117,7 @@ function &expand_bracket($name,$refer)
 	else if (!preg_match("/^$BracketName$/",$name)) 
 		return new link($_name);
 	
+	//return new link_wikiname(strip_bracket($name),$alias,$anchor,$refer);
 	return new link_wikiname($name,$alias,$anchor,$refer);
 }
 // 相対参照を展開
@@ -249,7 +250,8 @@ class link_wikiname extends link
 		$this->strip = strip_bracket($name);
 		$this->char = ((ord($this->strip) < 128) ? '0' : '1').$this->strip;
 		$this->special = htmlspecialchars($this->strip);
-		$this->rawname = rawurlencode($name);
+		//$this->rawname = rawurlencode($name);
+		$this->rawname = rawurlencode(strip_bracket($name));
 		$this->rawrefer = rawurlencode($refer);
 
 		if ($vars['page'] != $name and is_page($name))
@@ -303,16 +305,28 @@ function make_pagelink($page,$alias='',$anchor='',$refer='')
 		return "<a href=\"$anchor\">$s_alias</a>";
 	}
 	
-	$r_page = rawurlencode($page);
+	//$r_page = rawurlencode($page);
+	$r_page = rawurlencode($s_page);
 	$r_refer = ($refer == '') ? '' : '&amp;refer='.rawurlencode($refer);
-	
+
+/*	
 	if (!array_key_exists($page,$related) and $page != $vars['page'] and is_page($page))
 	{
 		$related[$page] = get_filetime($page);
 	}
-	
+*/	
 	if (is_page($page))
 	{
+		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
+		if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias) && !$alias){
+			$_body = get_source($page);
+			foreach($_body as $line){
+				if (preg_match("/^\*{1,3}(.*)/",$line,$reg)){
+					$s_alias = str_replace(array("[[","]]"),"",$reg[1]);
+					break;
+				}
+			}
+		}
 		$passage = get_pg_passage($page,FALSE);
 		$title = $link_compact ? '' : " title=\"$s_page$passage\"";
 		return "<a href=\"$script?$r_page$anchor\"$title>$s_alias</a>";

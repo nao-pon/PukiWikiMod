@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: popular.inc.php,v 1.3 2003/09/02 14:06:55 nao-pon Exp $
 //
 
 /*
@@ -106,8 +106,10 @@ function plugin_popular_convert()
 			$page_name = strip_bracket($page);
 			$title = "$page_name<span class=\"counter\">($count)</span>";
 			$s_page = htmlspecialchars($page);
+			$items .= " <li>".make_pagelink($page)."<span class=\"counter\">($count)</span></li>\n";
 			//$items .= " <li>".make_pagelink($page,"$s_page<span class=\"counter\">($count)</span>")."</li>\n";
-			$items .="<li><a href=\"".$script."?".rawurlencode($page)."\" title=\"$page_name ".get_pg_passage($page,false)."\">$title</a></li>\n";}
+			//$items .="<li><a href=\"".$script."?".rawurlencode($page)."\" title=\"$page_name ".get_pg_passage($page,false)."\">$title</a></li>\n";
+			}
 		$items .= '</ul>';
 	}
 	return sprintf($today ? $_popular_plugin_today_frame : $_popular_plugin_frame,count($counters),$items);
