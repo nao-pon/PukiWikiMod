@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.13 2003/09/14 13:10:25 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.14 2003/09/29 12:19:50 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -227,6 +227,22 @@ $pagereading_kakasi_path = 'c:\kakasi\bin\kakasi.exe';
 // ページ名読みを格納したページの名前
 $pagereading_config_page = ':config/PageReading';
 
+/////////////// ParaEdit //////////////////
+// ParaEdit 改行の代替文字列
+//   <input type=hidden value=XXXXX> で改行(CR,LFなど)の変わりに使用する文字列
+define(_PARAEDIT_SEPARATE_STR, '_PaRaeDiT_');
+
+// 編集リンクの文字列・スタイルを指定
+//   %s に URL が入る
+define(_EDIT_LINK, '<a href="%s"><img style="float:right" src="image/edit.png" alt="Edit" title="Edit" /></a>');
+
+// 編集リンクの挿入箇所を指定
+//   <h2>header</h2> の時、$1:<h2>, $2:header, $3:</h2> となるので $link を好きな場所に移動
+// (例)
+//  define(_PARAEDIT_LINK_POS, '$1$2$para_link$3'); // </h2>の前
+    define(_PARAEDIT_LINK_POS, '$para_link$1$2$3'); // <h2>の前
+//  define(_PARAEDIT_LINK_POS, '$1$2$3$para_link'); // </h2>の後ろ
+/////////////// ParaEdit //////////////////
 
 ///////////////////////////////////////////////// 
 // HTTPリクエストにプロキシサーバを使用する 

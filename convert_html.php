@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.7 2003/09/02 14:01:12 nao-pon Exp $
+// $Id: convert_html.php,v 1.8 2003/09/29 12:19:50 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string)
 {
@@ -63,6 +63,9 @@ class convert
 		global $user_rules,$str_rules,$line_rules,$strip_link_wall;
 		global $WikiName,$InterWikiName, $BracketName;
 		global $_table_left_margin,$_table_right_margin;
+		global $anon_writable;
+		
+		$_freeze = is_freeze($vars['page']);
 
 		global $content_id;
 		$content_id_local = ++$content_id;
@@ -183,8 +186,19 @@ class convert
 					//$level = strlen($out[1]) + 1;
 					$level = strlen($out[1]);
 
-					array_push($result, "<h$level><a name=\"content_{$content_id_local}_$content_count\"></a>$str $top_link</h$level>");
-					//$arycontents[] = str_repeat("-",$level-1)."<a href=\"#content_{$content_id_local}_$content_count\">".strip_htmltag(make_user_rules(inline($out[2],TRUE)))."</a>\n";
+					///// ParaeEdit /////
+					$_tag = "<h$level><a name=\"content_{$content_id_local}_$content_count\"></a>$str $top_link</h$level>";
+					if ($content_id_local == 1 && !$_freeze && $anon_writable) {
+						$para_num = $content_count + 1;
+						$para_link = "$script?cmd=edit&amp;id=$para_num&amp;page=" . rawurlencode($vars[page]);
+						$para_link = "\x1c".sprintf(_EDIT_LINK, $para_link)."\x1d";
+						$_replaced = _PARAEDIT_LINK_POS;
+						eval(" \$_replaced = \"$_replaced\"; ");
+						$_tag = preg_replace("/(<h\d.*?>)(.*)(<\/h\d>)/", $_replaced, $_tag);
+					}
+					array_push($result, $_tag);
+					///// ParaeEdit /////
+					
 					$arycontents[] = str_repeat("-",$level)."<a href=\"#content_{$content_id_local}_$content_count\">".strip_htmltag(make_user_rules(inline($out[2],TRUE)))."</a>\n";
 					$content_count++;
 				}

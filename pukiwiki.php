@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.27 2003/09/17 14:17:25 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.28 2003/09/29 12:19:50 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -173,6 +173,59 @@ else if(arg_check("edit"))
 		$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_edit);
 		$page = str_replace('$1',make_search($get["page"]),$_title_edit);
 		$body = edit_form($postdata,$get["page"]);
+		
+		///// ParaEdit /////
+		if ($vars['id']){
+			// 改行コードを \n に統一
+			$body = preg_replace("/((\x0D\x0A)|(\x0D)|(\x0A))/", "\n", $body);
+			
+			// <textarea name="msg" ...> 前後で分割
+			$lines = array();
+			$textareas = array(); // 0: whole, 1: before msg, 2: textarea tag, 3: msg 4: after msg
+			preg_match("/^(.*?)(<textarea .*?>)(.*?)(<\/textarea>.*)$/is", $body, $textareas);
+			
+			// $vars[msg] を分割
+			$msg_before; $msg_now; $msg_after; // 編集行とその前後
+			$part = $vars['id'];
+			$index_num = 0;
+			$is_first_line = 1;
+			$is_in_table = 0;
+			foreach (split ("\n", $textareas[3]) as $line) {
+				if (preg_match("/^\*{1,3}/", $line) && !$is_in_table) {
+					$index_num++;
+				}
+				if (!$is_first_line) { $line = "\n$line"; } else { $is_first_line = 0; }
+				if ($index_num < $part) {
+					$msg_before .= $line;
+				} else if ($index_num == $part) {
+					$msg_now .= $line;
+				} else if ($index_num > $part) {
+					$msg_after .= $line;
+				}
+				if (preg_match("/-(>|&gt;)(\n|$)/",$line)) {
+					$is_in_table = 1;
+				} else {
+					$is_in_table = 0;
+				}
+			}
+			
+			// 微調整 (silly!)
+			$msg_before = preg_replace("/^\n/", "", $msg_before);
+			if ($msg_before) { $msg_before .= "\n"; }
+			
+			// 改行コードを書換え
+			$msg_before = preg_replace("/\n/", _PARAEDIT_SEPARATE_STR, $msg_before);
+			$msg_after  = preg_replace("/\n/", _PARAEDIT_SEPARATE_STR, $msg_after);
+			
+			// 結合
+			$body = $textareas[1]
+				. '<input type=hidden name="msg_before" value="' . $msg_before . '">' . "\n"
+				. '<input type=hidden name="msg_after"  value="' . $msg_after  . '">' . "\n"
+				. $textareas[2]  . $msg_now . $textareas[4];
+
+			// ヘルプ表示 : リンク書き換え
+			$body = preg_replace("/(cmd=edit&amp;help=true)/", "plugin=paraedit&amp;parnum=$vars[parnum]&$1&amp;refer=" . rawurlencode($vars[page]), $body);
+		}
 	}
 }
 // プレビュー
@@ -316,6 +369,8 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 		."<input type=\"hidden\" name=\"page\" value=\"".htmlspecialchars($post["page"])."\" />\n"
 		."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($post["digest"])."\" />\n"
 		."<input type=\"hidden\" name=\"f_create_uid\" value=\"".htmlspecialchars($post["f_create_uid"])."\" />\n"
+		."<input type=\"hidden\" name=\"msg_before\" value=\"".htmlspecialchars($post["msg_before"])."\">\n"
+		."<input type=\"hidden\" name=\"msg_after\"  value=\"".htmlspecialchars($post["msg_after"])."\">\n"
 		."$addtag\n"
 		."<textarea name=\"msg\" rows=\"$rows\" cols=\"$cols\" wrap=\"virtual\" width=\"100%\">\n".htmlspecialchars($postdata_input)."</textarea><br />\n"
 		."<input type=\"submit\" name=\"preview\" value=\"$_btn_repreview\" accesskey=\"p\" />\n"
@@ -330,6 +385,13 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 // 書き込みもしくは追加もしくはコメントの挿入
 else if($post["write"])
 {
+	// ParaEdit
+	// 改行代替文字列を \n に変換
+	$post["msg_before"] = str_replace(_PARAEDIT_SEPARATE_STR, "\n", $post["msg_before"]);
+	$post["msg_after"]  = str_replace(_PARAEDIT_SEPARATE_STR, "\n", $post["msg_after"]);
+	// 連結
+	$post["msg"] = $post["msg_before"].$post["msg"].$post["msg_after"];
+
 	if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
 		//添付ファイルあり
 		include_once (PLUGIN_DIR.'attach.inc.php');
