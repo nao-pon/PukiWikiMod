@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.5 2003/07/14 12:45:48 nao-pon Exp $
+// $Id: ref.inc.php,v 1.6 2003/07/16 13:51:45 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -22,6 +22,12 @@ Last-Update:2002-10-29 rev.33
  テキストの回り込み
 -nocache~
  URL画像ファイル(外部ファイル)をキャッシュしない
+-w:ピクセル数
+-h:ピクセル数
+-数字%
+ 画像ファイルのサイズ指定。
+ w: h: どちらかの指定で縦横の比率を保ってリサイズ。
+ %指定で、指定のパーセントで表示。
 
 */
 
@@ -52,7 +58,11 @@ function plugin_ref_inline() {
 	$args = func_get_args();
 	$name = array_shift($args);
 
-	$ret = plugin_ref_body($name,$args);
+	//パラメータ変換
+	$params = array('left'=>FALSE,'center'=>FALSE,'right'=>FALSE,'wrap'=>FALSE,'nowrap'=>FALSE,'around'=>FALSE,'_args'=>array(),'_done'=>FALSE,'nocache'=>FALSE,'_size'=>FALSE,'_w'=>0,'_h'=>0);
+	array_walk($args, 'ref_check_arg', &$params);
+
+	$ret = plugin_ref_body($name,$args,$params);
 	
 	return $ret;
 }
@@ -73,9 +83,9 @@ function plugin_ref_convert() {
 	$name = array_shift($args);
 
 	//パラメータ変換
-	$params = array('left'=>FALSE,'center'=>FALSE,'right'=>FALSE,'wrap'=>FALSE,'nowrap'=>FALSE,'around'=>FALSE,'_args'=>array(),'_done'=>FALSE,'nocache'=>FALSE);
+	$params = array('left'=>FALSE,'center'=>FALSE,'right'=>FALSE,'wrap'=>FALSE,'nowrap'=>FALSE,'around'=>FALSE,'_args'=>array(),'_done'=>FALSE,'nocache'=>FALSE,'_size'=>FALSE,'_w'=>0,'_h'=>0);
 	array_walk($args, 'ref_check_arg', &$params);
-	if (count($params['_args']) > 0) { $title = join(',', $params['_args']); }
+	//if (count($params['_args']) > 0) { $title = join(',', $params['_args']); }
 
 	$ret = plugin_ref_body($name,$args,$params);
 
@@ -175,9 +185,9 @@ function plugin_ref_body($name,$args,$params){
 		if (is_picture($ext)) {
 			$url = $file;
 			$size = getimagesize($file);
-			$size = $size[3];
+			$org_w = $width = $size[0];
+			$org_h = $height = $size[1];
 		} else {
-			//$url = preg_replace("/index.php/", "pukiwiki.php", $script, 1).'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 			$url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 			$lastmod = date('Y/m/d H:i:s',filemtime($file));
 			$size = sprintf('%01.1f',round(filesize($file)/1000,1)).'KB';
@@ -191,6 +201,8 @@ function plugin_ref_body($name,$args,$params){
 
 	// ファイル種別判定
 	if (is_picture($ext)) { // 画像
+		$info = "";
+		$width=$height=0;
 		//URLの場合キャッシュ判定
 		if ((is_url($url)) && (!$params['nocache'])){
 			$parse = parse_url($url);
@@ -199,8 +211,49 @@ function plugin_ref_body($name,$args,$params){
 			$img_arg = plugin_ref_cache_image_fetch($filename, $url, UPLOAD_DIR);
 			$url = $img_arg[0];
 			$size = $img_arg[1];
+			$org_w = $size[0];
+			$org_h = $size[1];
 		}
-		$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $size />";
+		foreach ($params['_args'] as $arg){
+			if (preg_match("/^w:([0-9]+)$/i",$arg,$m)){
+				$params['_size'] = TRUE;
+				$params['_w'] = $m[1];
+			}
+			if (preg_match("/^h:([0-9]+)$/i",$arg,$m)){
+				$params['_size'] = TRUE;
+				$params['_h'] = $m[1];
+			}
+			if (preg_match("/^([0-9.]+)%$/i",$arg,$m)){
+				$params['_%'] = $m[1];
+			}
+		}
+		// 指定されたサイズを使用する
+		if ($params['_size']) {
+			if ($params['_w'] > 0 && $params['_h'] > 0){
+				$width = $params['_w'];
+				$height = $params['_h'];
+			} else {
+				$_w = $params['_w'] ? $org_w / $params['_w'] : 0;
+				$_h = $params['_h'] ? $org_h / $params['_h'] : 0;
+				$zoom = max($_w,$_h);
+				if ($zoom) {
+					$width = (int)($org_w / $zoom);
+					$height = (int)($org_h / $zoom);
+				}
+			}
+		}
+		if ($params['_%']) {
+			$width = (int)($org_w * $params['_%'] / 100);
+			$height = (int)($org_h * $params['_%'] / 100);
+		}
+		if ($width and $height) {
+			$info = "width=\"$width\" height=\"$height\" ";
+			$title .= " SIZE:{$org_w}x{$org_h}";
+			$ret .= "<a href=\"$url\" title=\"$title\"><img src=\"$url\" alt=\"$title\" title=\"$title\" $info/></a>\n";
+		} else {
+			if ($org_w and $org_h) $info = "width=\"$org_w\" height=\"$org_h\" ";
+			$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info/>";
+		}
 	} else { // 通常ファイル
 		$ret .= "<a href=\"$url\" title=\"$info\">$icon$title</a>\n";
 	}
@@ -231,7 +284,7 @@ function plugin_ref_cache_image_fetch($filename, $target, $dir) {
 	}
 	$size = @getimagesize($filename);
 	
-	return array($filename,$size[3]);
+	return array($filename,$size);
 }
 // 画像キャッシュを保存
 function plugin_ref_cache_image_save($data, $filename) {
