@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.11 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.12 2004/06/20 13:35:59 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -885,7 +885,8 @@ class Tracker_list
 					continue;
 				}
 				$this->pipe = ($line{0} == '|' or $line{0} == ':');
-				$source .= preg_replace_callback('/\[([^\[\]]+)\]/',array(&$this,'replace_item'),$line)."\n";
+				//$source .= preg_replace_callback('/\[([^\[\]]+)\]/',array(&$this,'replace_item'),$line)."\n";
+				$source .= rtrim(preg_replace_callback('/\[([^\[\]]+)\]/',array(&$this,'replace_item'),$line))."\n";
 			}
 		}
 		return $source;
