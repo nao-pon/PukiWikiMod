@@ -60,12 +60,13 @@ function plugin_recent_convert()
 					if($date != '') {
 						$items .= "</ul>";
 					}
-					$items .= "<strong>".$match[0]."</strong><ul class=\"recent_list\">";
+					$items .= "<div class=\"recent_date\">".$match[0]."</div><ul class=\"recent_list\">";
 					$date = $match[0];
 				}
 			}
 			$title = htmlspecialchars($title);
-			$items .="<li><a href=\"".$script."?".rawurlencode($name)."\" title=\"$title ".get_pg_passage($name,false)."\">".$title."</a></li>\n";
+			//$items .="<li><a href=\"".$script."?".rawurlencode($name)."\" title=\"$title ".get_pg_passage($name,false)."\">".$title."</a></li>\n";
+			$items .="<li>".make_pagelink($name)."</a></li>\n";
 			$cnt++;
 		}
 	}

@@ -299,6 +299,10 @@ address {
 	background-color: #EEF5FF;
 }
 
+.recent_date{
+	text-align:left;
+	font-weight: bold;
+}
 .recent_list{
 	margin:0px;
 	margin-left:1em;
