@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.11 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.12 2004/01/24 14:46:11 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -47,6 +47,11 @@ define('PCMT_FORMAT_MSG','%s');
 define('PCMT_FORMAT_DATE','&new{%s};');
 // \x08は、投稿された文字列中に現れない文字であればなんでもいい。
 define("PCMT_FORMAT","\x08MSG\x08 -- \x08NAME\x08 \x08DATE\x08");
+/////////////////////////////////////////////////
+// areaedit指定を規定値にする(Yes:1, No:0)
+define('PCMT_AREAEDIT_ENABLE',1);
+// areaedit指定の追加オプション
+define('PCMT_AREAEDIT_OPTION',",preview:5");
 
 function plugin_pcomment_init() {
 	
@@ -88,7 +93,7 @@ function plugin_pcomment_action() {
 }
 
 function plugin_pcomment_convert() {
-	global $script,$vars,$BracketName,$WikiName;
+	global $script,$vars,$BracketName,$WikiName,$digest;
 	global $_pcmt_btn_name, $_pcmt_btn_comment, $_pcmt_msg_comment, $_pcmt_msg_all, $_pcmt_msg_edit, $_pcmt_msg_recent;
 
 	//戻り値
@@ -117,6 +122,11 @@ function plugin_pcomment_convert() {
 			$comment_pg_name = "[[".htmlspecialchars(trim($arg[1]))."/%s]]";
 		}
 	}
+	//areaedit指定
+	$areaedit = "";
+	if (preg_match("/(?: |^)areaedit(?: |$)/i",trim($all_option),$arg)){
+		$areaedit = "<input type=\"hidden\" name=\"areaedit\" value=\"1\" />\n";
+	}
 
 	unset($args);
 
@@ -142,6 +152,11 @@ function plugin_pcomment_convert() {
 	
 	//コメントを取得
 	$data = @file(get_filename(encode($_page)));
+	
+	//ページ名などの入れ替え
+	$now_page = $vars['page'];
+	$now_digest = $digest;
+	if (is_page($_page)) $vars['page'] = $_page;
 	list($comments, $digest) = pcmt_get_comments($data,$count,$dir,$params['reply']);
 
 	// xoops //
@@ -178,21 +193,27 @@ function plugin_pcomment_convert() {
   <input type="hidden" name="page" value="$f_page" />
   <input type="hidden" name="nodate" value="$f_nodate" />
   <input type="hidden" name="dir" value="$dir" />
-  $radio $title $name $comment
+  $areaedit $radio $title $name $comment
   <input type="submit" value="$btn_text" />
   </div>
 EOD;
 	$link = $_page;
 	if (!is_page($_page)) {
 		$recent = $_pcmt_msg_none;
+		$link = make_pagelink($link);
 	} else {
 		if ($_pcmt_msg_all != '')
-			$link = preg_replace('/^(\[\[)?/',"$1$_pcmt_msg_all>[[","$_page]]");
+			$link = make_pagelink($link,$_pcmt_msg_all);
 		$recent = '';
 		if ($count > 0) { $recent = sprintf($_pcmt_msg_recent,$count); }
 		$edit_tag =  (is_freeze($_page,false))? "" : " | <a href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_pcmt_msg_edit</a>";
 	}
-	$link = make_link($link);
+	//$link = make_pagelink($link);
+	
+	//退避した変数を戻す
+	$vars['page'] = $now_page;
+	$digest = $now_digest;
+
 	return $dir ?
 		"<div><p>$recent $link$edit_tag</p>\n<form action=\"$script\" method=\"post\">$comments$form</form></div>" :
 		"<div><form action=\"$script\" method=\"post\">$form$comments</form>\n<p>$recent $link</p></div>";
@@ -200,7 +221,7 @@ EOD;
 
 function pcmt_insert($page) {
 	global $post,$vars,$script,$now,$do_backup,$BracketName;
-	global $_title_updated,$no_name;
+	global $_title_updated,$no_name,$X_uid;
 
 	$page = $post['page'];
 	if (!preg_match("/^$BracketName$/",$page))
@@ -230,8 +251,11 @@ function pcmt_insert($page) {
 	if ($post['reply'] or !is_page($page)) {
 		$msg = preg_replace('/^\-+/','',$msg);
 	}
+	
 	$msg = rtrim($msg);
-
+	//areaedit指定
+	if (PCMT_AREAEDIT_ENABLE || !empty($post['areaedit'])) $msg = "&areaedit(uid:".$X_uid.PCMT_AREAEDIT_OPTION."){".$msg."};";
+	
 	if (!is_page($page)) {
 		//$new = PCMT_CATEGORY.' '.htmlspecialchars($post['refer'])."\n\n-$msg\n";
 		$new = '***'.htmlspecialchars($post['refer'])."のコメント一覧\n".PCMT_CATEGORY."\n\n-$msg\n";
@@ -286,16 +310,6 @@ function pcmt_insert($page) {
 		//コメントを挿入
 		array_splice($data,$pos,0,"$head$msg\n");
 		$new = join('',$data);
-
-		// 差分ファイルの作成
-		$diffdata = do_diff($old,$new);
-		file_write(DIFF_DIR,$page,$diffdata);
-
-		// バックアップの作成
-		if ($do_backup) {
-			$oldtime = filemtime(get_filename(encode($page)));
-			make_backup(encode($page).'.txt', $old, $oldtime);
-		}
 	}
 
 	//親ページのファイルタイム更新
@@ -304,33 +318,36 @@ function pcmt_insert($page) {
 	//親ページのDB更新
 	pginfo_db_write($post['refer'],"update");
 
-	
-	// コメントファイルの書き込み 第4引数:最終更新しない=true
-	file_write(DATA_DIR, $page, $new, true);
-
-	// メール送信 by nao-pon
-	if (WIKI_MAIL_NOTISE){
-		global $xoopsConfig;
-		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["refer"]))."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.strip_bracket(trim($name))."\n";
-		$mail_body .= sprintf(_MD_PUKIWIKI_MAIL_HEAD,"pcomment")."\n";
-		$mail_body .= $msg;
-		$mail_body .= _MD_PUKIWIKI_MAIL_FOOT."\n";
-		$xoopsMailer =& getMailer();
-		$xoopsMailer->useMail();
-		$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromName($xoopsConfig['sitename']);
-		$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["refer"])));
-		$xoopsMailer->setBody($mail_body);
-		$xoopsMailer->send();
-		//メール送信ここまで by nao-pon
+	if (!is_page($page))
+	{
+		//ページ新規作成
+		$aids = $gids = $freeze = "";
+		//編集権限継承がセットされている上位ページ凍結情報を得る
+		$up_freezed = get_pg_allow_editer($post['refer']);
+		$page_info = "";
+		//ページ情報のセット
+		if ($up_freezed['uid'] !== "")
+		{
+			//編集権限継承あり
+			$freeze = 1;
+			$uid = $up_freezed['uid'];
+			$aids = preg_replace("/(($|,)$uid,|,$)/","",$up_freezed['user']);
+			$gids = preg_replace("/,$/","",$up_freezed['group']);
+			$page_info = "#freeze\tuid:{$uid}\taid:{$aids}\tgid:{$gids}\n// author:{$uid}\n";
+		}
+		else
+		{
+			$page_info = "// author:".get_pg_auther($post['refer'])."\n";
+		}
+		$new = $page_info.$new;
+		// ページ作成
+		page_write($page, $new, NULL,$aids,$gids,"","",$freeze,"",array('plugin'=>'pcomment','mode'=>'add'));
 	}
-
-	// is_pageのキャッシュをクリアする。
-	is_page($page, true);
+	else
+	{
+		// コメントファイルの書き込み 第4引数:最終更新しない=true
+		page_write($page, $new, true,"","","","","","",array('plugin'=>'pcomment','mode'=>'add'));
+	}
 
 	$vars['page'] = $post['page'] = $post['refer'];
 
