@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.4 2003/07/03 13:54:03 nao-pon Exp $
+// $Id: comment.inc.php,v 1.5 2003/07/04 08:42:47 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -79,6 +79,7 @@ function plugin_comment_action()
 			
 			//表中でも使用できるようにしたので|をエスケープ nao-pon
 			$comment = str_replace('|','&#124;',$comment);
+
 			$comment = $head.$comment;
 		}
 
