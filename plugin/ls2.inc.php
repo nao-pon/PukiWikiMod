@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.8 2004/01/24 14:51:56 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.9 2004/01/27 14:26:34 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -49,7 +49,7 @@ function plugin_ls2_action() {
 	global $_ls2_messages;
 
 	$params = array();
-	foreach (array('title','include','reverse') as $key)
+	foreach (array('title','include','reverse','depth') as $key)
 		$params[$key] = array_key_exists($key,$vars);
 	$prefix = array_key_exists('prefix',$vars) ? $vars['prefix'] : '';
 	$body = ls2_show_lists($prefix,$params);
@@ -76,7 +76,7 @@ function plugin_ls2_convert() {
 		//$prefix = strip_bracket($vars['page']).'/';
 		$prefix = strip_bracket($vars['page']);
 		
-	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'_done'=>FALSE,'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE);
+	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'_done'=>FALSE,'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE,'depth'=>FALSE);
 	array_walk($args, 'ls2_check_arg', &$params);
 	$title = (count($params['_args']) > 0) ?
 		join(',', $params['_args']) :
@@ -93,7 +93,8 @@ function plugin_ls2_convert() {
 }
 function ls2_show_lists($prefix,&$params) {
 	global $_ls2_messages;
-	$pages = ls2_get_child_pages($prefix);
+	$pages = ls2_get_child_pages($prefix,$params['depth']);
+	//list($pages,$child_count) = explode(" ",ls2_get_child_pages($prefix,$params['depth']));
 	if ($params['reverse']) $pages = array_reverse($pages);
 
 	foreach ($pages as $page) { $params[$page] = 0; }
@@ -101,17 +102,25 @@ function ls2_show_lists($prefix,&$params) {
 	if (count($pages) == 0) { return str_replace('$1',htmlspecialchars($prefix),$_ls2_messages['err_nopages']); }
 
 	$ret = '<ul>';
-	foreach ($pages as $page) { $ret .= ls2_show_headings($page,$params,FALSE,$prefix); }
+	foreach ($pages as $page)
+	{
+		list($page,$child_count) = explode(" ",$page);
+		$ret .= ls2_show_headings($page,$params,FALSE,$prefix,$child_count);
+	}
 	$ret .= '</ul>'."\n";
 	return $ret;
 }
 
-function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
-	global $script, $user_rules;
+function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_count="") {
+	global $script,$auto_template_name;
 	global $_ls2_anchor, $_ls2_messages;
+	static $_auto_template_name = "";
+	
+	if (!$_auto_template_name) $_auto_template_name = preg_quote($auto_template_name,'/');
 	
 	// テンプレートページは表示しない場合
-	if ($params['notemplate'] && preg_match("/template\]\]$/",$page)) return;
+	//echo $auto_template_name;
+	if ($params['notemplate'] && preg_match("/\/".$_auto_template_name."(_m)?$/",$page)) return;
 	
 	$ret = '';
 	$rules = '/\(\(((?:(?!\)\)).)*)\)\)/';
@@ -165,8 +174,10 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 	if ($params['relatedcount'])
 		$name .= " (".links_get_related_count($page).")";
 	
+	$child_count = ($child_count)? " [+".$child_count."]":"";
+	
 	if ($include) { $ret .= 'include '; }
-	$ret .= '<a id="list_'.$params[$page].'" href="'.$href.'" title="'.$title.'">'.htmlspecialchars($name).'</a>';
+	$ret .= '<a id="list_'.$params[$page].'" href="'.$href.'" title="'.$title.'">'.htmlspecialchars($name).'</a>'.$child_count;
 	if ($params['title'] and $is_done) {
 		$ret .= '<a href="#list_'.$params[$page].'">+</a></li>'."\n";
 		return $ret;
@@ -175,7 +186,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 	$_ret = '';
 	foreach (get_source($page) as $line) {
 		if ($params['title'] and preg_match('/^(\*+)(.*)$/',$line,$matches)) {
-			$special = strip_htmltag(make_user_rules(inline($matches[2],TRUE)));
+			$special = strip_htmltag(make_line_rules(inline($matches[2],TRUE)));
 			$left = (strlen($matches[1]) - 1) * 16;
 			$_ret .= '<li style="margin-left:'.$left.'px">'.$special.
 				'<a href="'.$href.LS2_CONTENT_HEAD.$anchor.'">'.$_ls2_messages['msg_go'].'</a></li>'."\n";
@@ -188,12 +199,22 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 	$ret .= '</li>'."\n";
 	return $ret;
 }
-function ls2_get_child_pages($prefix) {
+function ls2_get_child_pages($prefix,$depth=FALSE) {
 	global $vars;
 	
 	$pages = array();
-	foreach (get_existpages_db(false,$prefix."/") as $_page){
-		$pages[$_page] = strip_bracket($_page);
+	foreach (get_existpages_db(false,$prefix."/") as $_page)
+	{
+		$_page = strip_bracket($_page);
+		if ((int)$depth)
+		{
+			$c_count =count_chars(preg_replace("/^".preg_quote($prefix,'/')."\//","",$_page));
+			$child_count = (($c_count[47] + 1) == $depth)? " ".get_child_counts($_page) : "";
+			if ($c_count[47] < $depth)
+				$pages[$_page.$child_count] = str_replace("/","\x00",$_page);
+		}
+		else
+			$pages[$_page] = str_replace("/","\x00",$_page);
 	}
 	natcasesort($pages);
 
@@ -204,8 +225,13 @@ function ls2_check_arg($val, $key, &$params) {
 	if ($val == '') { $params['_done'] = TRUE; return; }
 	if (!$params['_done']) {
 		foreach (array_keys($params) as $key) {
-			if (strpos($key, strtolower($val)) === 0) {
-				$params[$key] = TRUE;
+			//if (strpos($key, strtolower($val)) === 0) {
+			if (preg_match("/^".preg_quote($key,'/')."(:(.*))?$/",$val,$value))
+			{
+				if ($value[2])
+					$params[$key] = $value[2];
+				else
+					$params[$key] = TRUE;
 				return;
 			}
 		}
