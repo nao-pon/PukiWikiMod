@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.23 2003/08/03 13:40:01 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.24 2003/08/05 23:39:57 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -188,12 +188,30 @@ else if(arg_check("edit"))
 // プレビュー
 else if(arg_check("preview") || $post["preview"] || $post["template"])
 {
-	if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
+	if(is_uploaded_file($_FILES['attach_file']['tmp_name'])){
 		//添付ファイルあり
-		$HTTP_POST_FILES["attach_file"]["name"] = basename(str_replace("\\","/",$HTTP_POST_FILES["attach_file"]["name"]));
 		include_once (PLUGIN_DIR.'attach.inc.php');
-		$attach_msg = plugin_attach_action();
-		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$HTTP_POST_FILES["attach_file"]["name"]."$1)",$post["msg"]);
+
+		$file = $_FILES['attach_file'];
+		$attachname = basename(str_replace("\\","/",$file['name']));
+		$filename = preg_replace('/\..+$/','', $attachname,1);
+
+		//すでに存在した場合、 ファイル名に'_0','_1',...を付けて回避(姑息)
+		$count = '_0';
+		while (file_exists(UPLOAD_DIR.encode($vars['refer']).'_'.encode($attachname))) {
+			$attachname = preg_replace('/^[^\.]+/',$filename.$count++,$file['name']);
+		}
+		
+		$file['name'] = $attachname;
+		
+		if (!exist_plugin('attach') or !function_exists('attach_upload')){
+			return array('msg'=>'attach.inc.php not found or not correct version.');
+		}
+		
+		$attach_msg = attach_upload($file,$vars['refer'],TRUE);
+		// ソース中の空ref()にファイル名をセット
+		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$attachname."$1)",$post["msg"]);
+		unset($file,$attachname,$filename);
 	}
 	
 	if($post["template"] && page_exists($post["template_page"]))
@@ -324,10 +342,28 @@ else if($post["write"])
 {
 	if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
 		//添付ファイルあり
-		$HTTP_POST_FILES["attach_file"]["name"] = basename(str_replace("\\","/",$HTTP_POST_FILES["attach_file"]["name"]));
 		include_once (PLUGIN_DIR.'attach.inc.php');
-		$attach_msg = plugin_attach_action();
-		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$HTTP_POST_FILES["attach_file"]["name"]."$1)",$post["msg"]);
+
+		$file = $_FILES['attach_file'];
+		$attachname = basename(str_replace("\\","/",$file['name']));
+		$filename = preg_replace('/\..+$/','', $attachname,1);
+
+		//すでに存在した場合、 ファイル名に'_0','_1',...を付けて回避(姑息)
+		$count = '_0';
+		while (file_exists(UPLOAD_DIR.encode($vars['refer']).'_'.encode($attachname))) {
+			$attachname = preg_replace('/^[^\.]+/',$filename.$count++,$file['name']);
+		}
+		
+		$file['name'] = $attachname;
+		
+		if (!exist_plugin('attach') or !function_exists('attach_upload')){
+			return array('msg'=>'attach.inc.php not found or not correct version.');
+		}
+		
+		$attach_msg = attach_upload($file,$vars['refer'],TRUE);
+		// ソース中の空ref()にファイル名をセット
+		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$attachname."$1)",$post["msg"]);
+		unset($file,$attachname,$filename);
 	}
 
 	//編集以前のページデータを取得
