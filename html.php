@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.25 2004/01/24 14:42:25 nao-pon Exp $
+// $Id: html.php,v 1.26 2004/01/27 14:25:33 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -330,23 +330,8 @@ function user_rules_str($str)
 // PukiWiki 1.4 互換用
 function make_str_rules($str)
 {
-	return make_user_rules($str);
+	return user_rules_str($str);
 }
-// ユーザ定義ルール(ソースは置換せずコンバート)
-function make_user_rules($str)
-{
-	global $user_rules;
-	static $pattern,$replace;
-	
-	if (!isset($pattern))
-	{
-		$pattern = array_map(create_function('$a','return "/$a/";'),array_keys($user_rules));
-		$replace = array_values($user_rules);
-		unset($user_rules);
-	}
-	return preg_replace($pattern,$replace,$str);
-}
-
 // ユーザ定義ルール(ソースは置換せずコンバート)
 function make_line_rules($str)
 {

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.17 2004/01/15 13:14:36 nao-pon Exp $
+// $Id: init.php,v 1.18 2004/01/27 14:25:33 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -135,7 +135,6 @@ $line_rules = array_merge(array(
 if($usefacemark) {
   $line_rules = array_merge($line_rules,$facemark_rules);
 }
-$user_rules = array_merge($str_rules,$line_rules);
 
 $note_id = 1;
 $foot_explain = array();

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.15 2004/01/24 14:41:53 nao-pon Exp $
+// $Id: convert_html.php,v 1.16 2004/01/27 14:25:33 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false)
 {
@@ -91,7 +91,7 @@ class convert
 	{
 		global $hr,$script,$page,$vars,$top;
 		global $note_id,$foot_explain,$digest,$note_hr;
-		global $user_rules,$str_rules,$line_rules,$strip_link_wall;
+		global $str_rules,$line_rules,$strip_link_wall;
 		global $WikiName,$InterWikiName, $BracketName;
 		global $_table_left_margin,$_table_right_margin;
 		global $anon_writable,$h_excerpt;
@@ -255,7 +255,6 @@ class convert
 					{
 						$_converter = $converter; // copy
 						$h_excerpt = strip_tags($_converter->convert($str, $vars['page']));
-						//$h_excerpt = strip_tags(make_user_rules(make_link($str)));
 					}
 					//$level = strlen($out[1]) + 1;
 					$level = strlen($out[1]);
@@ -273,7 +272,7 @@ class convert
 					array_push($result, $_tag);
 					///// ParaeEdit /////
 					
-					$arycontents[] = str_repeat("-",$level)."<a href=\"#content_{$content_id_local}_$content_count\">".strip_htmltag(make_user_rules(inline($out[2],TRUE)))."</a>\n";
+					$arycontents[] = str_repeat("-",$level)."<a href=\"#content_{$content_id_local}_$content_count\">".strip_htmltag(make_line_rules(inline($out[2],TRUE)))."</a>\n";
 					$content_count++;
 				}
 				else if(preg_match("/^(-+)(.*)/",$line,$out))
@@ -719,14 +718,13 @@ class convert
 				elseif (!strip_tags($line) || preg_match("/^[ #\s\t]/",$line))
 					$_str[] = $line;
 				else
-					$_str[] = make_user_rules(make_link($line));
-					
+					$_str[] = make_link($line);
 			}
 			$str = $_str;
 			unset($_str);
 		}
 		else
-			$str = make_user_rules(make_link($str));
+			$str = make_link($str);
 /*		
 		$str = preg_replace("/^#related/e",'make_related($vars["page"],TRUE)',$str);
 

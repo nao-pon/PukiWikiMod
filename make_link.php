@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.16 2004/01/24 14:43:06 nao-pon Exp $
+// $Id: make_link.php,v 1.17 2004/01/27 14:25:33 nao-pon Exp $
 //
 
 // リンクを付加する
@@ -11,6 +11,7 @@ function make_link($string,$page = '')
 	global $vars;
 	static $converter;
 	
+	$string = str_replace('&amp;','&',$string);
 	if (!isset($converter))
 	{
 		$converter = new InlineConverter();
@@ -202,7 +203,7 @@ class Link_plugin extends Link
 	function get_pattern()
 	{
 		$this->pattern = <<<EOD
-(?:&amp;|&)
+&
 (      # (1) plain
  (\w+) # (2) plugin name
  (?:
