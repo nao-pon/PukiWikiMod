@@ -151,7 +151,15 @@ div.wiki_page_navi
 	margin-top:     5px;
 }
 
-.pukiwiki_body pre, dl, ol, ul, blockquote, td { line-height:1.5; }
+.pukiwiki_body pre,
+.pukiwiki_body dl,
+.pukiwiki_body ol,
+.pukiwiki_body ul,
+.pukiwiki_body blockquote,
+.pukiwiki_body td
+{
+	line-height:1.5;
+}
 
 .pukiwiki_body p
 {
