@@ -150,9 +150,10 @@ div.wiki_page_navi
 	margin-bottom:  5px;
 	margin-top:     5px;
 }
-pre, dl, ol, ul, blockquote, td { line-height:1.5; }
 
-p
+.pukiwiki_body pre, dl, ol, ul, blockquote, td { line-height:1.5; }
+
+.pukiwiki_body p
 {
 	margin-left:10px;
 }
@@ -161,7 +162,7 @@ li
 {
 }
 
-h1
+.pukiwiki_body h1
 {
  	border-bottom:  7px solid #DDEEFF;
  	border-top:     1px solid #DDEEFF;
@@ -177,7 +178,7 @@ h1
 
 }
 
-h2
+.pukiwiki_body h2
 {
  	border-bottom:  5px solid #DDEEFF;
  	border-top:     1px solid #DDEEFF;
@@ -194,7 +195,7 @@ h2
 
 }
 
-h3
+.pukiwiki_body h3
 {
  	border-bottom:  3px solid #DDEEFF;
  	border-top:     1px solid #DDEEFF;
@@ -211,7 +212,7 @@ h3
 
 }
 
-h4
+.pukiwiki_body h4
 {
  	border-left:   18px solid #DDEEFF;
 	background-color: #FFFFFF;
@@ -223,7 +224,7 @@ h4
 	text-align: left;
 }
 
-h5, h6
+.pukiwiki_body h5, h6
 {
 	font-family: verdana, arial, helvetica, Sans-Serif;
 	background-color: #DDEEFF;
@@ -231,13 +232,13 @@ h5, h6
 	text-align: left;
 }
 
-dt {
+.pukiwiki_body dt {
 	font-weight: bold;
 	margin-top: 1em;
 	margin-left: 1em;
 }
 
-pre {
+.pukiwiki_body pre {
 	border-top:    #DDDDEE 1px solid;
 	border-bottom: #888899 1px solid;
 	border-left:   #DDDDEE 1px solid;
@@ -286,24 +287,24 @@ input.copyButton {
 	background-color:EEF8FD;
 }
 
-img {
+.pukiwiki_body img {
 	border: none;
 	vertical-align: middle;
 }
 
-em {
+.pukiwiki_body em {
 	font-style:italic;
 }
 
-rt {
+.pukiwiki_body rt {
 	font-weight:100;
 }
 
-strong {
+.pukiwiki_body strong {
 	font-weight:bold;
 }
 
-address {
+.pukiwiki_body address {
 	font-style:normal;
 	font-family:Verdana;
 	font-size:9px;
