@@ -1,5 +1,5 @@
 <?php
-// $Id: template.inc.php,v 1.4 2004/05/20 13:59:11 nao-pon Exp $
+// $Id: template.inc.php,v 1.5 2004/05/27 14:01:19 nao-pon Exp $
 
 define("MAX_LEN",60);
 function plugin_template_action()
@@ -13,7 +13,7 @@ function plugin_template_action()
 	$ret = "";
 	
 	// edit
-	if($vars["refer"] &&  $vars["page"] && $vars["submit"] && !is_page($vars["refer"]))
+	if($vars["refer"] && $vars["page"] && $vars["check"] && !is_page($vars["refer"]))
 	{
 		// ページ名がWikiNameでなく、BracketNameでなければBracketNameとして解釈
 		if(!preg_match("/^(($WikiName)|($BracketName))$/",$vars["refer"]))
@@ -25,7 +25,6 @@ function plugin_template_action()
 		
 		// ページ作成権限チェック
 		$up_freeze_info = get_freezed_uppage($page);
-		if ($up_freeze_info[0]) $defvalue_freeze = 1;
 		
 		if (!WIKI_ALLOW_NEWPAGE || !check_readable($page,false,false) || $up_freeze_info[4])
 		{
@@ -35,64 +34,29 @@ function plugin_template_action()
 		}
 		else
 		{
-			$lines = get_source($vars["page"]);
+			global $X_uid,$author_uid,$freeze_check;
+
+			$lines = join('',get_source($vars["page"]));
 			delete_page_info($lines);
+			$lines = explode("\n",rtrim($lines));
 			
 			if($vars["begin"] <= $vars["end"])
 			{
 				for($i=$vars["begin"];$i<=$vars["end"];$i++)
 				{
-					$postdata.= $lines[$i];
+					$postdata.= $lines[$i]."\n";
 				}
 			}
-			
-			if($vars["help"] == "true")
-				$help = $hr.catrule();
-			else
-				$help = "<br />\n<ul><li><a href=\"$script?cmd=edit&amp;help=true&amp;page=".rawurlencode($page)."\">$_msg_help</a></ul></li>\n";
-
-			if($function_freeze)
-				$str_freeze = '<input type="submit" name="freeze" value="'.$_btn_freeze.'" accesskey="f" />';
-	$retvar["body"] =  '
-	<form action="'.$script.'" method="post">
-	<table cellspacing="3" cellpadding="0" border="0">
-	 <tr>
-	  <td align="right">
-	'.$template.'
-	  </td>
-	 </tr>
-	 <tr>
-	  <td align="right">
-	   <input type="hidden" name="page" value="'.$page.'" />
-	   <input type="hidden" name="digest" value="'.$digest.'" />
-	   <textarea name="msg" rows="'.$rows.'" cols="'.$cols.'" wrap="virtual">
-	'.$postdata.'</textarea>
-	  </td>
-	 </tr>
-	 <tr>
-	  <td>
-	   <input type="submit" name="preview" value="'.$_btn_preview.'" accesskey="p" />
-	   <input type="submit" name="write" value="'.$_btn_update.'" accesskey="s" />
-	   '.$add_top.'
-	   <input type="checkbox" name="notimestamp" value="true" /><span class="small">'.$_btn_notchangetimestamp.'</span>
-	  </td>
-	 </tr>
-	</table>
-	</form>
-	<form action="'.$script.'?cmd=freeze" method="post">
-	<table cellspacing="3" cellpadding="0" border="0">
-	  <td align="right">
-	   <input type="hidden" name="page" value="'.$vars["page"].'" />
-	   '.$str_freeze.'
-	  </td>
-	 </tr>
-	</table>
-	</form>
-	' . $help;
-
-			$retvar["msg"] = "$1 の編集";
-			
+			//ページ作成者
+			$author_uid = $X_uid;
+			$freeze_check = ($up_freeze_info[0])? "checked " : "";
 			$vars["page"] = $vars["refer"];
+			$vars["refer"] = "";
+			
+			$retvar["body"] = edit_form($postdata,$page,0,$up_freeze_info[3],$up_freeze_info[2]);
+			
+			$retvar["msg"] = strip_bracket($vars["page"])." の編集";
+			
 			return $retvar;
 		}
 	}
@@ -104,8 +68,9 @@ function plugin_template_action()
 			
 			$begin_select = "";
 			$end_select = "";
-			$lines = get_source($vars["refer"]);
+			$lines = join("",get_source($vars["refer"]));
 			delete_page_info($lines);
+			$lines = explode("\n",rtrim($lines));
 			$begin_select.= "開始行:<br /><select name=\"begin\" size=\"10\">\n";
 			for($i=0;$i<count($lines);$i++)
 			{
@@ -127,46 +92,6 @@ function plugin_template_action()
 			$end_select.= "</select><br />\n<br />\n";
 			
 			
-			/*
-			$select = "";
-			$lines = @file(get_filename(encode($vars["refer"])));
-			$select.= "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"2\" border=\"0\">\n";
-			$select.= "<tr><td width=\"40\" style=\"background-color:#ddeeff\">開始</td><td width=\"40\" style=\"background-color:#ddeeff\">終了</td><td style=\"background-color:#ddeeff\">&nbsp;</td></tr>\n";
-			
-			for($i=0;$i<count($lines);$i++)
-			{
-				//$lines[$i] = mb_strimwidth($lines[$i],0,MAX_LEN,"...");
-				
-				if($i==0)
-				{
-					$begin_tag = "checked=\"checked\"";
-					$end_tag = "";
-				}
-				else if($i==count($lines)-1)
-				{
-					$begin_tag = "";
-					$end_tag = "checked=\"checked\"";
-				}
-				else
-				{
-					$begin_tag = "";
-					$end_tag = "";
-				}
-				
-				if($i%2) $color = "style=\"background-color:#f0fffa\"";
-				else     $color = "";
-				$select.= "<tr>";
-				$select.= "<td $color>";
-				$select.= "<input type=\"radio\" name=\"begin\" value=\"$i\" $begin_tag />\n";
-				$select.= "</td><td $color>";
-				$select.= "<input type=\"radio\" name=\"end\" value=\"$i\" $end_tag />\n";
-				$select.= "</td><td $color>";
-				$select.= "$lines[$i]";
-				$select.= "</td>";
-				$select.= "</tr>";
-			}
-			$select.= "</table><br />\n";
-			*/
 		}
 		$s_refer = htmlspecialchars($vars['refer']);
 		$ret.= "<form action=\"$script\" method=\"post\">\n";
@@ -179,6 +104,7 @@ function plugin_template_action()
 		$ret.= $end_select;
 		//$ret.= $select;
 		$ret.= "ページ名: <input type=\"text\" size=\"50\" name=\"refer\" value=\"$s_refer/複製\" />\n";
+		$ret.= "<input type=\"hidden\" name=\"check\" value=\"1\" />";
 		$ret.= "<input type=\"submit\" name=\"submit\" value=\"作成\" />\n";
 		$ret.= "</div>\n";
 		$ret.= "</form>\n";
