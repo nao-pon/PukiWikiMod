@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: link.php,v 1.3 2004/03/20 07:21:17 nao-pon Exp $
+// $Id: link.php,v 1.4 2004/05/22 14:00:17 nao-pon Exp $
 // ORG: link.php,v 1.6 2003/07/29 09:09:20 arino Exp $
 //
 
@@ -66,7 +66,8 @@ function links_update($page)
 		}
 		if (is_a($_obj,'Link_autolink')) // 行儀が悪い
 		{
-			$rel_auto[] = $_obj->name;
+			if (is_page($_obj->name))
+				$rel_auto[] = $_obj->name;
 		}
 		else
 		{
@@ -84,8 +85,8 @@ function links_update($page)
 	{
 		if (count($rel_new))
 		{
-    		$fp = fopen($rel_file,'w')
-    			or die_message('cannot write '.htmlspecialchars($rel_file));
+			$fp = fopen($rel_file,'w')
+				or die_message('cannot write '.htmlspecialchars($rel_file));
 			fputs($fp,join("\t",$rel_new));
 			fclose($fp);
 		}
@@ -94,14 +95,29 @@ function links_update($page)
 	links_add($page,array_diff($rel_new,$rel_old),$rel_auto);
 	links_delete($page,array_diff($rel_old,$rel_new));
 	
-	global $WikiName,$autolink,$nowikiname,$search_non_list;
+	global $WikiName,$autolink,$nowikiname,$search_non_list,$wiki_common_dirs;
 	// $pageが新規作成されたページで、AutoLinkの対象となり得る場合
 	if ($time and !$rel_file_exist and $autolink
 		and (preg_match("/^$WikiName$/",$page) ? $nowikiname : strlen($page) >= $autolink))
 	{
 		// $pageを参照していそうなページを一斉更新する(おい)
 		$search_non_list = 1;
-		$pages = do_search($page,'AND',TRUE);
+		
+		$lookup_page = $page;
+		// 検索ページ名の共通リンクディレクトリを省略
+		if (count($wiki_common_dirs))
+		{
+			foreach($wiki_common_dirs as $wiki_common_dir)
+			{
+				if (strpos($lookup_page,$wiki_common_dir) === 0)
+				{
+					$lookup_page = str_replace($wiki_common_dir,"",$lookup_page);
+					break;
+				}
+			}
+		}
+		// 検索実行
+		$pages = do_search($lookup_page,'AND',TRUE);
 		foreach ($pages as $_page)
 		{
 			if ($_page != $page)

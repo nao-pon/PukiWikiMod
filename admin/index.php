@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.18 2004/05/15 02:55:10 nao-pon Exp $
+// $Id: index.php,v 1.19 2004/05/22 14:00:17 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -95,6 +95,7 @@ function writeConfig(){
 	\$page_cache_min = $f_page_cache_min;
 	\$use_static_url = $f_use_static_url;
 	\$update_ping_to = '$update_ping_to';
+	\$wiki_common_dirs = '$wiki_common_dirs';
 	";
 	$content .= "\n?>";
 
@@ -153,7 +154,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs;
 	
 	xoops_cp_header();
 	OpenTable();
@@ -316,6 +317,11 @@ function displayForm(){
 	</td><td>
 		<input type='radio' name='f_use_static_url' value='1'".$use_static_url_sw[1].">"._AM_WIKI_ENABLE."
 		<input type='radio' name='f_use_static_url' value='0'".$use_static_url_sw[0].">"._AM_WIKI_DISABLE."
+	</td></tr>
+	<tr><td valign='top'>
+		"._AM_WIKI_COMMON_DIRS."
+	</td><td>
+		<textarea name='wiki_common_dirs' cols='70' rows='10'>".htmlspecialchars($wiki_common_dirs)."</textarea>
 	</td></tr>
 	<tr><td valign='top'>
 		"._AM_WIKI_CSS."

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.25 2004/05/20 14:00:16 nao-pon Exp $
+// $Id: file.php,v 1.26 2004/05/22 14:00:17 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -194,7 +194,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 // 第4引数追加:最終更新しない=true by nao-pon
 function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="",$agids="",$freeze="",$unvisible="")
 {
-	global $post,$update_exec,$autolink;
+	global $post,$update_exec,$autolink,$wiki_common_dirs,$X_admin,$X_uid;
 	
 	if (is_null($notimestamp)) $notimestamp=$post['notimestamp'];
 	
@@ -251,7 +251,24 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		// for autolink
 		if ($autolink)
 		{
-			list($pattern,$forceignorelist) = get_autolink_pattern(get_existpages());
+			// ゲストアカウントとしてページ一覧を得る
+			$_X_admin = $X_admin;
+			$_X_uid = $X_uid;
+			$X_admin =0;
+			$X_uid =0;
+			
+			//共通リンクディレクトリ
+			$c_pages = array();
+			foreach($wiki_common_dirs as $c_dir)
+			{
+				foreach(get_existpages(false,$c_dir) as $c_page)
+				{
+					$c_pages[] = add_bracket(str_replace($c_dir,"",strip_bracket($c_page)));
+				}
+			}
+			$c_pages = array_unique(array_merge(get_existpages(),$c_pages));
+			list($pattern,$forceignorelist) = get_autolink_pattern($c_pages);
+			//list($pattern,$forceignorelist) = get_autolink_pattern(get_existpages());
 			
 			$fp = fopen(CACHE_DIR.'autolink.dat','w')
 				or die_message('cannot write autolink file '.CACHE_DIR.'/autolink.dat<br />maybe permission is not writable');
@@ -260,6 +277,10 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			fputs($fp,join("\t",$forceignorelist));
 			flock($fp,LOCK_UN);
 			fclose($fp);
+			
+			//ログイン情報戻し
+			$X_admin = $_X_admin;
+			$X_uid = $_X_uid;
 		}
 		
 		if (!$notimestamp && !$unvisible)
