@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.5 2003/07/02 00:56:44 nao-pon Exp $
+// $Id: html.php,v 1.6 2003/07/02 11:04:42 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -659,19 +659,22 @@ function inline2($str)
 		}
 	}
 	// インラインプラグイン前処理(インラインのパラメータはmake_linkを抑制)
-	$str = preg_replace("/(&amp;[^(){}; ]+\()([^(){};]*)(\)([^;]*)?;)/","$1[[$2]]$3",$str);
+	//$str = preg_replace("/(&amp;[^(){}; ]+\()([^(){};]*)(\)([^;]*)?;)/","$1[[$2]]$3",$str);
+	$str = preg_replace("/(&amp;[^(){}; ]+\()((?:(?!\)[;{]).)*)(\)([^;]*)?;)/","$1[[$2]]$3",$str);
 	
 	// リンク処理
 	$str = make_link($str);
 
 	// インラインプラグイン後処理(元に戻す)
-	$str = preg_replace("/(&amp;[^(){}; ]+\()([^(){}]*)(\)([^;]*)?;)/e","'$1'.inline_after('$2').'$3'",$str);
+	//$str = preg_replace("/(&amp;[^(){}; ]+\()([^(){}]*)(\)([^;]*)?;)/e","'$1'.inline_after('$2').'$3'",$str);
+	$str = preg_replace("/(&amp;[^(){}; ]+\()((?:(?!\)[;{]).)*)(\)([^;]*)?;)/e","'$1'.inline_after('$2').'$3'",$str);
 
 	// インラインプラグイン
 
 	//foreach($str as $tmp) echo htmlspecialchars($tmp)."<br>";
 
-	$str = preg_replace("/&amp;([^(){};]+)(\(([^(){}]*)\))?(\{(.*)\})?;/ex","inline3('$1','$3','$5','$0')",$str);
+	//$str = preg_replace("/&amp;([^(){};]+)(\(([^(){}]*)\))?(\{(.*)\})?;/ex","inline3('$1','$3','$5','$0')",$str);
+	$str = preg_replace("/&amp;([^(){};]+)(\(((?:(?!\)[;{]).)*)\))?(\{(.*)\})?;/ex","inline3('$1','$3','$5','$0')",$str);
 	
 	$str = preg_replace("/#related/e",'make_related($vars["page"],TRUE)',$str);
 	$str = make_user_rules($str);
@@ -701,7 +704,8 @@ function inline3($name,$arg,$body,$all)
 {
 	//&hoge(){...}; &fuga(){...}; のbodyが'...}; &fuga(){...'となるので、前後に分ける
 	$after = '';
-	if (preg_match("/^ ((?!};).*?) }; (.*?) &amp; (\w+) (?: \( ([^()]*) \) )? { (.+)$/x",$body,$matches))
+	//if (preg_match("/^ ((?!};).*?) }; (.*?) &amp; (\w+) (?: \( ( [^()]          *) \) )? { (.+)$/x",$body,$matches))
+	if (preg_match("/^ ((?!};).*?) }; (.*?) &amp; (\w+) (?: \( ( (?:(?!\)[;{]).)*) \) )? { (.+)$/x",$body,$matches))
 	{
 		$body = $matches[1];
 		$after = inline3($matches[3],$matches[4],$matches[5],$matches[0]);
