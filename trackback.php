@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.11 2004/05/15 13:13:23 nao-pon Exp $
+// $Id: trackback.php,v 1.12 2004/06/09 13:16:24 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -90,15 +90,12 @@ function tb_count($page,$ext='.txt')
 // TrackBack Ping 送信
 function tb_send($page,$data="")
 {
-	global $script,$trackback,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$use_static_url,$update_ping_to,$defaultpage;
-	
-	//error_reporting("E_ALL");
-	
-	//echo $data;
+	global $script,$trackback,$update_ping_to,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$use_static_url,$update_ping_to,$defaultpage;
 	
 	$page = strip_bracket($page);
-	
-	if (!$trackback || 
+
+	// 処理しない場合
+	if ((!$trackback && !$update_ping_to) || 
 		($page == $interwiki) || 
 		(preg_match("/".preg_quote("/$auto_template_name","/")."(_m)?$/",$page))
 		)
