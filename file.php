@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.30 2004/07/31 06:48:04 nao-pon Exp $
+// $Id: file.php,v 1.31 2004/08/18 23:17:32 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -76,11 +76,9 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	file_write(DIFF_DIR,$page,$diffdata);
 
 	// バックアップの作成
-	if(is_page($page))
-		$oldposttime = filemtime(get_filename(encode($page)));
-	else
-		$oldposttime = time();
-
+	// 日付はバックアップを作成した日時
+	$oldposttime = time();
+	
 	// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
 	if(!$postdata && $del_backup)
 		backup_delete(BACKUP_DIR.encode($page).".txt");
@@ -265,15 +263,20 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 				}
 			}
 			$c_pages = array_unique(array_merge(get_existpages(),$c_pages));
-			list($pattern,$forceignorelist) = get_autolink_pattern($c_pages);
-			//list($pattern,$forceignorelist) = get_autolink_pattern(get_existpages());
 			
-			$fp = fopen(CACHE_DIR.'autolink.dat','w')
-				or die_message('cannot write autolink file '.CACHE_DIR.'/autolink.dat<br />maybe permission is not writable');
-			flock($fp,LOCK_EX);
-			fputs($fp,$pattern."\n");
-			fputs($fp,join("\t",$forceignorelist));
-			flock($fp,LOCK_UN);
+			list($pattern, $pattern_a, $forceignorelist) = get_autolink_pattern($c_pages);
+			
+			$fp = fopen(CACHE_DIR . 'autolink.dat', 'wb') or
+				die_message('Cannot write autolink file ' .
+				CACHE_DIR . '/autolink.dat' .
+				'<br />Maybe permission is not writable');
+			set_file_buffer($fp, 0);
+			flock($fp, LOCK_EX);
+			rewind($fp);
+			fputs($fp, $pattern   . "\n");
+			fputs($fp, $pattern_a . "\n");
+			fputs($fp, join("\t", $forceignorelist) . "\n");
+			flock($fp, LOCK_UN);
 			fclose($fp);
 			
 			//ログイン情報戻し
