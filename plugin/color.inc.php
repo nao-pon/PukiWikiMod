@@ -2,47 +2,48 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: color.inc.php,v 1.2 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: color.inc.php,v 1.3 2004/11/27 04:20:44 nao-pon Exp $
+// ORG: color.inc.php,v 1.13 2004/11/21 11:42:59 henoheno Exp $
 //
+// Text color plugin
 
+define('PLUGIN_COLOR_ALLOW_CSS', TRUE); // TRUE, FALSE
+
+// ----
+define('PLUGIN_COLOR_USAGE', '&color(foreground[,background]){text};');
+define('PLUGIN_COLOR_REGEX', '/^(#[0-9a-f]{6}|[a-z-]+)$/i');
 function plugin_color_inline()
 {
-	if (func_num_args() == 3)
-	{
-		list($color,$bgcolor,$body) = func_get_args();
-		if ($body == '')
-		{
-			$body = $bgcolor;
-			$bgcolor = '';
-		}
-	}
-	else if (func_num_args() == 2)
-	{
+	global $html_transitional;
+
+	$args = func_get_args();
+	$text = array_pop($args); // htmlspecialchars(text)
+
+	list($color, $bgcolor) = array_pad($args, 2, '');
+	if ($text == '' && $bgcolor != '') {
+		// Maybe the old style: '&color(foreground,text);'
+		$text    = htmlspecialchars($bgcolor);
 		$bgcolor = '';
-		list($color,$body) = func_get_args();
 	}
-	else
-	{
-		return FALSE;
+	if ($color == '' || $text == '' || func_num_args() > 3)
+		return PLUGIN_COLOR_USAGE;
+
+	// Invalid color
+	foreach(array($color, $bgcolor) as $col){
+		if ($col != '' && ! preg_match(PLUGIN_COLOR_REGEX, $col))
+			return '&color():Invalid color: ' . htmlspecialchars($col) . ';';
 	}
-	
-	if ($color == '' or $body == '')
-	{
-		return FALSE;
+
+	if (PLUGIN_COLOR_ALLOW_CSS === TRUE) {
+		// Using <font> tag with:
+		//   NG: XHTML 1.1
+		if ($bgcolor != '') $bgcolor = ';background-color:' . $bgcolor;
+		return '<span style="color:' . $color . $bgcolor . '">' . $text . '</span>';
+	} else {
+		// Using <font> tag with:
+		//   OK: XHTML 1.0 Transitional
+		if ($bgcolor != '') return '&color(): bgcolor (with CSS) not allowd;';
+		return '<font color="' . $color . '">' . $text . '</font>';
 	}
-	if (!plugin_color_is_valid($color) or !plugin_color_is_valid($bgcolor))
-	{
-		return $body;
-	}
-	
-	if ($bgcolor != '')
-	{
-		$color .= ';background-color:'.$bgcolor;
-	}
-	return "<span style=\"color:$color\">$body</span>";
-}
-function plugin_color_is_valid($color)
-{
-	return ($color == '') or preg_match('/^(#[0-9a-f]+|[\w-]+)$/i',$color);
 }
 ?>
