@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.34 2004/01/12 13:18:59 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.35 2004/01/15 13:01:51 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -1135,8 +1135,10 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	{
 		if (check_readable($get["page"],false,false))
 		{
-			$postdata = join("",get_source($get["page"]));
-			$postdata = convert_html($postdata);
+			//$postdata = join("",get_source($get["page"]));
+			//$postdata = convert_html($postdata);
+			//$postdata = get_page_html($get["page"]);
+			$postdata = convert_html($get["page"],false,true);
 
 			$title = htmlspecialchars(strip_bracket($get["page"]));
 			$page = make_search($get["page"]);
@@ -1272,12 +1274,14 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 // 何も指定されない場合、トップページを表示
 else
 {
-	$postdata = join("",get_source($defaultpage));
-
+	//$postdata = join("",get_source($defaultpage));
+	//$postdata =  get_page_html($defaultpage);
 	$vars["page"] = $defaultpage;
+	$postdata = convert_html($defaultpage,false,true);
 	$title = htmlspecialchars(strip_bracket($defaultpage));
 	$page = make_search($vars["page"]);
-	$body = tb_get_rdf($vars['page'])."\n".convert_html($postdata);
+	//$body = tb_get_rdf($vars['page'])."\n".convert_html($postdata);
+	$body = tb_get_rdf($vars['page'])."\n".$postdata;
 
 	header_lastmod($vars["page"]);
 }
@@ -1290,9 +1294,12 @@ $xoops_mod_add_title = $xoops_pagetitle;
 //<link>タグを追加
 if (is_page($vars["page"]))
 {
+	$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php?cmd=rss10&page=';
+	$rss_url .= rawurlencode(preg_replace("/\/[0-9\-]+$/","",strip_bracket($vars["page"])));
 	$xoops_mod_add_header = '
 <link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list">
 <link rel="contents" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?plugin=map">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="'.$rss_url.'" />
 ';
 	$xoops_mod_add_header .= get_header_link_tag_by_name($vars["page"]);
 }
