@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.27 2004/05/22 15:59:31 nao-pon Exp $
+// $Id: file.php,v 1.28 2004/05/25 14:39:45 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -328,9 +328,9 @@ function put_recentdeleted($page)
 	$postdata .= join('',$lines);
 	$postdata .= "#norelated\n";
 	if ($unvisible_deleted)
-		file_write(DATA_DIR,$whatsdeleted,$postdata,0,"0","0","0","0","1","1");
+		file_write(DATA_DIR,add_bracket($whatsdeleted),$postdata,0,"0","0","0","0","1","1");
 	else
-		file_write(DATA_DIR,$whatsdeleted,$postdata,0,"0","0","","","1","0");
+		file_write(DATA_DIR,add_bracket($whatsdeleted),$postdata,0,"0","0","","","1","0");
 }
 
 // 最終更新ページの更新
