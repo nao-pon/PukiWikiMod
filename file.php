@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.17 2004/01/24 14:41:19 nao-pon Exp $
+// $Id: file.php,v 1.18 2004/01/27 14:31:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -508,7 +508,7 @@ function get_readings()
 				or die_message("cannot write temporary file '$tmpfname'.\n");
 			foreach ($readings as $page => $reading) {
 				if($reading=='') {
-					fputs($fp, mb_convert_encoding("$page\n", $pagereading_kanji2kana_encoding, SOURCE_ENCODING));
+					fputs($fp, mb_convert_encoding(strip_bracket($page)."\n", $pagereading_kanji2kana_encoding, SOURCE_ENCODING));
 				}
 			}
 			fclose($fp);
@@ -685,10 +685,10 @@ function get_pg_auther($page)
 	$string = preg_replace("/(^|\n)#(freeze|unvisible)([^\n]*)?/","",$string);
 	$string = trim($string);
 	
-	
 	if (preg_match("/^\/\/ author:([0-9]+)($|\n)/",$string,$arg))
-		$get_pg_auther[$page] = $arg[1];
-
+		$author_uid = $arg[1];
+		
+	$get_pg_auther[$page] = $author_uid;
 	return $get_pg_auther[$page];
 }
 
