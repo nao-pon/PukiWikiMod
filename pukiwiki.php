@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.59 2004/12/02 13:56:14 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.60 2004/12/09 13:54:09 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -1089,69 +1089,77 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	}
 }
 
-// <title>にページ名をプラス
-$xoops_pagetitle = $xoopsModule->name();
-$xoops_pagetitle = $title."-".$xoops_pagetitle;
-if ($h_excerpt) $xoops_pagetitle = $h_excerpt."-".$xoops_pagetitle;
-// XOOPS 1 用 XOOPS/include/functions.php の改造が必要
-global $xoops_mod_add_title,$xoops_mod_add_header;
-$xoops_mod_add_title = $xoops_pagetitle;
-//<link>タグを追加
-if (is_page($vars["page"]))
+if (empty($vars['xoops_block']))
 {
-	if ($vars['is_rsstop'])
-		$up_page ="&page=".rawurlencode(strip_bracket($vars["page"]));
-	else
-		$up_page = (strpos($vars["page"],"/")) ? "&page=".rawurlencode(preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($vars["page"]))) :"";
-	
-	$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php?cmd=rss10&content=true'.$up_page;
-	
-	$xoops_mod_add_header = '
-<link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list">
-<link rel="contents" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?plugin=map">
-<link rel="alternate" type="application/rss+xml" title="RSS" href="'.$rss_url.'" />
-';
-	$xoops_mod_add_header .= get_header_link_tag_by_name($vars["page"]);
-}
-
-// CSS
-
-$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">'."\n";
-if (WIKI_THEME_CSS)
-{
-	$xoops_mod_add_header .= '<link rel="stylesheet" href="'.WIKI_THEME_CSS.'" type="text/css" media="screen" charset="shift_jis">'."\n";
-}
-else
-{
-	$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">'."\n";
-}
-if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css"))
-{
-	$xoops_mod_add_header .= '<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
-}
-
-if (empty($vars['xoops_block'])) include("header.php");
-
-// <title>にページ名をプラス
-// XOOPS 2 用
-global $xoopsTpl;
-if ($xoopsTpl)
-{
-	$xoopsTpl->assign("xoops_pagetitle",$xoops_pagetitle);
-	$xoopsTpl->assign("xoops_module_header",$xoops_mod_add_header);
-	//Ads表示済みフラグ
-	$xoopsTpl->assign("ads_shown",$wiki_ads_shown);
-	$wiki_head_keywords = array_unique($wiki_head_keywords);
-	if (count($wiki_head_keywords))
+	// <title>にページ名をプラス
+	$xoops_pagetitle = $xoopsModule->name();
+	$xoops_pagetitle = $title."-".$xoops_pagetitle;
+	if ($h_excerpt) $xoops_pagetitle = $h_excerpt."-".$xoops_pagetitle;
+	// XOOPS 1 用 XOOPS/include/functions.php の改造が必要
+	global $xoops_mod_add_title,$xoops_mod_add_header;
+	$xoops_mod_add_title = $xoops_pagetitle;
+	//<link>タグを追加
+	if (is_page($vars["page"]))
 	{
-		$xoopsTpl->assign("xoops_meta_keywords",implode(',',$wiki_head_keywords).",".$xoopsTpl->get_template_vars("xoops_meta_keywords"));
+		if ($vars['is_rsstop'])
+			$up_page ="&page=".rawurlencode(strip_bracket($vars["page"]));
+		else
+			$up_page = (strpos($vars["page"],"/")) ? "&page=".rawurlencode(preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($vars["page"]))) :"";
+		
+		$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php?cmd=rss10&content=true'.$up_page;
+		
+		$xoops_mod_add_header = '
+	<link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list">
+	<link rel="contents" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?plugin=map">
+	<link rel="alternate" type="application/rss+xml" title="RSS" href="'.$rss_url.'" />
+	';
+		$xoops_mod_add_header .= get_header_link_tag_by_name($vars["page"]);
 	}
-	// desciption
-	$xoopsTpl->assign("xoops_meta_description",mb_strcut(preg_replace("/\s+/","",strip_tags($body)),0,200));
-}
-else
-{
-	$body = $xoops_mod_add_header."\n".$body;
+
+	// CSS タグ設定
+	$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+	if (WIKI_THEME_CSS)
+	{
+		$xoops_mod_add_header .= '<link rel="stylesheet" href="'.WIKI_THEME_CSS.'" type="text/css" media="screen" charset="shift_jis">'."\n";
+	}
+	else
+	{
+		$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+	}
+	if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css"))
+	{
+		$xoops_mod_add_header .= '<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+	}
+	// ページ用の .css
+	$_pagecss_file = encode(strip_bracket($vars["page"])).".css";
+	if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/".$_pagecss_file))
+	{
+		$xoops_mod_add_header .= '<link rel="stylesheet" href="cache/'.$_pagecss_file.'" type="text/css" media="screen" charset="shift_jis">'."\n";
+	}
+
+	include("header.php");
+
+	// <title>にページ名をプラス
+	// XOOPS 2 用
+	global $xoopsTpl;
+	if ($xoopsTpl)
+	{
+		$xoopsTpl->assign("xoops_pagetitle",$xoops_pagetitle);
+		$xoopsTpl->assign("xoops_module_header",$xoops_mod_add_header);
+		//Ads表示済みフラグ
+		$xoopsTpl->assign("ads_shown",$wiki_ads_shown);
+		$wiki_head_keywords = array_unique($wiki_head_keywords);
+		if (count($wiki_head_keywords))
+		{
+			$xoopsTpl->assign("xoops_meta_keywords",implode(',',$wiki_head_keywords).",".$xoopsTpl->get_template_vars("xoops_meta_keywords"));
+		}
+		// desciption
+		$xoopsTpl->assign("xoops_meta_description",mb_strcut(preg_replace("/\s+/","",strip_tags($body)),0,200));
+	}
+	else
+	{
+		$body = $xoops_mod_add_header."\n".$body;
+	}
 }
 // ** 出力処理 **
 //echo "<div class=\"pukiwiki_body\">\n";

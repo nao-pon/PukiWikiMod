@@ -175,7 +175,22 @@ $_attach_messages = array(
 	'err_adminpass'=> 'Wrong administrator password',
 	'btn_upload'   => 'Upload',
 	'btn_info'     => 'Information',
-	'btn_submit'   => 'Submit'
+	'btn_submit'   => 'Submit',
+	'msg_set_css'  => '$1 style sheet was set up.',
+	'msg_unset_css'=> '$1 style sheet was canceled..',
+	'msg_untar'    => 'UNTAR',
+	'msg_search_updata'=> 'The uploaded data to this page is looked for.',
+	'msg_paint_tool'=> 'Painting tool',
+	'msg_shi'      => 'SHI PAINTER',
+	'msg_shipro'   => 'SHI PAINTER Pro',
+	'msg_width'    => 'Width',
+	'msg_height'   => 'Height',
+	'msg_max'      => 'Max size',
+	'msg_do_paint' => 'Do painting',
+	'msg_save_movie'=> 'Animation recording',
+	'msg_adv_setting'=> '--- Extended specification ---',
+	'msg_init_image'=> 'The picture file read into canvas (JPEG or GIF)',
+	'msg_fit_size' => 'Canvas size is united with this picture.',
 );
 
 ///////////////////////////////////////

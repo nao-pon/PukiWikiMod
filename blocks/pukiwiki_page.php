@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.9 2004/12/02 13:56:15 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.10 2004/12/09 13:54:09 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -86,10 +86,30 @@ function b_pukiwiki_page_show($options)
 	{
 		$css_tag .= "\n".'<link rel="stylesheet" href="'.$wiki_url.'cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
 	}
+	
+	// ページ用の .css
+	// strip_bracket
+	$_pagecss_file = preg_replace("/^(?:[[)?(.*)(?:]])?$/","$1",$show_page);
+	//$_pagecss_file = $show_page;
+	// ページ名のエンコード
+	$enkey = '';
+	$arych = preg_split("//", $_pagecss_file, -1, PREG_SPLIT_NO_EMPTY);
+	foreach($arych as $ch)
+	{
+		$enkey .= sprintf("%02X", ord($ch));
+	}
+	$_pagecss_file = $enkey;
+	$_pagecss_file .= ".css";
+	
+	if(is_readable(XOOPS_ROOT_PATH."/modules/pukiwiki/cache/".$_pagecss_file))
+	{
+		$css_tag .= '<link rel="stylesheet" href="'.$wiki_url.'cache/'.$_pagecss_file.'" type="text/css" media="screen" charset="shift_jis">'."\n";
+	}
+	
 	global $xoopsTpl;
 	if ($xoopsTpl)
 	{
-		$xoopsTpl->assign('xoops_module_header',$xoopsTpl->get_template_vars('xoops_module_header').$css_tag);
+		$xoopsTpl->assign('xoops_block_header',$xoopsTpl->get_template_vars('xoops_block_header').$css_tag);
 	}
 	else
 	{

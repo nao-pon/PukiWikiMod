@@ -203,7 +203,22 @@ $_attach_messages = array(
 	'err_copyright'=> 'このファイルは著作権で保護されているため 表示・ダウンロード はできません。',
 	'btn_upload'   => 'アップロード',
 	'btn_info'     => '詳細',
-	'btn_submit'   => '実行'
+	'btn_submit'   => '実行',
+	'msg_set_css'  => '$1 へスタイルシートを設定しました。',
+	'msg_unset_css'=> '$1 のスタイルシートを解除しました。',
+	'msg_untar'    => 'TAR形式を解凍する',
+	'msg_search_updata'=> 'このページへのアップロード済みデータを探す。',
+	'msg_paint_tool'=> 'お絵かきツール',
+	'msg_shi'      => 'しぃペインター',
+	'msg_shipro'   => 'しぃペインターPro',
+	'msg_width'    => '横',
+	'msg_height'   => '縦',
+	'msg_max'      => '最大',
+	'msg_do_paint' => 'お絵かきする',
+	'msg_save_movie'=> '動画記録',
+	'msg_adv_setting'=> '---　拡張指定　---',
+	'msg_init_image'=> 'キャンバスに読み込む画像ファイル(JPEG or GIF)',
+	'msg_fit_size' => 'キャンバスサイズをこの画像に合わせる',
 );
 
 

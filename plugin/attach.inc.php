@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.25 2004/11/24 13:15:35 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.26 2004/12/09 13:54:09 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -212,7 +212,33 @@ function attach_upload($file,$page,$pass=NULL,$copyright=FALSE)
 
 function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL)
 {
-	global $_attach_messages,$X_uid;
+	global $_attach_messages,$X_uid,$X_admin;
+	
+	// style.css
+	$pginfo = get_pg_info_db($page);
+	if ($fname == "style.css" && ($X_admin || ($X_uid && $pginfo["uid"] == $X_uid)))
+	{
+		if ( is_uploaded_file($tmpname) )
+		{
+			$_pagecss_file = CACHE_DIR.encode(strip_bracket($page)).".css";
+			if (file_exists($_pagecss_file)) unlink($_pagecss_file);
+			if (move_uploaded_file($tmpname,$_pagecss_file))
+			{
+				chmod($_pagecss_file,ATTACH_FILE_MODE);
+				// 空のファイルの場合はファイル削除
+				if (!trim(join('',file($_pagecss_file))))
+				{
+					unlink($_pagecss_file);
+					return array('result'=>TRUE,'msg'=>$_attach_messages['msg_unset_css']);
+				}
+				else
+					return array('result'=>TRUE,'msg'=>$_attach_messages['msg_set_css']);
+			}
+			else
+				return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
+			
+		}
+	}
 	
 	$obj = &new AttachFile($page,$fname);
 	
@@ -462,20 +488,20 @@ EOD;
 		
 		$painter='
 <hr />
-<a href="'.$script.'?plugin=painter&amp;pmode=upload&amp;refer='.encode($page).'">このページへのアップロード済みデータを探す。</a><br />
+<a href="'.$script.'?plugin=painter&amp;pmode=upload&amp;refer='.encode($page).'">'.$_attach_messages['msg_search_updata'].'</a><br />
 <form action="'.$script.'" method=POST>
-お絵かきツール:<select name="tools">
-<option value="normal">しぃペインター</option>
-<option value="pro">しぃペインターPro</option>
+'.$_attach_messages['msg_paint_tool'].':<select name="tools">
+<option value="normal">'.$_attach_messages['msg_shi'].'</option>
+<option value="pro">'.$_attach_messages['msg_shipro'].'</option>
 </select>
-横<input type=text name=picw value='.$picw.' size=3>×縦<input type=text name=pich value='.$pich.' size=3>
-最大('.WIKI_PAINTER_MAX_WIDTH_UPLOAD.' x '.WIKI_PAINTER_MAX_HEIGHT_UPLOAD.')
-<input type=submit value="お絵かきする" />
-<input type=checkbox value="true" name="anime" checked="true" />動画記録<br />
-<br />---　拡張指定　---<br />
-キャンバスに読み込む画像ファイル(JPEG or GIF): <input type=text size=20 name="image_canvas" />
+'.$_attach_messages['msg_width'].'<input type=text name=picw value='.$picw.' size=3> x '.$_attach_messages['msg_height'].'<input type=text name=pich value='.$pich.' size=3>
+'.$_attach_messages['msg_max'].'('.WIKI_PAINTER_MAX_WIDTH_UPLOAD.' x '.WIKI_PAINTER_MAX_HEIGHT_UPLOAD.')
+<input type=submit value="'.$_attach_messages['msg_do_paint'].'" />
+<input type=checkbox value="true" name="anime" checked="true" />'.$_attach_messages['msg_save_movie'].'<br />
+<br />'.$_attach_messages['msg_adv_setting'].'<br />
+'.$_attach_messages['msg_init_image'].': <input type=text size=20 name="image_canvas" />
 <input type="checkbox" name="fitimage" value="1" checked="true" />
-キャンバスサイズをこの画像に合わせる
+'.$_attach_messages['msg_fit_size'].'
 <input type=hidden name="pmode" value="paint" />
 <input type=hidden name="plugin" value="painter" />
 <input type=hidden name="refer" value="'.$page.'" />
@@ -507,7 +533,7 @@ EOD;
   {$_attach_messages['msg_file']}: <input type="file" name="attach_file" />
   $pass
   <input type="submit" value="{$_attach_messages['btn_upload']}" />
-  (Untar:<input type="checkbox" name="untar_mode">)<br />
+  ({$_attach_messages['msg_untar']}:<input type="checkbox" name="untar_mode">)<br />
   <input type="checkbox" name="copyright" value="1" /> {$_attach_messages['msg_copyright']}
 
  </div>
