@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.16 2003/08/05 23:40:28 nao-pon Exp $
+// $Id: func.php,v 1.17 2003/09/02 14:09:11 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -124,7 +124,8 @@ function do_search($word,$type='AND',$non_format=FALSE)
 		{
 			$pages[$page] = get_filetime(encode($page));
 			if ($non_format){
-				$page_url = rawurlencode($page);
+				//$page_url = rawurlencode($page);
+				$page_url = rawurlencode(strip_bracket($page));
 				$link_tag="<a href=\"$script?$page_url\">".htmlspecialchars(strip_bracket($page), ENT_QUOTES)."</a>";
 				$link_tag .= get_pg_passage($page);
 				//$tm = @filemtime(get_filename(encode($page)));
@@ -265,6 +266,101 @@ function add_bracket($str){
 		if (!preg_match("/\[\[.*\]\]/",$str)) $str = "[[".$str."]]";
 	}
 	return $str;
+}
+
+// ページ一覧の作成
+function page_list($pages, $cmd = 'read', $withfilename=FALSE)
+{
+	global $script,$list_index,$top;
+	global $_msg_symbol,$_msg_other;
+	global $pagereading_enable;
+	
+	// ソートキーを決定する。 ' ' < '[a-zA-Z]' < 'zz'という前提。
+	$symbol = ' ';
+	$other = 'zz';
+	
+	$retval = '';
+
+	if($pagereading_enable) {
+		$readings = get_readings($pages);
+	}
+
+	$list = array();
+	foreach($pages as $file=>$page)
+	{
+		$page = strip_bracket($page);
+		$r_page = rawurlencode($page);
+		$s_page = htmlspecialchars($page,ENT_QUOTES);
+		$passage = get_pg_passage($page);
+		
+		$str = "   <li><a href=\"$script?cmd=$cmd&amp;page=$r_page\">$s_page</a>$passage";
+		
+		if ($withfilename)
+		{
+			$s_file = htmlspecialchars($file);
+			$str .= "\n    <ul><li>$s_file</li></ul>\n   ";
+		}
+		$str .= "</li>";
+		
+		if($pagereading_enable) {
+			if(mb_ereg('^([A-Za-zァ-ヶ])',$readings[$page],$matches)) {
+				$head = $matches[1];
+			}
+			elseif (mb_ereg('^[ -~]|[^ぁ-ん亜-熙]',$page)) {
+				$head = $symbol;
+			}
+			else {
+				$head = $other;
+			}
+		}
+		else {
+			$head = (preg_match('/^([A-Za-z])/',$page,$matches)) ? $matches[1] :
+				(preg_match('/^([ -~])/',$page,$matches) ? $symbol : $other);
+		}
+		
+		$list[$head][$page] = $str;
+	}
+	ksort($list);
+	
+	$cnt = 0;
+	$arr_index = array();
+	$retval .= "<ul>\n";
+	foreach ($list as $head=>$pages)
+	{
+		if ($head === $symbol)
+		{
+			$head = $_msg_symbol;
+		}
+		else if ($head === $other)
+		{
+			$head = $_msg_other;
+		}
+		
+		if ($list_index)
+		{
+			$cnt++;
+			$arr_index[] = "<a id=\"top_$cnt\" href=\"#head_$cnt\"><strong>$head</strong></a>";
+			$retval .= " <li><a id=\"head_$cnt\" href=\"#top_$cnt\"><strong>$head</strong></a>\n  <ul>\n";
+		}
+		ksort($pages);
+		$retval .= join("\n",$pages);
+		if ($list_index)
+		{
+			$retval .= "\n  </ul>\n </li>\n";
+		}
+	}
+	$retval .= "</ul>\n";
+	if ($list_index and $cnt > 0)
+	{
+		$top = array();
+		while (count($arr_index) > 0)
+		{
+			$top[] = join(" | \n",array_splice($arr_index,0,16))."\n";
+		}
+		$retval = "<div id=\"top\" style=\"text-align:center\">\n".
+			join("<br />",$top)."</div>\n".$retval;
+	}
+	return $retval;
 }
 
 // テキスト整形ルールを表示する

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.18 2003/07/22 13:36:42 nao-pon Exp $
+// $Id: html.php,v 1.19 2003/09/02 14:09:11 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -102,7 +102,6 @@ function get_page_name(){
 	
 	$tmpnames = array();
 	$retval = array();
-//	$retval = "";
 	$files = get_existpages();	
 	foreach($files as $page) {
 		if(preg_match("/$non_list/",$page)) continue;
@@ -111,111 +110,7 @@ function get_page_name(){
 	}
 	arsort ($tmpnames);
 	reset ($tmpnames);
-/*	
-	foreach($tmpnames as $name => $mojisu){
-		$retval[] = $name;
-	}
-*/
 	return array_keys($tmpnames);
-}
-// 一覧の取得
-function get_list($withfilename)
-{
-	global $script,$list_index,$top,$non_list,$whatsnew;
-	global $_msg_symbol,$_msg_other;
-	
-	$retval = array();
-	$files = get_existpages();
-	foreach($files as $page) {
-		if(preg_match("/$non_list/",$page) && !$withfilename) continue;
-		if($page == $whatsnew) continue;
-		$page_url = rawurlencode($page);
-		$page2 = strip_bracket($page);
-		$pg_passage = get_pg_passage($page);
-		$file = encode($page).".txt";
-		$retval[$page2] .= "<li><a href=\"$script?$page_url\">".htmlspecialchars($page2,ENT_QUOTES)."</a>$pg_passage";
-		if($withfilename)
-		{
-			$retval[$page2] .= "<ul><li>$file</li></ul>\n";
-		}
-		$retval[$page2] .= "</li>\n";
-	}
-	
-	$retval = list_sort($retval);
-	
-	if($list_index)
-	{
-		$head_str = "";
-		$etc_sw = 0;
-		$symbol_sw = 0;
-		$top_link = "";
-		$link_counter = 0;
-		foreach($retval as $page => $link)
-		{
-			$head = substr($page,0,1);
-			if($head_str != $head && !$etc_sw)
-			{
-				$retval2[$page] = "";
-				
-				if(preg_match("/([A-Z])|([a-z])/",$head,$match))
-				{
-					if($match[1])
-						$head_nm = "High_$head";
-					else
-						$head_nm = "Low_$head";
-					
-					if($head_str) $retval2[$page] = "</ul></li>\n";
-					$retval2[$page] .= "<li><a href=\"#top_$head_nm\" name=\"$head_nm\"><strong>$head</strong></a>\n<ul>\n";
-					$head_str = $head;
-					if($link_counter) $top_link .= "|";
-					$link_counter = $link_counter + 1;
-					$top_link .= "<a href=\"#$head_nm\" name=\"top_$head_nm\"><strong>&nbsp;".$head."&nbsp;</strong></a>";
-					if($link_counter==16) {
-					        $top_link .= "<br />";
-						$link_counter = 0;
-					}
-				}
-				else if(preg_match("/[ -~]/",$head))
-				{
-					if(!$symbol_sw)
-					{
-						if($head_str) $retval2[$page] = "</ul></li>\n";
-						$retval2[$page] .= "<li><a href=\"#top_symbol\" name=\"symbol\"><strong>$_msg_symbol</strong></a>\n<ul>\n";
-						$head_str = $head;
-						if($link_counter) $top_link .= "|";
-						$link_counter = $link_counter + 1;
-						$top_link .= "<a href=\"#symbol\" name=\"top_symbol\"><strong>$_msg_symbol</strong></a>";
-						$symbol_sw = 1;
-					}
-				}
-				else
-				{
-					if($head_str) $retval2[$page] = "</ul></li>\n";
-					$retval2[$page] .= "<li><a href=\"#top_etc\" name=\"etc\"><strong>$_msg_other</strong></a>\n<ul>\n";
-					$etc_sw = 1;
-					if($link_counter) $top_link .= "|";
-					$link_counter = $link_counter + 1;
-					$top_link .= "<a href=\"#etc\" name=\"top_etc\"><strong>$_msg_other</strong></a>";
-				}
-			}
-			$retval2[$page] .= $link;
-		}
-		$retval2[] = "</ul></li>\n";
-		
-		$top_link = "<div style=\"text-align:center\"><a name=\"top\"></a>$top_link</div><br />\n<ul>";
-		
-		array_unshift($retval2,$top_link);
-	}
-	else
-	{
-		$retval2 = $retval;
-		
-		$top_link = "<ul>";
-		
-		array_unshift($retval2,$top_link);
-	}
-	
-	return join("",$retval2)."</ul>";
 }
 
 // 編集フォームの表示
@@ -335,6 +230,7 @@ return '
 // 関連するページ
 function make_related($page,$_isrule)
 {
+
 	global $related_str,$rule_related_str,$related,$_make_related,$vars;
 
 	$page_name = strip_bracket($vars["page"]);
@@ -447,7 +343,7 @@ function make_search($page)
 	global $script,$WikiName;
 
 	$name = strip_bracket($page);
-	$url = rawurlencode($page);
+	$url = rawurlencode($name);
 
 	//WikiWikiWeb like...
 	//if(preg_match("/^$WikiName$/",$page))

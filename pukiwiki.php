@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.24 2003/08/05 23:39:57 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.25 2003/09/02 14:09:11 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -94,6 +94,9 @@ if ($wiki_mail_sw === 2 || ($wiki_mail_sw === 1 && (!$X_admin))) {
 /////////////////////////////////////////////////
 // メイン処理
 
+// 一覧の表示
+if (arg_check("list")) $vars["plugin"] = "list";
+
 // Plug-in action
 if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 {
@@ -114,21 +117,9 @@ if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 	}
 	else
 	{
-		//$cmd = "read";
-		//$vars["page"] = $vars["refer"];
-		//$body = @join("",get_source($vars["refer"]));
-		//$body = convert_html($body);
 		redirect_header("$script?".rawurlencode($vars["refer"]),1,$title);
 		exit();
 	}
-}
-// 一覧の表示
-else if(arg_check("list"))
-{
-	header_lastmod($whatsnew);
-	
-	$page = $title = $_title_list;
-	$body = get_list(false);
 }
 // ファイル名一覧の表示
 else if(arg_check("filelist"))
@@ -939,6 +930,7 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	// アクションを明示的に指定していない場合ページ名として解釈
 	if($arg != "" && $vars["page"] == "" && $vars["cmd"] == "")
 	{
+		$arg = mb_convert_encoding(trim($arg),SOURCE_ENCODING,"AUTO");
 		$post["page"] = $arg;
 		$get["page"] = $arg;
 		$vars["page"] = $arg;
@@ -947,8 +939,8 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	// ページ名がWikiNameでなく、BracketNameでなければBracketNameとして解釈
 	if(!preg_match("/^(($WikiName)|($BracketName)|($InterWikiName))$/",$get["page"]))
 	{
-		$vars["page"] = "[[".$vars["page"]."]]";
-		$get["page"] = $vars["page"];
+		$vars["page"] = add_bracket($vars["page"]);
+		$get["page"] = $post["page"] = $vars["page"];
 	}
 
 	// WikiName、BracketNameが示すページを表示
