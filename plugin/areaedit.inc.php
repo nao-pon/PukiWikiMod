@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.2 2004/03/20 07:21:18 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.3 2004/08/04 13:58:55 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -688,7 +688,7 @@ function areaedit_form($page, $postdata_input, $headdata, $taildata, $digest = 0
 	$s_original = array_key_exists('original',$vars) ? htmlspecialchars($vars['original']) : $s_headdata . $s_postdata_input . $s_taildata;
 	$b_preview = array_key_exists('preview',$vars); // プレビュー中TRUE
 	$btn_preview = $b_preview ? $_btn_repreview : $_btn_preview;
-	
+	$fontset_js_tag = fontset_js_tag();
 	$body = <<<EOD
 <form action="$script" method="post">
  <div class="edit_form">
@@ -700,6 +700,8 @@ function areaedit_form($page, $postdata_input, $headdata, $taildata, $digest = 0
   <input type="hidden" name="inline_preview" value="{$vars['inline_preview']}" />
   <input type="hidden" name="areaedit_no"   value="{$vars['areaedit_no']}" />
   <input type="hidden" name="areaedit_start_no" value="{$vars['areaedit_start_no']}" />
+  $fontset_js_tag
+  <br />
   <textarea name="areaedit_msg" rows="$rows" cols="$cols">$s_postdata_input</textarea>
   <br />
   <input type="submit" name="preview" value="$btn_preview" accesskey="p" />

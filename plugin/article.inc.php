@@ -19,7 +19,7 @@
  -投稿内容のメール自動配信先
  を設定の上、ご使用ください。
 
- $Id: article.inc.php,v 1.7 2004/01/24 14:50:27 nao-pon Exp $
+ $Id: article.inc.php,v 1.8 2004/08/04 13:58:55 nao-pon Exp $
  
  */
 
@@ -172,6 +172,7 @@ function plugin_article_action()
 			."<div>\n"
 			."<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($post["refer"])."\" />\n"
 			."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($post["digest"])."\" />\n"
+			.fontset_js_tag()."<br />\n"
 			."<textarea name=\"msg\" rows=\"$rows\" cols=\"$cols\" wrap=\"virtual\" id=\"textarea\">".htmlspecialchars($postdata_input)."</textarea><br />\n"
 			."</div>\n"
 			."</form>\n";
@@ -218,6 +219,7 @@ function plugin_article_convert()
 		 ."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($digest)."\" />\n"
 		 ."$_btn_name<input type=\"text\" name=\"name\" size=\"".NAME_COLS."\" value=\"$name\" /><br />\n"
 		 ."$_btn_subject<input type=\"text\" name=\"subject\" size=\"".SUBJECT_COLS."\" /><br />\n"
+		 .fontset_js_tag()."<br />\n"
 		 ."<textarea name=\"msg\" rows=\"".article_ROWS."\" cols=\"".article_COLS."\">\n</textarea><br />\n"
 		 .$button
 		 ."</div>\n"

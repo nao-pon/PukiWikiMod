@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.27 2004/07/31 06:48:04 nao-pon Exp $
+// $Id: func.php,v 1.28 2004/08/04 13:58:56 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -843,9 +843,13 @@ function cell_format_tag_del ($td) {
 // ユーザーページへのリンクを作成する
 function make_user_link (&$name)
 {
-	if (!WIKI_USER_DIR) return;
-	$name = sprintf(WIKI_USER_DIR,$name);
-	$name = add_bracket(strip_bracket($name));
+	if (!WIKI_USER_DIR) 
+		$name = "[[$name]]";
+	else
+	{
+		$name = sprintf(WIKI_USER_DIR,str_replace(" ","",strip_tags(make_link($name))),$name);
+		$name = add_bracket(strip_bracket($name));
+	}
 	return;
 }
 

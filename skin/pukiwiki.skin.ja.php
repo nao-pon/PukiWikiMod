@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.20 2004/05/27 14:07:54 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.21 2004/08/04 13:58:56 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -18,8 +18,8 @@ if($_freeze){
 <?php if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css")){ ?>
 	<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">
 <?php } ?>
-	<script language=javascript src="skin/default.js"></script>
-<table border=0 cellspacing="5" style="width:100%;"><tr><td class="pukiwiki_body">
+	<script language=javascript src="skin/default.ja.js"></script>
+<table border=0 cellspacing="5" style="width:100%;" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()><tr><td class="pukiwiki_body">
 	<?php if(!$hide_navi && !$noheader){ // header ?>
 		<center><div class="wiki_page_title"><?php echo $page ?></div>
 	<?php if($is_page) { ?>

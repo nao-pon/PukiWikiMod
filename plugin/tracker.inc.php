@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.13 2004/06/22 14:34:34 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.14 2004/08/04 13:58:55 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -360,7 +360,7 @@ class Tracker_field_textarea extends Tracker_field
 		$s_rows = htmlspecialchars($this->values[1]);
 		$s_value = htmlspecialchars($this->default_value);
 		$auto_bra_enable = ($autolink)? "":" checked";
-		return "<input type=\"checkbox\" name=\"enter_enable[$s_name]\" value=\"true\" checked /><span class=\"small\">$_btn_enter_enable</span> <input type=\"checkbox\" name=\"auto_bra_enable[$s_name]\" value=\"true\"".$auto_bra_enable." /><span class=\"small\">$_btn_autobracket_enable</span><br /><textarea name=\"$s_name\" cols=\"$s_cols\" rows=\"$s_rows\">$s_value</textarea>";
+		return "<input type=\"checkbox\" name=\"enter_enable[$s_name]\" value=\"true\" checked /><span class=\"small\">$_btn_enter_enable</span> <input type=\"checkbox\" name=\"auto_bra_enable[$s_name]\" value=\"true\"".$auto_bra_enable." /><span class=\"small\">$_btn_autobracket_enable</span><br />".fontset_js_tag()."<br /><textarea name=\"$s_name\" cols=\"$s_cols\" rows=\"$s_rows\">$s_value</textarea>";
 	}
 	function format_cell($str)
 	{

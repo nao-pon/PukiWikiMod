@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.47 2004/07/31 06:48:04 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.48 2004/08/04 13:58:56 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -447,6 +447,7 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 		."<input type=\"hidden\" name=\"msg_before\" value=\"".htmlspecialchars($post["msg_before"])."\">\n"
 		."<input type=\"hidden\" name=\"msg_after\"  value=\"".htmlspecialchars($post["msg_after"])."\">\n"
 		."$addtag\n"
+		.fontset_js_tag()
 		."<textarea name=\"msg\" rows=\"$rows\" cols=\"$cols\" wrap=\"virtual\" width=\"100%\">\n".htmlspecialchars($postdata_input)."</textarea><br />\n"
 		."<input type=\"submit\" name=\"preview\" value=\"$_btn_repreview\" accesskey=\"p\" />\n"
 		."<input type=\"submit\" name=\"write\" value=\"$_btn_update\" accesskey=\"s\" />\n"

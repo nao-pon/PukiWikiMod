@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.14 2004/03/20 07:21:18 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.15 2004/08/04 13:58:55 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -47,6 +47,10 @@ define('PCMT_FORMAT_MSG','%s');
 define('PCMT_FORMAT_DATE','&new{%s};');
 // \x08は、投稿された文字列中に現れない文字であればなんでもいい。
 define("PCMT_FORMAT","\x08MSG\x08 -- \x08NAME\x08 \x08DATE\x08");
+//
+// 自動過去ログ化 1ページあたりの件数を指定 0で無効 
+define('PCMT_AUTO_LOG',30); 
+
 /////////////////////////////////////////////////
 // areaedit指定を規定値にする(Yes:1, No:0)
 define('PCMT_AREAEDIT_ENABLE',1);
@@ -64,6 +68,7 @@ function plugin_pcomment_init() {
 			'_pcmt_msg_all' => 'コメントページを参照',
 			'_pcmt_msg_edit' => '編集',
 			'_pcmt_msg_none' => 'コメントはありません。',
+			'_pcmt_msg_log_title' => '過去ログ',
 			'_title_pcmt_collided' => '$1 で【更新の衝突】が起きました',
 			'_msg_pcmt_collided' => 'あなたがこのページを編集している間に、他の人が同じページを更新してしまったようです。<br />
 			コメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
@@ -77,6 +82,7 @@ function plugin_pcomment_init() {
 			'_pcmt_msg_all' => 'See comment page',
 			'_pcmt_msg_edit' => 'Edit',
 			'_pcmt_msg_none' => 'No comments yet',
+			'_pcmt_msg_log_title' => 'Old Log',
 			'_title_pcmt_collided' => 'Conflicts found in $1',
 			'_msg_pcmt_collided' => 'Other user has updated the page you are editing.<br />
 			Your comment was added anyway but may be at wrong line.<br />',
@@ -184,7 +190,9 @@ function plugin_pcomment_convert() {
 	$f_page = htmlspecialchars($page);
 	$f_refer = htmlspecialchars($now_page);
 	$f_nodate = htmlspecialchars($params['nodate']);
-
+	$s_count = htmlspecialchars($count);
+	
+	$fontset_js_tag = fontset_js_tag();
 	$form = <<<EOD
   <div>
   <input type="hidden" name="digest" value="$digest" />
@@ -193,8 +201,9 @@ function plugin_pcomment_convert() {
   <input type="hidden" name="page" value="$f_page" />
   <input type="hidden" name="nodate" value="$f_nodate" />
   <input type="hidden" name="dir" value="$dir" />
-  $areaedit $radio $title $name $comment
-  <input type="submit" value="$btn_text" />
+  <input type="hidden" name="count" value="$count" />
+  $areaedit <table style="width:auto;"><tr><td style="vertical-align: bottom;"> $radio $title $name </td><td style="vertical-align: bottom;">$fontset_js_tag<br />$comment
+  <input type="submit" value="$btn_text" /></td></tr></table>
   </div>
 EOD;
 	$link = $_page;
@@ -259,28 +268,28 @@ function pcmt_insert($page) {
 		$new = '***'.htmlspecialchars($post['refer'])."のコメント一覧\n".PCMT_CATEGORY."\n\n-$msg\n";
 	} else {
 		//ページを読み出す
-		$data = file(get_filename(encode($page)));
-		$old = join('',$data);
+		$postdata = get_source($page);
 
 		$reply = $post['reply'];
+
 		// 更新の衝突を検出
-		if (md5($old) != $post['digest']) {
+		if (md5(join('',$postdata)) != $post['digest']) {
 			$ret['msg'] = $_title_paint_collided;
 			$ret['body'] = $_msg_paint_collided;
 			$reply = 0; //リプライでなくする
 		}
 
 		// ページ末尾の調整
-		if (substr($data[count($data) - 1],-1,1) != "\n") { $data[] = "\n"; }
+		if (substr($postdata[count($postdata) - 1],-1,1) != "\n") { $postdata[] = "\n"; }
 
 		//基準点を決定
 		$level = 1;
 		if ($post['dir'] == '1') {
-			$pos = count($data) - 1;
+			$pos = count($postdata) - 1;
 			$step = -1;
 		} else {
 			$pos = -1;
-			foreach ($data as $line) {
+			foreach ($postdata as $line) {
 				if (preg_match('/^\-/',$line)) break;
 				$pos++;
 			}
@@ -288,15 +297,15 @@ function pcmt_insert($page) {
 		}
 		//リプライ先のコメントを検索
 		if ($reply > 0) {
-			while ($pos >= 0 and $pos < count($data)) {
-				if (preg_match('/^(\-{1,2})(?!\-)/',$data[$pos], $matches) and --$reply == 0) {
+			while ($pos >= 0 and $pos < count($postdata)) {
+				if (preg_match('/^(\-{1,2})(?!\-)/',$postdata[$pos], $matches) and --$reply == 0) {
 					$level = strlen($matches[1]) + 1; //挿入するレベル
 					break;
 				}
 				$pos += $step;
 			}
-			while (++$pos < count($data)) {
-				if (preg_match('/^(\-{1,2})(?!\-)/',$data[$pos], $matches)) {
+			while (++$pos < count($postdata)) {
+				if (preg_match('/^(\-{1,2})(?!\-)/',$postdata[$pos], $matches)) {
 					if (strlen($matches[1]) < $level) { break; }
 				}
 			}
@@ -306,8 +315,12 @@ function pcmt_insert($page) {
 		//行頭文字
 		$head = str_repeat('-',$level);
 		//コメントを挿入
-		array_splice($data,$pos,0,"$head$msg\n");
-		$new = join('',$data);
+		array_splice($postdata,$pos,0,"$head$msg\n");
+		
+		// 過去ログ処理 
+		pcmt_auto_log($page,$post['dir'],$post['count'],$postdata); 
+
+		$new = join('',$postdata);
 	}
 
 	//親ページのファイルタイム更新
@@ -351,6 +364,64 @@ function pcmt_insert($page) {
 
 	return $ret;
 }
+
+// 過去ログ処理
+function pcmt_auto_log($page, $dir, $count, &$postdata)
+{
+	if (!PCMT_AUTO_LOG)
+		return;
+	
+	global $post,$_pcmt_msg_log_title;
+	
+	$page = strip_bracket($page);
+	
+	$keys = array_keys(preg_grep('/(?:^-(?!-).*$)/m', $postdata));
+	if (count($keys) < (PCMT_AUTO_LOG + $count))
+		return;
+
+	if ($dir) { //前からPCMT_AUTO_LOG件
+		$old = array_splice($postdata, $keys[0], $keys[PCMT_AUTO_LOG] - $keys[0]);
+	} else { //後ろからPCMT_AUTO_LOG件
+		$old = array_splice($postdata, $keys[count($keys) - PCMT_AUTO_LOG]);
+	}
+
+	// ページ名を決定
+	$i = 0;
+	do {
+		++$i;
+		$_page = "$page/$i";
+	} while (is_page($_page));
+	$head = "*".$_pcmt_msg_log_title."($i)\n\n";
+
+	//ページ新規作成
+	$aids = $gids = $freeze = "";
+	//編集権限継承がセットされている上位ページ凍結情報を得る
+	$up_freezed = get_pg_allow_editer($post['refer']);
+	$page_info = "";
+	//ページ情報のセット
+	if ($up_freezed['uid'] !== "")
+	{
+		//編集権限継承あり
+		$freeze = 1;
+		$uid = $up_freezed['uid'];
+		$aids = preg_replace("/(($|,)$uid,|,$)/","",$up_freezed['user']);
+		$gids = preg_replace("/,$/","",$up_freezed['group']);
+		$page_info = "#freeze\tuid:{$uid}\taid:{$aids}\tgid:{$gids}\n// author:{$uid}\n";
+	}
+	else
+	{
+		$page_info = "// author:".get_pg_auther($post['refer'])."\n";
+	}
+	
+	$head = "*過去ログ($i)\n\n";
+	
+	// ページ作成
+	page_write($_page, $head."#navi(../)\n\n[[$page]]\n\n".$page_info.join('', $old)."\n#navi(../)", NULL,$aids,$gids,"","",$freeze);
+
+	// 繰り返す :)
+	pcmt_auto_log($page, $dir, $count, $postdata);
+}
+
 //オプションを解析する
 function pcmt_check_arg($val, $key, &$params) {
 	$valid_args = array('noname','nodate','below','above','reply','mail','up','down');

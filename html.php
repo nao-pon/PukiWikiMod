@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.32 2004/06/22 14:34:34 nao-pon Exp $
+// $Id: html.php,v 1.33 2004/08/04 13:58:56 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -206,8 +206,8 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
 	}
 	
 	$auto_bra_enable = ($autolink)? "" : " checked";
-
-return '
+	
+	return '
 <form enctype="multipart/form-data" action="'.$script.'" method="post">
 '.$addtag.'
 <table cellspacing="3" cellpadding="0" border="0" width="100%">
@@ -224,9 +224,10 @@ return '
    <input type="checkbox" name="auto_bra_enable" value="true"'.$auto_bra_enable.' /><span class="small">'.$_btn_autobracket_enable.'</span>
  </td></tr>
  <tr>
-  <td align="right" colspan=2>
+  <td align="left" colspan=2>
    <input type="hidden" name="page" value="'.htmlspecialchars($page).'" />
    <input type="hidden" name="digest" value="'.htmlspecialchars($digest).'" />
+'.fontset_js_tag().'
    <textarea name="msg" rows="'.$rows.'" cols="'.$cols.'" wrap="virtual">
 '.htmlspecialchars($refer.$postdata).'</textarea>
   </td>
@@ -622,4 +623,50 @@ function file_attache_form() {
 
 	return $ret;
 }
+
+// フォント指定JavaScript
+function fontset_js_tag()
+{
+	static $loaded = 0;
+	$map = "";
+	if (!$loaded) $map =<<<EOD
+<map name="map_button">
+<area shape="rect" coords="0,0,22,16" alt="URL" href="#" onClick="javascript:pukiwiki_linkPrompt('url'); return false;">
+<area shape="rect" coords="24,0,40,16" alt="B" href="#" onClick="javascript:pukiwiki_tag('b'); return false;">
+<area shape="rect" coords="43,0,59,16" alt="I" href="#" onClick="javascript:pukiwiki_tag('i'); return false;">
+<area shape="rect" coords="62,0,79,16" alt="U" href="#" onClick="javascript:pukiwiki_tag('u'); return false;">
+<area shape="rect" coords="81,0,103,16" alt="SIZE" href="#" onClick="javascript:pukiwiki_tag('size'); return false;">
+</map>
+<map name="map_color">
+<area shape="rect" coords="0,0,8,8" alt="Black" href="#" onClick="javascript:pukiwiki_tag('Black'); return false;">
+<area shape="rect" coords="8,0,16,8" alt="Maroon" href="#" onClick="javascript:pukiwiki_tag('Maroon'); return false;">
+<area shape="rect" coords="16,0,24,8" alt="Green" href="#" onClick="javascript:pukiwiki_tag('Green'); return false;">
+<area shape="rect" coords="24,0,32,8" alt="Olive" href="#" onClick="javascript:pukiwiki_tag('Olive'); return false;">
+<area shape="rect" coords="32,0,40,8" alt="Navy" href="#" onClick="javascript:pukiwiki_tag('Navy'); return false;">
+<area shape="rect" coords="40,0,48,8" alt="Purple" href="#" onClick="javascript:pukiwiki_tag('Purple'); return false;">
+<area shape="rect" coords="48,0,55,8" alt="Teal" href="#" onClick="javascript:pukiwiki_tag('Teal'); return false;">
+<area shape="rect" coords="56,0,64,8" alt="Gray" href="#" onClick="javascript:pukiwiki_tag('Gray'); return false;">
+<area shape="rect" coords="0,8,8,16" alt="Silver" href="#" onClick="javascript:pukiwiki_tag('Silver'); return false;">
+<area shape="rect" coords="8,8,16,16" alt="Red" href="#" onClick="javascript:pukiwiki_tag('Red'); return false;">
+<area shape="rect" coords="16,8,24,16" alt="Lime" href="#" onClick="javascript:pukiwiki_tag('Lime'); return false;">
+<area shape="rect" coords="24,8,32,16" alt="Yellow" href="#" onClick="javascript:pukiwiki_tag('Yellow'); return false;">
+<area shape="rect" coords="32,8,40,16" alt="Blue" href="#" onClick="javascript:pukiwiki_tag('Blue'); return false;">
+<area shape="rect" coords="40,8,48,16" alt="Fuchsia" href="#" onClick="javascript:pukiwiki_tag('Fuchsia'); return false;">
+<area shape="rect" coords="48,8,56,16" alt="Aqua" href="#" onClick="javascript:pukiwiki_tag('Aqua'); return false;">
+<area shape="rect" coords="56,8,64,16" alt="White" href="#" onClick="javascript:pukiwiki_tag('White'); return false;">
+</map>
+EOD;
+
+	$loaded ++;
+
+	return <<<EOD
+$map
+<script type="text/javascript">
+<!--
+	pukiwiki_show_fontset_img();
+-->
+</script>
+EOD;
+}
+
 ?>

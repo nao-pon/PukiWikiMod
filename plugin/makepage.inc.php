@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.1 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.2 2004/08/04 13:58:55 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -68,7 +68,7 @@ function plugin_makepage_convert()
 		$page_tag .= '<input type="hidden" name="usebody" value="'.$post['usebody'].'" />';
 		$page_tag .= '<input type="hidden" name="body_message" value="'.$body_message.'" />';
 		$body_tag  = convert_html("***".$_makepage_messages['msg_makepage'].": [[".$s_makepage.htmlspecialchars($post['new_page'])."]]");
-		$body_tag .= "<br />".$body_message.'<br /><textarea name="body" rows="5"></textarea><br />';
+		$body_tag .= "<br />".$body_message.'<br />'.fontset_js_tag().'<br /><textarea name="body" rows="5"></textarea><br />';
 		if ($post['usename'])
 			$body_tag .= $_makepage_messages['msg_name'].' <input type="text" name="name" size="50" value="'.htmlspecialchars($X_uname).'" />';
 		$body_message = "";
@@ -161,8 +161,11 @@ function plugin_makepage_action()
 			
 			$postdata = str_replace("___BODY___",$post['body'],$postdata);
 			
-			$post['name'] = (!empty($post['name']))? $post['name'] : $no_name;
-			$postdata = str_replace("___NAME___",str_replace('$1',$post['name'],$_makepage_messages['body_add_name']),$postdata);
+			$_name = (!empty($post['name']))? $post['name'] : $no_name;
+			
+			make_user_link($_name);
+			
+			$postdata = str_replace("___NAME___",$_name,$postdata);
 			
 			$postdata = auto_br($postdata);
 		}

@@ -22,7 +22,7 @@ function h_pukiwiki_doCopy(arg)
 	var doc = document.body.createTextRange();
 	doc.moveToElementText(document.all(arg));
 	doc.execCommand("copy");
-	alert('It copied to the clip board.');
+	alert('クリップボードにコピーしました。');
 }
 
 function pukiwiki_pos(){
@@ -74,13 +74,13 @@ function pukiwiki_tag(v) {
 		document.selection.createRange().text;
 	if (!str)
 	{
-		alert('Please choose the object range.');
+		alert('対象範囲を選択してください。');
 		return;
 	}
 	if ( v == 'size' )
 	{
 		var default_size = "%";
-		v = prompt('Size of a character ( % or pt ): ', default_size);
+		v = prompt('文字の大きさ ( % または pt[省略可] で指定): ', default_size);
 		if (!v) return;
 		if (!v.match(/(%|pt)$/))
 			v += "pt";
@@ -104,7 +104,7 @@ function pukiwiki_linkPrompt(v) {
 	var str = document.selection.createRange().text;
 	if (!str)
 	{
-		alert('Please choose the object range.');
+		alert('対象範囲を選択してください。');
 		return;
 	}
 	var default_url = "http://";
