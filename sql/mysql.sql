@@ -14,7 +14,7 @@ CREATE TABLE pukiwikimod_count (
 
 CREATE TABLE pukiwikimod_pginfo (
   `id` int(10) NOT NULL auto_increment,
-  `name` varchar(255) NOT NULL default '',
+  `name` varchar(255) binary NOT NULL default '',
   `buildtime` int(10) NOT NULL default '0',
   `editedtime` int(10) NOT NULL default '0',
   `aids` text NOT NULL,
