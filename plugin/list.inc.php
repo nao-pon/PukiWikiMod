@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: list.inc.php,v 1.1 2003/09/02 14:10:21 nao-pon Exp $
+// $Id: list.inc.php,v 1.2 2004/02/08 13:21:26 nao-pon Exp $
 //
 // 一覧の表示
 function plugin_list_action()
@@ -10,19 +10,22 @@ function plugin_list_action()
 	global $vars,$_title_list,$_title_filelist,$whatsnew;
 	
 	$filelist = (array_key_exists('cmd',$vars) and $vars['cmd']=='filelist'); //姑息だ…
-	
+	$prefix = (array_key_exists('prefix',$vars))? $vars['prefix'] : "";
+	$t_prefix = ($prefix)? "$prefix: " : "";
 	return array(
-		'msg'=>$filelist ? $_title_filelist : $_title_list,
-		'body'=>get_list($filelist)
+		'msg'=>$filelist ? $_title_filelist : $t_prefix.$_title_list,
+		'body'=>get_list($filelist,$prefix)
 	);
 }
 
 // 一覧の取得
-function get_list($withfilename)
+function get_list($withfilename,$prefix="")
 {
 	global $non_list,$whatsnew;
-	
-	$pages = array_diff(get_existpages(),array($whatsnew));
+	if ($prefix)
+		$pages = array_diff(get_existpages_db(false,$prefix."/",0,"",false,true),array($whatsnew));
+	else
+		$pages = array_diff(get_existpages_db(false,"",0,"",false,true),array($whatsnew));
 	if (!$withfilename)
 	{
 		$pages = array_diff($pages,preg_grep("/$non_list/",$pages));
@@ -32,6 +35,6 @@ function get_list($withfilename)
 	        return '';
 	}
 	
-	return page_list($pages,'read',$withfilename);
+	return page_list($pages,'read',$withfilename,$prefix);
 }
 ?>

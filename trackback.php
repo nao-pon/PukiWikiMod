@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.5 2004/01/27 14:30:47 nao-pon Exp $
+// $Id: trackback.php,v 1.6 2004/02/08 13:21:26 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -90,7 +90,7 @@ function tb_count($page,$ext='.txt')
 // TrackBack Ping 送信
 function tb_send($page,$data="")
 {
-	global $script,$trackback,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name;
+	global $script,$trackback,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$use_static_url;
 	
 	$page = strip_bracket($page);
 	
@@ -136,8 +136,8 @@ function tb_send($page,$data="")
 	// convert_html() 変換結果の <a> タグから URL 抽出
 	preg_match_all('#href="(https?://[^"]+)"#',$data,$links,PREG_PATTERN_ORDER);
 
-	// 自ホスト($scriptで始まるurl)を除く
-	$links = preg_grep("/^(?!".preg_quote($script,'/')."\?)./",$links[1]);
+	// 自ホスト(XOOPS_WIKI_URLで始まるurl)を除く
+	$links = preg_grep("/^(?!".preg_quote(XOOPS_WIKI_URL,'/').")./",$links[1]);
 	
 	// convert_html() 変換結果から Ping 送出  URL 抽出
 	preg_match_all('#<!--__PINGSEND__"(https?://[^"]+)"-->#',$data,$pings,PREG_PATTERN_ORDER);
@@ -151,7 +151,12 @@ function tb_send($page,$data="")
 	$xml_title = $title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
 	if ($h_excerpt) $title .= "/".$h_excerpt;
 	
-	$myurl = $script."?pgid=".get_pgid_by_name($page);
+	//静的URLのようなURLにするか？
+	if ($use_static_url)
+		$myurl = XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html";
+	else
+		$myurl = $script."?pgid=".get_pgid_by_name($page);
+	
 	$xml_myurl = $script."?".rawurlencode($xml_title);
 	$xml_title = $page_title."/".$xml_title;
 	

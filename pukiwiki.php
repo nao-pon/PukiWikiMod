@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.37 2004/01/27 14:30:47 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.38 2004/02/08 13:21:26 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -150,7 +150,12 @@ if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 	}
 	else
 	{
-		redirect_header("$script?".rawurlencode(strip_bracket($vars["refer"])),1,$title);
+		if ($use_static_url)
+			$pg_link_url = XOOPS_WIKI_URL."/".get_pgid_by_name($vars["refer"]).".html";
+		else
+			$pg_link_url = "$script?".rawurlencode(strip_bracket($vars["refer"]));
+		
+		redirect_header($pg_link_url,1,$title);
 		exit();
 	}
 }
@@ -715,8 +720,13 @@ else if($post["write"])
 			if($postdata)
 			{
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_updated);
-				$r_page = rawurlencode(strip_bracket($post["page"]));
-				redirect_header("$script?$r_page",1,$title);
+				
+				if ($use_static_url)
+					$pg_link_url = XOOPS_WIKI_URL."/".get_pgid_by_name($post["page"]).".html";
+				else
+					$pg_link_url = "$script?".rawurlencode(strip_bracket($post["page"]));
+				
+				redirect_header($pg_link_url,1,$title);
 				exit();
 			}
 			else

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.22 2004/01/24 14:40:33 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.23 2004/02/08 13:21:26 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -26,10 +26,6 @@ define("COUNTER_DIR","./counter/");
 /////////////////////////////////////////////////
 // ページHTMLキャッシュディレクトリ
 define("PAGE_CACHE_DIR","./pagehtml/");
-/////////////////////////////////////////////////
-// ページHTMLキャッシュ期限（分）0 でキャッシュしない
-// ゲストユーザーのみキャッシュ機能が有効になります。
-define("PAGE_CACHE_MIN",0);
 
 /////////////////////////////////////////////////
 // Language
@@ -62,7 +58,7 @@ define("UPLOAD_DIR","./attach/");
 ini_set("upload_max_filesize","2M");
 
 // max file size for upload on script of PukiWiki(default 1MB)
-define("MAX_FILESIZE",1000000);
+define("MAX_FILESIZE",2000000);
 
 
 /////////////////////////////////////////////////
@@ -360,6 +356,16 @@ $pagereading_kakasi_path = '/usr/local/bin/kakasi';
 $pagereading_config_page = ':config/PageReading';
 
 //////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////
+// ページHTMLキャッシュ期限（分）0 でキャッシュしない
+// ゲストユーザーのみキャッシュ機能が有効になります。
+$page_cache_min = 0;
+
+/////////////////////////////////////////////////
+// ページID.html というような静的ページのようなURLにする
+$use_static_url = 0;
+
+
 
 $_cache_file = "cache/config.php";
 clearstatcache();

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.26 2004/01/27 14:25:33 nao-pon Exp $
+// $Id: html.php,v 1.27 2004/02/08 13:21:26 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -24,17 +24,24 @@ function catbody($title,$page,$body)
 	global $date_format,$weeklabels,$time_format,$related_link;
 	global $HTTP_SERVER_VARS,$cantedit;
 	global $longtaketime;
-	global $foot_explain, $note_hr, $_msg_word, $search_word_color;
+	global $foot_explain, $note_hr, $_msg_word, $search_word_color,$use_static_url;
 
 	if($vars["page"] && !arg_check("backup") && $vars["page"] != $whatsnew)
 	{
 		$is_page = 1;
 	}
-
+	if ($use_static_url)
+	{
+		$link_page = XOOPS_WIKI_URL."/".get_pgid_by_name($vars["page"]).".html";
+	}
+	else
+	{
+		$link_page = "$script?".rawurlencode(strip_bracket($vars["page"]));
+ 	}
+	$link_top = XOOPS_WIKI_URL."/";
  	$link_add = "$script?cmd=add&amp;page=".rawurlencode($vars["page"]);
  	$link_edit = "$script?cmd=edit&amp;page=".rawurlencode($vars["page"]);
  	$link_diff = "$script?cmd=diff&amp;page=".rawurlencode($vars["page"]);
-	$link_top = "$script?$defaultpage";
 	$link_list = "$script?cmd=list";
 	$link_filelist = "$script?cmd=filelist";
 	$link_search = "$script?cmd=search";
@@ -247,7 +254,7 @@ return '
 function make_related($page,$tag='')
 {
 	global $script,$vars,$related,$rule_related_str,$related_str,$non_list;
-	global $_ul_left_margin, $_ul_margin, $_list_pad_str;
+	global $_ul_left_margin, $_ul_margin, $_list_pad_str,$use_static_url;
 	$page = strip_bracket($page);
 	$links = links_get_related($page);
 	
@@ -269,10 +276,16 @@ function make_related($page,$tag='')
 		$r_page = rawurlencode($page);
 		$s_page = htmlspecialchars($page);
 		$passage = get_passage(($lastmod));
+		if ($use_static_url)
+			$pg_link = XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html";
+		else
+			$pg_link = "$script?$r_page";
+
+		$pg_link = 
 		$_links[] = $tag ?
 //			"<a href=\"$script?$r_page\" title=\"$s_page $passage\">$s_page</a>" :
 			make_pagelink($page) :
-			"<a href=\"$script?$r_page\">$s_page</a>$passage";
+			"<a href=\"$pg_link\">$s_page</a>$passage";
 	}
 	
 	if (count($_links) == 0)

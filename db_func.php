@@ -1,10 +1,10 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.5 2004/01/27 14:29:36 nao-pon Exp $
+// $Id: db_func.php,v 1.6 2004/02/08 13:21:26 nao-pon Exp $
 
 // 全ページ名を配列にDB版
-function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false)
+function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false)
 {
 	static $_aryret = array();
 	if ($_aryret && $nocheck == false && $page == "") return $_aryret;
@@ -29,10 +29,28 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 	if ($page)
 	{
 		$page = addslashes(strip_bracket($page));
-		if ($where)
-			$where = " (name LIKE '$page%') AND ($where)";
+		if ($nochiled)
+			$page_where = "name LIKE '$page%' AND name NOT LIKE '$page%/%'";
 		else
-			$where = " name LIKE '$page%'";
+			$page_where = "name LIKE '$page%'";
+			
+		if ($where)
+			$where = " ($page_where) AND ($where)";
+		else
+			$where = " $page_where";
+			
+	}
+	else
+	{
+		if ($nochiled)
+		{
+			$page_where = "name NOT LIKE '%/%'";
+
+			if ($where)
+				$where = " ($page_where) AND ($where)";
+			else
+				$where = " $page_where";
+		}
 	}
 	if ($nolisting)
 	{
@@ -85,18 +103,21 @@ function get_pgname_by_id($id)
 function get_pgid_by_name($page)
 {
 	global $xoopsDB;
+	static $page_id = array();
 	$page = addslashes(strip_bracket($page));
+	if (!empty($page_id[$page])) return $page_id[$page];
 	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return 0;
 	$ret = mysql_fetch_row($res);
+	$page_id[$page] = $ret[0];
 	return $ret[0];
 }
 
 //ページ名から前後のページへの<link>タグを得る
 function get_header_link_tag_by_name($page)
 {
-	global $xoopsDB;
+	global $xoopsDB,$use_static_url;
 	$page = strip_bracket($page);
 	$this_id = get_pgid_by_name($page);
 	
@@ -118,6 +139,7 @@ function get_header_link_tag_by_name($page)
 	{
 		$ret = mysql_fetch_row($res);
 		$prev_pg = rawurlencode($ret[1]);
+		$prev_pg_id = $ret[0];
 	}
 	else
 		$prev_pg = "";
@@ -128,18 +150,35 @@ function get_header_link_tag_by_name($page)
 	{
 		$ret = mysql_fetch_row($res);
 		$next_pg = rawurlencode($ret[1]);
+		$next_pg_id = $ret[0];
 	}
 	else
 		$next_pg = "";
 		
 	$ret = "";
 	if ($up_page)
-		$ret .= '<link rel="start" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?'.rawurlencode($up_page).'">'."\n";
+	{
+		if ($use_static_url)
+			$ret .= '<link rel="start" href="'.XOOPS_WIKI_URL.'/'.get_pgid_by_name($up_page).'.html">'."\n";
+		else
+			$ret .= '<link rel="start" href="'.XOOPS_WIKI_URL.'/index.php?'.rawurlencode($up_page).'">'."\n";
+	}
 	else
-		$ret .= '<link rel="start" href="'.XOOPS_URL.'/modules/pukiwiki/index.php">'."\n";
-	if ($prev_pg) $ret .= '<link rel="prev" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?'.$prev_pg.'">'."\n";
-	if ($next_pg) $ret .= '<link rel="next" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?'.$next_pg.'">'."\n";
-	
+		$ret .= '<link rel="start" href="'.XOOPS_URL.'/modules/pukiwiki/">'."\n";
+	if ($prev_pg)
+	{
+		if ($use_static_url)
+			$ret .= '<link rel="prev" href="'.XOOPS_WIKI_URL.'/'.$prev_pg_id.'.html">'."\n";
+		else
+			$ret .= '<link rel="prev" href="'.XOOPS_WIKI_URL.'/index.php?'.$prev_pg.'">'."\n";
+	}
+	if ($next_pg)
+	{
+		if ($use_static_url)
+			$ret .= '<link rel="next" href="'.XOOPS_WIKI_URL.'/'.$next_pg_id.'.html">'."\n";
+		else
+			$ret .= '<link rel="next" href="'.XOOPS_WIKI_URL.'/index.php?'.$next_pg.'">'."\n";
+	}
 	return $ret;
 
 }

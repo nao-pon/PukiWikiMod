@@ -1,0 +1,4 @@
+# 静的ページ風URLオプションを使用する場合は
+# 以下を環境に応じて修正後 # を削除して有効にしてください。
+#RewriteEngine	on
+#RewriteRule ^([0-9]*)\.html(#.*)?$ /xoops/modules/pukiwiki/index.php?pgid=$1$2

@@ -1,12 +1,12 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: rss.php,v 1.8 2004/02/08 13:21:26 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
 function catrss($rss,$page)
 {
-	global $rss_max,$page_title,$WikiName,$BracketName,$script,$whatsnew;
+	global $rss_max,$page_title,$WikiName,$BracketName,$script,$whatsnew,$use_static_url;
 
 	$lines = get_existpages(false,$page,$rss_max," ORDER BY editedtime DESC",true);
 	header("Content-type: application/xml");
@@ -47,21 +47,28 @@ function catrss($rss,$page)
 		$dcdate = substr_replace(date("Y-m-d\TH:i:sO"),':',-2,0);
 		$desc = date("D, d M Y H:i:s T",filemtime(get_filename(encode($line))));
 		
+		if ($use_static_url)
+			$link_url = XOOPS_WIKI_URL."/".get_pgid_by_name($line).".html";
+		else
+			$link_url = $script."?".rawurlencode($url);
+
+		
 		if($rss==2)
 			//$items.= "<item rdf:about=\"http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."\">\n";
-			$items.= "<item rdf:about=\"".$script."?".rawurlencode($url)."\">\n";
+			$items.= "<item rdf:about=\"".$link_url."\">\n";
 		else
 			$items.= "<item>\n";
 		$items.= " <title>$title</title>\n";
 //		$items.= " <link>http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."</link>\n";
-		$items.= " <link>".$script."?".rawurlencode($url)."</link>\n";
+		$items.= " <link>".$link_url."</link>\n";
 		if($rss==2)
 		{
 			$items.= " <dc:date>$dcdate</dc:date>\n";
 		}
 		$items.= " <description>$desc</description>\n";
 		$items.= "</item>\n\n";
-		$rdf_li.= "    <rdf:li rdf:resource=\"http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."\" />\n";
+		//$rdf_li.= "    <rdf:li rdf:resource=\"http://".SERVER_NAME.PHP_SELF."?".rawurlencode($url)."\" />\n";
+		$rdf_li.= "    <rdf:li rdf:resource=\"".$link_url."\" />\n";
 	}
 
 	if($rss==1)

@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.16 2004/01/27 14:35:08 nao-pon Exp $
+// $Id: index.php,v 1.17 2004/02/08 13:21:26 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -41,6 +41,8 @@ function writeConfig(){
 	$f_trackback = (int)$f_trackback;
 	$f_cycle = (int)$f_cycle;
 	$f_maxage = (int)$f_maxage;
+	$f_page_cache_min = (int)$f_page_cache_min;
+	$f_use_static_url = (int)$f_use_static_url;
 	$f_jp_pagereading = (int)$f_jp_pagereading;
 	if ($f_jp_pagereading == 2)
 	{
@@ -90,6 +92,8 @@ function writeConfig(){
 	\$pagereading_kakasi_path = '$f_pagereading_kakasi_path';
 	\$pagereading_config_page = '$f_pagereading_config_page';
 	\$trackback = $f_trackback;
+	\$page_cache_min = $f_page_cache_min;
+	\$use_static_url = $f_use_static_url;
 	";
 	$content .= "\n?>";
 
@@ -148,7 +152,8 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url;
+	
 	xoops_cp_header();
 	OpenTable();
 	checkPermit();
@@ -199,7 +204,13 @@ function displayForm(){
 	}
 	
 	$trackback = (int)$trackback;
-	
+
+	$page_cache_min = (int)$page_cache_min;
+
+	$use_static_url = (int)$use_static_url;
+	$use_static_url_sw = array("","");
+	$use_static_url_sw[$use_static_url] = " checked";
+
 	$pcmt_page_name = strip_bracket($pcmt_page_name);
 	$_jp_pagereading = array("","","");
 	if (!$pagereading_enable)
@@ -288,6 +299,17 @@ function displayForm(){
 		"._AM_WIKI_FUNCTION_TRACKBACK."
 	</td><td>
 		<input type='text' size='2' name='f_trackback' value='".$trackback."'>
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_PAGE_CACHE_MIN."
+	</td><td>
+		<input type='text' size='4' name='f_page_cache_min' value='".$page_cache_min."'> (min)
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_USE_STATIC_URL."
+	</td><td>
+		<input type='radio' name='f_use_static_url' value='1'".$use_static_url_sw[1].">"._AM_WIKI_ENABLE."
+		<input type='radio' name='f_use_static_url' value='0'".$use_static_url_sw[0].">"._AM_WIKI_DISABLE."
 	</td></tr>
 	<tr><td valign='top'>
 		"._AM_WIKI_CSS."

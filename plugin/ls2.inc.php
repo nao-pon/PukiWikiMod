@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.11 2004/01/30 14:47:12 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.12 2004/02/08 13:21:26 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -76,7 +76,7 @@ function plugin_ls2_convert() {
 		//$prefix = strip_bracket($vars['page']).'/';
 		$prefix = strip_bracket($vars['page']);
 		
-	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE,'depth'=>FALSE,'_done'=>FALSE);
+	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE,'depth'=>FALSE,'nonew'=>FALSE,'_done'=>FALSE);
 	array_walk($args, 'ls2_check_arg', &$params);
 	$title = (count($params['_args']) > 0) ?
 		join(',', $params['_args']) :
@@ -130,11 +130,20 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 	$name = strip_bracket($page);
 	$title = $name.' '.get_pg_passage($page,FALSE);
 	//$href = $script.'?cmd=read&amp;page='.rawurlencode($page);
-	$href = $script.'?'.rawurlencode($name);
+	if ($use_static_url = 1)
+	{
+		$pgid = get_pgid_by_name($page);
+		$href = XOOPS_WIKI_URL."/{$pgid}.html";
+	}
+	else
+		$href = $script.'?'.rawurlencode($name);
 
 	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 	$_name = "";
-	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name)){
+	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name))
+	{
+		$_name = get_heading($page);
+/*
 		$_body = get_source($page);
 		foreach($_body as $line){
 			if (preg_match("/^\*{1,6}(.*)/",$line,$reg)){
@@ -142,6 +151,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 				break;
 			}
 		}
+*/
 	}
 
 	if ($params['pagename']){
@@ -174,10 +184,14 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 	if ($params['relatedcount'])
 		$name .= " (".links_get_related_count($page).")";
 	
-	$child_count = ($child_count)? " [+".$child_count."]":"";
+	$child_count = ($child_count)? " [<a href='$script?plugin=list&prefix=".rawurlencode(strip_bracket($page))."'>+".$child_count."</a>]":"";
+	
+	//Newマーク付加
+	if (!$params['nonew'] && exist_plugin_inline("new"))
+		$new_mark = do_plugin_inline("new","{$page}/,nolink","");
 	
 	if ($include) { $ret .= 'include '; }
-	$ret .= '<a id="list_'.$params[$page].'" href="'.$href.'" title="'.$title.'">'.htmlspecialchars($name).'</a>'.$child_count;
+	$ret .= '<a id="list_'.$params[$page].'" href="'.$href.'" title="'.$title.'">'.htmlspecialchars($name).'</a>'.$child_count.$new_mark;
 	if ($params['title'] and $is_done) {
 		$ret .= '<a href="#list_'.$params[$page].'">+</a></li>'."\n";
 		return $ret;
@@ -227,7 +241,11 @@ function ls2_check_arg($val, $key, &$params) {
 	if (!$params['_done']) {
 		foreach (array_keys($params) as $key)
 		{
-			list($val,$thisval) = split(":",$val);
+			if (strstr($val,':')) // PHP4.3.4＋Apache2 環境で何故かApacheが落ちるとの報告があったので
+				list($val,$thisval) = explode(":",$val);
+			else
+				$thisval = null;
+			
 			if (strtolower($val) == $key)
 			{
 				if (!empty($thisval))

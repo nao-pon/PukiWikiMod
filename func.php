@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.22 2004/01/24 14:44:21 nao-pon Exp $
+// $Id: func.php,v 1.23 2004/02/08 13:21:26 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -232,7 +232,7 @@ function add_bracket($str){
 }
 
 // ページ一覧の作成
-function page_list($pages, $cmd = 'read', $withfilename=FALSE)
+function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 {
 	global $script,$list_index,$top;
 	global $_msg_symbol,$_msg_other;
@@ -243,6 +243,10 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE)
 	$other = 'zz';
 	
 	$retval = '';
+	if ($prefix){
+		$retval .= "<p>[ <a href='$script?plugin=list&prefix=".rawurlencode(preg_replace("/\/?[^\/]+$/","",$prefix))."'>../</a> ] ";
+		$retval .= make_pagelink($prefix)."</p>";
+	}
 
 	if($pagereading_enable) {
 		$readings = get_readings($pages);
@@ -252,22 +256,45 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE)
 	foreach($pages as $file=>$page)
 	{
 		$passage = get_pg_passage($page);
-		$page = strip_bracket($page);
+		$_page = $page = strip_bracket($page);
+		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
+		if (preg_match("/^(.*\/)?[0-9\-]+$/",$page,$f_page))
+			$_page = $f_page[1].get_heading($page);
 		
-		$str = "   <li>".make_pagelink($page)."$passage";
+		$alias = ($prefix)? substr($_page,strlen($prefix)+1):"";
+		
+		$chiled = get_child_counts($page);
+		$chiled = ($chiled)? " [<a href='$script?plugin=list&prefix=".rawurlencode(strip_bracket($page))."'>+$chiled</a>]":"";
+		if (!$alias)
+			$str = "   <li>".make_pagelink($page)."$passage".$chiled;
+		else
+			$str = "   <li>".make_pagelink($page,$alias)."$passage".$chiled;
 		
 		if ($withfilename)
 		{
 			$s_file = htmlspecialchars($file);
 			$str .= "\n    <ul><li>$s_file</li></ul>\n   ";
 		}
+		else
+		{
+			//$page_info = get_pg_info_db($page);
+			//$str .= "\n<br />[ ".$page_info['title']." ]\n";
+		}
 		$str .= "</li>";
 		
 		if($pagereading_enable) {
-			if(mb_ereg('^([A-Za-zァ-ヶ])',$readings[$page],$matches)) {
+			$reading = $readings[$page];
+			if ($alias)
+			{
+				$c_count =count_chars($reading);
+				$reading = ltrim_pagename($reading,$c_count[47]);
+			}
+			//if(mb_ereg('^([A-Za-zァ-ヶ])',$readings[$page],$matches)) {
+			if(mb_ereg('^([A-Za-zァ-ヶ])',$reading,$matches)) {
 				$head = $matches[1];
 			}
 			elseif (mb_ereg('^[ -~]|[^ぁ-ん亜-熙]',$page)) {
+			//elseif (mb_ereg('^[ -~]|[^ぁ-ん亜-熙]',$alias)) {
 				$head = $symbol;
 			}
 			else {
@@ -836,6 +863,23 @@ function drop_submit($str)
 		'<input$1type="hidden"',
 		$str
 	);
+}
+
+// ページ名を指定階層数切り詰める
+function ltrim_pagename($page,$num)
+{
+	//$c_count =count_chars($page);
+	while ($num)
+	{
+		if (strpos($page,"/") !== false)
+		{
+			$page = substr($page,strpos($page,"/")+1);
+			$num --;
+		}
+		else
+			break;
+	}
+	return $page;
 }
 
 //////////////////////////////////////////////////////
