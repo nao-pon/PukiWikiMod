@@ -1,5 +1,5 @@
 <?php
-// $Id: age.inc.php,v 1.4 2005/01/14 05:12:42 nao-pon Exp $
+// $Id: age.inc.php,v 1.5 2005/02/24 23:30:39 nao-pon Exp $
 
 /*
  * age.inc.php
@@ -27,16 +27,16 @@ function plugin_age_inline() {
 	
 	if ($prm == "day")
 	{
-		return day($y,$m,$d);
+		return plugin_age_day($y,$m,$d);
 	}
 	else
 	{
-		return age($y,$m,$d,$format);
+		return plugin_age_age($y,$m,$d,$format);
 	}
 }
 
 // 年齢算出
-function age($y,$m,$d,$format=false)
+function plugin_age_age($y,$m,$d,$format=false)
 {
 	global $_age_messages;
 	// 現在年月日
@@ -60,10 +60,39 @@ function age($y,$m,$d,$format=false)
 	return $age;
 }
 
+// ユリウス日(JD)算出 (upkさん提供)
+function plugin_age_date2jd($m,$d,$y,$h=0,$i=0,$s=0) {
+
+  if( $m < 3.0 ){
+    $y -= 1.0;
+    $m += 12.0;
+  }
+
+  $jd  = (int)( 365.25 * $y );
+  $jd += (int)( $y / 400.0 );
+  $jd -= (int)( $y / 100.0 );
+  $jd += (int)( 30.59 * ( $m-2.0 ) );
+  $jd += 1721088;
+  $jd += $d;
+
+  $t  = $s / 3600.0;
+  $t += $i /60.0;
+  $t += $h;
+  $t  = $t / 24.0;
+
+  $jd += $t;
+  return( $jd );
+}
+
 // 日齢算出
-function day($y,$m,$d) {
+function plugin_age_day($y,$m,$d) {
+	if (function_exists ("GregorianToJD")) {
 	$today = GregorianToJD (date("m"),date("d"),date("Y"));
 	$date = GregorianToJD ($m,$d,$y);
+	} else {
+		$today = plugin_age_date2jd(date("m"),date("d"),date("Y"));
+		$date = plugin_age_date2jd($m,$d,$y);
+	}
 	return ($today-$date > 0)? $today-$date : 0;
 }
 
