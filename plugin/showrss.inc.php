@@ -22,7 +22,7 @@
  *
  * ÈòÆñ½ê       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.6 2004/05/13 14:10:39 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.7 2004/05/14 11:23:02 nao-pon Exp $
  *
  */
 
@@ -57,10 +57,12 @@ function plugin_showrss_convert()
 	}
 
 	$array = func_get_args();
-	$rssurl = $tmplname = $usecache = $usetimestamp = '';
+	$rssurl = $tmplname = $usecache = $usetimestamp = $show_description = '';
 
 	switch (func_num_args())
 	{
+		case 5:
+			$show_description = trim($array[4]);
 		case 4:
 			$usetimestamp = trim($array[3]);
 		case 3:
@@ -82,10 +84,11 @@ function plugin_showrss_convert()
 	{
 		$class = 'ShowRSS_html';
 	}
+	
 
 	list($rss,$time) = plugin_showrss_get_rss($rssurl,$usecache);
 
-	$obj = new $class($rss);
+	$obj = new $class($rss,$show_description);
 
 	$timestamp = '';
 	if ($usetimestamp > 0)
@@ -101,7 +104,7 @@ class ShowRSS_html
 	var $items = array();
 	var $class = '';
 
-	function ShowRSS_html($rss)
+	function ShowRSS_html($rss,$show_description="")
 	{
 		foreach ($rss as $date=>$items)
 		{
@@ -110,7 +113,12 @@ class ShowRSS_html
 				$link = $item['LINK'];
 				$title = $item['TITLE'];
 				$passage = get_passage($item['_TIMESTAMP']);
+				if ($item['AG:SOURCE'])
+					$title .= " [".$item['AG:SOURCE']."]";
+				
 				$link = "<a href=\"$link\" title=\"$title $passage\" target=\"_blank\">$title</a>";
+				if ($show_description)
+					$link .= "<br />"."<p class=\"quotation\">".$item['DESCRIPTION']."</p>";
 				$this->items[$date][] = $this->format_link($link);
 			}
 		}
