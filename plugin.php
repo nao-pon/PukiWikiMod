@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: plugin.php,v 1.11 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: plugin.php,v 1.12 2005/03/07 14:28:29 nao-pon Exp $
 //
 
 // プラグイン用に未定義の変数を設定
@@ -79,9 +79,14 @@ function exist_plugin_inline($name)
 //プラグインの初期化を実行
 function do_plugin_init($name)
 {
+	static $ret = array();
+	
+	if (isset($ret[$name])) return $ret[$name];
+	
 	$funcname = 'plugin_'.$name.'_init';
 	if (!function_exists($funcname)) {
-		return FALSE;
+		$ret[$name] = FALSE;
+		return $ret[$name];
 	}
 	
 	$func_check = '_funccheck_'.$funcname;
@@ -89,10 +94,12 @@ function do_plugin_init($name)
 	
 	if ($$func_check)
 	{
-		return TRUE;
+		$ret[$name] = TRUE;
+		return $ret[$name];
 	}
 	$$func_check = TRUE;
-	return @call_user_func($funcname);
+	$ret[$name] = @call_user_func($funcname);
+	return $ret[$name];
 }
 
 //プラグイン(action)を実行
