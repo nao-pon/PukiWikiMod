@@ -19,7 +19,7 @@ function plugin_recent_init()
 {
 	if (LANG == "ja") {
 		$_plugin_recent_messages = array(
-    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%s最新の%d件</h5><div class="small" style="margin-left:.8em;margin-right:.8em">%s</div>');
+    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%s最新の%d件</h5><div style="margin-left:.8em;margin-right:.8em">%s</div>');
   } else {
 		$_plugin_recent_messages = array(
     '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%sRecent(%d)</h5><div style="margin-left:.8em;margin-right:.8em">%s</div>');
