@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.18 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.19 2005/03/17 01:59:56 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -371,7 +371,7 @@ function xb_get_url_by_name($name="",$use_static_url)
 	
 	if(isset($ret[$name])) return $ret[$name];
 	
-	if (!$name || !is_page($name)) return $ret[$name] = XOOPS_URL."/modules/pukiwiki/";
+	if (!$name || !xb_page_exists($name)) return $ret[$name] = XOOPS_URL."/modules/pukiwiki/";
 	
 	if ($use_static_url == 3)
 		return $ret[$name] = XOOPS_URL."/pukiwiki+._".xb_get_pgid_by_name($name).".htm";
