@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.6 2004/10/09 08:16:41 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.7 2004/10/09 13:58:52 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -209,6 +209,8 @@ function plugin_areaedit_action()
 			'body' => $error,
 		);
 	}
+	
+	$vars['areaedit_msg'] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$vars['areaedit_msg']);
 	
 	if ( array_key_exists('inline_plugin', $vars) ) {
 		if ( $vars['inline_plugin'] == 1 ) {
