@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.21 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: func.php,v 1.22 2004/01/24 14:44:21 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -683,6 +683,7 @@ function auto_br($msg){
 		$msg = preg_replace("/~(->)?\n((?:[#\-+*|:>\n]|\/\/|<<<))/","\\1\n\\2",$msg);
 		$msg = preg_replace("/((?:^|\n)[^ ][^\n~]*)~((:?->)?\n )/","\\1\\2",$msg);
 		$msg = preg_replace("/((?:^|\n)(?:----|\/\/)(?:.*)?)~((:?->)?\n)/","\\1\\2",$msg);
+		$msg = preg_replace("/(^|\n)->~(\n|$)/","\\1->\\2",$msg);
 		//$msg = str_replace("<<<~->\n","<<<->\n",$msg);
 		$msg = preg_replace("/~$/","",$msg);
 
@@ -824,6 +825,17 @@ function get_makedate_byname($page,$sep="-")
 	else
 		$ret = $make_date[4];
 	return $ret;
+}
+
+// PukiWiki 1.4 互換用
+//<input type="(submit|button|image)"...>を隠す
+function drop_submit($str)
+{
+	return preg_replace(
+		'/<input([^>]+)type="(submit|button|image)"/i',
+		'<input$1type="hidden"',
+		$str
+	);
 }
 
 //////////////////////////////////////////////////////
