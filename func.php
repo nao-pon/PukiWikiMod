@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.10 2003/07/14 09:03:59 nao-pon Exp $
+// $Id: func.php,v 1.11 2003/07/16 13:48:25 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -357,6 +357,10 @@ function get_passage($time)
 // 差分の作成
 function do_diff($strlines1,$strlines2)
 {
+	//改行コード統一
+	$strlines1 = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$strlines1);
+	$strlines2 = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$strlines2);
+	
 	$lines1 = split("\n",$strlines1);
 	$lines2 = split("\n",$strlines2);
 	
