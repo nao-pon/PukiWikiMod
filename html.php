@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.50 2005/03/11 15:00:39 nao-pon Exp $
+// $Id: html.php,v 1.51 2005/03/15 02:48:50 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -309,7 +309,10 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 		$digest = $vars["digest"];
 		$add_top_enable = $vars["add_top"];
 		$create_uid = $vars["f_create_uid"];
-		$author_uid = $vars["f_author_uid"];
+		if (!is_page($page))
+			$author_uid = $X_uid;
+		else
+			$author_uid = ($X_admin)? $vars["f_author_uid"] : get_pg_auther($page);
 		$freeze_check = $vars["freeze"]? " checked" : "";
 		$enter_enable = $vars["enter_enable"]? " checked" : "";
 		$auto_bra_enable = $vars["auto_bra_enable"]? " checked" : "";
