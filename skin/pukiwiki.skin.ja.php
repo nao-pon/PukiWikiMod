@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.32 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.33 2005/03/05 02:15:51 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -90,7 +90,7 @@ if (!defined('DATA_DIR')) exit;
 	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev"> <img src="./image/next.png" width="6" height="12" alt="Next"> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
 	
 	<?php } // is_read ?>
-	
+	<div class="wiki_header_img"></div>
 	<div class="wiki_content" id="body" style="width:100%;">
 	<?php echo $body ?>
 	</div>
