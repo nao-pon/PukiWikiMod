@@ -4,7 +4,7 @@
 //
 //
 // ref.inc.php,v 1.20をベースに作成
-// $Id: exifshowcase.inc.php,v 1.2 2004/03/20 07:21:17 nao-pon Exp $
+// $Id: exifshowcase.inc.php,v 1.3 2004/05/13 14:32:37 nao-pon Exp $
 // ORG: exifshowcase.inc.php,v 1.20 2004/01/17 12:52:01 m-arai Exp $
 //
 
@@ -33,6 +33,8 @@ eregで比較して、ファイル名がマッチするものだけを対象とする。
 カシミールLMLサーバへのリンクを生成しない
 --noexif~
 Exif情報表示を行なわない
+--sort~
+ファイル名でソートする
 --reverse~
 表示順を逆にする
 --col:整数値~
@@ -121,6 +123,7 @@ function plugin_exifshowcase_body($args,$page)
 		'nokash'    => FALSE, // カシミールLMLサーバへのリンクを張らない
 		'noexif'    => FALSE, // Exif情報を表示しない
 		'reverse'   => FALSE, // 表示順を逆に
+		'sort'      => FALSE, // ファイル名でソート
 		'page'      => $page, // ページ名
 		'_args'     => array(),
 		'_done'     => FALSE,
@@ -164,6 +167,8 @@ function plugin_exifshowcase_body($args,$page)
 	$_files = plugin_exifshowcase_glob( UPLOAD_DIR.encode($page).'_*'."(".encode(".jpg")."|".encode(".JPG")."|".encode(".jpeg")."|".encode(".JPEG").")");
 	$dlen = strlen( UPLOAD_DIR.encode($page).'_' );
 	$files = $aname = array();
+	
+	if ($params['sort']) sort($_files);
 	
 	for ( $i=0; $_files[$i]; $i++) {
 		$_aname = decode( substr($_files[$i], $dlen));
