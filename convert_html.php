@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.38 2004/12/02 13:56:14 nao-pon Exp $
+// $Id: convert_html.php,v 1.39 2004/12/23 13:41:43 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -92,7 +92,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 	
 	//キーワード強調
 	$wiki_strong_words = array_unique($wiki_strong_words);
-	keyword_to_strong(&$str,$wiki_strong_words);
+	keyword_to_strong($str,$wiki_strong_words);
 	$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 	
 	//ゲストアカウントでページコンバート指定時
