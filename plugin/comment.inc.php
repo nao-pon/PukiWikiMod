@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.10 2004/01/24 14:46:57 nao-pon Exp $
+// $Id: comment.inc.php,v 1.11 2004/01/27 14:27:19 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -149,8 +149,6 @@ function plugin_comment_action()
 		$body = $_msg_comment_collided . make_link($post["refer"]);
 	}
 	
-	$postdata = user_rules_str($postdata);
-
 	// ファイルの書き込み
 	page_write($post["refer"],$postdata,NULL,"","","","","","",array('plugin'=>'comment','mode'=>'add'));
 	

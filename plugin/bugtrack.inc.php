@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.9 2004/01/24 14:50:27 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.10 2004/01/27 14:27:19 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -203,7 +203,6 @@ function plugin_bugtrack_write($base, $pagename, $summary, $name, $priority, $st
   $pagename = strip_bracket($pagename);
   
   $postdata = plugin_bugtrack_template($base, $summary, $name, $priority, $state, $category, $version, $body);
-  $postdata = user_rules_str($postdata);
   // author:uid の追加
 	$postdata = "// author:".$X_uid."\n".$postdata;
 	

@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.12 2004/01/24 14:46:11 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.13 2004/01/27 14:27:19 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -182,7 +182,7 @@ function plugin_pcomment_convert() {
 
 	//XSS脆弱性問題 - 外部から来た変数をエスケープ
 	$f_page = htmlspecialchars($page);
-	$f_refer = htmlspecialchars($vars['page']);
+	$f_refer = htmlspecialchars($now_page);
 	$f_nodate = htmlspecialchars($params['nodate']);
 
 	$form = <<<EOD
@@ -229,8 +229,6 @@ function pcmt_insert($page) {
 
 	$ret['msg'] = $_title_updated;
 
-	//文字列の整形
-	$msg = user_rules_str($post['msg']);
 	//表中でも使用できるように|をエスケープ nao-pon
 	$msg = str_replace('|','&#124;',$msg);
 	
