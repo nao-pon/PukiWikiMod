@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.1 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: tb.inc.php,v 1.2 2004/01/27 14:30:47 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -14,21 +14,21 @@
 
 function plugin_tb_action()
 {
-	global $script,$vars,$post,$trackback,$X_admin;
+	global $script,$vars,$trackback,$X_admin;
 	
 	// POST: cmd=delete データ削除
-	if ($X_admin && $post['cmd']=="delete")
+	if ($X_admin && $vars['cmd']=="delete")
 	{
 		$i = 0;
 		$del_urls = array();
-		foreach($post['delete_check'] as $del_url)
+		foreach($vars['delete_check'] as $del_url)
 		{
 			$del_urls[] = addslashes($del_url);
 		}
-		tb_delete_url($del_urls,$post['tb_id']);
+		tb_delete_url($del_urls,$vars['tb_id']);
 	}
 	// POST: TrackBack Ping を保存する
-	if (!empty($post['url']))
+	if (!empty($vars['url']))
 	{
 		tb_save();
 	}
@@ -50,7 +50,7 @@ function plugin_tb_action()
 // TrackBack Ping データ保存(更新)
 function tb_save()
 {
-	global $script,$post,$vars,$trackback;
+	global $script,$vars,$trackback;
 	static $fields = array(/* UTIME, */'url','title','excerpt','blog_name');
 	
 	// 許可していないのに呼ばれた場合の対応
@@ -59,7 +59,7 @@ function tb_save()
 		tb_xml_msg(1,'Feature inactive.');
 	}
 	// TrackBack Ping における URL パラメータは必須である。
-	if (empty($post['url']))
+	if (empty($vars['url']))
 	{
 		tb_xml_msg(1,'It is an indispensable parameter. URL is not set up.');
 	}
@@ -69,7 +69,7 @@ function tb_save()
 		tb_xml_msg(1,'TrackBack Ping URL is inaccurate.');
 	}
 	
-	$url = $post['url'];
+	$url = $vars['url'];
 	$tb_id = $vars['tb_id'];
 	
 	// ページ存在チェック
@@ -105,7 +105,7 @@ function tb_save()
 	$items = array(UTIME);
 	foreach ($fields as $field)
 	{
-		$value = array_key_exists($field,$post) ? $post[$field] : '';
+		$value = array_key_exists($field,$vars) ? $vars[$field] : '';
 		$value = preg_replace("/[ \t\r\n]+/",' ',$value);
 		$$field = addslashes(mb_convert_encoding(trim($value), SOURCE_ENCODING, "AUTO"));
 	}
@@ -303,7 +303,7 @@ EOD;
                     </tr>
                     <tr>
                       <td bgcolor="#bfcfaf"><font size="-1" color="#3D3832"><b>ping送信先URL</b></font></td>
-                      <td bgcolor="#FFFFFF">$script?plugin=tb&amp;tb_id=$tb_id</td>
+                      <td bgcolor="#FFFFFF">$script?pwm_ping=$tb_id</td>
                     </tr>
                     <tr>
                       <td bgcolor="#bfcfaf"><font size="-1" color="#3D3832"><b>blog名 (blog_name)</b></font></td>
@@ -348,7 +348,7 @@ EOD;
  <div class="blog">
   <div class="trackback-url">
    $_tb_entry<br />
-   $script?plugin=tb&amp;tb_id=$tb_id<br /><br />
+   $script?pwm_ping=$tb_id<br /><br />
    $tb_refer
   </div>
   $tb_body

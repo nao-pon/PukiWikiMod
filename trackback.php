@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.4 2004/01/15 12:59:40 nao-pon Exp $
+// $Id: trackback.php,v 1.5 2004/01/27 14:30:47 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -123,7 +123,8 @@ function tb_send($page,$data="")
 	foreach(@file($ping_filename) as $line)
 	{
 		//Pukiwikiはスタックされないので送信済みに加えない
-		if (strpos($line,"?plugin=tb&tb_id=") === false)
+		if (strpos($line,"?plugin=tb&tb_id=") === false || //PukiWiki
+			strpos($line,"?pwm_ping=") === false)          //PukiWikiMod Ver 0.08b4以降
 			$sended[] = trim($line);
 		else
 			$to_pukiwiki[] = trim($line);
@@ -347,7 +348,7 @@ function tb_get_rdf($page)
    rdf:about="$script?$r_page"
    dc:identifier="$self"
    dc:title="$page"
-   trackback:ping="$script?plugin=tb&amp;tb_id=$tb_id"
+   trackback:ping="$script?pwm_ping=$tb_id"
    dc:creator="$creator"
    dc:date="$dcdate" />
 </rdf:RDF>

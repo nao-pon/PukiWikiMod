@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.36 2004/01/24 14:51:11 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.37 2004/01/27 14:30:47 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -107,6 +107,14 @@ if (isset($vars['pgid']))
 	if ($vars['page'])
 		$vars['cmd'] = "read";
 }
+
+// pwm_ping受信
+if (isset($vars['pwm_ping']))
+{
+	$vars['plugin'] = "tb";
+	$vars['tb_id'] = $vars['pwm_ping'];
+}
+
 // 一覧の表示
 if (arg_check("list")) $vars["plugin"] = "list";
 
