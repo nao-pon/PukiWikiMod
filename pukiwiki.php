@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.54 2004/10/07 00:59:56 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.55 2004/10/11 14:03:30 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -243,13 +243,17 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	if($post["template"] && page_exists($post["template_page"]))
 	{
 		$post["msg"] = @join("",get_source($post["template_page"]));
+		//ページ情報削除
+		delete_page_info($post["msg"],TRUE);
+	}
+	else
+	{
+		//ページ情報削除
+		delete_page_info($post["msg"]);
 	}
 	
 	$freeze_check = ($post["freeze"])? "checked " : "";
 	$unvisible_check = ($post["unvisible"])? "checked " : "";
-	
-	//ページ情報削除
-	delete_page_info($post["msg"]);
 	
 	//整形済みブロックの | を &#x7c; に置換
 	$post["msg"] = rep_for_pre($post["msg"]);

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.36 2004/10/05 12:46:48 nao-pon Exp $
+// $Id: file.php,v 1.37 2004/10/11 14:03:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -972,9 +972,13 @@ function check_readable($page, $auth_flag=true, $exit_flag=true){
 }
 
 // ページ情報を削除する
-function delete_page_info(&$str)
+function delete_page_info(&$str,$clr_anchor)
 {
 	$str = preg_replace("/(^|\n)(#freeze|#unvisible|\/\/ author:)([^\n]*)?/","",$str);
+
+	if ($clr_anchor)
+		$str = preg_replace("/(^|\n\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)/","$1$2",$str);
+
 	$str = preg_replace("/^\n+/","",$str);
 	//$str = trim($str);
 	return;
@@ -1012,6 +1016,8 @@ function get_heading_init($page)
 		}
 		if (preg_match("/(?:^|\|}?)\*{1,6}([^\|]*)/",$line,$reg))
 		{
+			$reg[1] = rtrim($reg[1]);
+			$reg[1] = preg_replace("/\s*\[#([A-Za-z][\w-]+)\]\s*/","",rtrim($reg[1]));
 			$reg[1] = preg_replace("/->$/","",rtrim($reg[1]));
 			$reg[1] = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$reg[1]);
 			$ret = trim(htmlspecialchars(strip_tags(make_link($reg[1],add_bracket($page)))));

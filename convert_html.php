@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.34 2004/10/07 03:09:18 nao-pon Exp $
+// $Id: convert_html.php,v 1.35 2004/10/11 14:03:30 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -158,7 +158,7 @@ class convert
 		global $WikiName,$InterWikiName, $BracketName;
 		global $_table_left_margin,$_table_right_margin;
 		global $anon_writable,$h_excerpt;
-		global $no_plugins,$nowikiname;
+		global $no_plugins,$nowikiname,$fixed_heading_anchor,$_symbol_anchor;
 		
 		// テーブルセル中フラグ
 		static $is_intable = 0;
@@ -318,7 +318,18 @@ class convert
 				{
 					$result = array_merge($result,$saved); $saved = array();
 					$headform[$_cnt] = $out[1];
-					$str = inline($out[2]);
+					$str = $out[2];
+					
+					$_fh_id = "";
+					if (preg_match("/(.*)\[#([A-Za-z][\w-]+)\](.*)/",$str,$_match))
+					{
+						$str = $_match[1].$_match[3];
+						$_fh_id = $_match[2];
+					}
+					
+					$out[2] = $str;
+					$str = inline($str);
+					
 					// <title>用
 					if (!$h_excerpt) 
 					{
@@ -327,8 +338,13 @@ class convert
 					//$level = strlen($out[1]) + 1;
 					$level = strlen($out[1]);
 
+					// fixed_heading
+					$_fh_text = ($fixed_heading_anchor && $_fh_id)? 
+						'<a class="anchor_super" id="'.$_fh_id.'" title="'.$_fh_id.'" href="#'.$_fh_id.'">'.$_symbol_anchor.'</a>'
+						:'';
+					
 					///// ParaeEdit /////
-					$_tag = "<h$level><a name=\"content_{$content_id_local}_$content_count\"></a>$str $top_link</h$level>";
+					$_tag = "<h$level><a name=\"content_{$content_id_local}_$content_count\"></a>{$str}{$_fh_text} {$top_link}</h$level>";
 					if ($content_id_local == 1 && !$_freeze && $anon_writable) {
 						$para_num = $content_count + 1;
 						$para_link = "$script?cmd=edit&amp;id=$para_num&amp;page=" . rawurlencode($vars[page]);
@@ -339,6 +355,7 @@ class convert
 					}
 					array_push($result, $_tag);
 					///// ParaeEdit /////
+					
 					$_c_text = strip_tags(make_line_rules(inline($out[2],TRUE)));
 					$_c_text = ($_c_text)? $_c_text : $content_id_local."_".$content_count;
 					$arycontents[] = str_repeat("-",$level)."<a href=\"#content_{$content_id_local}_$content_count\">".$_c_text."</a>\n";

@@ -1,5 +1,5 @@
 <?php
-// $Id: template.inc.php,v 1.7 2004/06/20 13:40:06 nao-pon Exp $
+// $Id: template.inc.php,v 1.8 2004/10/11 14:03:30 nao-pon Exp $
 
 define("MAX_LEN",60);
 function plugin_template_action()
@@ -45,7 +45,7 @@ function plugin_template_action()
 			global $X_uid,$author_uid,$freeze_check;
 
 			$lines = join('',get_source($vars["page"]));
-			delete_page_info($lines);
+			delete_page_info($lines,TRUE);
 			$lines = explode("\n",rtrim($lines));
 			
 			if($vars["begin"] <= $vars["end"])

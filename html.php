@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.40 2004/10/09 08:14:55 nao-pon Exp $
+// $Id: html.php,v 1.41 2004/10/11 14:03:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -431,7 +431,7 @@ function make_related($page,$tag='')
 // ユーザ定義ルール(ソースを置換する)
 function user_rules_str($str)
 {
-	global $str_rules;
+	global $str_rules,$fixed_heading_anchor;
 
 	$arystr = split("\n",$str);
 
@@ -445,9 +445,42 @@ function user_rules_str($str)
 				$str = preg_replace("/$rule/",$replace,$str);
 			}
 		}
+		
+		// 見出しに固有IDを付与する
+		if ($fixed_heading_anchor and
+			preg_match('/^(\|.*?)?(\*{1,6}(.(?!\[#[A-Za-z][\w-]+\]))+?)(\||->)?$/', $str, $matches))
+		{
+			if ($matches[1] || $matches[4])
+			{
+				// 表中の処理
+				$_str_a = array();
+				foreach(explode("|",$matches[2]) as $_str)
+				{
+					if (preg_match('/^(\*{1,6}(.(?!\[#[A-Za-z][\w-]+\]))+?)$/', $_str, $_arg))
+					{
+						// 固有IDを生成する
+						// ランダムな英字(1文字)+md5ハッシュのランダムな部分文字列(7文字)
+						$anchor = chr(mt_rand(ord('a'), ord('z'))).
+							substr(md5(uniqid(substr($_arg[1], 0, 100), 1)), mt_rand(0, 24), 7);
+						$_str = rtrim($_arg[1])." [#$anchor]";
+					}
+					$_str_a[] = $_str;
+				}
+				$str = $matches[1].join("|",$_str_a).$matches[4];
+			}
+			else
+			{
+				// 固有IDを生成する
+				// ランダムな英字(1文字)+md5ハッシュのランダムな部分文字列(7文字)
+				$anchor = chr(mt_rand(ord('a'), ord('z'))).
+					substr(md5(uniqid(substr($matches[2], 0, 100), 1)), mt_rand(0, 24), 7);
+				$str = $matches[1].rtrim($matches[2])." [#$anchor]".$matches[4];
+			}
+		}
+
 		$retvars[] = $str;
 	}
-
+	
 	return join("\n",$retvars);
 }
 

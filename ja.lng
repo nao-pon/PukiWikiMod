@@ -74,11 +74,14 @@ $_msg_content_back_to_top = '<span class="super_index">↑</span>';
 $_msg_word = 'これらのキーワードがハイライトされています： ';
 $_msg_filesdel = '添付ファイル・カウンターファイルの削除(ワンクリックで削除されます)';
 $_msg_read_more = '<< 続きを読む >>';
+$_msg_trackback = 'トラックバック';
 
 ///////////////////////////////////////
 // symbols
 $_symbol_anchor = '&dagger;';
 $_symbol_noexists = '?';
+$_symbol_anchor = '<img src="./image/anchor.png" width="10" height="10" alt="この見出しの固定リンク" style="vertical-align:top;" />';
+
 
 ///////////////////////////////////////
 // form buttons

@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.24 2004/10/05 12:46:48 nao-pon Exp $
+// $Id: index.php,v 1.25 2004/10/11 14:03:30 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -44,6 +44,7 @@ function writeConfig(){
 	$f_page_cache_min = (int)$f_page_cache_min;
 	$f_use_static_url = (int)$f_use_static_url;
 	$f_jp_pagereading = (int)$f_jp_pagereading;
+	$fixed_heading_anchor = (int)$fixed_heading_anchor;
 	if ($f_jp_pagereading == 2)
 	{
 		$f_pagereading_kanji2kana_converter = 'kakasi';
@@ -96,6 +97,7 @@ function writeConfig(){
 	\$use_static_url = $f_use_static_url;
 	\$update_ping_to = '$update_ping_to';
 	\$wiki_common_dirs = '$wiki_common_dirs';
+	\$fixed_heading_anchor = $fixed_heading_anchor;
 	";
 	$content .= "\n?>";
 
@@ -159,7 +161,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor;
 	
 	xoops_cp_header();
 	OpenTable();
@@ -187,6 +189,12 @@ function displayForm(){
 		$_mail_sw_[$wiki_mail_sw] = " checked";
 	} else {
 		$_mail_sw_[1] = " checked";
+	}
+	$_fixed_heading_anchor=array("","");
+	if(isset($fixed_heading_anchor)){
+		$_fixed_heading_anchor[$fixed_heading_anchor] = " checked";
+	} else {
+		$_fixed_heading_anchor[0] = " checked";
 	}
 	if(!isset($wiki_writable)) $wiki_writable = 0;
 	if($wiki_writable === 0){
@@ -360,6 +368,12 @@ function displayForm(){
 	</td><td>
 		<input type='radio' name='wiki_hide_navi' value='1'".$_hide_navi_1.">"._AM_WIKI_NONAVI."
 		<input type='radio' name='wiki_hide_navi' value='0'".$_hide_navi_0.">"._AM_WIKI_NAVI."
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_ANCHOR_VISIBLE."
+	</td><td>
+		<input type='radio' name='fixed_heading_anchor' value='1'".$_fixed_heading_anchor[1].">"._AM_WIKI_ENABLE."
+		<input type='radio' name='fixed_heading_anchor' value='0'".$_fixed_heading_anchor[0].">"._AM_WIKI_DISABLE."
 	</td></tr>
 	<tr><td colspan=2><hr /></td></tr>
 	<tr><td valign='top'>
