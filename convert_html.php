@@ -1,9 +1,10 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.2 2003/07/22 13:36:42 nao-pon Exp $
+// $Id: convert_html.php,v 1.3 2003/07/30 14:47:22 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string)
 {
+	if (is_array($string)) $string = join('',$string);
 	$body = new convert();
 	$result_last = $body->to_html($string);
 	
@@ -20,6 +21,11 @@ function convert_html($string)
 		}
 	}
 
+	//インクルードされたページが ref(インライン)だけだとApacheがこける
+	//なんでか知らんけど一度ブラケットネームを変換するとこけない。
+	$tmp = $body->inline2("[[a]]");
+	unset ($tmp);
+	
 	// インラインプラグイン
 	$result_last = preg_replace("/&amp;(\w+)(\(((?:(?!\)[;{]).)*)\))?(\{(.*)\})?;/ex","\$body->inline3('$1','$3','$5','$0')",$result_last);
 	
@@ -41,7 +47,7 @@ function convert_html($string)
 	$str = preg_replace("/(^|\n) /", "$1", $str);
 	
 	//一応アンセットしてみる
-	unset ($body,$cnts_plain,$arykeep);
+	unset ($body,$cnts_plain,$arykeep,$result_last);
 
 	return $str;
 	
