@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: proxy.php,v 1.5 2004/05/22 15:09:42 nao-pon Exp $
+// $Id: proxy.php,v 1.6 2004/06/20 13:45:26 nao-pon Exp $
 //
 
 /*
@@ -101,18 +101,23 @@ function http_request($url,$method='GET',$headers='',$post=array(),
 			'data'   => $errstr // エラーメッセージ
 		);
 	}
+
+	socket_set_timeout($fp, 10);
 	
 	fputs($fp, $query);
 	
 	$response = '';
 	while (!feof($fp))
 	{
-		if ($_response = fread($fp,4096))
+		$_response = fread($fp,4096);
+		$_status = socket_get_status($fp);
+		if ($_status['timed_out'] === false && $_response)
 		{
 			$response .= $_response;
 		}
 		else
 		{
+			fclose($fp);
 			return array(
 				'query'  => $query, // Query String
 				'rc'     => 408,    // エラー番号
