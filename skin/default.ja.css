@@ -12,6 +12,8 @@
 div.wiki_body_block
 {
 	background-color: #F5F5F5;
+	margin-bottom: 8px;
+
 }
 
 div.wiki_page_title
@@ -123,8 +125,8 @@ pre {
 	border-right:  #888899 1px solid;
 	font-size:12px;
 	line-height:14px;
-	padding:5px 0px 0px 10px;
-	margin: 5px 0px 0px 30px;
+	padding:5px 0px 5px 10px;
+	margin: 5px 0px 5px 30px;
 	white-space: pre;
 	background-color: #F0F8FF;
 	color: black;

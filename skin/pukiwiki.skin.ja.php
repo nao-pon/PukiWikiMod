@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.17 2004/05/13 14:10:39 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.18 2004/05/14 11:32:11 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -147,7 +147,7 @@ if($_freeze){
 		&nbsp;
 		<a href="<?php echo "$script?".rawurlencode("ヘルプ") ?>"><img src="./image/help.gif" width="20" height="20" border="0" alt="ヘルプ" /></a>
 		&nbsp;
-		<a href="pukiwiki.php?cmd=rss"><img src="./image/rss.gif" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
+		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.gif" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
 	</div>
 	<span class="small"><?php echo $sended_ping_tag ?><br /></span>
 	<?php
