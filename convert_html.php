@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.3 2003/07/30 14:47:22 nao-pon Exp $
+// $Id: convert_html.php,v 1.4 2003/07/30 14:50:38 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string)
 {
@@ -355,9 +355,11 @@ class convert
 								$td = preg_replace("/SC:\(([^),]*)(,once|,1)?\)/i","",$td);
 							}
 							// セル規定文字揃え、幅指定
-							if (preg_match("/(LEFT|CENTER|RIGHT)?:([0-9]+[%]?)?/",$td,$tmp)) {
-								if ($tmp[2]) $td_width[$i] = " width=\"".$tmp[2]."\"";
-								if ($tmp[1]) $td_align[$i] = " align=\"".strtolower($tmp[1])."\"";
+							if (preg_match("/(LEFT|CENTER|RIGHT)?:([0-9]+[%]?)?/i",$td,$tmp)) {
+								//if ($tmp[2]) $td_width[$i] = " width=\"".$tmp[2]."\"";
+								//if ($tmp[1]) $td_align[$i] = " align=\"".strtolower($tmp[1])."\"";
+								if ($tmp[2]) $td_width[$i] = "width:".$tmp[2].";";
+								if ($tmp[1]) $td_align[$i] = "text-align:".strtolower($tmp[1]).";";
 							}
 						}
 					} else {
@@ -403,24 +405,29 @@ class convert
 									$td = preg_replace("/SC:\(([^),]*)(,once|,1)?\)/i","",$td);
 								}
 								// セル内文字揃え指定
-								if (preg_match("/^(LEFT|CENTER|RIGHT)?(:)(TOP|MIDDLE|BOTTOM)?([^\r]*)$/",$td,$tmp)) {
+								if (preg_match("/^(LEFT|CENTER|RIGHT)?(:)(TOP|MIDDLE|BOTTOM)?([^\r]*)$/i",$td,$tmp)) {
 									if ($tmp[1]) {
-										$style = ' align="'.strtolower($tmp[1]).'"';
+										//$style = ' align="'.strtolower($tmp[1]).'"';
+										$sell_sheet .= "text-align:".strtolower($tmp[1]).";";
 									} else {
-										if ($td_name == "td") $style = $td_align[$i];
+										//if ($td_name == "td") $style = $td_align[$i];
+										if ($td_name == "td") $sell_sheet .= $td_align[$i];
 									}
 									if ($tmp[3]) {
-										$style .= ' valign="'.strtolower($tmp[3]).'"';
+										//$style .= ' valign="'.strtolower($tmp[3]).'"';
+										$sell_sheet .= "vertical-align:".strtolower($tmp[3]).";";
 									} else {
 										//まだ規定値は準備中
 									}
 									$td = (!$tmp[1] && !$tmp[3])? $tmp[2].$tmp[4] : $tmp[4];
 								} else {
-									if ($td_name == "td") $style = $td_align[$i];
+									//if ($td_name == "td") $style = $td_align[$i];
+									if ($td_name == "td") $sell_sheet .= $td_align[$i];
 								}
+								$sell_sheet .= $td_width[$i];
 								if ($sell_sheet) $sell_sheet=" style=\"".$sell_sheet."\"";
 								if ($_colspan == 1){
-									array_push($result,"<$td_name class=\"style_$td_name\"$style$td_width[$i]$sell_sheet>");
+									array_push($result,"<$td_name class=\"style_$td_name\"$style$sell_sheet>");
 								} else {
 									array_push($result,"<$td_name class=\"style_$td_name\"$style colspan=\"$_colspan\"$sell_sheet>");
 								}
