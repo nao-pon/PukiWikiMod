@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.3 2003/07/02 00:56:45 nao-pon Exp $
+// $Id: file.php,v 1.4 2003/07/04 08:43:54 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -38,9 +38,13 @@ function get_filetime($page)
 }
 
 // ファイルへの出力
-function file_write($dir,$page,$str)
+// 第4引数追加:最終更新しない=true by nao-pon
+function file_write($dir,$page,$str,$notimestamp=NULL)
 {
 	global $post,$update_exec;
+	
+	if (is_null($notimestamp)) $notimestamp=$post['notimestamp'];
+	
 	$timestamp = FALSE;
 
 	if($str == "")
@@ -51,7 +55,7 @@ function file_write($dir,$page,$str)
 	{
 		$str = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$str);
 		
-		if($post["notimestamp"] && is_page($page))
+		if($notimestamp && is_page($page))
 		{
 			$timestamp = @filemtime($dir.encode($page).".txt");
 		}

@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.4 2003/07/03 13:54:03 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.5 2003/07/04 08:43:54 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -81,6 +81,19 @@ function plugin_pcomment_convert() {
 	//パラメータ変換
 	$args = func_get_args();
 	array_walk($args, 'pcmt_check_arg', &$params);
+
+	$all_option = (is_array($args))? implode(" ",$args) : $args;
+	//ボタンテキスト指定オプション
+	$btn_text = $_pcmt_btn_comment;
+	if (preg_match("/(?: |^)btn:([^ ]+)(?: |$)/i",trim($all_option),$arg)){
+		$btn_text = htmlspecialchars($arg[1]);
+	}
+	//コメントテキストボックスサイズ指定オプション
+	$comment_size = PCMT_COLS_COMMENT;
+	if (preg_match("/(?: |^)size:([0-9]+)(?: |$)/i",trim($all_option),$arg)){
+		if (PCMT_COLS_COMMENT > $arg[1] && ($arg[1])) $comment_size = $arg[1];
+	}
+
 	unset($args);
 
 	//文字列を取得
@@ -120,7 +133,7 @@ function plugin_pcomment_convert() {
 	}
 
 	$radio = $params['reply'] ? '<input class="pcmt" type="radio" name="reply" value="0" checked />' : '';
-	$comment = '<input type="text" name="msg" size="'.PCMT_COLS_COMMENT.'" />';
+	$comment = '<input type="text" name="msg" size="'.$comment_size.'" />';
 
 	//XSS脆弱性問題 - 外部から来た変数をエスケープ
 	$f_page = htmlspecialchars($page);
@@ -136,7 +149,7 @@ function plugin_pcomment_convert() {
   <input type="hidden" name="nodate" value="$f_nodate" />
   <input type="hidden" name="dir" value="$dir" />
   $radio $title $name $comment
-  <input type="submit" value="$_pcmt_btn_comment" />
+  <input type="submit" value="$btn_text" />
   </div>
 EOD;
 	$link = $_page;
@@ -168,7 +181,7 @@ function pcmt_insert($page) {
 	$msg = user_rules_str($post['msg']);
 	//表中でも使用できるように|をエスケープ nao-pon
 	$msg = str_replace('|','&#124;',$msg);
-
+	
 	//コメントフォーマットを適用
 	$msg = sprintf(PCMT_FORMAT_MSG, rtrim($post['msg']));
 	$name = ($post['name'] == '') ? $no_name : $post['name'];
@@ -251,8 +264,12 @@ function pcmt_insert($page) {
 		}
 	}
 
-	// ファイルの書き込み
-	file_write(DATA_DIR, $page, $new);
+	//親ページのファイルタイム更新
+	touch(DATA_DIR.encode($post['refer']).".txt");
+	put_lastmodified();
+	
+	// コメントファイルの書き込み 第4引数:最終更新しない=true
+	file_write(DATA_DIR, $page, $new, true);
 
 	// メール送信 by nao-pon
 	if (WIKI_MAIL_NOTISE){
