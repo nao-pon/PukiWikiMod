@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.23 2004/05/18 12:05:38 nao-pon Exp $
+// $Id: convert_html.php,v 1.24 2004/05/20 13:57:35 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -156,7 +156,7 @@ class convert
 		global $WikiName,$InterWikiName, $BracketName;
 		global $_table_left_margin,$_table_right_margin;
 		global $anon_writable,$h_excerpt;
-		global $no_plugins;
+		global $no_plugins,$nowikiname;
 		
 		// テーブルセル中フラグ
 		static $is_intable = 0;
@@ -324,8 +324,12 @@ class convert
 					// <title>用
 					if (!$h_excerpt) 
 					{
-						$_converter = $converter; // copy
-						$h_excerpt = strip_tags($_converter->convert($str, $vars['page']));
+						//$_converter = $converter; // copy
+						//$h_excerpt = strip_tags($_converter->convert($str, $vars['page']));
+						$_nowikiname = $nowikiname;
+						$nowikiname = 1;
+						$h_excerpt = trim(strip_htmltag(make_link(preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$str)),$vars['page']));
+						$nowikiname = $_nowikiname;
 					}
 					//$level = strlen($out[1]) + 1;
 					$level = strlen($out[1]);
