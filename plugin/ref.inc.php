@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: ref.inc.php,v 1.3 2003/07/03 12:25:44 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -177,7 +177,8 @@ function plugin_ref_body($name,$args,$params){
 			$size = getimagesize($file);
 			$size = $size[3];
 		} else {
-			$url = preg_replace("/index.php/", "pukiwiki.php", $script, 1).'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
+			//$url = preg_replace("/index.php/", "pukiwiki.php", $script, 1).'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
+			$url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 			$lastmod = date('Y/m/d H:i:s',filemtime($file));
 			$size = sprintf('%01.1f',round(filesize($file)/1000,1)).'KB';
 			$info = "$lastmod $size";
