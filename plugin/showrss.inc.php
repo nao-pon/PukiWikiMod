@@ -22,7 +22,7 @@
  *
  * 避難所       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.17 2004/12/04 14:59:34 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.18 2004/12/06 13:51:09 nao-pon Exp $
  *
  */
 
@@ -295,7 +295,10 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 			$buf = str_replace("\0","",$buf);
 			// &amp; でない & を置換
 			$buf = preg_replace("/&(?!amp;)/","&amp;",$buf);
-
+			// タグ外の < > をエスケープ
+			$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('\r','\n'),'','$2').'$3'",$buf);
+			$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('<','>'),array('&lt;','&gt;'),'$2').'$3'",$buf);
+			
 			$time = UTIME;
 			// キャッシュを保存
 			if ($usecache)
@@ -317,7 +320,11 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 	//$buf = preg_replace("/[\x01-\x08\x0b\x0c\x0e-\x1f\x7f]+/","",$buf);
 	//$buf = str_replace("\0","",$buf);
 	// &amp; でない & を置換
-	//$buf = preg_replace("/&(?!amp;)/","&amp;",$buf);	
+	//$buf = preg_replace("/&(?!amp;)/","&amp;",$buf);
+	//$buf = preg_replace("/<([^>]*)</","&lt;$1<",$buf);
+	//$buf = preg_replace("/>([^<]*)>/",">$1&gt;",$buf);
+	//$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('\r','\n'),'','$2').'$3'",$buf);
+	//$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('<','>'),array('&lt;','&gt;'),'$2').'$3'",$buf);
 	
 	// parse
 	$obj = new ShowRSS_XML();
