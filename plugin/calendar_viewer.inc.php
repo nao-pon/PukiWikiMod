@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.3 2003/06/28 16:11:13 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.4 2003/07/09 14:45:51 wellwine Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -40,11 +40,28 @@
 
  */
 
-
+// initialize variables
+function plugin_calendar_viewer_init() {
+	if (LANG=='ja') {
+		$_plugin_calendar_viewer_messages = array(
+			'_calendar_viewer_msg_arg2' => '第二引数が変だよ',
+			'_calendar_viewer_msg_noargs' => '引数を指定してね',
+			'_calendar_viewer_msg_edit' => '編集',
+		);
+	} else {
+		$_plugin_calendar_viewer_messages = array(
+			'_calendar_viewer_msg_arg2' => 'check the second argument',
+			'_calendar_viewer_msg_noargs' => 'argument not found',
+			'_calendar_viewer_msg_edit' => 'Edit',
+		);
+	}
+	set_plugin_messages($_plugin_calendar_viewer_messages);
+}
 
 
 function plugin_calendar_viewer_convert()
 {
+  global $_calendar_viewer_msg_arg2, $_calendar_viewer_msg_noargs, $_calendar_viewer_msg_edit;
   global $WikiName,$BracketName,$vars,$get,$post,$hr,$script;
   global $anon_writable;
   global $comment_no;
@@ -99,7 +116,7 @@ function plugin_calendar_viewer_convert()
       $limit_base = $reg_array[1];
       $page_YM = "";
     }else{
-      return "第2引数が変だよ";
+      return $_calendar_viewer_msg_arg2;
     }
     if (isset($func_vars_array[2])&&preg_match("/past|view|future/si",$func_vars_array[2])){
       //モード指定
@@ -108,7 +125,7 @@ function plugin_calendar_viewer_convert()
 
 
   }else{
-    return "引数指定してね";
+    return $_calendar_viewer_msg_noargs;
   }
 
   //*一覧表示するページ名とファイル名のパターン　ファイル名には年月を含む
@@ -289,7 +306,7 @@ if ($cal2 == 1){
     $body = @join("",@file(get_filename(encode($page))));
     $body = "<div class=\"style_calendar_body\">".convert_html($body)."</div>";
     $link = "<a href=\"$script?cmd=read&amp;page=".rawurlencode($page)."\">".strip_bracket($page)."</a>";
-    if ($anon_writable) $link .= " <a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\"><font size=\"-2\">(編集)</font></a>";
+    if ($anon_writable) $link .= " <a href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\"><font size=\"-2\">(".$_calendar_viewer_msg_edit.")</font></a>";
     //$head = "<h1>$link</h1>\n";
     $head = "<h4>$link</h4>\n";
     $return_body .= $head . $body;

@@ -1,47 +1,82 @@
-@charset "iso-8859-1";
+@charset "shift_jis";
+/* this @charset is for mozilla's bug */
 
 pre, dl, ol, p, blockquote { line-height:130%; }
 
-body,td
+li
 {
-	color: black;
-	margin-left: 2%;
-	margin-right: 2%;
-	font-size: 14px;
+	margin-bottom:5px;
+}
+
+h1
+{
+ 	border-bottom:  7px solid #DDEEFF;
+ 	border-top:     1px solid #DDEEFF;
+ 	border-left:   20px solid #DDEEFF;
+ 	border-right:   5px solid #DDEEFF;
+	font-size:20pt;
 	font-family: verdana, arial, helvetica, Sans-Serif;
+	color: #000000;
+	background-color: #FFFFFF;
+	padding: 0.2em;
+	margin: 1px;
+	margin-bottom: 3px;
+	text-align: left;
+
 }
 
-a:link
+h2
 {
-	color: #215dc6;
-	text-decoration: none;
+ 	border-bottom:  5px solid #DDEEFF;
+ 	border-top:     1px solid #DDEEFF;
+ 	border-left:   15px solid #DDEEFF;
+ 	border-right:   5px solid #DDEEFF;
+	font-size:16pt;
+	font-family: verdana, arial, helvetica, Sans-Serif;
+	color: #000000;
+	background-color: #FFFFFF;
+	padding: 0.2em;
+	margin: 1px;
+	margin-bottom: 3px;
+	text-align: left;
+
 }
 
-a:active
+h3
 {
-	background: #CCDDEE;
-	color: #215dc6;
-	text-decoration: none;
+ 	border-bottom:  3px solid #DDEEFF;
+ 	border-top:     1px solid #DDEEFF;
+ 	border-left:   10px solid #DDEEFF;
+ 	border-right:   5px solid #DDEEFF;
+	font-size:12pt;
+	background-color: #FFFFFF;
+	padding: 0.2em;
+	padding-left: 0.4em;
+	margin: 1px;
+	margin-bottom: 3px;
+	font-family: verdana, arial, helvetica, Sans-Serif;
+	text-align: left;
+
 }
 
-a:visited
+h4
 {
-	color: #a63d21;
-	text-decoration: none;
+ 	border-left:   18px solid #DDEEFF;
+	background-color: #FFFFFF;
+	padding: 0.1em;
+	padding-left: 0.4em;
+	margin: 1px;
+	margin-bottom: 1px;
+	font-family: verdana, arial, helvetica, Sans-Serif;
+	text-align: left;
 }
 
-a:hover
-{
-	background: #CCDDEE;
-	color: #215dc6;
-	text-decoration: underline;
-}
-
-h1, h2, h3, h4, h5, h6
+h5, h6
 {
 	font-family: verdana, arial, helvetica, Sans-Serif;
 	background-color: #DDEEFF;
 	padding: .3em;
+	text-align: left;
 }
 
 dt {
@@ -85,7 +120,7 @@ strong {
 address {
 	font-style:normal;
 	font-family:Verdana;
-	font-size:8px;
+	font-size:9px;
 }
 
 .noexists {
@@ -95,15 +130,23 @@ address {
 .style_table {
 	margin:auto;
 	border:0px;
+	border-color:#99CCCC;
 	padding:0px;
-	text-align:left;
-	background-color:#ccd5dd;
+	background-color:#CCD5DD;
 }
 
 .style_td {
 	background-color: #EEF5FF;
 	padding: 5px;
 	margin: 1px;
+	color: black;
+}
+
+.style_th {
+	background-color: #dde5ee;
+	padding: 5px;
+	margin: 1px;
+	color: black;
 }
 
 .style_calendar {
@@ -112,59 +155,91 @@ address {
 	padding: 0px;
 }
 
+.style_calendar_navi {
+	border: 0px;
+	background-color: #DDE5FF;
+	padding: 0px;
+}
+
+.style_calendar_body {
+	background-color: #EEF5FF;
+	margin-top:5px;
+	margin-right:10px;
+	margin-bottom:5px;
+	margin-left:50px;
+	padding-top:0px
+	padding-right:30px;
+	padding-bottom:0px;
+	padding-left:10px;
+	border-color:#CCD5DD;
+	border-width:2pt;
+	border-style:dashed;
+}
+
 .style_td_caltop {
 	background-color: #EEF5FF;
-	padding: 5px;
+	padding: 0px;
 	margin: 1px;
-	height:15px;
 }
 
 .style_td_today {
-	background-color: #FFFFDD;
-	padding: 5px;
+	background-color: #CCFF99;
+	padding: 0px;
 	margin: 1px;
-	width:14%;
-	height:19px;
+	width:24px;
+	height:24px;
 }
 
 .style_td_sat {
-	background-color: #DDE5FF;
-	padding: 5px;
+	background-color: #EEF7FF;
+	padding: 0px;
 	margin: 1px;
-	width:14%;
-	height:19px;
+	width:24px;
+	height:24px;
 }
 
 .style_td_sun {
 	background-color: #FFEEEE;
-	padding: 5px;
+	padding: 0px;
 	margin: 1px;
-	width:14%;
-	height:19px;
+	width:24px;
+	height:24px;
 }
-
 .style_td_day {
-	background-color: #EEF5FF;
-	padding: 5px;
+	background-color: #FFFFFF;
+	padding: 0px;
 	margin: 1px;
-	width:14%;
-	height:19px;
+	width:24px;
+	height:24px;
 }
-
 .style_td_blank {
-	background-color: #EEF5FF;
-	padding: 5px;
+	background-color: #EEEEEE;
+	padding: 0px;
 	margin: 1px;
-	width:14%;
-	height:19px;
+	width:24px;
+	height:24px;
 }
 
 .style_td_week {
 	background-color: #DDE5EE;
-	padding: 5px;
+	padding: 0px;
 	margin: 1px;
+	width:24px;
 	height:15px;
 }
+.style_sunday_font {
+	color: #ff0000;
+}
+.style_weekday_font {
+	color: #000000;
+}
+.style_satday_font {
+	color: #0000ff;
+}
+.style_today_font {
+	font-weight:700;
+}
+
 
 .small {
 	font-size:12px;
@@ -186,14 +261,14 @@ address {
 
 .full_hr {
 	border-style:ridge;
-	border-color:#333333;
+	border-color:#CCCCFF;
 	border-width:1px 0px;
 }
 
 .note_hr {
 	width:90%;
 	border-style:ridge;
-	border-color:#333333;
+	border-color:#CCCCFF;
 	border-width:1px 0px;
 	text-align:center;
 	margin:1em auto 0em auto;
@@ -204,7 +279,7 @@ address {
 }
 
 .counter {
-	font-size:8px;
+	font-size:10px;
 }
 .vote_label{
 	background-color: #FFCCCC;
@@ -322,4 +397,106 @@ div.p_center{
 }
 div.p_right{
 	text-align:right;
+}
+.clear{
+	margin:0px;
+	clear:both;
+}
+
+strong.word0 {
+	background-color:#FFFF66;
+	color:black;
+}
+
+strong.word1 {
+	background-color:#A0FFFF;
+	color:black;
+}
+
+strong.word2 {
+	background-color:#99FF99;
+	color:black;
+}
+
+strong.word3 {
+	background-color:#FF9999;
+	color:black;
+}
+
+strong.word4 {
+	background-color:#FF66FF;
+	color:black;
+}
+
+strong.word5 {
+	background-color:#880000;
+	color:white;
+}
+
+strong.word6 {
+	background-color:#00AA00;
+	color:white;
+}
+
+strong.word7 {
+	background-color:#886800;
+	color:white;
+}
+
+strong.word8 {
+	background-color:#004699;
+	color:white;
+}
+
+strong.word9 {
+	background-color:#990099;
+	color:white;
+}
+
+/* new.inc.php */
+.comment_date
+{
+	font-size:x-small;
+}
+.new1
+{
+	color:red;
+	background-color:transparent;
+	font-size:x-small;
+}
+.new5
+{
+	color:green;
+	background-color:transparent;
+	font-size:xx-small;
+}
+
+/* pcomment.inc.php */
+li.pcmt
+{
+	list-style-type: none;
+	border:none;
+}
+input.pcmt
+{
+	text-indent: -2em;
+	padding:0px 0px 0px 2em;
+	margin-right:.5em;
+	border:none;
+}
+
+/* source.inc.php */
+div.wiki_source
+{
+	border-top:    #DDDDEE 1px solid;
+	border-bottom: #888899 1px solid;
+	border-left:   #DDDDEE 1px solid;
+	border-right:  #888899 1px solid;
+	padding: .5em;
+	margin-left: 1em;
+	margin-right: 2em;
+	white-space: pre;
+	background-color: #F0F8FF;
+	color: black;
+	line-height:150%;
 }

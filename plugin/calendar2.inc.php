@@ -1,10 +1,37 @@
 <?php
-// $Id: calendar2.inc.php,v 1.3 2003/06/28 16:11:13 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.4 2003/07/09 14:45:51 wellwine Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
+
+// initialize plug-in
+function plugin_calendar2_init() {
+	if (LANG=='ja') {
+		$_plugin_calendar2_messages = array(
+			'_calendar2_msg_nextmonth' => '前月',
+			'_calendar2_msg_prevmonth' => '次月',
+            '_calendar2_msg_detail' => '%sの詳細',
+            '_calendar2_msg_month' => '月',
+            '_calendar2_msg_day' => '日',
+            '_calendar2_msg_write' => '書き込む',
+		);
+	} else {
+		$_plugin_calendar2_messages = array(
+			'_calendar2_msg_nextmonth' => 'Next',
+			'_calendar2_msg_prevmonth' => 'Previous',
+            '_calendar2_msg_detail' => 'Details of %s',
+            '_calendar2_msg_month' => '/',
+            '_calendar2_msg_day' => '',
+            '_calendar2_msg_write' => 'Edit',
+		);
+	}
+	set_plugin_messages($_plugin_calendar2_messages);
+}
+
 function plugin_calendar2_convert()
 {
+    global $_calendar2_msg_nextmonth, $_calendar2_msg_prevmonth, $_calendar2_msg_write;
+    global $_calendar2_msg_detail, $_calendar2_msg_month, $_calendar2_msg_day;
 	global $script,$weeklabels,$vars,$command,$WikiName,$BracketName,$post,$get;
-	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable;
+	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable, $_msg_month;
 	
 	$today_view = true;
 	$args = func_get_args();
@@ -175,7 +202,7 @@ function plugin_calendar2_convert()
   <tr>
     <td align="middle" class="style_td_caltop" colspan="7">
       <table style="width:100%;"><tr><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'" title="前月">&lt;&lt;</a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'" title="'.$_calendar2_msg_prevmonth.'">&lt;&lt;</a>
       </td><td style="text-align:center;vertical-align:top;font-size:11px;">
        <form method="GET" action="'.$script.'">
         <input type="hidden" name="plugin" value="calendar2">
@@ -193,16 +220,16 @@ function plugin_calendar2_convert()
         <select name="month" style="font-size:11px;">';
 		for ($i = 1 ; $i <= 12 ; $i++){
 			if ($i == $m_num){
-				$ret .= '<option value="'.$i.'" selected>'.$i.'月';
+				$ret .= '<option value="'.$i.'" selected>'.$_msg_month[$i];
 			} else {
-				$ret .= '<option value="'.$i.'">'.$i.'月';
+				$ret .= '<option value="'.$i.'">'.$_msg_month[$i];
 			}
 		}
         $ret .= '
         </select>
         <input type="submit" value="Go" style="font-size:11px;">
        </td></form><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'" title="次月">&gt;&gt;</a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'" title="'.$_calendar2_msg_nextmonth.'">&gt;&gt;</a>
       </td></tr></table>
     </td>
   </tr>
@@ -216,7 +243,7 @@ function plugin_calendar2_convert()
   <tr>
     <td align="middle" class="style_td_caltop" colspan="7">
       <table style="width:100%;"><tr><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'" title="前月">&lt;&lt;</a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$prev_date_str.'" title="'.$_calendar2_msg_prevmonth.'">&lt;&lt;</a>
       </td><td style="text-align:center;vertical-align:top;font-size:11px;">
        <form method="GET" action="'.$script.'">
         <input type="hidden" name="plugin" value="calendar2">
@@ -234,16 +261,16 @@ function plugin_calendar2_convert()
         <select name="month" style="font-size:11px;">';
 		for ($i = 1 ; $i <= 12 ; $i++){
 			if ($i == $m_num){
-				$ret .= '<option value="'.$i.'" selected>'.$i.'月';
+				$ret .= '<option value="'.$i.'" selected>'.$_msg_month[$i];
 			} else {
-				$ret .= '<option value="'.$i.'">'.$i.'月';
+				$ret .= '<option value="'.$i.'">'.$_msg_month[$i];
 			}
 		}
         $ret .= '
         </select>
         <input type="submit" value="Go" style="font-size:11px;">
       </td></form><td style="text-align:left;vertical-align:top;" nowrap>
-      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'" title="次月">&gt;&gt;</a>
+      <a href="'.$script.'?plugin=calendar2&amp;file='.$prefix_.'&amp;date='.$next_date_str.'" title="'.$_calendar2_msg_nextmonth.'">&gt;&gt;</a>
       </td></tr></table>[<a href="'.$script.'?'.$prefix_url.'">'.$pre.'.Today</a>]
     </td>
   </tr>
@@ -350,16 +377,16 @@ function plugin_calendar2_convert()
 	if(is_page($page)) {
 		$page_ = $vars['page'];
 		$get['page'] = $post['page'] = $vars['page'] = $page;
-		$str = "<h4>".htmlspecialchars(strip_bracket($page))."の詳細</h4>";
+		$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
 		$str .= convert_html(join("",file(get_filename(encode($page)))));
 		if ($anon_writable) $str .= "<hr /><a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($page)."\">$_calendar2_plugin_edit</a>";
 		$get['page'] = $post['page'] = $vars['page'] = $page_;
 	}
 	else if (!$other_month) {
-		$str = "<h4>".sprintf('%s%4d-%02d-%02d',$prefix, $today[year], $today[mon], $today[mday])."の詳細</h4><br />";
+		$str = "<h4>".sprintf($_calendar2_msg_detail, sprintf('%s%4d-%02d-%02d',$prefix, $today[year], $today[mon], $today[mday]))."</h4><br />";
 		//$str .= sprintf($_calendar2_plugin_empty,make_link(sprintf('[[%s%4d-%02d-%02d]]',$prefix, $today[year], $today[mon], $today[mday])));
-		$str .= sprintf($_calendar2_plugin_empty,make_link($today[mon]."月".$today[mday]."日"));
-		if ($anon_writable) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" title=\"$name\" class=\"small\">書き込む<span class=\"note_super\"> </span></a>";
+		$str .= sprintf($_calendar2_plugin_empty,make_link($today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day));
+		if ($anon_writable) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" title=\"$name\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
 	} else {
 		$str = "";
 	}
@@ -411,6 +438,9 @@ function plugin_calendar2_action()
 // === 祝日かどうか判定する ===
 function check_holiday($year,$mon,$mday)
 {
+  // for internationalization
+  if (LANG!="ja") return 0;
+
   $wday = date( "w", mktime(0,0,0,$mon,$mday,$year,0) );
 
   $day  = 100*$mon + $mday;
