@@ -210,6 +210,8 @@ $_tracker_messages = array(
 	'btn_submit' => 'Add',
 	'btn_date' => 'Date',
 	'btn_refer' => 'Refer page',
+	'btn_update' => 'Update',
+	'btn_past' => 'Past',
 );
 
 ///////////////////////////////////////
