@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: version.php,v 1.19 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: version.php,v 1.20 2005/01/13 23:39:02 nao-pon Exp $
 /////////////////////////////////////////////////
-define("_XOOPS_WIKI_VERSION", "1.1.0");
+define("_XOOPS_WIKI_VERSION", "1.1.1");
 ?>
