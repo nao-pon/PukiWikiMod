@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: color.inc.php,v 1.1 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: color.inc.php,v 1.2 2004/11/24 13:15:35 nao-pon Exp $
 //
 
 function plugin_color_inline()

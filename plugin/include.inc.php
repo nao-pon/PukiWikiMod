@@ -1,5 +1,5 @@
 <?php
-// $Id: include.inc.php,v 1.6 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: include.inc.php,v 1.7 2004/11/24 13:15:35 nao-pon Exp $
 // internationalization
 function plugin_include_init() {
 	if (LANG=='ja') {

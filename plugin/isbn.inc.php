@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.14 2004/10/28 12:12:36 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.15 2004/11/24 13:15:35 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.

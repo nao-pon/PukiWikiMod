@@ -19,7 +19,7 @@
  -投稿内容のメール自動配信先
  を設定の上、ご使用ください。
 
- $Id: article.inc.php,v 1.10 2004/08/19 05:29:39 nao-pon Exp $
+ $Id: article.inc.php,v 1.11 2004/11/24 13:15:35 nao-pon Exp $
  
  */
 

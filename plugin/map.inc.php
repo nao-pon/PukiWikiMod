@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: map.inc.php,v 1.5 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: map.inc.php,v 1.6 2004/11/24 13:15:35 nao-pon Exp $
 //
 /*
 プラグイン map

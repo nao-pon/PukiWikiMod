@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker_list.inc.php,v 1.1 2003/07/14 09:02:01 nao-pon Exp $
+// $Id: tracker_list.inc.php,v 1.2 2004/11/24 13:15:35 nao-pon Exp $
 //
 
 require_once(PLUGIN_DIR.'tracker.inc.php');

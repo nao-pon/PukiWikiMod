@@ -1,5 +1,5 @@
 <?php
-// $Id: lookup.inc.php,v 1.3 2004/09/23 23:32:04 nao-pon Exp $
+// $Id: lookup.inc.php,v 1.4 2004/11/24 13:15:35 nao-pon Exp $
 
 function plugin_lookup_convert()
 {

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: list.inc.php,v 1.3 2004/11/03 14:17:27 nao-pon Exp $
+// $Id: list.inc.php,v 1.4 2004/11/24 13:15:35 nao-pon Exp $
 //
 // 一覧の表示
 function plugin_list_action()

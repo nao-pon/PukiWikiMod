@@ -5,7 +5,7 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: counter.inc.php,v 1.6 2004/11/03 14:01:29 nao-pon Exp $
+ * $Id: counter.inc.php,v 1.7 2004/11/24 13:15:35 nao-pon Exp $
  */
 
 function plugin_counter_convert()

@@ -1,6 +1,6 @@
 <?php
 //
-// $Id: ping.inc.php,v 1.2 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: ping.inc.php,v 1.3 2004/11/24 13:15:35 nao-pon Exp $
 //
 
 function plugin_ping_convert()

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tooltip.inc.php,v 1.1 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: tooltip.inc.php,v 1.2 2004/11/24 13:15:35 nao-pon Exp $
 // ORG: tooltip.inc.php,v 0.5 2003/11/03 16:20:10 sha Exp $
 //
 /* 

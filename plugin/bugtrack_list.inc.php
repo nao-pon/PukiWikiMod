@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack_list.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
+ * $Id: bugtrack_list.inc.php,v 1.3 2004/11/24 13:15:35 nao-pon Exp $
  */
 
 require_once("plugin/bugtrack.inc.php");

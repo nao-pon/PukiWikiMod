@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: new.inc.php,v 1.4 2004/02/08 13:23:28 nao-pon Exp $
+// $Id: new.inc.php,v 1.5 2004/11/24 13:15:35 nao-pon Exp $
 // ORG: new.inc.php,v 1.3 2003/07/28 07:10:29 arino Exp $
 //
 

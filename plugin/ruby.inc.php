@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ruby.inc.php,v 1.3 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: ruby.inc.php,v 1.4 2004/11/24 13:15:35 nao-pon Exp $
 //
 
 function plugin_ruby_inline()

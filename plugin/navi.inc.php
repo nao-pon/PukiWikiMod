@@ -1,5 +1,5 @@
 <?php
-// $Id: navi.inc.php,v 1.5 2004/11/01 14:13:19 nao-pon Exp $
+// $Id: navi.inc.php,v 1.6 2004/11/24 13:15:35 nao-pon Exp $
 /*
 Last-Update:2002-12-05 rev.3
 

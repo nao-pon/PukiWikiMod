@@ -1,5 +1,5 @@
 <?php
-// $Id: vote.inc.php,v 1.8 2004/11/17 13:53:34 nao-pon Exp $
+// $Id: vote.inc.php,v 1.9 2004/11/24 13:15:35 nao-pon Exp $
 
 function plugin_vote_init()
 {

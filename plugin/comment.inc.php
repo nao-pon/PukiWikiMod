@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.14 2004/08/20 09:12:47 nao-pon Exp $
+// $Id: comment.inc.php,v 1.15 2004/11/24 13:15:35 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;

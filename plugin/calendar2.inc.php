@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.18 2004/10/28 14:43:17 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.19 2004/11/24 13:15:35 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in

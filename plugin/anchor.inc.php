@@ -1,5 +1,5 @@
 <?php
-// $Id: anchor.inc.php,v 1.3 2003/06/28 16:11:13 nao-pon Exp $
+// $Id: anchor.inc.php,v 1.4 2004/11/24 13:15:35 nao-pon Exp $
 
 function plugin_anchor_convert()
 {

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.9 2004/11/17 13:49:56 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.10 2004/11/24 13:15:35 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit

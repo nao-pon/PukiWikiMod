@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rename.inc.php,v 1.4 2004/09/20 12:35:16 nao-pon Exp $
+// $Id: rename.inc.php,v 1.5 2004/11/24 13:15:35 nao-pon Exp $
 //
 
 /*

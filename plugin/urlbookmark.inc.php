@@ -1,5 +1,5 @@
 <?php
-// $Id: urlbookmark.inc.php,v 1.2 2004/10/20 12:25:17 nao-pon Exp $
+// $Id: urlbookmark.inc.php,v 1.3 2004/11/24 13:15:35 nao-pon Exp $
 
 /*
  * PukiWiki urlbookmark プラグイン

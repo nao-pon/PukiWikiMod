@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tenki.inc.php,v 1.7 2004/10/14 13:02:31 nao-pon Exp $
+// $Id: tenki.inc.php,v 1.8 2004/11/24 13:15:35 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //	&tenki([pic],[w:width])[{now?}];

@@ -22,7 +22,7 @@
  *
  * ÈòÆñ½ê       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.15 2004/09/04 01:13:55 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.16 2004/11/24 13:15:35 nao-pon Exp $
  *
  */
 

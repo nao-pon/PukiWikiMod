@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: yetlist.inc.php,v 1.5 2004/03/20 07:21:17 nao-pon Exp $
+// $Id: yetlist.inc.php,v 1.6 2004/11/24 13:15:35 nao-pon Exp $
 //
 function plugin_yetlist_init() {
 	if (LANG == "ja"){

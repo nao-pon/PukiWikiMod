@@ -1,5 +1,5 @@
 <?php
-// $Id: back.inc.php,v 1.3 2003/07/15 13:13:12 wellwine Exp $
+// $Id: back.inc.php,v 1.4 2004/11/24 13:15:35 nao-pon Exp $
 /*
  * PukiWiki back プラグイン
  * (C) 2002, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>

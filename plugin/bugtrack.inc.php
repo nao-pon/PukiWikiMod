@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.11 2004/05/13 14:10:39 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.12 2004/11/24 13:15:35 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()

@@ -1,5 +1,5 @@
 <?php
-// $Id: template.inc.php,v 1.9 2004/10/31 14:17:23 nao-pon Exp $
+// $Id: template.inc.php,v 1.10 2004/11/24 13:15:35 nao-pon Exp $
 
 define("MAX_LEN",60);
 function plugin_template_action()

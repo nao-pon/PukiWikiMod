@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.3 2004/10/05 08:49:00 nao-pon Exp $
+// $Id: tb.inc.php,v 1.4 2004/11/24 13:15:35 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>

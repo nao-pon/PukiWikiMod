@@ -14,7 +14,7 @@
 
  ※SERVER_NAMEはinit.phpで既に設定されているはずですので、残り2行を追加してください
  
- $Id: server.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+ $Id: server.inc.php,v 1.3 2004/11/24 13:15:35 nao-pon Exp $
  
  */
 

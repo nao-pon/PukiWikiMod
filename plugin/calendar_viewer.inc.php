@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.18 2004/11/17 13:51:57 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.19 2004/11/24 13:15:35 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**

@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.18 2004/09/04 01:14:47 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.19 2004/11/24 13:15:35 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 

@@ -1,5 +1,5 @@
 <?php
-// $Id: newpage.inc.php,v 1.4 2004/05/20 13:59:11 nao-pon Exp $
+// $Id: newpage.inc.php,v 1.5 2004/11/24 13:15:35 nao-pon Exp $
 
 function plugin_newpage_init()
 {

@@ -1,5 +1,5 @@
 <?php
-// $Id: includesubmenu.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: includesubmenu.inc.php,v 1.3 2004/11/24 13:15:35 nao-pon Exp $
 
 function plugin_includesubmenu_convert()
 {

@@ -1,5 +1,5 @@
 <?php
-// $Id: aname.inc.php,v 1.4 2003/07/01 14:51:35 wellwine Exp $
+// $Id: aname.inc.php,v 1.5 2004/11/24 13:15:35 nao-pon Exp $
 
 // internationalization
 function plugin_aname_init() {
