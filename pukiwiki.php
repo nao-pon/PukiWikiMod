@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.50 2004/09/12 14:05:29 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.51 2004/09/12 23:46:28 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -476,7 +476,7 @@ else if($post["write"])
 			  $body = $_msg_collided."\n";
 			}
 			$vars['preview'] = TRUE;
-			$body .= edit_form($postdata_input,$vars["page"],0,$vars["gids"],$vars["aids"]);
+			$body .= edit_form($postdata_input,$vars["page"],0,$vars["gids"],$vars["aids"],$freeze_check);
 		}
 		else
 		{
@@ -1057,7 +1057,7 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 					$template = auto_template($get["page"]);
 				$author_uid = $X_uid;
 				$freeze_check = ($defvalue_freeze)? "checked " : "";
-				$body = edit_form($template,$get["page"],0,$up_freeze_info[3],$up_freeze_info[2]);
+				$body = edit_form($template,$get["page"],0,$up_freeze_info[3],$up_freeze_info[2],$freeze_check);
 				//$body = edit_form($template,$get["page"]);
 				$vars["cmd"] = "edit";
 			}
