@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.30 2004/09/12 14:05:29 nao-pon Exp $
+// $Id: func.php,v 1.31 2004/09/29 00:04:41 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -1076,4 +1076,49 @@ function X_get_users($sort=true)
 	return $ret;
 }
 
+//// Compat ////
+
+// is_a --  Returns TRUE if the object is of this class or has this class as one of its parents
+// (PHP 4 >= 4.2.0)
+if (! function_exists('is_a'))
+{
+	function is_a($class, $match)
+	{
+		if (empty($class)) return false;
+
+		$class = is_object($class) ? get_class($class) : $class;
+		if (strtolower($class) == strtolower($match)) {
+			return true;
+		} else {
+			return is_a(get_parent_class($class), $match);	// Recurse
+		}
+	}
+}
+
+// array_fill -- Fill an array with values
+// (PHP 4 >= 4.2.0)
+if (! function_exists('array_fill'))
+{
+	function array_fill($start_index, $num, $value)
+	{
+		$ret = array();
+		while ($num-- > 0) $ret[$start_index++] = $value;
+		return $ret;
+	}
+}
+
+// md5_file -- Calculates the md5 hash of a given filename
+// (PHP 4 >= 4.2.0)
+if (! function_exists('md5_file'))
+{
+	function md5_file($filename)
+	{
+		if (! file_exists($filename)) return FALSE;
+
+		$fd = fopen($filename, 'rb');
+		$data = fread($fd, filesize($filename));
+		fclose($fd);
+		return md5($data);
+	}
+}
 ?>
