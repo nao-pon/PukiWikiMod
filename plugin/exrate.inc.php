@@ -1,7 +1,7 @@
 <?php
 // exrate.inc.php
 // by nao-pon 
-// $Id: exrate.inc.php,v 1.1 2003/07/14 09:13:48 nao-pon Exp $
+// $Id: exrate.inc.php,v 1.2 2003/08/03 13:44:03 nao-pon Exp $
 // License: GNU/GPL
 
 function plugin_exrate_init() {
@@ -11,7 +11,8 @@ function plugin_exrate_init() {
 function plugin_exrate_inline() {
 	$money = func_get_args();
 	$money = implode('',$money);
-	$url = "http://finance.www.infoseek.co.jp/Frx?pg=2201_forex.html&sv=FI";
+	//$url = "http://finance.www.infoseek.co.jp/Frx?pg=2201_forex.html&sv=FI";
+	$url = "http://money.www.infoseek.co.jp/MnForex?sv=MN&pg=mn_fxrate.html";
 	$notes = "[[インフォシークファイナンス:$url]]より引用。&br;　　・万一、この情報に基づいて被ったいかなる損害についても、当サイトでは一切の責任を負いかねますのでご了承ください。";
 	
 	if ($money == "notes") return inline("(($notes))");
@@ -30,7 +31,8 @@ function plugin_exrate_inline() {
 
 		$body = implode('', file($url));
 		//$body = mb_convert_encoding($body,SOURCE_ENCODING,"AUTO");
-		$body = preg_replace("/^.*<!-- START exchange rate -->(.*)<!-- END exchange rate -->.*$/s","$1",$body);
+		//$body = preg_replace("/^.*<!-- START exchange rate -->(.*)<!-- END exchange rate -->.*$/s","$1",$body);
+		$body = preg_replace("/^.*<!----- 外国為替レート一覧 ----->(.*)<!-- End FooterWord -->.*$/s","$1",$body);
 		$body = strip_tags($body);
 		
 		if ($nocache == 1 and $nocachable != 1) {
@@ -39,13 +41,17 @@ function plugin_exrate_inline() {
     }
 
 	}
-	if (preg_match("/^.*$money\s([0-9.]*)[^\/]+(\d\d\:\d\d).*$/is",$body,$arg)){
-		$rate[$money]['val'] = $arg[1];
-		$rate[$money]['time'] = $arg[2];
-		return "<a href=\"$url\" target=\"_blank\" title=\"更新時間 ".$rate[$money]['time']."\">".$rate[$money]['val']."</a>";
-	} else {
-		return "<a href=\"$url\" target=\"_blank\" title=\"取得できませんでした。\">？</a>";
+	$body = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$body);
+	$body = explode("\n\n\n",$body);
+	$body = str_replace("\n","",$body);
+	$body = preg_replace("/\s+/"," ",$body);
+	foreach($body as $line){
+		if (preg_match("/$money\/jpy/i",$line)){
+			$rate = explode(" ",$line);
+			return "<a href=\"$url\" target=\"_blank\" title=\"更新時間 ".$rate[8]."\">".$rate[1]."</a>";
+		}
 	}
+	return "<a href=\"$url\" target=\"_blank\" title=\"取得できませんでした。\">？</a>";
 }
 // キャッシュがあるか調べる
 function plugin_exrate_cache_fetch($dir) {
@@ -54,7 +60,7 @@ function plugin_exrate_cache_fetch($dir) {
 		return false;
 	}
 	//キャッシュの有効時間
-	$time_limit = 600; // 10min
+	$time_limit = 300; // 5min
 
 	$time = UTIME - filemtime($filename);
 	if ($time > $time_limit){
