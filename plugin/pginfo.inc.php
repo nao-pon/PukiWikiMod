@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pginfo.inc.php,v 1.2 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: pginfo.inc.php,v 1.3 2004/01/27 14:34:02 nao-pon Exp $
 //
 
 // メッセージ設定
@@ -71,7 +71,7 @@ EOD;
 		echo "<html><body>\n";
 		pginfo_db_init();
 		pginfo_db_retitle();
-		plain_db_init();
+		//plain_db_init();
 		
 		redirect_header("$script?plugin=pginfo",3,$_links_messages['msg_done']);
 		exit();
@@ -106,8 +106,8 @@ function pginfo_db_init()
 	global $xoopsDB,$whatsnew;
 	if ($dir = @opendir(DATA_DIR))
 	{
-		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_pginfo");
-		$result=$xoopsDB->queryF($query);
+		//$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_pginfo");
+		//$result=$xoopsDB->queryF($query);
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_count");
 		$result=$xoopsDB->queryF($query);
 		
@@ -139,13 +139,22 @@ function pginfo_db_init()
 				continue;
 			}
 			
-			$name = addslashes(strip_bracket($page));
+			$name = strip_bracket($page);
+			
+			// id取得
+			$id = get_pgid_by_name($page);
+			
+			$name = addslashes($name);
 			$buildtime = filectime(DATA_DIR.$file);
 			$editedtime = filemtime(DATA_DIR.$file);
 			if (!$buildtime) $buildtime = $editedtime;
 			
-			$checkpostdata = join("",get_source($page,3));
-			if (!$checkpostdata) continue;
+			$checkpostdata = join("",get_source($page));
+			if (!$checkpostdata)
+			{
+				@unlink($file);
+				continue;
+			}
 			
 			$counter++;
 			if (($counter/10) == (floor($counter/10))){
@@ -189,11 +198,42 @@ function pginfo_db_init()
 			
 			if (!isset($uid) || $uid ==="") $uid = 0;
 			$lastediter = $uid;
-			$query = "insert into ".$xoopsDB->prefix("pukiwikimod_pginfo")." (name,buildtime,editedtime,aids,gids,vaids,vgids,lastediter,uid,freeze,unvisible) values('$name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible);";
+			
+			if (!$id)
+			{
+				// 新規作成
+				$query = "insert into ".$xoopsDB->prefix("pukiwikimod_pginfo")." (`name`,`buildtime`,`editedtime`,`aids`,`gids`,`vaids`,`vgids`,`lastediter`,`uid`,`freeze`,`unvisible`,`update`) values('$name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible,1);";
+			}
+			else
+			{
+				// アップデート
+				
+				$value = "`name`='$name'"
+				.",`buildtime`='$buildtime'"
+				.",`editedtime`='$editedtime'"
+				.",`lastediter`='$lastediter'"
+				.",`title`='$title'"
+				.",`aids`='$aids'"
+				.",`gids`='$gids'"
+				.",`vaids`='$vaids'"
+				.",`vgids`='$vgids'"
+				.",`uid`='$uid'"
+				.",`freeze`='$freeze'"
+				.",`unvisible`='$unvisible'"
+				.",`update`='1'";
+				$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE id = '$id' LIMIT 1;";
+			}
 			$result=$xoopsDB->queryF($query);
 			//echo $query."<hr>";
 		}
 		closedir($dir);
+		// アップデートしなかったページ情報を削除
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE `update` = '0';";
+		$result=$xoopsDB->queryF($query);
+		
+		// アップデートフラグ戻し
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET `update` = '0';";
+		$result=$xoopsDB->queryF($query);
 		
 		echo " ( Done ".$counter." Pages !)<hr />";
 		echo "</div>";
@@ -224,7 +264,12 @@ function pginfo_db_init()
 			$count=$today_count=$yesterday_count=0;
 			
 			$page = decode(trim(preg_replace("/\.count$/"," ",$file)));
-			if ($page == $whatsnew) continue;
+			// 存在しないページ
+			if ($page == $whatsnew || !file_exists(DATA_DIR.encode($page).".txt"))
+			{
+				@unlink($file);
+				continue;
+			}
 			
 			$array = file(COUNTER_DIR.$file);
 			$name = addslashes(strip_bracket($page));
