@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.5 2003/07/04 08:43:54 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.6 2003/07/04 14:57:29 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -16,20 +16,19 @@ Last-Update:2002-09-12 rev.15
  過去のコメントを何件表示するか(0で全件)
 
 *オプション
--above~
+-above OR down~
  コメントをフィールドの前に表示(新しい記事が下)
--below~
+-below OR up~
  コメントをフィールドの後に表示(新しい記事が上)
 -reply~
  2レベルまでのコメントにリプライをつけるradioボタンを表示
-
+-btn:[String]~
+ ボタンに表示するテキスト
+-size:[Integer]~
+ コメントテキストボックスのサイズ
+-cname:[String]~
+ コメントページの接頭子名
 */
-// ページ名のデフォルト(%sに$vars['page']が入る)
-define('PCMT_PAGE','[[コメント/%s]]');
-//
-// ページのカテゴリ(新規作成時に挿入)
-define('PCMT_CATEGORY','[[:Comment]]');
-//
 // 表示するコメント数のデフォルト
 define('PCMT_NUM_COMMENTS',10);
 //
@@ -50,6 +49,13 @@ define('PCMT_FORMAT_DATE','&new{%s};');
 define("PCMT_FORMAT","\x08MSG\x08 -- \x08NAME\x08 \x08DATE\x08");
 
 function plugin_pcomment_init() {
+	
+	// ページ名のデフォルト(%sに$vars['page']が入る)
+	if (!defined('PCMT_PAGE')) define('PCMT_PAGE','[[コメント/%s]]');
+	
+	// ページのカテゴリ(新規作成時に挿入)
+	if (!defined('PCMT_CATEGORY')) define('PCMT_CATEGORY','[[:Comment]]');
+	
 	$_plugin_pcmt_messages = array(
 		'_pcmt_btn_name' => 'お名前: ',
 		'_pcmt_btn_comment' => 'コメントの挿入',
@@ -72,7 +78,7 @@ function plugin_pcomment_action() {
 }
 
 function plugin_pcomment_convert() {
-	global $script,$vars,$BracketName;
+	global $script,$vars,$BracketName,$WikiName;
 	global $_pcmt_btn_name, $_pcmt_btn_comment, $_pcmt_msg_comment, $_pcmt_msg_all, $_pcmt_msg_recent;
 
 	//戻り値
@@ -93,12 +99,21 @@ function plugin_pcomment_convert() {
 	if (preg_match("/(?: |^)size:([0-9]+)(?: |$)/i",trim($all_option),$arg)){
 		if (PCMT_COLS_COMMENT > $arg[1] && ($arg[1])) $comment_size = $arg[1];
 	}
+	//コメントページ名指定オプション
+	$comment_pg_name = PCMT_PAGE;
+	if (preg_match("/(?: |^)cname:([^ ]+)(?: |$)/i",trim($all_option),$arg)){
+		$comment_pg_name = "[[".trim($arg[1])."]]";
+		if (preg_match("/^(($BracketName)|($WikiName))$/",$comment_pg_name)){
+			$comment_pg_name = "[[".htmlspecialchars(trim($arg[1]))."/%s]]";
+		}
+	}
 
 	unset($args);
 
 	//文字列を取得
 	list($page, $count) = $params['arg'];
-	if ($page == '') { $page = sprintf(PCMT_PAGE,strip_bracket($vars['page'])); }
+	//if ($page == '') { $page = sprintf(PCMT_PAGE,strip_bracket($vars['page'])); }
+	if ($page == '') { $page = sprintf($comment_pg_name,strip_bracket($vars['page'])); }
 
 	$_page = get_fullname($page,$vars['page']);
 	if (!preg_match("/^$BracketName$/",$_page))
