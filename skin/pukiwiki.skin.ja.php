@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.4 2003/07/02 00:54:09 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.5 2003/07/07 14:43:57 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -28,20 +28,21 @@ if($_freeze){
 		[ <a href="<?php echo "$script?".rawurlencode($vars['page']) ?>">リロード</a> ]
 		&nbsp;
 	<?php
-	
+	$source_tag = "<a href=\"$script?plugin=source&amp;page=".rawurlencode($vars['page'])."\">ソース</a>";
 	if ($anon_writable){
 		echo "
 		[ <a href=\"$script?plugin=newpage\">新規</a>";
-		if (!$_freeze) echo "
-		| <a href=\"$link_edit\">編集</a>
-		| <a href=\"$link_diff\">差分</a>
-		| <a href=\"$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page'])."\">添付</a>
-		| <a href=\"$script?plugin=rename\">リネーム</a>";
-		echo "
-		]
-		&nbsp;";
+		if (!$_freeze) {
+			echo "
+			| <a href=\"$link_edit\">編集</a>
+			| <a href=\"$link_diff\">差分</a>
+			| <a href=\"$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page'])."\">添付</a>
+			| <a href=\"$script?plugin=rename\">リネーム</a>";
+		} else {
+			echo " | ".$source_tag." ";
+		}
+		echo "]&nbsp;";
 	} else {
-		$source_tag = "<a href=\"$script?plugin=source&amp;page=".rawurlencode($vars['page'])."\">ソース</a>";
 		if ($_freeze){
 			echo "[ ".$source_tag." ]&nbsp;";
 		} else {
