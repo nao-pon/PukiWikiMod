@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: showspch.inc.php,v 1.1 2004/08/19 03:03:03 nao-pon Exp $
+// $Id: showspch.inc.php,v 1.2 2004/08/19 12:59:25 nao-pon Exp $
 
 function plugin_showspch_convert()
 {
@@ -104,8 +104,8 @@ function plugin_showspch_action()
 <param name="buffer_progress" value="false">
 <param name="buffer_canvas" value="false">
 
-<param name="res.zip" value="res/res.zip">
-<param name="tt.zip" value="res/tt.zip"
+<param name="res.zip" value="./plugin_data/painter/res/res.zip">
+<param name="tt.zip" value="./plugin_data/painter/res/tt.zip"
 <param name=tt_size value=31>
 </applet>
 </div>';
