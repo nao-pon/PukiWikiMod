@@ -40,7 +40,7 @@ function plugin_recent_convert()
 		$prefix = preg_replace("/\/$/","",$prefix);
 		if (is_page($prefix))
 		{
-			$recent_lines = (int)$array[0];
+			$recent_lines = (int)$args[0];
 		}
 		else
 		{
