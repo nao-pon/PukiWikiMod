@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.8 2003/08/03 13:44:31 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.9 2003/08/05 23:44:47 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -119,11 +119,11 @@ function plugin_attach_action()
 	return attach_showform();
 }
 //-------- call from skin
-function attach_filelist()
+function attach_filelist($thumb=1)
 {
 	global $vars,$_attach_messages;
 	
-	$obj = &new AttachPages($vars['page'],0);
+	$obj = &new AttachPages($vars['page'],0,$thumb);
 
 	if (!array_key_exists($vars['page'],$obj->pages))
 	{
@@ -139,7 +139,7 @@ function attach_upload($file,$page,$pass=NULL)
 // $pass=TRUE : アップロード許可
 	global $adminpass,$_attach_messages;
 	
-	if ($file['tmp_name'] == '' or !is_uploaded_file($file['tmp_name']))
+	if ($file['tmp_name'] == '' or !is_uploaded_file($file['tmp_name']) or !$file['size'])
 	{
 		return array('result'=>FALSE);
 	}		
@@ -587,6 +587,8 @@ EOD;
 				// 削除失敗 why?
 				return array('msg'=>$_attach_messages['err_delete']);
 			}
+
+			$this->del_thumb_files();
 			
 			$this->status['count'][$age] = $this->status['count'][0];
 			$this->status['count'][0] = 0;
@@ -629,6 +631,31 @@ EOD;
 		header('Content-Type: '.$this->type);
 		@readfile($this->filename);
 		exit;
+	}
+	
+	function del_thumb_files(){
+		// 該当ファイルのサムネイルを削除
+		$dir = opendir(UPLOAD_DIR)
+			or die('directory '.UPLOAD_DIR.' is not exist or not readable.');
+		
+		$page_pattern = ($this->page == '') ? '(?:[0-9A-F]{2})+' : preg_quote(encode($this->page),'/');
+		$age_pattern = ($age === NULL) ?
+			'(?:\.([0-9]+))?' : ($age ?  "\.($age)" : '');
+		$pattern = "/^({$page_pattern})_((?:[0-9A-F]{2})+){$age_pattern}$/";
+		
+		while ($file = readdir($dir))
+		{
+			if (!preg_match($pattern,$file,$matches))
+			{
+				continue;
+			}
+			$_page = decode($matches[1]);
+			$_file = decode($matches[2]);
+			if (preg_match("/^\d\d?%".preg_quote($this->file)."/",$_file)){
+				@unlink(UPLOAD_DIR.$file);
+			}
+		}
+		closedir($dir);
 	}
 }
 
@@ -705,9 +732,9 @@ class AttachPages
 {
 	var $pages = array();
 	
-	function AttachPages($page='',$age=NULL)
+	function AttachPages($page='',$age=NULL,$thumb=0)
 	{
-
+		// $thumb = 0:全てのファイル, 1:サムネイル以外, 2:サムネイルのみ
 		$dir = opendir(UPLOAD_DIR)
 			or die('directory '.UPLOAD_DIR.' is not exist or not readable.');
 		
@@ -729,7 +756,17 @@ class AttachPages
 			{
 				$this->pages[$_page] = &new AttachFiles($_page);
 			}
-			$this->pages[$_page]->add($_file,$_age);
+			$is_thumb = false;
+			if ($thumb){
+				$is_thumb = preg_match("/^\d\d?%/",$_file);
+			}
+			if ($thumb == 0){
+				$this->pages[$_page]->add($_file,$_age);
+			} elseif ($thumb == 1 && !$is_thumb) {
+				$this->pages[$_page]->add($_file,$_age);
+			} elseif ($thumb == 2 && $is_thumb) {
+				$this->pages[$_page]->add($_file,$_age);
+			}
 		}
 		closedir($dir);
 	}
