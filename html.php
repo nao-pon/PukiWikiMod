@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.8 2003/07/06 11:57:05 nao-pon Exp $
+// $Id: html.php,v 1.9 2003/07/09 09:04:55 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -878,7 +878,7 @@ function edit_form($postdata,$page,$add=0)
  		$help = "<br />\n<ul><li><a href=\"$script?cmd=edit&amp;help=true&amp;page=".rawurlencode($page)."\">$_msg_help</a></ul></li>\n";
 
 	$allow_edit_tag = $freeze_tag = '';
-	//if($function_freeze){
+	if($function_freeze){
 		//$str_freeze = '<input type="submit" name="freeze" value="'.$_btn_freeze.'" accesskey="f" />';
 		if (($X_uid && $X_uid == $author_uid) || $X_admin) {
 			if ($wiki_writable === 2){
@@ -891,7 +891,7 @@ function edit_form($postdata,$page,$add=0)
 			$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.sprintf($_btn_freeze_enable,$enable_user).'</span>';
 			$allow_edit_tag = allow_edit_form();
 		}
-	//}
+	}
 	if ($X_admin){
 		$auther_tag = '  [ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($author_uid).'" /> ]';
 	} else {
