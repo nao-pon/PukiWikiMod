@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.17 2004/06/22 14:34:34 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.18 2004/08/19 03:03:03 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -148,7 +148,7 @@ function attach_filelist($thumb=1,$isbn=false)
 	{
 		return '';
 	}
-	$_tmp = $obj->toString($vars['page'],TRUE);
+	$_tmp = $obj->toString($vars['page'],TRUE,20);
 	if ($_tmp) $_tmp = $_attach_messages['msg_file'].': '.$_tmp."\n";
 	return $_tmp;
 }
@@ -203,7 +203,7 @@ function attach_upload($file,$page,$pass=NULL,$copyright=FALSE)
 	}
 }
 
-function do_upload($page,$fname,$tmpname,$copyright)
+function do_upload($page,$fname,$tmpname,$copyright=FALSE)
 {
 	global $_attach_messages;
 	
@@ -219,11 +219,15 @@ function do_upload($page,$fname,$tmpname,$copyright)
 		{
 			chmod($obj->filename,ATTACH_FILE_MODE);
 		}
+		else
+			return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
 	} else {
 		if (rename($tmpname,$obj->filename))
 		{
 			chmod($obj->filename,ATTACH_FILE_MODE);
 		}
+		else
+			return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
 	}
 	
 	if (is_page($page))
@@ -424,6 +428,35 @@ EOD;
 		return $navi;
 	}
 	
+	if (exist_plugin('painter'))
+	{
+		$picw = WIKI_PAINTER_DEF_WIDTH;
+		$pich = WIKI_PAINTER_DEF_HEIGHT;
+		//$picw = min($picw,WIKI_PAINTER_MAX_WIDTH_UPLOAD);
+		//$pich = min($pich,WIKI_PAINTER_MAX_HEIGHT_UPLOAD);
+		
+		$painter='
+<hr />
+<a href="'.$script.'?plugin=painter&amp;pmode=upload&amp;refer='.encode($page).'">このページへのアップロード済みデータを探す。</a><br />
+<form action="'.$script.'" method=POST>
+お絵かきツール:<select name="tools">
+<option value="normal">しぃペインター</option>
+<option value="pro">しぃペインターPro</option>
+</select>
+横<input type=text name=picw value='.$picw.' size=3>×縦<input type=text name=pich value='.$pich.' size=3>
+最大('.WIKI_PAINTER_MAX_WIDTH_UPLOAD.' x '.WIKI_PAINTER_MAX_HEIGHT_UPLOAD.')
+<input type=submit value="お絵かきする" />
+<input type=checkbox value="true" name="anime" checked="true" />動画記録<br />
+<br />---　拡張指定　---<br />
+キャンバスに読み込む画像ファイル(JPEG or GIF): <input type=text size=20 name="image_canvas" />
+<input type="checkbox" name="fitimage" value="1" checked="true" />
+キャンバスサイズをこの画像に合わせる
+<input type=hidden name="pmode" value="paint" />
+<input type=hidden name="plugin" value="painter" />
+<input type=hidden name="refer" value="'.$page.'" />
+<input type=hidden name="retmode" value="upload" />
+</form>';
+	}
 	$maxsize = MAX_FILESIZE;
 	$msg_maxsize = sprintf($_attach_messages['msg_maxsize'],number_format($maxsize/1000)."KB");
 
@@ -452,6 +485,7 @@ EOD;
 
  </div>
 </form>
+$painter
 EOD;
 }
 //-------- クラス
@@ -807,7 +841,7 @@ class AttachFiles
 		$this->files[$file][$age] = &new AttachFile($this->page,$file,$age);
 	}
 	// ファイル一覧を取得
-	function toString($flat)
+	function toString($flat,$max=0)
 	{
 		global $_title_cannotread;
 		
@@ -817,7 +851,7 @@ class AttachFiles
 		}
 		if ($flat)
 		{
-			return $this->to_flat();
+			return $this->to_flat($max);
 		}
 		$ret = '';
 		$files = array_keys($this->files);
@@ -846,7 +880,7 @@ class AttachFiles
 		return make_pagelink($this->page)."\n<ul>\n$ret</ul>\n";
 	}
 	// ファイル一覧を取得(inline)
-	function to_flat()
+	function to_flat($max=0)
 	{
 		$ret = '';
 		$files = array();
@@ -858,6 +892,8 @@ class AttachFiles
 			}
 		}
 		uasort($files,array('AttachFile','datecomp'));
+		if ($max) $files = array_slice($files,0,$max);
+		
 		foreach (array_keys($files) as $file)
 		{
 			$ret .= $files[$file]->toString(TRUE,TRUE).' ';
@@ -914,7 +950,7 @@ class AttachPages
 		}
 		closedir($dir);
 	}
-	function toString($page='',$flat=FALSE)
+	function toString($page='',$flat=FALSE,$max=0)
 	{
 		if ($page != '')
 		{
@@ -922,7 +958,7 @@ class AttachPages
 			{
 				return '';
 			}
-			return $this->pages[$page]->toString($flat);
+			return $this->pages[$page]->toString($flat,$max);
 		}
 		$ret = '';
 		$pages = array_keys($this->pages);

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.9 2004/05/18 13:34:48 nao-pon Exp $
+// $Id: paint.inc.php,v 1.10 2004/08/19 03:03:03 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -43,9 +43,11 @@ define('PAINT_FORMAT_MSG','%s');
 //define('PAINT_FORMAT_DATE','SIZE(10){%s}');
 define('PAINT_FORMAT_DATE','&new{%s};');
 //メッセージがある場合
-define('PAINT_FORMAT',"\x08MSG\x08 -- \x08NAME\x08 \x08DATE\x08");
+//define('PAINT_FORMAT',"\x08MSG\x08 -- \x08NAME\x08 \x08DATE\x08");
+define('PAINT_FORMAT',"\x08TITLE\x08&font(120%,b){\x08NAME\x08}; \x08DATE\x08\n\n\x08MSG\x08");
 //メッセージがない場合
-define('PAINT_FORMAT_NOMSG',"\x08NAME\x08 \x08DATE\x08"); 
+//define('PAINT_FORMAT_NOMSG',"\x08NAME\x08 \x08DATE\x08"); 
+define('PAINT_FORMAT_NOMSG',"\x08TITLE\x08&font(120%,b){\x08NAME\x08}; \x08DATE\x08"); 
 
 function plugin_paint_init() {
 	if (LANG == "ja") {
@@ -53,6 +55,7 @@ function plugin_paint_init() {
 			'field_name'    => 'お名前',
 			'field_filename'=> 'ファイル名',
 			'field_comment' => 'コメント',
+			'field_title' => 'タイトル',
 			'btn_submit'    => 'お絵かきする！',
 			'msg_max'       => '(最大 %d x %d)',
 			'msg_title'     => 'お絵かき画像を $1 へ添付して更新しました。',
@@ -66,6 +69,7 @@ function plugin_paint_init() {
 			'field_name'    => 'Name',
 			'field_filename'=> 'Filename',
 			'field_comment' => 'Comment',
+			'field_title' => 'Title',
 			'btn_submit'    => 'paint',
 			'msg_max'       => '(Max %d x %d)',
 			'msg_title'     => 'Paint and Attach to $1',
@@ -163,7 +167,7 @@ function plugin_paint_action()
 		{
 			$f_h = PAINT_MAX_HEIGHT;
 		}
-		
+		$retval['msg'] = "";
 		$retval['body'] .= <<<EOD
  <div>
  $link
@@ -174,6 +178,7 @@ function plugin_paint_action()
  <param name="image" value="attach_file" />
  <param name="form1" value="filename={$_paint_messages['field_filename']}=!" />
  <param name="form2" value="yourname={$_paint_messages['field_name']}==$X_uname" />
+ <param name="form3" value="title={$_paint_messages['field_title']}==" />
  <param name="comment" value="msg={$_paint_messages['field_comment']}" />
  <param name="param1" value="plugin=paint" />
  <param name="param2" value="refer=$f_refer" />
@@ -236,7 +241,6 @@ function plugin_paint_convert()
   <input type="hidden" name="plugin" value="paint" />
   <input type="hidden" name="refer" value="$f_page" />
   <input type="text" name="width" size="3" value="$width" />
-  x
   <input type="text" name="height" size="3" value="$height" />
   $max
   <input type="submit" value="{$_paint_messages['btn_submit']}" />
@@ -248,15 +252,29 @@ EOD;
 function paint_insert_ref($filename)
 {
 	global $script,$vars,$now,$do_backup;
-	global $_paint_messages;
+	global $_paint_messages,$X_uname;
 	
 	$ret['msg'] = $_paint_messages['msg_title'];
 	$ret['body'] = "";
 
 	$vars['msg'] = mb_convert_encoding($vars['msg'],SOURCE_ENCODING,'auto');
 	$vars['yourname'] = mb_convert_encoding($vars['yourname'],SOURCE_ENCODING,'auto');
+	$vars['title'] = mb_convert_encoding($vars['title'],SOURCE_ENCODING,'auto');
 	
-	$msg = sprintf(PAINT_FORMAT_MSG, rtrim($vars['msg']));
+	// 名前をクッキーに保存
+	setcookie("pukiwiki_un", $vars['yourname'], time()+86400*365);//1年間
+	
+	if (empty($vars['yourname'])) $vars['yourname'] = $X_uname;
+	
+	$title = (!empty($vars['title']))? "****".rtrim($vars['title'])."\n" : "";
+	
+	$spch = (!empty($vars['spch']))? "\nRIGHT:&showspch(".$vars['spch'].",[ 動画再生 ]);\n\n" : "";
+	
+	$add_comment = (!empty($vars['add_comment']))? "#clear\n#comment(btn:↑この作品にコメント)\n" : "#clear\n";
+	
+	$msg = auto_br(sprintf(PAINT_FORMAT_MSG, rtrim($vars['msg'])));
+	
+
 	
 	if ($vars['yourname'] != '')
 	{
@@ -273,14 +291,16 @@ function paint_insert_ref($filename)
 	$date = sprintf(PAINT_FORMAT_DATE, $now);
 	
 	
-	$msg = trim($msg);
+	$msg = trim($spch.$msg);
+
 	$msg = ($msg == '') ?
 		PAINT_FORMAT_NOMSG :
 		str_replace("\x08MSG\x08", $msg, PAINT_FORMAT);
+	$msg = str_replace("\x08TITLE\x08",$title, $msg);
 	$msg = str_replace("\x08NAME\x08",$name, $msg);
 	$msg = str_replace("\x08DATE\x08",$date, $msg);
 	//ブロックに食われないように、#imgの直前に\nを2個書いておく。
-	$msg = "\n#ref($filename,wrap,around)\n".trim($msg)."\n//IP:".$_SERVER["REMOTE_ADDR"]."\n#img(,clear)\n";
+	$msg = "#ref($filename,wrap,around)\n".trim($msg)."\n//IP:".$_SERVER["REMOTE_ADDR"]."\n".$add_comment."----\n#img(,clear)\n";
 	
 	$postdata_old = get_source($vars['refer']);
 	$postdata = '';
@@ -291,7 +311,7 @@ function paint_insert_ref($filename)
 		{
 			$postdata .= $line;
 		}
-		if (preg_match('/^#paint/',$line))
+		if (preg_match('/^#paint(er)?/',$line))
 		{
 			if ($paint_no == $vars['paint_no'])
 			{
@@ -306,11 +326,11 @@ function paint_insert_ref($filename)
 	}
 	
 	// 更新の衝突を検出
-	if (md5(join('',$postdata_old)) != $vars['digest'])
-	{
-		$ret['msg'] = $_paint_messages['msg_title_collided'];
-		$ret['body'] = $_paint_messages['msg_collided'];
-	}
+	//if (md5(join('',$postdata_old)) != $vars['digest'])
+	//{
+	//	$ret['msg'] = $_paint_messages['msg_title_collided'];
+	//	$ret['body'] = $_paint_messages['msg_collided'];
+	//}
 	
 	// 過去ログ自動作成
 	preg_match_all("/(#ref\(.+?#img\(,clear\))/s",$postdata,$datas,PREG_SET_ORDER);
@@ -338,7 +358,7 @@ function paint_insert_ref($filename)
 			$page = "[[".strip_bracket($vars['refer'])."/$i]]";
 		} while(is_page($page));
 		
-		$old = str_replace("#ref(","#ref(../",$old);
+		$old = str_replace(array("#ref(","&showspch("),array("#ref(../","&showspch(../"),$old);
 		$old = join("\n\n",$old);
 		$old = "**過去ログ($i)\n#navi(../)\n$old\n\n#navi(../)";
 		
