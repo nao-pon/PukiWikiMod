@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.9 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: comment.inc.php,v 1.10 2004/01/24 14:46:57 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -26,6 +26,11 @@ $comment_ins = 1;
 /////////////////////////////////////////////////
 // コメントが投稿された場合、内容をメールで送る先
 $comment_mail = FALSE;
+/////////////////////////////////////////////////
+// areaedit指定を規定値にする(Yes:1, No:0)
+define('PUKIWIKI_CMT_AREAEDIT_ENABLE',1);
+// areaedit指定の追加オプション
+define('PUKIWIKI_CMT_OPTION',",preview:5");
 
 // initialize
 $comment_no = 0;
@@ -36,7 +41,7 @@ function plugin_comment_action()
 	global $name_cols,$comment_cols,$name_format,$msg_format,$now_format,$comment_format,$comment_ins;
 	global $_title_collided,$_msg_collided,$_title_updated;
 	global $_msg_comment_collided,$_title_comment_collided;
-	global $no_name;
+	global $no_name,$X_uid;
 
 	$_comment_format = $comment_format;
 
@@ -59,7 +64,7 @@ function plugin_comment_action()
 		} else {
 			$comment_ins = 0;
 		}
-
+		
 		if($post["msg"])
 		{
 			if(preg_match("/^(-{1,2})(.*)/",$post["msg"],$match))
@@ -84,7 +89,8 @@ function plugin_comment_action()
 			
 			//表中でも使用できるようにしたので|をエスケープ nao-pon
 			$comment = str_replace('|','&#124;',$comment);
-
+			//areaedit指定
+			if (PUKIWIKI_CMT_AREAEDIT_ENABLE || !empty($post['areaedit'])) $comment = "&areaedit(uid:".$X_uid.PUKIWIKI_CMT_OPTION."){".$comment."};";
 			$comment = $head.$comment;
 		}
 
@@ -145,55 +151,9 @@ function plugin_comment_action()
 	
 	$postdata = user_rules_str($postdata);
 
-/*差分＆バックアップは必要ないですね
-	// 差分ファイルの作成
-	if(is_page($post["refer"]))
-		$oldpostdata = join('',get_source($post["refer"]));
-	else
-		$oldpostdata = "\n";
-	if($postdata)
-		$diffdata = do_diff($oldpostdata,$postdata);
-	file_write(DIFF_DIR,$post["refer"],$diffdata);
-		// バックアップの作成
-	if(is_page($post["refer"]))
-		$oldposttime = filemtime(get_filename(encode($post["refer"])));
-	else
-		$oldposttime = time();
-
-	// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
-	if(!$postdata && $del_backup)
-		backup_delete(BACKUP_DIR.encode($post["refer"]).".txt");
-	else if($do_backup && is_page($post["refer"]))
-	make_backup(encode($post["refer"]).".txt",$oldpostdata,$oldposttime);
-*/
-
 	// ファイルの書き込み
-	file_write(DATA_DIR,$post["refer"],$postdata);
+	page_write($post["refer"],$postdata,NULL,"","","","","","",array('plugin'=>'comment','mode'=>'add'));
 	
-	if (WIKI_MAIL_NOTISE) {
-		// メール送信 by nao-pon
-		global $xoopsConfig;
-		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["refer"]))."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.strip_bracket(trim($name))."\n";
-		$mail_body .= sprintf(_MD_PUKIWIKI_MAIL_HEAD,"comment")."\n";
-		$mail_body .= $postdata_input;
-		$mail_body .= _MD_PUKIWIKI_MAIL_FOOT."\n";
-		$xoopsMailer =& getMailer();
-		$xoopsMailer->useMail();
-		$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromName($xoopsConfig['sitename']);
-		$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["refer"])));
-		$xoopsMailer->setBody($mail_body);
-		$xoopsMailer->send();
-		//メール送信ここまで by nao-pon
-	}
-
-	// is_pageのキャッシュをクリアする。
-	is_page($post["refer"],true);
-
 	$retvars["msg"] = $title;
 	$retvars["body"] = $body;
 	
@@ -225,6 +185,12 @@ function plugin_comment_convert()
 	if (preg_match("/(?: |^)size:([0-9]+)(?: |$)/i",trim($all_option),$arg)){
 		if ($comment_cols > $arg[1] && ($arg[1])) $comment_size = $arg[1];
 	}
+	//areaedit指定
+	$areaedit = "";
+	if (preg_match("/(?: |^)areaedit(?: |$)/i",trim($all_option),$arg)){
+		$areaedit = "<input type=\"hidden\" name=\"areaedit\" value=\"1\" />\n";
+	}
+	
 
 	$nametags = "$_btn_name<input type=\"text\" name=\"name\" size=\"$name_cols\" value=\"$name\" />\n";
 	if(is_array($options) && in_array("noname",$options)) {
@@ -248,6 +214,7 @@ function plugin_comment_convert()
 		 ."<input type=\"hidden\" name=\"nodate\" value=\"".htmlspecialchars($nodate)."\" />\n"
 		 ."<input type=\"hidden\" name=\"above\" value=\"$above\" />\n"
 		 ."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($digest)."\" />\n"
+		 ."$areaedit"
 		 ."$nametags"
 		 ."<input type=\"text\" name=\"msg\" size=\"".htmlspecialchars($comment_size)."\" />\n"
 		 .$button
