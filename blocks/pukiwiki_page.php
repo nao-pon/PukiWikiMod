@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.7 2004/10/28 11:32:21 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.8 2004/11/24 12:08:48 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -56,7 +56,7 @@ function b_pukiwiki_page_show($options)
 				$data = preg_replace("/(&|\?)?".preg_quote(ini_get("session.name"),"/")."=[0-9a-f]{32}/","",$data);
 			}
 			
-			if ($fp = fopen($cache_file,"w"))
+			if ($fp = fopen($cache_file,"wb"))
 			{
 				fputs($fp,$data);
 				fclose($fp);
