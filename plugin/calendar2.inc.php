@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.16 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.17 2004/08/29 06:09:57 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -333,7 +333,7 @@ function plugin_calendar2_convert()
 			if (is_page($_page) && check_readable($_page,false,false)) {
 				$user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($_page)) : "[[".get_pg_auther_name($_page)."]]";
 				$user_tag = make_link($user_tag);
-				$show_tag = "by ".$user_tag." at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/search.png\" />");
+				$show_tag = "by ".$user_tag." at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/link.gif\" />");
 				$tb_tag = ($trackback)? "<div style=\"text-align:right\">{$show_tag}  [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($_page)."\">TrackBack(".tb_count($_page).")</a> ]</div>" : "<div style=\"text-align:right\">{$show_tag}</div>";
 				
 				//インクルード
