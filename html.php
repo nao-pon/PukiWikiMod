@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.12 2003/07/14 09:03:59 nao-pon Exp $
+// $Id: html.php,v 1.13 2003/07/15 13:22:51 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -666,7 +666,7 @@ function inline2($str)
 	}
 
 	// インラインプラグイン
-	$str = preg_replace("/&amp;([^(){};]+)(\(((?:(?!\)[;{]).)*)\))?(\{(.*)\})?;/ex","inline3('$1','$3','$5','$0')",$str);
+	$str = preg_replace("/&amp;(\w+)(\(((?:(?!\)[;{]).)*)\))?(\{(.*)\})?;/ex","inline3('$1','$3','$5','$0')",$str);
 
 	// リンク処理
 	$str = make_link($str);
