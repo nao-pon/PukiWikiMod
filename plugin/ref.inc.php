@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.19 2004/10/12 14:43:23 nao-pon Exp $
+// $Id: ref.inc.php,v 1.20 2004/11/24 12:32:54 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -409,7 +409,10 @@ function plugin_ref_body($name,$args,$params){
 		} else {
 			if ($org_w and $org_h) $info = "width=\"$org_w\" height=\"$org_h\" ";
 			if (!$params['nocache'])
+			{
+				$url = preg_replace("#^\./#","",$url);
 				$ret .= "<img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info/>";
+			}
 			else
 				$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info/>";
 		}
