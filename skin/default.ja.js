@@ -17,6 +17,7 @@ var pukiwiki_msg_inline3 = "本文を入力してください。[ { }内 ]";
 var pukiwiki_msg_link = "リンクを設定する文字を入力してください。";
 var pukiwiki_msg_url = "リンク先のURLを入力してください。";
 var pukiwiki_msg_elem = "処理をする対象を選択してください。";
+var pukiwiki_msg_submit = "このまま送信しますか？";
 
 // Include main script.
 document.write ('<scr'+'ipt type="text/javascr'+'ipt" src="' + pukiwiki_root_url + 'skin/main.js"></scr'+'ipt>');

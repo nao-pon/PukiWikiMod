@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.56 2004/10/12 14:41:45 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.57 2004/11/24 14:17:51 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -329,7 +329,7 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	$body .= edit_form($postdata_input,$vars["page"],0,$vars["gids"],$vars["aids"]);
 }
 // 書き込みもしくは追加もしくはコメントの挿入
-else if($post["write"])
+else if($post["write"] || ($_SERVER['REQUEST_METHOD'] == "POST" && arg_check("write")))
 {
 	// ParaEdit
 	// 改行代替文字列を \n に変換

@@ -22,6 +22,7 @@ function pukiwiki_pos(){
 	var et = document.activeElement.type;
 	if (!(et == "text" || et == "textarea"))
 	{
+		if (et == "submit") pukiwiki_elem = null;
 		return;
 	}
 	

@@ -184,7 +184,14 @@ function pukiwiki_charcode()
 
 function pukiwiki_setActive(e)
 {
-	pukiwiki_elem =	 e.target;
+	if (e.type == "submit")
+	{
+		pukiwiki_elem = null;
+	}
+	else
+	{
+		pukiwiki_elem = e.target;
+	}
 }
 function pukiwiki_initTexts()
 {
@@ -193,7 +200,7 @@ function pukiwiki_initTexts()
 	for (i = 0; i < oElements.length; i++)
 	{
 		oElement = oElements[i];
-		if (oElement.type == "text")
+		if (oElement.type == "text" || oElement.type == "submit")
 		{
 			oElement.addEventListener('focus', pukiwiki_setActive, true);
 		}

@@ -119,6 +119,31 @@ function pukiwiki_area_highlite(id,mode)
 	}
 	
 }
+
+function pukiwiki_check(f)
+{
+	if (pukiwiki_elem && pukiwiki_elem.type == "text")
+	{
+		if (!confirm(pukiwiki_msg_submit))
+		{
+			pukiwiki_elem.focus();
+			return false;
+		}
+	}
+	
+	for (i = 0; i < f.elements.length; i++)
+	{
+		oElement = f.elements[i];
+		if (oElement.type == "submit" && (!oElement.name || oElement.name == "comment"))
+		{
+			oElement.disabled = true;
+		}
+	}
+	
+	return true;
+
+}
+
 // Branch.
 if (pukiwiki_WinIE)
 {

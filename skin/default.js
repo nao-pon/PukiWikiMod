@@ -17,6 +17,7 @@ var pukiwiki_msg_inline3 = "Please input a body text.";
 var pukiwiki_msg_link = "Please input the text which sets a link.";
 var pukiwiki_msg_url = "Please input URL of a link place.";
 var pukiwiki_msg_elem = "Please choose the object which processes.";
+var pukiwiki_msg_submit = "Submit now?";
 
 // Include main script.
 document.write ('<scr'+'ipt type="text/javascr'+'ipt" src="' + pukiwiki_root_url + 'skin/main.js"></scr'+'ipt>');

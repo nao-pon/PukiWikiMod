@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.46 2004/11/11 23:34:00 nao-pon Exp $
+// $Id: html.php,v 1.47 2004/11/24 14:17:51 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -32,6 +32,9 @@ function catbody($title,$page,$body)
 	//名前欄置換
 	if (empty($vars['xoops_block']))
 		$body = str_replace(WIKI_NAME_DEF,$X_uname,$body);
+	
+	//form置換
+	$body = preg_replace("/(<form[^>]+)(>)/is","$1 onsubmit=\"return pukiwiki_check(this);\"$2",$body);
 	
 	// 表示中のページ名
 	$_page = $vars["page"];
@@ -348,6 +351,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
  <tr>
   <td align="left" colspan=2>
    <input type="hidden" name="encode_hint" value="ぷ" />
+   <input type="hidden" name="write" value="1" />
    <input type="hidden" name="page" value="'.htmlspecialchars($page).'" />
    <input type="hidden" name="digest" value="'.htmlspecialchars($digest).'" />
 '.$paraedit_tag.'
@@ -358,7 +362,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
  <tr>
   <td colspan=2>
    <input type="submit" name="preview" value="'.$_btn_preview.'" accesskey="p" />
-   <input type="submit" name="write" value="'.$_btn_update.'" accesskey="s" />
+   <input type="submit" value="'.$_btn_update.'" accesskey="s" />
    '.$add_top.'
    '.$timestamp_tag.'
    '.$auther_tag.'
