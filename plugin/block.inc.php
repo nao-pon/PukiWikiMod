@@ -1,5 +1,5 @@
 <?php
-// $Id: block.inc.php,v 1.2 2004/09/04 01:16:46 nao-pon Exp $
+// $Id: block.inc.php,v 1.3 2004/11/27 04:44:47 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -11,13 +11,30 @@
 
 function plugin_block_convert()
 {
-	$params = array('end'=>false,'clear'=>false,'left'=>false,'center'=>false,'right'=>false,'around'=>false,'width'=>"",'w'=>"",'class'=>false,'font-size'=>'','_args'=>array(),'_done'=>FALSE);
+	static $b_count = 1;
+	static $b_tag = array();
+	$ie5_div = "";
+	$_style = "";
+	$tate_div = "";
+	$tate_js = "";
+	$tate_style = "";
+	$block_class = "wiki_body_block";
+	if (!isset($b_tag[$b_count])) $b_tag[$b_count] = 0;
+	
+	$params = array('end'=>false,'clear'=>false,'left'=>false,'center'=>false,'right'=>false,'around'=>false,'tate'=>false,'h'=>'','width'=>"",'w'=>"",'class'=>false,'font-size'=>'','_args'=>array(),'_done'=>FALSE);
 	array_walk(func_get_args(), 'block_check_arg', &$params);	
 
 	// end
-	if ($params['end']) return '</div>'."\n";
+	if ($params['end'])
+	{
+		$ret = str_repeat("</div>",$b_tag[$b_count])."\n";
+		$b_tag[$b_count]--;
+		return $ret;
+	}
 	// clear
 	if ($params['clear']) return '<div style="clear:both"></div>'."\n";
+	
+	$b_tag[$b_count] = 1;
 	
 	if ($params['left']) $align = 'left';
 	if ($params['center']) $align = 'center';
@@ -27,7 +44,24 @@ function plugin_block_convert()
 	$width = $params['w'];
 	if (!$width) $width = $params['width'];
 	$fontsize = $params['font-size'];
-	$_style = "";
+	
+	$tate = $params['tate'];
+	$height = $params['h'];
+	
+	$b_count++;
+	$b_tag[$b_count]++;
+	
+	if ($tate)
+	{
+		$block_class = "wiki_body_block_tate";
+		$tate_div = "<div class=\"tate\">";
+		$tate_style = " style=\"direction:rtl;\"";
+		$tate_js = "\n<script type=\"text/javascript\">\n<!--\nif (!pukiwiki_WinIE) document.write(\"<div style='text-align:right;'><small>¢¨ ¤³¤Î¥Ö¥í¥Ã¥¯¤Ï IE(5.5°Ê¾å)¤Ç±ÜÍ÷¤¹¤ë¤È½Ä½ñ¤­¤ÇÉ½¼¨¤µ¤ì¤Ş¤¹¡£</small></div>\");\n-->\n</script>\n";
+		$b_tag[$b_count]++;
+		
+		if (strpos($width,"%")) $width = "";
+		if (strpos($height,"%")) $height = "";
+	}
 	
 	if (preg_match("/^[\d]+%?$/",$fontsize))
 	{
@@ -36,35 +70,42 @@ function plugin_block_convert()
 	}
 
 	
-	if (preg_match("/^[\d]+%?$/",$width))
+	if (preg_match("/^([\d]+%?)(px)?$/i",$width,$match))
 	{
-		$width = (!strstr($width,"%"))? $width."px" : $width;
+		$width = (!strstr($match[1],"%"))? $match[1]."px" : $match[1];
 		$_style .= "width:".$width.";";
 	}
-
+	
+	if (preg_match("/^([\d]+%?)(px)?$/i",$height,$match))
+	{
+		$height = (!strstr($match[1],"%"))? $match[1]."px" : $match[1];
+		$_style .= "height:".$height.";";
+	}
+	
 	if ($params['around'])
 		$style = " style='float:{$align};{$_style}'";
 	else
 	{
 		if ($params['left'])
 		{
-			$style = " align='left' style='{$_style}'";
+			$style = " style='margin-left:0px;margin-right:auto;{$_style}'";
 		}
 		elseif ($params['right'])
 		{
-			$style = " align='right' style='{$_style}'";
+			$style = " style='margin-left:auto;margin-right:0px;{$_style}'";
 		}
 		else
 		{
-			$style = " align='center' style='{$_style}'";
+			$style = " style='margin-left:auto;margin-right:auto;{$_style}'";
 		}
+		$ie5_div = "<div class=\"ie5\">";
+		$b_tag[$b_count]++;
 	}
-	//$clear = ($around)? "" : "<div style='clear:both;'></div>\n";
-
-	return "<div{$style} class=\"wiki_body_block\">";
+	
+	return "{$ie5_div}<div{$style} class=\"{$block_class}\">{$tate_div}{$tate_js}";
 }
 
-//ƒIƒvƒVƒ‡ƒ“‚ğ‰ğÍ‚·‚é
+//¥ª¥×¥·¥ç¥ó¤ò²òÀÏ¤¹¤ë
 function block_check_arg($val, $key, &$params)
 {
 	if ($val == '') { $params['_done'] = TRUE; return; }
@@ -72,7 +113,7 @@ function block_check_arg($val, $key, &$params)
 	if (!$params['_done']) {
 		foreach (array_keys($params) as $key)
 		{
-			if (strpos($val,':')) // PHP4.3.4{Apache2 ŠÂ‹«‚Å‰½ŒÌ‚©Apache‚ª—‚¿‚é‚Æ‚Ì•ñ‚ª‚ ‚Á‚½‚Ì‚Å
+			if (strpos($val,':')) // PHP4.3.4¡ÜApache2 ´Ä¶­¤Ç²¿¸Î¤«Apache¤¬Íî¤Á¤ë¤È¤ÎÊó¹ğ¤¬¤¢¤Ã¤¿¤Î¤Ç
 				list($_val,$thisval) = explode(":",$val);
 			else
 			{
