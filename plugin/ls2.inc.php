@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.16 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.17 2004/06/04 14:02:58 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -38,7 +38,7 @@ function plugin_ls2_init() {
 	global $_ls2_anchor;
 	if (!isset($_ls2_anchor)) { $_ls2_anchor = 0; }
 	$messages = array('_ls2_messages'=>array(
-		'err_nopages' => '<p>\'$1\' には、下位層のページがありません。</p>',
+		'err_nopages' => '<p>\'$1\' には、下位層のページはありません。</p>',
 		'msg_title' => '\'$1\'で始まるページの一覧',
 		'msg_go' => '<span class="small">...</span>',
 	));
