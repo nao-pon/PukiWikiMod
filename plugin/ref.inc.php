@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.18 2004/10/05 12:46:47 nao-pon Exp $
+// $Id: ref.inc.php,v 1.19 2004/10/12 14:43:23 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -324,7 +324,7 @@ function plugin_ref_body($name,$args,$params){
 			$filename = encode($page)."_".encode($name);
 			if (!$params['nocache']){
 				//キャッシュする
-				$size = plugin_ref_cache_image_fetch($filename, &$url);
+				$size = plugin_ref_cache_image_fetch($filename, &$url, $name);
 				$l_url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 				$fsize = sprintf('%01.1f',round(filesize($url)/1000,1)).'KB';
 			} else {
@@ -504,7 +504,7 @@ _HTML_;
 }
 
 // 画像キャッシュがあるか調べる
-function plugin_ref_cache_image_fetch($filename, &$url) {
+function plugin_ref_cache_image_fetch($filename, &$url, $name) {
 	$filename = UPLOAD_DIR.$filename;
 	if (!is_readable($filename)) {
 		$file = fopen($url, "rb"); // たぶん size 取得よりこちらが原始的だからやや速い
@@ -538,7 +538,7 @@ function plugin_ref_cache_image_fetch($filename, &$url) {
 				$url = $filename;
 			}
 		}
-		plugin_ref_cache_image_save($data, $filename);
+		plugin_ref_cache_image_save($data, $filename, $name);
 	} else {
 		$url = $filename;
 		$size = @getimagesize($filename);
@@ -548,10 +548,20 @@ function plugin_ref_cache_image_fetch($filename, &$url) {
 	
 }
 // 画像キャッシュを保存
-function plugin_ref_cache_image_save($data, $filename) {
-	$fp = fopen($filename, "wb");
+function plugin_ref_cache_image_save($data, $filename, $name)
+{
+	global $vars;
+	$fp = fopen($filename.".tmp", "wb");
 	fwrite($fp, $data);
 	fclose($fp);
+	
+	if (!exist_plugin('attach') or !function_exists('attach_upload'))
+	{
+		exit ('attach.inc.php not found or not correct version.');
+	}
+	
+	do_upload($vars['page'],$name,$filename.".tmp");
+	
 	return $filename;
 }
 // サムネイル画像を作成
