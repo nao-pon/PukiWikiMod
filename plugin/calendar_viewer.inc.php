@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.8 2004/01/12 13:15:15 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -162,7 +162,7 @@ function plugin_calendar_viewer_convert()
 		if (((substr($page,$pagepattern_len,$datelength)) < date("Y".$date_sep."m".$date_sep."d"))&&($mode=="future") )continue;
 		//view modeならall OK
 		if (strlen(substr($page,$pagepattern_len)) == $datelength)
-			$pagelist[] = $page.$date_sep."0";
+			$pagelist[] = $page.$date_sep."-";
 		else
 			$pagelist[] = $page;
 	}
@@ -271,7 +271,10 @@ if ($cal2 == 1){
   //echo count($pagelist);
   //*ここからインクルード開始
 
+  //変数値退避
   $tmppage = $vars["page"];
+  $_comment_no = $comment_no;
+  
   //$tmp_related = $related;
   $return_body = "";
   
@@ -292,7 +295,7 @@ if ($cal2 == 1){
   $kensu = 0;
   while ($tmp < $limit_page){
     if (!isset($pagelist[$tmp])) break;
-    $pagelist[$tmp] = preg_replace("/{$date_sep}0$/","",$pagelist[$tmp]);
+    $pagelist[$tmp] = preg_replace("/{$date_sep}-$/","",$pagelist[$tmp]);
     $page = "[[" . $pagelist[$tmp] .  "]]";
 
     $get["page"] = $page;
@@ -325,6 +328,7 @@ if ($cal2 == 1){
   $get["page"] = $tmppage;
   $post["page"] = $tmppage;
   $vars["page"] = $tmppage;
+  $comment_no = $_comment_no;
   //$related = $tmp_related;
 
 

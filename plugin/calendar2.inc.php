@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.11 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.12 2004/01/12 13:15:15 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -38,7 +38,7 @@ function plugin_calendar2_convert()
 	global $_calendar2_msg_detail, $_calendar2_msg_month, $_calendar2_msg_day;
 	global $script,$weeklabels,$vars,$command,$WikiName,$BracketName,$post,$get;
 	global $_calendar2_plugin_edit, $_calendar2_plugin_empty, $anon_writable, $_msg_month;
-	global $wiki_user_dir;
+	global $wiki_user_dir,$comment_no;
 	
 	$today_view = true;
 	$category_view = "";
@@ -251,7 +251,8 @@ function plugin_calendar2_convert()
 		else               $refer = "";
 		
 		$a_tag = "<a href=\"$script?plugin=calendar2&amp;file=$prefix_&amp;date=$linkdt&amp;category=".rawurlencode($category_view)."\" title=\"$title_tag\" class=\"small\">";
-		if(($cmd == "read" && !is_page($page)) || (is_page($page) && !check_readable($page,false,false))){
+		$moblog_page = "[[".strip_bracket($page)."-0]]";
+		if(($cmd == "read" && !is_page($page) && !is_page($moblog_page)) || ((is_page($page) || is_page($moblog_page)) && !check_readable($page,false,false))){
 			$td_style = "";
 			$link = "$a_tag<span class=\"_DAY_STYLE_\">$day</span></a>";
 		}else{
@@ -321,14 +322,19 @@ function plugin_calendar2_convert()
 		//$tb_tag = ($trackback)? "<div style=\"text-align:right\">[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($page)."\">TrackBack(".tb_count($page).")</a> ]</div>" : "";
 		//$str = "<h4>".sprintf($_calendar2_msg_detail, htmlspecialchars(strip_bracket($page)))."</h4>";
 		$str = "<div class = \"style_calendar_date\">".$h_date."</div>";
-		for ($i=0;$i<10;$i++)
+		$__page = "";
+		$page_found = false;
+		for ($i=-1;$i<10;$i++)
 		{
-			$daynum = ($i)? "-".$i:"";
+			$daynum = ($i !== -1)? "-".$i:"";
 			$_page = $page.$daynum;
 			// 閲覧権限チェック＋
 			if (is_page($_page) && check_readable($_page,false,false)) {
 				$page_ = $vars['page'];
 				$get['page'] = $post['page'] = $vars['page'] = add_bracket($_page);
+				//comment_no 初期化
+				$_comment_no = $comment_no;
+				$comment_no = 0;
 				$body = @join("",get_source($_page));
 				$user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($_page)) : "[[".get_pg_auther_name($_page)."]]";
 				$user_tag = make_link($user_tag);
@@ -338,24 +344,38 @@ function plugin_calendar2_convert()
 				if ($anon_writable) $str .= "<a class=\"small\" href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_calendar2_plugin_edit</a>";
 				$str .= "<hr />";
 				$get['page'] = $post['page'] = $vars['page'] = $page_;
+				$comment_no = $_comment_no;
+				$page_found = true;
 			}
 			else
 			{
-				if (!$other_month) {
-					$page_url = rawurlencode($_page);
-					if ($i == 0)
-					{
-						$str .= sprintf($_calendar2_plugin_empty,$today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day);
-						if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
+				if ($i > 0)
+				{
+					if (!$other_month) {
+						if ($i === 0 && !$__page)
+							$page_url = $page."-1";
+						else
+							$page_url = ($__page)? rawurlencode($__page) : rawurlencode($_page);
+						
+						if (!$page_found)
+						{
+							$str .= sprintf($_calendar2_plugin_empty,$today[mon].$_calendar2_msg_month.$today[mday].$_calendar2_msg_day);
+							if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write."<span class=\"note_super\"> </span></a>";
+						}
+						else
+						{
+							if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write_more."<span class=\"note_super\"> </span></a>";
+						}
+					} else {
+						$str = "";
 					}
-					else
-					{
-						if (WIKI_ALLOW_NEWPAGE) $str .= "<br /><a href=\"$script?cmd=$cmd&amp;page=$page_url$refer\" class=\"small\">".$_calendar2_msg_write_more."<span class=\"note_super\"> </span></a>";
-					}
-				} else {
-					$str = "";
+					break;
 				}
-				break;
+				else
+				{
+					if ($i === -1)
+						$__page = $page;
+				}
 			}
 		}
 		
