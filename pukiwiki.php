@@ -25,13 +25,15 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.48 2004/08/04 13:58:56 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.49 2004/08/19 02:03:18 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
 
 /////////////////////////////////////////////////
 // プログラムファイル読み込み
+global $xoopsUser,$xoopsDB,$xoopsConfig;
+
 require("func.php");
 require("file.php");
 require("plugin.php");
@@ -59,7 +61,6 @@ require("init.php");
 // $X_uid:XOOPSユーザーID
 // $X_admin:PukiWikiモジュール管理者(Yes:1 No:0)
 // 
-global $xoopsUser,$xoopsDB,$xoopsConfig;
 
 $X_admin =0;
 $X_uid =0;
@@ -75,8 +76,19 @@ if ( $xoopsUser ) {
 	$X_uid = $xoopsUser->uid();
 	$X_uname = $xoopsUser->uname();
 } else {
-	$X_uname = $no_name;
+	$X_uname = (!empty($_COOKIE["pukiwiki_un"]))? $_COOKIE["pukiwiki_un"] : $no_name;
 }
+
+// UserCode with cookie
+$X_ucd = (isset($_COOKIE["pukiwiki_uc"]))? $_COOKIE["pukiwiki_uc"] : "";
+//user-codeの発行
+// ↓この方式はやめた
+//if(!$X_ucd){ $X_ucd = substr(crypt(md5(getenv("REMOTE_ADDR").$adminpass.gmdate("Ymd", time()+9*60*60)),'id'),-12); }
+if(!$X_ucd || strlen($X_ucd) == 12){ $X_ucd = md5(getenv("REMOTE_ADDR").$adminpass.gmdate("Ymd", time()+9*60*60)); }
+setcookie("pukiwiki_uc", $X_ucd, time()+86400*365);//1年間
+$X_ucd = substr(crypt($X_ucd,($adminpass)? $adminpass : 'id'),-12);
+define('PUKIWIKI_UCD',$X_ucd); //定数化
+unset ($X_ucd);
 
 /////////////////////////////////////////////////
 // 編集権限セット
@@ -1034,9 +1046,11 @@ else if($do_backup && arg_check("backup"))
 			{
 				$title = str_replace('$1',$pagename,$_title_backupsource)."(No.".htmlspecialchars($get["age"]).")";
 				$page = str_replace('$1',make_search($get["page"]),$_title_backupsource)."(No.".htmlspecialchars($get["age"]).")";
-				$backupdata = htmlspecialchars(join("",get_backup($get["age"],encode($get["page"]).".txt")));
+				$backupdata = join("",get_backup($get["age"],encode($get["page"]).".txt"));
+				delete_page_info($backupdata);
+				$backupdata = htmlspecialchars($backupdata);
 				
-				$body.="</ul>\n<pre>\n$backupdata</pre>\n";
+				$body.="</ul>\n<form><textarea cols=\"80\" rows=\"20\">\n$backupdata</textarea></form>\n";
 			}
 			else
 			{
