@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.29 2004/09/29 02:33:07 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.30 2004/10/25 23:29:07 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -20,6 +20,9 @@ define("BACKUP_DIR","./backup/");
 /////////////////////////////////////////////////
 // プラグインファイル格納先ディレクトリ
 define("PLUGIN_DIR","./plugin/");
+/////////////////////////////////////////////////
+// プラグイン用データファイル格納先ディレクトリ
+define("PLUGIN_DATA_DIR","./plugin_data/");
 /////////////////////////////////////////////////
 // counter file
 define("COUNTER_DIR","./counter/");
