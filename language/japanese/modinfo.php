@@ -1,8 +1,9 @@
 <?php
-// $Id: modinfo.php,v 1.2 2003/06/28 11:33:05 nao-pon Exp $
+// $Id: modinfo.php,v 1.3 2004/12/04 14:57:46 nao-pon Exp $
 
-define("_MI_PUKIWIKI_RECENT", "最新の20件");
-define("_MI_PUKIWIKI_LIST", "一覧");
+define("_MI_PUKIWIKI_RECENT", "最新ページ一覧");
+define("_MI_PUKIWIKI_LIST", "ページ一覧");
+define("_MI_PUKIWIKI_NEWPAGE", "新規ページ作成");
 define("_MI_PUKIWIKI_SITEMAP", "サイトマップ");
 define("_MI_PUKIWIKI_RENAME", "リネーム");
 define("_MI_PUKIWIKI_YETLIST", "未入力リスト");
