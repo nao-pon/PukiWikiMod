@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.4 2003/06/29 11:45:03 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.5 2003/07/06 11:54:27 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -35,7 +35,7 @@ define("SKIN_FILE","./skin/pukiwiki.skin.".LANG.".php");
 
 /////////////////////////////////////////////////
 // 言語ファイルの読み込み(編集しないでください)
-require(LANG.".lng");
+require(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/".LANG.".lng");
 
 /////////////////////////////////////////////////
 // index.php などに変更した場合のスクリプト名の設定
