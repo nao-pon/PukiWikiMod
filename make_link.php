@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.15 2004/01/15 13:11:44 nao-pon Exp $
+// $Id: make_link.php,v 1.16 2004/01/24 14:43:06 nao-pon Exp $
 //
 
 // リンクを付加する
@@ -171,8 +171,10 @@ class Link
 		$this->type = $type;
 		if ($type != 'InterWikiName' and preg_match('/\.(gif|png|jpe?g)$/i',$alias))
 		{
+			$separator = $alias{0};
+			$alias = substr($alias,1);
 			$alias = htmlspecialchars($alias);
-			$alias = "<img src=\"$alias\" alt=\"$name\" />";
+			$alias = "$separator<img src=\"$alias\" alt=\"$name\" />";
 		}
 		else if ($alias != '')
 		{
@@ -200,7 +202,7 @@ class Link_plugin extends Link
 	function get_pattern()
 	{
 		$this->pattern = <<<EOD
-&amp;
+(?:&amp;|&)
 (      # (1) plain
  (\w+) # (2) plugin name
  (?:
@@ -742,7 +744,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 				$heading = get_heading($page);
 				if ($heading) $page_name = $heading;
 				// 無限ループ防止　姑息だけど
-				$page_name = preg_replace("/^(#.*#)$/","$1 ",$page_name);
+				$page_name = preg_replace("/^(#.*#)$/"," $1",$page_name);
 			}
 			$link = make_pagelink($name,$page_name);
 			if ($i)
