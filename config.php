@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: config.php,v 1.1 2003/07/14 09:04:00 nao-pon Exp $
+// $Id: config.php,v 1.2 2003/07/14 12:09:42 nao-pon Exp $
 //
 /*
  * プラグインの設定をPukiWikiのページに記述する
@@ -27,7 +27,13 @@
  * $obj->write();
  * 
  */
-
+// PHP 4.2.0 未満用
+if (!function_exists('is_a')) {
+ function is_a( $object, $className ) {
+   return ((strtolower($className) == get_class($object))
+         or (is_subclass_of($object, $className)));
+ }
+}
 // ページ名のプレフィクス
 define('CONFIG_BASE',':config/');
 
