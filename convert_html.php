@@ -1,10 +1,11 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.14 2004/01/15 13:03:45 nao-pon Exp $
+// $Id: convert_html.php,v 1.15 2004/01/24 14:41:53 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false)
 {
 	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid;
+	
 	if ($page_cvt)
 	{
 		$page = add_bracket($string);
@@ -25,8 +26,8 @@ function convert_html($string,$is_intable=false,$page_cvt=false)
 	
 	$result_last = $body->to_html($string);
 	
-	// インライン処理(リンク付加など)
-	$result_last = $body->inline2($result_last);
+	// インライン処理(セル中は、後で処理する)
+	if (!$is_intable) $result_last = $body->inline2($result_last);
 
 	if (!in_array("related",$no_plugins))
 	{
@@ -52,7 +53,10 @@ function convert_html($string,$is_intable=false,$page_cvt=false)
 	
 	
 	// 配列から戻す
-	$str = join("\n", $result_last);
+	if (!$is_intable)
+		$str = join("\n", $result_last);
+	else
+		$str = join("\r", $result_last);
 	
 	// WikiName抑止の!を削除
 	$WikiName_ORG = '[A-Z][a-z]+(?:[A-Z][a-z]+)+';
@@ -93,6 +97,9 @@ class convert
 		global $anon_writable,$h_excerpt;
 		global $no_plugins;
 		
+		// テーブルセル中フラグ
+		static $is_intable = 0;
+		
 		//インラインコンバーター(注釈は処理しない)
 		static $converter;
 		if (!isset($converter))
@@ -129,7 +136,7 @@ class convert
 		//表内箇所の判定のため表と表の間は空行が2行必要
 		$string = str_replace("|\n\n|","|\n\n\n|",$string);
 		//表内はすべて置換
-		$string = preg_replace("/(^|\n)(\|[^\r]+?\|)(\n[^|]|$)/e","'$1'.stripslashes(str_replace('->\n','&br;','$2')).'$3'",$string);
+		$string = preg_replace("/(^|\n)(\|[^\r]+?\|)(\n[^|]|$)/e","'$1'.stripslashes(str_replace('->\n','___td_br___','$2')).'$3'",$string);
 		//表と表の間は空行2行を1行に戻す
 		$string = str_replace("|\n\n\n|","|\n\n|",$string);
 		
@@ -540,13 +547,17 @@ class convert
 									$td_head == '|' || 
 									$td_head == '*' || 
 									$td_head == '#' || 
-									(ereg("&br;",$td)) //複数行は無条件
+									(ereg("___td_br___",$td)) //複数行は無条件
 									&& 
 									(!preg_match("/#contents/",$td)) //除外
 								) {
-									$td_lines = ereg_replace("&br;","\n",$td);//this
+									$td_lines = ereg_replace("___td_br___","\n",$td);//this
 									
-									array_push($result,"\t".convert_html($td_lines,true));
+									//array_push($result,"\t".convert_html($td_lines,true));
+									//セル中の印 "\x08"
+									$is_intable ++;
+									array_push($result,"\x08".convert_html($td_lines,$is_intable));
+									$is_intable --;
 								} else {
 									array_push($result,ltrim(inline($td)));
 								}
@@ -703,11 +714,13 @@ class convert
 			foreach ($str as $line)
 			{
 				//echo htmlspecialchars($line)."<hr />";
-				if (!strip_tags($line) || preg_match("/^[ #\s\t]/",$line))
+				if (preg_match("/^\x08/",$line)) //テーブルセル中。配列にして再帰処理
+					$_str[] = join("\n",$this->inline2(split("\r",preg_replace("/^\x08/","",$line))));
+				elseif (!strip_tags($line) || preg_match("/^[ #\s\t]/",$line))
 					$_str[] = $line;
 				else
-					//$_str[] = make_link($line);
 					$_str[] = make_user_rules(make_link($line));
+					
 			}
 			$str = $_str;
 			unset($_str);
