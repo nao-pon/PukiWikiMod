@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.14 2003/12/16 04:48:52 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.15 2004/01/12 13:12:06 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 

@@ -1,8 +1,8 @@
 <?php
-// $Id: xoops_version.php,v 1.2 2003/07/24 04:50:52 nao-pon Exp $
+// $Id: xoops_version.php,v 1.3 2004/01/12 13:12:06 nao-pon Exp $
  
 $modversion['name'] = "PukiWiki";
-$modversion['version'] = 0.06;
+$modversion['version'] = "0.08";
 $modversion['description'] = "PukiWiki";
 $modversion['credits'] = "";
 $modversion['author'] = "";
@@ -36,4 +36,25 @@ $modversion['blocks'][1]['file'] = "pukiwiki_new.php";
 $modversion['blocks'][1]['name'] = _MI_PUKIWIKI_BNAME1;
 $modversion['blocks'][1]['description'] = "Shows recently contents";
 $modversion['blocks'][1]['show_func'] = "b_pukiwiki_new_show";
+
+$modversion['blocks'][2]['file'] = "pukiwiki_page.php";
+$modversion['blocks'][2]['name'] = "PukiWiki Page#1";
+$modversion['blocks'][2]['description'] = "Show A PukiWiki's page.";
+$modversion['blocks'][2]['show_func'] = "b_pukiwiki_page_show";
+$modversion['blocks'][2]['edit_func'] = "b_pukiwiki_page_edit";
+$modversion['blocks'][2]['options'] = "|5|1";
+
+$modversion['blocks'][3]['file'] = "pukiwiki_page.php";
+$modversion['blocks'][3]['name'] = "PukiWiki Page#2";
+$modversion['blocks'][3]['description'] = "Show A PukiWiki's page.";
+$modversion['blocks'][3]['show_func'] = "b_pukiwiki_page_show";
+$modversion['blocks'][3]['edit_func'] = "b_pukiwiki_page_edit";
+$modversion['blocks'][3]['options'] = "|5|2";
+
+$modversion['blocks'][4]['file'] = "pukiwiki_page.php";
+$modversion['blocks'][4]['name'] = "PukiWiki Page#3";
+$modversion['blocks'][4]['description'] = "Show A PukiWiki's page.";
+$modversion['blocks'][4]['show_func'] = "b_pukiwiki_page_show";
+$modversion['blocks'][4]['edit_func'] = "b_pukiwiki_page_edit";
+$modversion['blocks'][4]['options'] = "|5|3";
 ?>

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.18 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.19 2004/01/12 13:12:06 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -35,8 +35,11 @@ if($xoopsConfig['language'] == "japanese"){
 
 /////////////////////////////////////////////////
 // スキンファイルの場所。
-define("SKIN_FILE","./skin/pukiwiki.skin.".LANG.".php");
-
+if (empty($vars['xoops_block'])) 
+	define("SKIN_FILE","./skin/pukiwiki.skin.".LANG.".php");
+else
+	define("SKIN_FILE","./skin/xoops_block.skin.".LANG.".php");
+	
 /////////////////////////////////////////////////
 // 言語ファイルの読み込み(編集しないでください)
 require(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/".LANG.".lng");
@@ -59,7 +62,8 @@ define("MAX_FILESIZE",1000000);
 /////////////////////////////////////////////////
 // index.php などに変更した場合のスクリプト名の設定
 // とくに設定しなくても問題なし
-$script = XOOPS_URL.'/modules/pukiwiki/index.php';
+define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/pukiwiki');
+$script = XOOPS_WIKI_URL.'/index.php';
 
 /////////////////////////////////////////////////
 // 更新履歴ページの名前
@@ -255,23 +259,23 @@ $line_rules = array(
 // 必要のない方は $usefacemarkを0にしてください。
 $usefacemark = 1;
 $facemark_rules = array(
-"\s(\:(?:-)?\))" => " <img src=\"./face/smile.gif\" alt=\"\\1\" />",
-"\s(\:(?:-)?D)" => " <img src=\"./face/bigsmile.gif\" alt=\"\\1\" />",
-"\s(\:(?:-)?p)" => " <img src=\"./face/huh.gif\" alt=\"\\1\" />",
-"\s(\:(?:-)?d)" => " <img src=\"./face/huh.gif\" alt=\"\\1\" />",
-"\s(X(?:-)?D)" => " <img src=\"./face/oh.gif\" alt=\"\\1\" />",
-"\s(X(?:-)?\()" => " <img src=\"./face/oh.gif\" alt=\"\\1\" />",
-"\s(;(?:-)?\))" => " <img src=\"./face/wink.gif\" alt=\"\\1\" />",
-"\s(;(?:-)?\()" => " <img src=\"./face/sad.gif\" alt=\"\\1\" />",
-"\s(\:(?:-)?\()" => " <img src=\"./face/sad.gif\" alt=\"\\1\" />",
-"\s(\:(?:-)?\?)" => " <img src=\"./face/confused.gif\" alt=\"\\1\" />",
-'&amp;(smile);' => ' <img src="./face/smile.png" alt="$1" />',
-'&amp;(bigsmile);' => ' <img src="./face/bigsmile.png" alt="$1" />',
-'&amp;(huh);' => ' <img src="./face/huh.png" alt="$1" />',
-'&amp;(oh);' => ' <img src="./face/oh.png" alt="$1" />',
-'&amp;(wink);' => ' <img src="./face/wink.png" alt="$1" />',
-'&amp;(sad);' => ' <img src="./face/sad.png" alt="$1" />',
-"&amp;(heart);" => ' <img src="./face/heart.gif" alt="$1" />',
+"\s(\:(?:-)?\))" => " <img src=\"".XOOPS_WIKI_URL."/face/smile.gif\" alt=\"\\1\" />",
+"\s(\:(?:-)?D)" => " <img src=\"".XOOPS_WIKI_URL."/face/bigsmile.gif\" alt=\"\\1\" />",
+"\s(\:(?:-)?p)" => " <img src=\"".XOOPS_WIKI_URL."/face/huh.gif\" alt=\"\\1\" />",
+"\s(\:(?:-)?d)" => " <img src=\"".XOOPS_WIKI_URL."/face/huh.gif\" alt=\"\\1\" />",
+"\s(X(?:-)?D)" => " <img src=\"".XOOPS_WIKI_URL."/face/oh.gif\" alt=\"\\1\" />",
+"\s(X(?:-)?\()" => " <img src=\"".XOOPS_WIKI_URL."/face/oh.gif\" alt=\"\\1\" />",
+"\s(;(?:-)?\))" => " <img src=\"".XOOPS_WIKI_URL."/face/wink.gif\" alt=\"\\1\" />",
+"\s(;(?:-)?\()" => " <img src=\"".XOOPS_WIKI_URL."/face/sad.gif\" alt=\"\\1\" />",
+"\s(\:(?:-)?\()" => " <img src=\"".XOOPS_WIKI_URL."/face/sad.gif\" alt=\"\\1\" />",
+"\s(\:(?:-)?\?)" => " <img src=\"".XOOPS_WIKI_URL."/face/confused.gif\" alt=\"\\1\" />",
+'&amp;(smile);' => ' <img src="".XOOPS_WIKI_URL."/face/smile.png" alt="$1" />',
+'&amp;(bigsmile);' => ' <img src="".XOOPS_WIKI_URL."/face/bigsmile.png" alt="$1" />',
+'&amp;(huh);' => ' <img src="".XOOPS_WIKI_URL."/face/huh.png" alt="$1" />',
+'&amp;(oh);' => ' <img src="".XOOPS_WIKI_URL."/face/oh.png" alt="$1" />',
+'&amp;(wink);' => ' <img src="".XOOPS_WIKI_URL."/face/wink.png" alt="$1" />',
+'&amp;(sad);' => ' <img src="".XOOPS_WIKI_URL."/face/sad.png" alt="$1" />',
+"&amp;(heart);" => ' <img src="".XOOPS_WIKI_URL."/face/heart.gif" alt="$1" />',
 );
 
 ////////以下の設定はXOOPSの管理画面での設定で上書きされます///////

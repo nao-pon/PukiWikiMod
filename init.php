@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.15 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: init.php,v 1.16 2004/01/12 13:12:06 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -8,7 +8,7 @@ define("INI_FILE","./pukiwiki.ini.php");
 
 //** 初期設定 **
 
-define("_XOOPS_WIKI_VERSION", "0.08");
+define("_XOOPS_WIKI_VERSION", "0.08b2");
 define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003 <a href=\"http://ishii.s26.xrea.com/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.");
 //文字エンコード
 define('SOURCE_ENCODING','EUC-JP');
@@ -34,51 +34,6 @@ if($script == "") {
 $WikiName = '(?:[A-Z][a-z]+){2,}(?!\w)';
 $BracketName = '\[\[(?!\/|\.\/|\.\.\/)(:?[^\s\]#&<>":]+:?)\]\](?<!\/\]\])';
 $InterWikiName = "\[\[(\[*[^\s\]]+?\]*):(\[*[^>\]]+?\]*)\]\]";
-
-/**************
-$LinkPattern = "/( (?# <1>:all)
-	(?# url )
-	(?:\[\[([^\]]+):)?           (?#<2>:alias)
-		(\[)?                      (?#<3>:open bracket)
-			((?:(?:https?|ftp|news):\/\/|\.\.?\/)(?:[!~*'();\/?:\@&=+\$,%#\w.-]+)) (?#<4>:url)
-		(?(3)\s((?:(?!\]\]).)+)\]) (?#<5>:alias, close bracket if <3>)
-	(?(2)\]\])                   (?# close bracket if <2>)
-	|
-	(?# mailto)
-	(?:\[\[((?:(?!\]\]).)+)      (?#<6>alias)
-		(?:>|:|&gt;))?
-		([\w.-]+@[\w-]+\.[\w.-]+)  (?#<7>:mailto>)
-	(?(6)\]\])                   (?# close bracket if <6>)
-	|
-	(?# BracketName or InterWikiName)
-	(\[\[                        (?#<8>:all)
-		(?:
-			(\[\[)?                  (?#<9>:open bracket)
-			((?:(?!\]\]).)+)         (?#<10>:alias)
-			(?:(?:&gt;)|>)           (?# '&gt;' or '>')
-		)?
-		(?:
-			(\[\[)?                  (?#<11>:open bracket)
-			(:?[^\s\[\]#&<>\":]*?:?) (?#<12>BracketName)
-			((?(9)\]\]|(?(11)\]\])))?(?#<13>:close bracket if <9> or <11>)
-			(\#(?:[a-zA-Z][\w-]*)?)? (?#<14>anchor)
-			(?(13)|(?(9)\]\]|(?(11)\]\]))) (?#close bracket if <9> or <11> but !<13>)
-			|
-			(\[\[)?                  (?#<15>:open bracket)
-			(\[*?[^\s\]]+?\]*?)      (?#<16>InterWiki)
-			((?(9)\]\]|(?(15)\]\])))?(?#<17>:close bracket if <9> or <15>)
-			(\:.*?)                  (?#<18>param)
-			(?(17)|(?(9)\]\]|(?(15)\]\]))) (?#close bracket if <9> or <15> but !<17>)
-		)?
-	\]\])
-	|
-	(?# WikiNmae)
-	($WikiName)                  (?#<19>:all)
-	|
-	(?# escape)
-	(\x1c[^\x1c\x1d]*\x1d)       (?#<20>:all)
-	)/x";
-****************/
 
 //** 入力値の整形 **
 

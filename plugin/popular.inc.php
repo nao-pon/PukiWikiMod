@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.6 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: popular.inc.php,v 1.7 2004/01/12 13:12:06 nao-pon Exp $
 //
 
 /*
@@ -31,7 +31,7 @@ function plugin_popular_init()
 	if (LANG == 'ja')
 		$messages = array(
 			'_popular_plugin_frame' => '<h5 class="side_label">人気の%d件</h5><div>%s</div>',
-			'_popular_plugin_today_frame' => '<h5 class="side_label" >今日の%d件</h5><div>%s</div>',
+			'_popular_plugin_today_frame' => '<h5 class="side_label" >今日のTOP%d</h5><div>%s</div>',
 		);
 	else
 		$messages = array(

@@ -2,11 +2,12 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rsslink.inc.php,v 1.1 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: rsslink.inc.php,v 1.2 2004/01/12 13:12:06 nao-pon Exp $
 //
 
 function plugin_rsslink_inline()
 {
+	global $script;
 	if (func_num_args() == 3)
 		list($page,$type,$body) = func_get_args();
 	elseif (func_num_args() == 2)
@@ -32,6 +33,6 @@ function plugin_rsslink_inline()
 	else
 		$s_page = $page = "";
 	
-	return "<a href=\"$script?cmd=$type$s_page\"><img src=\"./image/rss.png\" alt=\"RSS$page\" /></a>";
+	return "<a href=\"$script?cmd=$type$s_page\"><img src=\"".XOOPS_WIKI_URL."/image/rss.png\" alt=\"RSS$page\" /></a>";
 }
 ?>
