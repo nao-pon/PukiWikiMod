@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.21 2004/08/29 06:06:26 nao-pon Exp $
+// $Id: make_link.php,v 1.22 2004/08/29 12:23:43 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -42,8 +42,8 @@ class InlineConverter
 				'autolink',      // AutoLink
 				'bracketname',   // BracketName
 				'wikiname',      // WikiName
-				'escape',        // escape
 				'autolink_a',    // AutoLink(アルファベット)
+				'escape',        // escape
 			);
 		}
 		if ($excludes !== NULL)
@@ -180,8 +180,6 @@ class Link
 		//if ($type != 'InterWikiName' and preg_match('/\.(gif|png|jpe?g)$/i',$alias))
 		if (is_url($alias) && preg_match('/\.(gif|png|jpe?g)$/i',$alias))
 		{
-			$separator = $alias{0};
-			$alias = substr($alias,1);
 			$alias = htmlspecialchars($alias);
 			$alias = "$separator<img src=\"$alias\" alt=\"$name\" />";
 		}
@@ -339,21 +337,19 @@ EOD;
 	function set($arr,$page)
 	{
 		list(,,$alias,$separator,$name) = $this->splice($arr);
-		if (!$separator) $separator = ":";
 		if ($separator == "&gt;") $separator = ">";
+		$this->separator = $separator;
 		// https?:\/\/\/ -> XOOPS_URL
 		$name = preg_replace("/^https?:\/\/\//",XOOPS_URL."/",$name);
-		return parent::setParam($page,htmlspecialchars($name),'','url',$alias == '' ? $separator.$name : $separator.$alias);
+		return parent::setParam($page,htmlspecialchars($name),'','url',$alias == '' ? $name : $alias);
 	}
 	function toString()
 	{
 		global $link_target,$alias_set_status;
-		$separator = $this->alias{0};
-		$this->alias = substr($this->alias,1);
 		//プラグインで付加された<a href>タグを取り除く
 		$this->alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
 		$status_script = ($alias_set_status)? " onMouseOver=\"window.status='".str_replace("'","\'",strip_tags($this->alias))."';return true\" onMouseOut=\"window.status='';return true\"":"";
-		if ($separator == ">")
+		if ($this->separator == ">")
 			return "<a href=\"{$this->name}\"{$status_script}>{$this->alias}</a>";
 		else
 			return "<a href=\"{$this->name}\" target=\"$link_target\"{$status_script}>{$this->alias}</a>";
