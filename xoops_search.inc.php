@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.2 2003/06/28 11:33:02 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.3 2003/07/02 00:56:45 nao-pon Exp $
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	$files = get_existpages();
 	$non_format = 1;
@@ -44,7 +44,7 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 		$lines = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$lines);
 
 		$author_uid = 0;
-		if (preg_match("/^#freeze(\tuid:([0-9]+))?\n/",$lines[0],$arg)){
+		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
 			$lines[0] = "";
 			if (preg_match("/^\/\/ author:([0-9]+)\n/",$lines[1],$arg))
 				$author_uid = $arg[1];

@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.4 2003/06/28 16:40:20 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.5 2003/07/02 00:56:44 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPSヘッダ
 //include("header.php");
@@ -67,7 +67,7 @@ if ( $xoopsUser ) {
 }
 /////////////////////////////////////////////////
 // 編集権限セット
-if ($X_admin || ($wiki_writable===0) || (($X_uid && ($wiki_writable < 2)))) {
+if ($X_admin || ($wiki_writable === 0) || (($X_uid && ($wiki_writable < 2)))) {
 	$anon_writable = 1;
 } else {
 	$anon_writable = 0;
@@ -150,10 +150,10 @@ else if(arg_check("edit"))
 	$postdata = @join("",get_source($get["page"]));
 	$postdata = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$postdata);
 	unset ($create_uid);
-	if (preg_match("/^#freeze(\tuid:([0-9]+))?\n/",$postdata,$arg)) {
-		$create_uid = $arg[2];
+	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$postdata,$arg)) {
+		$create_uid = $arg[1];
 		$freeze_check = "checked ";
-		$postdata = preg_replace("/^#freeze(\tuid:[0-9]+)?\n/","",$postdata);
+		$postdata = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$postdata);
 	}
 	//ページ情報
 	$author_uid = get_pg_auther($get["page"]);
@@ -180,7 +180,7 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	//改行コード統一 by nao-pon
 	$post["msg"] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post["msg"]);
 	
-	$post["msg"] = preg_replace("/^#freeze\n/","",$post["msg"]);
+	$post["msg"] = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$post["msg"]);
 	
 	//改行有効 by nao-pon
 	if($post["enter_enable"]) {
@@ -243,6 +243,7 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	if($post["enter_enable"]) $checked_enter = "checked=\"checked\"";
 	if($function_freeze && (($X_uid && $X_uid == $post["f_author_uid"]) || $X_admin)){
 		$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($post["f_create_uid"]).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.$_btn_freeze_enable.'</span>';
+		$allow_edit_tag = allow_edit_form($post["gids"],$post["aids"]);
 	}
 	if ($X_admin){
 		$auther_tag = '  [ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($post["f_author_uid"]).'" /> ]';
@@ -254,7 +255,6 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 		."<div>\n"
 		."<input type=\"checkbox\" name=\"enter_enable\" value=\"true\" $checked_enter /><span class=\"small\">$_btn_enter_enable</span>\n"
 		."　<input type=\"checkbox\" name=\"auto_bra_enable\" value=\"true\" /><span class=\"small\">$_btn_autobracket_enable</span>　\n"
-		.$freeze_tag
 		."<input type=\"hidden\" name=\"help\" value=\"".htmlspecialchars($post["add"])."\" />\n"
 		."<input type=\"hidden\" name=\"page\" value=\"".htmlspecialchars($post["page"])."\" />\n"
 		."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($post["digest"])."\" />\n"
@@ -267,6 +267,7 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 		."<input type=\"checkbox\" name=\"notimestamp\" value=\"true\" $checked_time /><span class=\"small\">$_btn_notchangetimestamp</span>\n"
 		.$auther_tag
 		."</div>\n"
+		.$allow_edit_tag
 		."</form>\n";
 }
 // 書き込みもしくは追加もしくはコメントの挿入
@@ -282,18 +283,21 @@ else if($post["write"])
 	$post["msg"] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post["msg"]);
 	$oldpostdata = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$oldpostdata);
 
-	$post["msg"] = preg_replace("/^#freeze(\tuid:[0-9]+)?\n/","",$post["msg"]);
+	$post["msg"] = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$post["msg"]);
 	
 	//フォームデータを信用して素通ししてしまうのは問題があるので
 	//以前のデータが凍結されていて今回凍結解除する場合のチェック
-	$body = "";
+	$freeze_org = $body = "";
 	$checkpostdata=$oldpostdata;
-	if (preg_match("/^#freeze(\tuid:([0-9]+))?\n/",$checkpostdata,$arg)){
-		if (!$X_admin && $arg[2] != $X_uid){
+	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$checkpostdata,$arg)){
+		if (!X_uid) { //非ログインユーザーは凍結されたページを編集できるはずがない
 			$body = $title = str_replace('$1',htmlspecialchars(strip_bracket($vars["page"])),$_title_cannotedit);
 			$page = str_replace('$1',make_search($vars["page"]),$_title_cannotedit);
 		}
-		$checkpostdata = preg_replace("/^#freeze(\tuid:([0-9]+))?\n/","",$checkpostdata);
+		// 元の凍結情報を記憶
+		$freeze_org = $arg[0];
+		
+		$checkpostdata = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$checkpostdata);
 	}
 
 	//ページ情報
@@ -325,14 +329,23 @@ else if($post["write"])
 
 		//凍結指定
 		if ($post["freeze"]){
+			$freeze_gid = implode(",",$post["gids"]);
+			$freeze_aid = implode(",",$post["aids"]);
+			
 			if ($X_admin){
 				$freeze_uid = ($author_uid == 0)? $post["f_create_uid"] : $author_uid ;
-				$post["msg"] = "#freeze\tuid:".$freeze_uid."\n".$post["msg"];
+				$post["msg"] = "#freeze\tuid:".$freeze_uid."\taid:".$freeze_aid."\tgid:".$freeze_gid."\n".$post["msg"];
 			} else {
 				if ($X_uid){
-					if (($X_uid == $author_uid) || ($author_uid==0)) $post["msg"] = "#freeze\tuid:".$X_uid."\n".$post["msg"];
+					if (($X_uid == $author_uid) || ($author_uid==0)) {
+						$post["msg"] = "#freeze\tuid:".$X_uid."\taid:".$freeze_aid."\tgid:".$freeze_gid."\n".$post["msg"];
+					} else {
+						$post["msg"] = $freeze_org.$post["msg"];
+					}
 				}
 			}
+		} else {
+			if (!$X_admin && $X_uid != $author_uid) $post["msg"] = $freeze_org.$post["msg"];
 		}
 
 		$postdata_input = $post["msg"];

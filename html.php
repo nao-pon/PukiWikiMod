@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.4 2003/06/29 13:27:59 nao-pon Exp $
+// $Id: html.php,v 1.5 2003/07/02 00:56:44 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -120,7 +120,7 @@ function convert_html($string)
 	$arycontents = array();
 
 	//$string = preg_replace("/^#freeze\n/","",$string);
-	$string = preg_replace("/^#freeze(\tuid:([0-9]+))?\n/","",$string);
+	$string = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$string);
 
 	//~\nは&br;に変換して1行として処理 nao-pon 03/06/25
 	// 改行を挟んででURLなどが列挙してあると上手く切り分けられないので\tを挿入 03/06/29
@@ -857,7 +857,7 @@ function edit_form($postdata,$page,$add=0)
 	global $script,$rows,$cols,$hr,$vars,$function_freeze;
 	global $_btn_addtop,$_btn_preview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp,$_btn_enter_enable,$_btn_autobracket_enable,$_btn_freeze_enable,$_btn_auther_id;
 	global $whatsnew,$_btn_template,$_btn_load,$non_list,$load_template_func;
-	global $freeze_check,$create_uid,$author_uid,$X_admin,$X_uid;
+	global $freeze_check,$create_uid,$author_uid,$X_admin,$X_uid,$freeze_tag;
 	
 	$digest = md5(@join("",get_source($page)));
 	$create_uid = (isset($create_uid))? $create_uid : $X_uid ;
@@ -873,11 +873,14 @@ function edit_form($postdata,$page,$add=0)
 	else
  		$help = "<br />\n<ul><li><a href=\"$script?cmd=edit&amp;help=true&amp;page=".rawurlencode($page)."\">$_msg_help</a></ul></li>\n";
 
-	$freeze_tag = '';
-	if($function_freeze){
-		$str_freeze = '<input type="submit" name="freeze" value="'.$_btn_freeze.'" accesskey="f" />';
-		if (($X_uid && $X_uid == $author_uid) || $X_admin) $freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.$_btn_freeze_enable.'</span>';
-	}
+	$allow_edit_tag = $freeze_tag = '';
+	//if($function_freeze){
+		//$str_freeze = '<input type="submit" name="freeze" value="'.$_btn_freeze.'" accesskey="f" />';
+		if (($X_uid && $X_uid == $author_uid) || $X_admin) {
+			$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.$_btn_freeze_enable.'</span>';
+			$allow_edit_tag = allow_edit_form();
+		}
+	//}
 	if ($X_admin){
 		$auther_tag = '  [ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($author_uid).'" /> ]';
 	} else {
@@ -919,7 +922,7 @@ return '
  </tr>
  <tr><td>
    <input type="checkbox" name="enter_enable" value="true" checked /><span class="small">'.$_btn_enter_enable.'</span> 
-   <input type="checkbox" name="auto_bra_enable" value="true" checked /><span class="small">'.$_btn_autobracket_enable.'</span> '.$freeze_tag.'
+   <input type="checkbox" name="auto_bra_enable" value="true" checked /><span class="small">'.$_btn_autobracket_enable.'</span>
  </td></tr>
  <tr>
   <td align="right">
@@ -939,6 +942,7 @@ return '
   </td>
  </tr>
 </table>
+'.$allow_edit_tag.'
 </form>
 <!--
 <form action="'.$script.'?cmd=freeze" method="post">
@@ -1131,5 +1135,68 @@ function table_inc_add ($arytable)
 		}
 	}
 	return $lines_tmp;
+}
+//編集権限フォーム
+function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
+	//global $xoopsUser;
+	global $wiki_writable,$X_uid,$vars;
+	global $_btn_allow_memo,$_btn_allow_header,$_btn_allow_group,$_btn_allow_user,$_btn_allow_memo_t,$_btn_allow_deny,$freeze_tag;
+
+	//ページの編集権限を得る
+	if (is_null($allow_groups) || is_null($allow_users)) $allows = get_pg_allow_editer($vars['page']);
+	if (is_null($allow_groups) && $allows['group']) $allow_groups = explode(",",$allows['group']);
+	if (is_null($allow_users) && $allows['user']) $allow_users = explode(",",$allows['user']);
+	
+	//ゲストが投稿不可の設定の場合「ゲスト」グループのメッセージを表示しない
+	//$_btn_allow_guest = ($wiki_writable === 0)? $_btn_allow_guest : "";
+	
+	$ret = "<hr>";
+	$ret .= "<table class='style_table'><tr><th colspan='3'>$freeze_tag</th></tr>";
+	$ret .= "<tr><th class='style_th'>$_btn_allow_group</th><th class='style_th'>$_btn_allow_user</th><th class='style_th'>$_btn_allow_memo_t</th></tr>";
+	$ret .= "<tr><td class='style_td'>";
+
+	$groups = X_get_group_list();
+	$mygroups = X_get_groups();
+
+	// グループの名前をサイトの設定に書き換え
+	//$_btn_allow_memo = str_replace("_GUEST_ALLOW_",$_btn_allow_guest,$_btn_allow_memo);
+	$_btn_allow_memo = str_replace("_LOGDINUSER_",$groups[2],$_btn_allow_memo);
+	//$_btn_allow_memo = str_replace("_GUREST_",$groups[3],$_btn_allow_memo);
+
+	// グループ一覧表示
+	$ret .= "<select  size='10' name='gids[]' id='gids[]' multiple='multiple'>";
+	if (!is_array($allow_groups)){
+		$sel = " selected";
+	} else {
+		$sel = (in_array("0",$allow_groups))? " selected" : "";
+	}
+	$ret .= "<option value='0'$sel>$_btn_allow_deny</option>";
+	foreach ($groups as $gid => $gname){
+		if ($gid !== 1 && $gid !== 3 && in_array($gid,$mygroups)){
+			$sel = (in_array($gid,$allow_groups))? " selected" : "";
+			$ret .= "<option value='".$gid."'".$sel.">$gname</option>";
+		}
+	}
+	$ret .= "</select></td>";
+	$ret .= "<td class='style_td'>";
+	$allusers = X_get_users();
+	asort($allusers);
+
+	// ユーザ一覧表示
+	$ret .= "<select  size='10' name='aids[]' id='aids[]' multiple='multiple'>";
+	if (!is_array($allow_users)){
+		$sel = " selected";
+	} else {
+		$sel = (in_array("0",$allow_users))? " selected" : "";
+	}
+	$ret .= "<option value='0' $sel>$_btn_allow_deny</option>";
+	foreach ($allusers as $uid => $uname){
+			$sel = (in_array($uid,$allow_users))? " selected" : "";
+			if ($uid != $X_uid) $ret .= "<option value='".$uid."'$sel>$uname</option>";
+	}
+	$ret .= "</select></td><td class='style_td'>".$_btn_allow_memo."</td></tr></table>";
+	
+	return $ret;
+
 }
 ?>

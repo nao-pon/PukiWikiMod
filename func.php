@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.5 2003/06/30 00:10:10 nao-pon Exp $
+// $Id: func.php,v 1.6 2003/07/02 00:56:44 nao-pon Exp $
 /////////////////////////////////////////////////
 // 検索語を展開する
 function get_search_words($words,$special=FALSE)
@@ -272,6 +272,52 @@ function getmicrotime()
 	return ((float)$sec + (float)$usec);
 }
 
+// 日時を得る
+function get_date($format,$timestamp = NULL)
+{
+	$time = ($timestamp === NULL) ? UTIME : $timestamp;
+	$time += ZONETIME;
+	
+	$format = preg_replace('/(?<!\\\)T/',preg_replace('/(.)/','\\\$1',ZONE),$format);
+	
+	return date($format,$time);
+}
+
+// 日時文字列を作る
+function format_date($val, $paren = FALSE)
+{
+	global $date_format,$time_format,$weeklabels;
+	
+	$val += ZONETIME;
+	
+	$ins_date = date($date_format,$val);
+	$ins_time = date($time_format,$val);
+	$ins_week = '('.$weeklabels[date('w',$val)].')';
+	
+	$ins = "$ins_date $ins_week $ins_time";
+	return $paren ? "($ins)" : $ins;
+}
+
+// 経過時刻文字列を作る
+function get_passage($time)
+{
+	static $units = array('s'=>60,'m'=>60,'h'=>24,'d'=>1);
+	
+	$time = UTIME - $time;
+	
+	foreach ($units as $unit=>$card)
+	{
+		if ($time < $card)
+		{
+			break;
+		}
+		$time /= $card;
+	}
+	$time = floor($time);
+	
+	return "($time$unit)";
+}
+
 // 差分の作成
 function do_diff($strlines1,$strlines2)
 {
@@ -534,25 +580,50 @@ function auto_braket($msg,$tgt_name){
 	
 	return $msg;
 }
-/*
-// 経過時刻文字列を作る
-function get_passage($time)
-{
-	static $units = array('s'=>60,'m'=>60,'h'=>24,'d'=>1);
-	
-	$time = UTIME - $time;
-	
-	foreach ($units as $unit=>$card)
-	{
-		if ($time < $card)
-		{
-			break;
-		}
-		$time /= $card;
+
+//////////////////////////////////////////////////////
+//
+// XOOPS用　関数
+//
+//////////////////////////////////////////////////////
+
+// ユーザーが所属するグループIDを得る
+function X_get_groups(){
+	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
+		// XOOPS 2
+		global $X_uid,$xoopsDB;
+		$X_M = new XoopsMemberHandler($xoopsDB);
+		return $X_M->getGroupsByUser($X_uid);
+	} else {
+		// XOOPS 1
+		global $xoopsUser;
+		return XoopsGroup::getByUser($xoopsUser);
 	}
-	$time = floor($time);
-	
-	return "($time$unit)";
 }
-*/
+// グループ一覧を得る
+function X_get_group_list(){
+	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
+		// XOOPS 2
+		global $xoopsDB;
+		$X_M = new XoopsMemberHandler($xoopsDB);
+		return $X_M->getGroupList();
+	} else {
+		// XOOPS 1
+		return XoopsGroup::getAllGroupsList();
+	}
+}
+
+// 登録ユーザー一覧を得る
+function X_get_users(){
+	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
+		// XOOPS 2
+		global $xoopsDB;
+		$X_M = new XoopsMemberHandler($xoopsDB);
+		return $X_M->getUserList();
+	} else {
+		// XOOPS 1
+		return XoopsUser::getAllUsersList();
+	}
+}
+
 ?>

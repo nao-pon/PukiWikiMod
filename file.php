@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
+// $Id: file.php,v 1.3 2003/07/02 00:56:45 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -167,12 +167,38 @@ function is_freeze($page)
 	$lines = get_source($page,1);
 	$lines = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$lines);
 
-	if (preg_match("/^#freeze(\tuid:([0-9]+))?\n/",$lines[0],$arg)){
-		if (($arg[2] == $X_uid) || $X_admin) {
-			$_freeze = false;
-		} else {
-			$_freeze = true;
+	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
+		$gids = $aids = array();
+		if ($arg[2]) $aids = explode(",",$arg[2].",");
+		if ($arg[3]) $gids = explode(",",$arg[3].",");
+
+		// 管理者は凍結解除
+		if ($X_admin) return false;
+
+		// 非ログインユーザー
+		if (!$X_uid) return (in_array("3",$gids))? false : true;
+		
+		//ログインユーザーは権限チェック
+		
+		// 自分で凍結したページ
+		if ($arg[1] == $X_uid) return false;
+		
+		// ユーザー権限があるか
+		if (in_array($X_uid,$aids)) return false;
+		
+		// グループ権限があるか？
+		$X_gids = X_get_groups();
+		$gid_match = false;
+		foreach ($X_gids as $gid){
+			if (in_array($gid,$gids)) {
+				$gid_match = true;
+				break;
+			}
 		}
+		if ($gid_match) return false;
+		
+		// 編集権限なし
+		$_freeze = true;
 	} else {
 		$_freeze = false;
 	}
@@ -254,7 +280,7 @@ function get_pg_auther($page)
 	$lines = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$lines);
 	
 	$author_uid = 0;
-	if (preg_match("/^#freeze(\tuid:([0-9]+))?\n/",$lines[0],$arg)){
+	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
 		if (preg_match("/^\/\/ author:([0-9]+)\n/",$lines[1],$arg))
 			$author_uid = $arg[1];
 	} else {
@@ -274,4 +300,22 @@ function get_pg_auther_name($page)
 	return $user->getVar("uname");
 }
 
+//ページの編集権限を得る
+function get_pg_allow_editer($page){
+	$lines = get_source($page,1);
+	$lines = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$lines);
+
+	$allows['group'] = $allows['user']= "";
+	
+	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
+		if (!$arg[2]) $arg[2]=0;
+		if (!$arg[3]) $arg[3]=0;
+		$allows['user'] = $arg[2].",";
+		$allows['group'] = $arg[3].",";
+		//echo "this!".$arg[3];
+	}
+	
+	return $allows;
+	
+}
 ?>
