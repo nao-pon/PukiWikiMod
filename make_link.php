@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.27 2004/10/20 12:30:12 nao-pon Exp $
+// $Id: make_link.php,v 1.28 2004/11/01 14:13:19 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -43,6 +43,7 @@ class InlineConverter
 				'bracketname',   // BracketName
 				'wikiname',      // WikiName
 				'autolink_a',    // AutoLink(アルファベット)
+				//'eword',
 				'escape',        // escape
 			);
 		}
@@ -77,8 +78,8 @@ class InlineConverter
 		
 		$string = preg_replace_callback("/{$this->pattern}/x",array(&$this,'replace'),$string);
 		
-		//$arr = explode("\x08",make_line_rules(htmlspecialchars($string)));
-		$arr = explode("\x08",make_line_rules($string));
+		$arr = explode("\x08",make_line_rules(htmlspecialchars($string)));
+		//$arr = explode("\x08",make_line_rules($string));
 		$retval = '';
 		while (count($arr))
 		{
@@ -322,7 +323,7 @@ class Link_url extends Link
 		return <<<EOD
 (\[\[             # (1) open bracket
  ((?:(?!\]\]).)+) # (2) alias
- (&gt;|>|:)       # (3) separator
+ (>|:)       # (3) separator
 )?
 (                 # (4) url
  (?:https?|ftp|news):\/\/[!~*'();\/?:\@&=+\$,%#\w.-]+
@@ -337,7 +338,7 @@ EOD;
 	function set($arr,$page)
 	{
 		list(,,$alias,$separator,$name) = $this->splice($arr);
-		if ($separator == "&gt;") $separator = ">";
+		//if ($separator == "&gt;") $separator = ">";
 		$this->separator = $separator;
 		// https?:\/\/\/ -> XOOPS_URL
 		$name = preg_replace("/^https?:\/\/\//",XOOPS_URL."/",$name);
@@ -444,15 +445,15 @@ class Link_interwikiname extends Link
 		return <<<EOD
 \[\[                  # open bracket
 (?:
- ((?:(?!\]\]).)+)(?:&gt;|>)    # (1) alias
+ ((?:(?!\]\]).)+)(?:>)    # (1) alias
 )?
 (\[\[)?               # (2) open bracket
 ((?:(?!\s|:|\]\]).)+) # (3) InterWiki
-(?<! > | &gt; | >\[\[ | &gt;\[\[ )      # not '>' or '>[['
+(?<! > | >\[\[ )      # not '>' or '>[['
 :                     # separator
 (                     # (4) param 
     (\[\[)?              # (5) open bracket 
-    (?:(?!>|&gt;|\]\]).)+ 
+    (?:(?!>|\]\]).)+ 
     (?($s5)\]\])         # close bracket if (5) 
 ) 
 
@@ -515,7 +516,7 @@ class Link_bracketname extends Link
 		$s2 = $this->start + 2;
 		return <<<EOD
 \[\[                     # open bracket
-(?:((?:(?!\]\]).)+)(?:&gt;|>))?   # (1) alias
+(?:((?:(?!\]\]).)+)(?:>))?   # (1) alias
 (\[\[)?                  # (2) open bracket
 (                        # (3) PageName
  (?:$WikiName)
@@ -774,6 +775,43 @@ class Link_autolink_a extends Link_autolink
 	}
 }
 
+// e-Word
+class Link_eword extends Link
+{
+	var $ewords;
+	
+	function Link_eword($start)
+	{
+		global $autolink,$X_admin;
+		
+		parent::Link($start);
+		
+		if (!$X_admin or !$autolink or !file_exists(CACHE_DIR.'e_word.dat'))
+		{
+			return;
+		}
+		@list($ewords) = file(CACHE_DIR.'e_word.dat');
+		$this->ewords = $ewords;
+	}
+	function get_pattern()
+	{
+		return isset($this->ewords) ? "({$this->ewords})" : FALSE;
+  	}
+  	function get_count()
+  	{
+		return 1;
+	}
+	function set($arr,$page)
+	{
+		list($name) = $this->splice($arr);
+		return parent::setParam($page,$name,'','url',$name);
+	}
+	function toString()
+	{
+		return '<a href="http://e-words.jp/w/'.encode(mb_convert_encoding($this->name,"UTF-8","EUC-JP")).'.html">'.$this->name.'</a>';
+	}
+}
+
 // ページ名のリンクを作成
 function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 {
@@ -787,7 +825,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	if ($not_where && isset($linktag[$page.$alias])) return $linktag[$page.$alias];
 	
 	$s_page = htmlspecialchars(strip_bracket($page));
-	$s_alias = ($alias == '') ? $s_page : $alias;
+	$s_alias = ($alias == '') ? $s_page : htmlspecialchars($alias);
 	
 	if ($page == '')
 	{
@@ -835,7 +873,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	{
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 		if ($not_where && !$alias && preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name))
-			$s_alias = $f_name[1].get_heading($page);
+			$s_alias = htmlspecialchars($f_name[1].get_heading($page));
 		$passage = get_pg_passage($page,FALSE);
 		$title = $link_compact ? '' : " title=\"$s_page$passage\"";
 

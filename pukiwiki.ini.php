@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.30 2004/10/25 23:29:07 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.31 2004/11/01 14:13:18 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -228,7 +228,7 @@ $notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_
 /////////////////////////////////////////////////
 // 検索用Plainソース作成時に除外するプラグイン
 // カンマ区切りで、#をつけずに記述
-$noplain_plugin = "include,calendar2,calendar_viewer,bugtrack_list,tracker_list,ls2,ls,recent,popular,pcomment,contents,tenki,ref,exrate,xoopsblock,attachref,related";
+$noplain_plugin = "include,calendar2,calendar_viewer,bugtrack_list,tracker_list,ls2,ls,recent,popular,pcomment,contents,tenki,ref,exrate,xoopsblock,attachref,related,whatday,fortune";
 
 /////////////// ParaEdit //////////////////
 // ParaEdit 改行の代替文字列

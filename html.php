@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.44 2004/10/23 13:14:25 nao-pon Exp $
+// $Id: html.php,v 1.45 2004/11/01 14:13:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -35,6 +35,7 @@ function catbody($title,$page,$body)
 	
 	// 表示中のページ名
 	$_page = $vars["page"];
+	$_rpage = rawurlencode($_page);
 	
 	// ページが存在するか
 	$is_page = is_page($_page);
@@ -53,22 +54,23 @@ function catbody($title,$page,$body)
 	{
 		$link_page = "$script?".rawurlencode(strip_bracket($_page));
  	}
+	
 	$link_top = XOOPS_WIKI_URL."/";
- 	$link_add = "$script?cmd=add&amp;page=".rawurlencode($_page);
- 	$link_edit = "$script?cmd=edit&amp;page=".rawurlencode($_page);
- 	$link_diff = "$script?cmd=diff&amp;page=".rawurlencode($_page);
+ 	$link_add = "$script?cmd=add&amp;page=".$_rpage;
+ 	$link_edit = "$script?cmd=edit&amp;page=".$_rpage;
+ 	$link_diff = "$script?cmd=diff&amp;page=".$_rpage;
 	$link_list = "$script?cmd=list";
 	$link_filelist = "$script?cmd=filelist";
 	$link_search = "$script?cmd=search";
 	$link_whatsnew = "$script?$whatsnew";
- 	$link_backup = "$script?cmd=backup&amp;page=".rawurlencode($_page);
+ 	$link_backup = "$script?cmd=backup&amp;page=".$_rpage;
 	$link_help = "$script?cmd=help";
-	$link_source = "$script?plugin=source&amp;page=".rawurlencode($_page);
-	$link_new = "$script?plugin=newpage";
-	$link_copy = "$script?plugin=template&refer=".rawurlencode(strip_bracket($vars['page']));
-	$link_rename = "$script?plugin=rename&refer=".rawurlencode($vars['page']);
-	$link_attach = "$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page']);
-	$link_attachlist = "$script?plugin=attach&amp;pcmd=list&amp;page=".rawurlencode($vars['page']);
+	$link_source = "$script?plugin=source&amp;page=".$_rpage;
+	$link_new = "$script?plugin=newpage&amp;refer=".$_rpage;
+	$link_copy = "$script?plugin=template&refer=".$_rpage;
+	$link_rename = "$script?plugin=rename&refer=".$_rpage;
+	$link_attach = "$script?plugin=attach&amp;pcmd=upload&amp;page=".$_rpage;
+	$link_attachlist = "$script?plugin=attach&amp;pcmd=list&amp;page=".$_rpage;
 
 
 	if($is_read)

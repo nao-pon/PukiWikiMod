@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.40 2004/10/21 01:55:47 nao-pon Exp $
+// $Id: file.php,v 1.41 2004/11/01 14:13:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -1022,7 +1022,7 @@ function get_heading_init($page)
 			$reg[1] = preg_replace("/\s*\[#([A-Za-z][\w-]+)\]\s*/","",rtrim($reg[1]));
 			$reg[1] = preg_replace("/->$/","",rtrim($reg[1]));
 			$reg[1] = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$reg[1]);
-			$ret = trim(htmlspecialchars(strip_tags(make_link($reg[1],add_bracket($page)))));
+			$ret = trim(strip_tags(make_link($reg[1],add_bracket($page))));
 			//$ret = trim(strip_htmltag(make_link(htmlspecialchars($reg[1]),add_bracket($page))));
 			if ($ret)
 			{
@@ -1034,7 +1034,7 @@ function get_heading_init($page)
 	}
 	if (!$first_line) $first_line = str_replace("/","",substr($s_page,strrpos($s_page,"/")));
 	$first_line = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$first_line);
-	$ret = trim(htmlspecialchars(strip_tags(make_link($first_line,add_bracket($page)))));
+	$ret = trim(strip_tags(make_link($first_line,add_bracket($page))));
 	//$ret = trim(strip_htmltag(make_link(htmlspecialchars($first_line),add_bracket($page))));
 	$nowikiname = $_nowikiname;
 	return ($ret)? $ret : "- no title -";

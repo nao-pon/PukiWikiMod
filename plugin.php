@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: plugin.php,v 1.7 2004/09/12 14:05:29 nao-pon Exp $
+// $Id: plugin.php,v 1.8 2004/11/01 14:13:19 nao-pon Exp $
 //
 
 // プラグイン用に未定義の変数を設定
@@ -150,11 +150,11 @@ function do_plugin_inline($name,$args,$body)
 {
 	// "と"で囲んだパラメータは、,を含む事ができるように
 	// 制御文字へ置換
-	$args = str_replace("&quot;,&quot;","\x1d\x1c",$args);
-	$args = str_replace(",&quot;","\x1c",$args);
-	$args = str_replace("&quot;,","\x1d",$args);
-	$args = preg_replace("/^&quot;/","\x00\x1c",$args);
-	$args = preg_replace("/&quot;$/","\x1d\x00",$args);
+	$args = str_replace("\",\"","\x1d\x1c",$args);
+	$args = str_replace(",\"","\x1c",$args);
+	$args = str_replace("\",","\x1d",$args);
+	$args = preg_replace("/^\"/","\x00\x1c",$args);
+	$args = preg_replace("/\"$/","\x1d\x00",$args);
 	// , を \x08 に変換
 	$args = preg_replace("/(\x1c.*\x1d)/e","str_replace(',','\x08','$1')",$args);
 	// 制御文字を戻す

@@ -1,5 +1,5 @@
 <?php
-// $Id: navi.inc.php,v 1.4 2004/03/20 07:21:18 nao-pon Exp $
+// $Id: navi.inc.php,v 1.5 2004/11/01 14:13:19 nao-pon Exp $
 /*
 Last-Update:2002-12-05 rev.3
 
@@ -92,7 +92,7 @@ function plugin_navi_convert() {
 
 		$pos = strrpos($current, '/');
 		if ($pos > 0) {
-			$_navi_pages['up'] = make_link('[[Up&gt;'.substr($current, 0, $pos).']]');
+			$_navi_pages['up'] = make_link('[[Up>'.substr($current, 0, $pos).']]');
 		}
 		if (!$is_home) {
 			if ($prev != $home) {
@@ -100,15 +100,15 @@ function plugin_navi_convert() {
 			} else {
 				$_navi_pages['prev'] = make_link("$prev");
 			}
-			$_navi_pages['prev1'] = make_link("[[Prev&gt;$prev]]");
+			$_navi_pages['prev1'] = make_link("[[Prev>$prev]]");
 		}
 		if ($next != "") {
 			$_navi_pages['next'] = make_link("[[$next]]");
-			$_navi_pages['next1'] = make_link("[[Next&gt;$next]]");
+			$_navi_pages['next1'] = make_link("[[Next>$next]]");
 		}
 		if (!$is_home) {
 			$_navi_pages['home'] = make_link($home);
-			$_navi_pages['home1'] = make_link('[[Home&gt;'.strip_bracket($home).']]');
+			$_navi_pages['home1'] = make_link('[[Home>'.strip_bracket($home).']]');
 		}
 	}
 

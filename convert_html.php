@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.35 2004/10/11 14:03:30 nao-pon Exp $
+// $Id: convert_html.php,v 1.36 2004/11/01 14:13:18 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -52,9 +52,6 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 	
 	$result_last = $body->to_html($string);
 	
-	// インライン処理(セル中は、後で処理する)
-	if (!$is_intable) $result_last = $body->inline2($result_last);
-
 	if (!in_array("related",$no_plugins))
 	{
 		if ($is_intable)
@@ -256,7 +253,7 @@ class convert
 			{
 				if ($_pre === 0)
 				{
-					array_push($result, "<pre style=\"\">");
+					array_push($result, "<div style=\"\"><pre>");
 					$pre_id ++;
 				}
 				else
@@ -308,8 +305,7 @@ class convert
 						} else {
 							$_plugin = preg_replace("/^\#([^\(]+)$/ex","do_plugin_convert('$1','$2')",$line);
 						}
-						// 先頭に空白を入れることによりとりあえずpreの扱いと同様にinline2の働きを抑える、う〜ん、無茶。
-						array_push($result,"\t$_plugin");
+						array_push($result,"$_plugin");
 					} else {
 						array_push($result, htmlspecialchars($line));
 					}
@@ -327,28 +323,29 @@ class convert
 						$_fh_id = $_match[2];
 					}
 					
-					$out[2] = $str;
-					$str = inline($str);
+					$_c_text = trim(strip_tags(preg_replace("/<a[^>]+>\?<\/a>/","",make_line_rules(inline($str,TRUE)))));
 					
 					// <title>用
 					if (!$h_excerpt) 
 					{
-						$h_excerpt = trim(strip_htmltag(preg_replace("/<a[^>]+>\?<\/a>/","",make_link(preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$str)))));
+						$h_excerpt = $_c_text;
 					}
-					//$level = strlen($out[1]) + 1;
 					$level = strlen($out[1]);
+					
 
 					// fixed_heading
 					$_fh_text = ($fixed_heading_anchor && $_fh_id)? 
-						'<a class="anchor_super" id="'.$_fh_id.'" title="'.$_fh_id.'" href="#'.$_fh_id.'">'.$_symbol_anchor.'</a>'
+						"".'<a class="anchor_super" id="'.$_fh_id.'" title="'.$_fh_id.'" href="#'.$_fh_id.'">'.$_symbol_anchor.'</a>'.""
 						:'';
+						
+					$str = inline($str);
 					
 					///// ParaeEdit /////
 					$_tag = "<h$level><a name=\"content_{$content_id_local}_$content_count\"></a>{$str}{$_fh_text} {$top_link}</h$level>";
 					if ($content_id_local == 1 && !$_freeze && $anon_writable) {
 						$para_num = $content_count + 1;
 						$para_link = "$script?cmd=edit&amp;id=$para_num&amp;page=" . rawurlencode($vars[page]);
-						$para_link = "\x1c".sprintf(_EDIT_LINK, $para_link)."\x1d";
+						$para_link = "".sprintf(_EDIT_LINK, $para_link)."";
 						$_replaced = _PARAEDIT_LINK_POS;
 						eval(" \$_replaced = \"$_replaced\"; ");
 						$_tag = preg_replace("/(<h\d.*?>)(.*)(<\/h\d>)/", $_replaced, $_tag);
@@ -356,7 +353,6 @@ class convert
 					array_push($result, $_tag);
 					///// ParaeEdit /////
 					
-					$_c_text = strip_tags(make_line_rules(inline($out[2],TRUE)));
 					$_c_text = ($_c_text)? $_c_text : $content_id_local."_".$content_count;
 					$arycontents[] = str_repeat("-",$level)."<a href=\"#content_{$content_id_local}_$content_count\">".$_c_text."</a>\n";
 					$content_count++;
@@ -640,10 +636,8 @@ class convert
 								) {
 									$td_lines = ereg_replace("___td_br___","\n",$td);//this
 									
-									//array_push($result,"\t".convert_html($td_lines,true));
-									//セル中の印 "\x08"
 									$is_intable ++;
-									array_push($result,"\x08".convert_html($td_lines,$is_intable));
+									array_push($result,convert_html($td_lines,$is_intable));
 									$is_intable --;
 								} else {
 									array_push($result,ltrim(inline($td)));
@@ -674,9 +668,9 @@ class convert
 					// font-size:12px; line-height:1.5; padding(上下合わせて)10px; で最適化
 					$c_pre_line = ($c_pre_line-1) * (12 * 1.5) + 10 + 2 ;
 					if ($c_pre_line > 420) $c_pre_line = 420;
-					array_splice ($result, array_search ( "<pre style=\"\">", $result), 1, "<pre id=\"code_area{$content_id}_{$pre_id}\" style=\"height:".$c_pre_line."px;\" class=\"multi\">");
+					array_splice ($result, array_search ( "<div style=\"\"><pre>", $result), 1, "<div style=\"height:".$c_pre_line."px;\" class=\"multi\"><pre id=\"code_area{$content_id}_{$pre_id}\" class=\"multi\">");
 					$c_pre_line = 0;
-					$j_script = "<script type=\"text/javascript\"><!--\nh_pukiwiki_make_copy_button('code_area".$content_id."_".$pre_id."');\n--></script>";
+					$j_script = "</div><script type=\"text/javascript\"><!--\nh_pukiwiki_make_copy_button('code_area".$content_id."_".$pre_id."');\n--></script>";
 					$headform[$_cnt] = $_pre_headform;
 				}
 				$_result = array_pop($result);
@@ -803,44 +797,17 @@ class convert
 		return $result_last;
 
 	}
-	
-	// インライン要素のパース (リンク、関連一覧、見出し一覧)
-	function inline2($str)
-	{
-		global $WikiName,$BracketName,$InterWikiName,$vars,$related,$related_link,$script,$noattach,$noheader;
-		
-		// リンク処理
-		if (is_array($str))
-		{
-			$_str = array();
-			foreach ($str as $line)
-			{
-				//echo htmlspecialchars($line)."<hr />";
-				if (preg_match("/^\x08/",$line)) //テーブルセル中。配列にして再帰処理
-					$_str[] = join("\n",$this->inline2(split("\r",preg_replace("/^\x08/","",$line))));
-				elseif (!strip_tags($line) || preg_match("/^[ #\s\t]/",$line))
-					$_str[] = $line;
-				else
-					$_str[] = make_link($line);
-			}
-			$str = $_str;
-			unset($_str);
-		}
-		else
-			$str = make_link($str);
-		
-		return $str;
-	}
 }
 
 //////////////////////////////////////////////
 
-// インライン要素のパース (注釈)
+// インライン要素のパース
 function inline($line,$remove = FALSE)
 {
-	$line = htmlspecialchars($line);
-	//if ($remove) $line = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$line);
-	if ($remove) $line = make_link(preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$line));
+	if ($remove) $line = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$line);
+	
+	$line = make_link($line);
+	
 	return $line;
 }
 
