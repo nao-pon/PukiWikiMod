@@ -1,5 +1,5 @@
 <?php
-// $Id: xoopsblock.inc.php,v 1.2 2003/08/03 14:14:21 nao-pon Exp $
+// $Id: xoopsblock.inc.php,v 1.3 2004/01/12 13:13:47 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -19,7 +19,21 @@ function plugin_xoopsblock_init() {
 
 function plugin_xoopsblock_convert() {
 
-	list($tgt) = func_get_args();
+	list($tgt,$option1,$option2) = func_get_args();
+
+	$align = "left";
+	$around = false;
+	if (preg_match("/^(left|center|right)$/i",$option2,$arg))
+		$align = $arg[1];
+	if (preg_match("/^(left|center|right)$/i",$option1,$arg))
+		$align = $arg[1];
+	if (preg_match("/^(around|float)$/i",$option2))
+		$around = true;
+	if (preg_match("/^(around|float)$/i",$option1))
+		$around = true;
+		
+	$style = " style='float:{$align};'";
+	$clear = ($around)? "" : "<div style='clear:both;'></div>";
 
 	global $xoopsUser;
 	$xoopsblock = new XoopsBlock();
@@ -28,14 +42,17 @@ function plugin_xoopsblock_convert() {
 	$side = null;
 	
 	if ( $xoopsUser ) {
-		$arr = $xoopsblock->getAllBlocksByGroup($xoopsUser->groups(), true, $side, XOOPS_BLOCK_VISIBLE);
+		//$arr = $xoopsblock->getAllBlocksByGroup($xoopsUser->groups(), true, $side, XOOPS_BLOCK_VISIBLE);
+		$arr = $xoopsblock->getAllBlocksByGroup($xoopsUser->groups());
 	} else {
 		if (method_exists($xoopsgroup,"getByType")){
 			//XOOPS 1.3
-			$arr = $xoopsblock->getAllBlocksByGroup($xoopsgroup->getByType("Anonymous"), true, $side, XOOPS_BLOCK_VISIBLE);
+			//$arr = $xoopsblock->getAllBlocksByGroup($xoopsgroup->getByType("Anonymous"), true, $side, XOOPS_BLOCK_VISIBLE);
+			$arr = $xoopsblock->getAllBlocksByGroup($xoopsgroup->getByType("Anonymous"));
 		} else {
 			//XOOPS 2
-			$arr = $xoopsblock->getAllBlocksByGroup(plugin_xoopsblock_getByType("Anonymous"), true, $side, XOOPS_BLOCK_VISIBLE);
+			//$arr = $xoopsblock->getAllBlocksByGroup(plugin_xoopsblock_getByType("Anonymous"), true, $side, XOOPS_BLOCK_VISIBLE);
+			$arr = $xoopsblock->getAllBlocksByGroup(plugin_xoopsblock_getByType("Anonymous"));
 		}
 	}
 	
@@ -61,7 +78,7 @@ function plugin_xoopsblock_convert() {
 	}
 	if ($tgt == "?") $ret = "<ul>$ret</ul>";
 	unset($xoopsblock,$xoopsgroup);
-	return "<div>".$ret."</div>";
+	return "<div{$style}>{$ret}</div>{$clear}";
 }
 
 function plugin_xoopsblock_getByType($type=""){
