@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.23 2004/09/23 07:10:17 nao-pon Exp $
+// $Id: make_link.php,v 1.24 2004/09/23 14:04:10 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -802,15 +802,15 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 		$passage = get_pg_passage($page,FALSE);
 		$title = $link_compact ? '' : " title=\"$s_page$passage\"";
 
-		if ($vars['page'] !== $page)
-		{
+		if ($vars['page'] != $page || strstr($page,$alias) === false || $vars['cmd'] != "read")
+		{ // 表示中のページではない 又は ページ名に表示文字列が含まれない 又は 閲覧モード以外
 			if ($use_static_url)
 				$retval = "<a href=\"".XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html{$anchor}\"$title>$s_alias</a>";
 			else
 				$retval = "<a href=\"$script?$r_page$anchor\"$title>$s_alias</a>";
 		}
 		else
-			$retval = "<b>$s_alias</b>";
+			$retval = "<span class=\"wiki_this_page\">$s_alias</span>";
 	}
 	else
 	{
