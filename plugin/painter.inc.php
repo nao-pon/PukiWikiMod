@@ -44,6 +44,7 @@ function plugin_painter_convert()
 	$picw = min($picw,WIKI_PAINTER_MAX_WIDTH_PLUGIN);
 	$pich = min($pich,WIKI_PAINTER_MAX_HEIGHT_PLUGIN);
 	
+	$template_tag = '';
 	$templates = array();
 	if ($template)
 	{
@@ -65,19 +66,20 @@ function plugin_painter_convert()
 			if (is_file($file))
 				$templates[] = $_name;
 		}
-		$template_tag = '';
 		if ($templates)
 		{
-			$template_tag = 'テンプレート: <select name="image_canvas">';
+			$template_tag = 'テンプレート:&nbsp;<select name="image_canvas">';
 			$template_tag .= '<option val="">使用しない</option>';
 			foreach($templates as $val)
 			{
 				$template_tag .= '<option val="'.$val.'">'.$val.'</option>';
 			}
-			$template_tag .= '</select>(しぃペインター & Pro のみ)<br />';
+			$template_tag .= '</select>';
 			$template_tag .= '<input type="hidden" name="fitimage" value="ture" />';
 		}
 	}
+	$template_tag .= '&nbsp;<input type=checkbox value="true" name="anime" />動画記録&nbsp;(しぃペインター & Pro のみ)<br />';
+	
 	$def_select = array('','','');
 	switch ($defmode)
 	{
@@ -102,7 +104,6 @@ function plugin_painter_convert()
 横<input type=text name=picw value='.$picw.' size=3>×縦<input type=text name=pich value='.$pich.' size=3>
 最大('.WIKI_PAINTER_MAX_WIDTH_PLUGIN.' x '.WIKI_PAINTER_MAX_HEIGHT_PLUGIN.')
 <input type=submit value="お絵かきする" />
-<input type=checkbox value="true" name="anime" />動画記録
 <input type=hidden name="pmode" value="paint" />
 <input type=hidden name="plugin" value="painter" />
 <input type=hidden name="refer" value="'.$vars['page'].'" />
@@ -128,46 +129,60 @@ function plugin_painter_write()
 
 	$page = $post['page'] = $vars['page'] = $post['refer'] = $vars['refer'];
 	
-	//ファイル名置換
-	if ($filename)
-		$attachname = preg_replace('/^[^\.]+/',$filename,$file);
-	else
-		$attachname = $file;
-	
-	//すでに存在した場合、 ファイル名に'_0','_1',...を付けて回避(姑息)
-	$count = '_0';
-	while (file_exists(PAINT_UPLOAD_DIR.encode($vars['refer']).'_'.encode($attachname)))
+	if (!empty($post['delete']))
 	{
-		$attachname = preg_replace('/^[^\.]+/',$filename.$count++,$file);
-	}
-	// spch ファイル
-	$spchname = preg_replace('/[^\.]+$/','spch',$attachname);
-	
-	if (!exist_plugin('attach') or !function_exists('attach_upload'))
-	{
-		return array('msg'=>'attach.inc.php not found or not correct version.');
-	}
-	
-	$retval = do_upload($page,$attachname,WIKI_PAINTER_TEMP_DIR.$file);
-	if ($retval['result'] == TRUE)
-	{
-		
+		// 削除処理
 		$tgtfile = preg_replace("/[^\.]+$/","",$file);
-		if (file_exists(WIKI_PAINTER_TEMP_DIR.$tgtfile."spch"))
-		{
-			do_upload($page,$spchname,WIKI_PAINTER_TEMP_DIR.$tgtfile."spch");
-			$vars['spch'] = $spchname;
-		}
+		@unlink(WIKI_PAINTER_TEMP_DIR.$file);
 		@unlink(WIKI_PAINTER_TEMP_DIR.$tgtfile."dat");
-		
-		clearstatcache();
-		if ($upload)
-			$retval = array("msg" => "お絵かきデータをアップロードしました。", "body" => "");
-		else
-			$retval = paint_insert_ref($attachname);
+		@unlink(WIKI_PAINTER_TEMP_DIR.$tgtfile."spch");
+		$retval = array("msg" => "お絵かきデータを削除しました。", "body" => "");
 	}
 	else
-		$retval['msg'] = 'このデータ( '.htmlspecialchars($file).' )の処理は完了しています。';
+	{
+		// 登録処理
+		
+		// ファイル名置換
+		if ($filename)
+			$attachname = preg_replace('/^[^\.]+/',$filename,$file);
+		else
+			$attachname = $file;
+		
+		//すでに存在した場合、 ファイル名に'_0','_1',...を付けて回避(姑息)
+		$count = '_0';
+		while (file_exists(PAINT_UPLOAD_DIR.encode($vars['refer']).'_'.encode($attachname)))
+		{
+			$attachname = preg_replace('/^[^\.]+/',$filename.$count++,$file);
+		}
+		// spch ファイル
+		$spchname = preg_replace('/[^\.]+$/','spch',$attachname);
+		
+		if (!exist_plugin('attach') or !function_exists('attach_upload'))
+		{
+			return array('msg'=>'attach.inc.php not found or not correct version.');
+		}
+		
+		$retval = do_upload($page,$attachname,WIKI_PAINTER_TEMP_DIR.$file);
+		if ($retval['result'] == TRUE)
+		{
+			
+			$tgtfile = preg_replace("/[^\.]+$/","",$file);
+			if (file_exists(WIKI_PAINTER_TEMP_DIR.$tgtfile."spch"))
+			{
+				do_upload($page,$spchname,WIKI_PAINTER_TEMP_DIR.$tgtfile."spch");
+				$vars['spch'] = $spchname;
+			}
+			@unlink(WIKI_PAINTER_TEMP_DIR.$tgtfile."dat");
+			
+			clearstatcache();
+			if ($upload)
+				$retval = array("msg" => "お絵かきデータをアップロードしました。", "body" => "");
+			else
+				$retval = paint_insert_ref($attachname);
+		}
+		else
+			$retval['msg'] = 'このデータ( '.htmlspecialchars($file).' )の処理は完了しています。';
+	}
 	
 	if (!plugin_painter_getfiles(encode($vars['refer'])))
 		return $retval;
@@ -179,7 +194,7 @@ function plugin_painter_write()
 			$pmode = "save";
 		
 		$returl = $script."?plugin=painter&amp;pmode=".$pmode."&amp;refer=".encode($vars['refer']);
-		redirect_header($returl,1,"次のアップロード済みファイルの処理をします。");
+		redirect_header($returl,1,$retval['msg']."<br /><br />次のアップロード済みファイルの処理をします。");
 		exit();
 	}
 }
@@ -199,15 +214,31 @@ function plugin_painter_save($upload=false)
 		redirect_header($url,1,"アップロード済みファイルはありません。");
 		exit();
 	}
-	return plugin_painter_add($files[0],$upload);
+	return plugin_painter_add($files,$upload);
 }
 
-function plugin_painter_add($file,$upload=false)
+function plugin_painter_add($files,$upload=false)
 {
 	global $script,$vars,$X_uname;
-	$file = $file['file'];
+	
+	$p_num = (empty($vars['p_num']))? 1 : (int)$vars['p_num'];
+	$p_count = count($files);
+	if ($p_count < $p_num) $p_num = $p_count;
+	//$file = $files[$p_num-1];
+	$file = $files[$p_num-1]['file'];
 	$refer = $vars['refer'];
-	//$vars['refer'] = $refer;
+	
+	$i = 0;
+	foreach($files as $temp)
+	{
+		$i++;
+		if ($i == $p_num)
+			$links[] = "<strong>[No.".$i."] <small>".date('n/j H:i',filemtime(WIKI_PAINTER_TEMP_DIR.$temp['file']))."</small></strong>";
+		else
+			$links[] = "<a href=\"".$script."?plugin=painter&amp;pmode=save&amp;refer=".encode($refer)."&amp;p_num=".$i."\">[No.".$i."] <small>".date('n/j H:i',filemtime(WIKI_PAINTER_TEMP_DIR.$temp['file']))."</small></a>";
+	}
+	
+	$navi = "アップロード済みファイル(".count($files)."枚): ".join(" | ",$links)."<hr />";
 	$img = '<img src="'.WIKI_PAINTER_TEMP_DIR.$file.'" /><hr />';
 	$fontset_js_tag = fontset_js_tag();
 	if ($upload)
@@ -231,10 +262,12 @@ function plugin_painter_add($file,$upload=false)
 <input type="hidden" name="refer" value="$refer" />
 ファイル名: <input type="text" name="filename" size="20" />(省略可)<br />
 $exttag
-<input type="submit" value="送信">
+<input type="submit" name="regist" value=" 登 録 ">
+&nbsp;&nbsp;&nbsp;
+<input type="submit" name="delete" value=" 削 除 " style="color:red;">
 </form>
 EOD;
-	$body = $img.$body;
+	$body = $navi.$img.$body;
 	return array(
 		'msg'  => '$1へお絵かきデータを登録',
 		'body' => $body
