@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.36 2004/10/05 12:46:48 nao-pon Exp $
+// $Id: init.php,v 1.37 2004/10/20 12:30:12 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -363,6 +363,9 @@ $ins_time = date($time_format,UTIME);
 $ins_week = "(".$weeklabels[date("w",UTIME)].")";
 
 $now = "$ins_date $ins_week $ins_time";
+
+// ページ名エイリアス取得
+$pagename_aliases =get_pagename_aliases();
 
 // 共通リンクディレクトリ展開
 $wiki_common_dirs = preg_split("/\s+/",trim($wiki_common_dirs));

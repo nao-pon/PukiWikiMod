@@ -1,12 +1,11 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.38 2004/10/18 13:42:04 nao-pon Exp $
+// $Id: file.php,v 1.39 2004/10/20 12:30:12 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
 function get_source($page,$row=0)
 {	
-	global $WikiName;
 	$page = add_bracket($page);
 	if(page_exists($page))
 	{
@@ -194,6 +193,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="",$agids="",$freeze="",$unvisible="")
 {
 	global $post,$update_exec,$autolink,$wiki_common_dirs,$X_admin,$X_uid;
+	global $pagename_aliases;
 	
 	if (is_null($notimestamp)) $notimestamp=$post['notimestamp'];
 	
@@ -250,6 +250,13 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			$X_admin =0;
 			$X_uid =0;
 			
+			if ($page == "[[:config/aliases]]")
+			{
+				// ページ名エイリアス(再読み込みする)
+				$pagename_aliases =get_pagename_aliases();
+			}
+			$aliases = array_keys($pagename_aliases);
+			
 			//共通リンクディレクトリ
 			$c_pages = array();
 			foreach($wiki_common_dirs as $c_dir)
@@ -259,7 +266,7 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 					$c_pages[] = add_bracket(str_replace($c_dir,"",strip_bracket($c_page)));
 				}
 			}
-			$c_pages = array_unique(array_merge(get_existpages(),$c_pages));
+			$c_pages = array_unique(array_merge(get_existpages(),$c_pages,$aliases));
 			
 			list($pattern, $pattern_a, $forceignorelist) = get_autolink_pattern($c_pages);
 			
@@ -1109,4 +1116,19 @@ function get_exif_data($file){
 	}
 	return $ret;
 }
+
+//ページ名エイリアスの配列を得る
+function get_pagename_aliases()
+{
+	$_aliases = array();
+	foreach(get_source(':config/aliases') as $_line)
+	{
+		if (preg_match("/\[(.+):([^:]+)\]/",$_line,$_match) && is_page($_match[2]))
+		{
+			$_aliases[$_match[1]] = $_match[2];
+		}
+	}
+	return $_aliases;
+}
+
 ?>

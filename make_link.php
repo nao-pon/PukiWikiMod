@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.26 2004/09/29 04:12:25 nao-pon Exp $
+// $Id: make_link.php,v 1.27 2004/10/20 12:30:12 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -533,7 +533,7 @@ EOD;
 	}
 	function set($arr,$page)
 	{
-		global $WikiName;
+		global $WikiName,$pagename_aliases;
 		
 		list(,$alias,,$name,$this->anchor) = $this->splice($arr);
 		
@@ -543,11 +543,20 @@ EOD;
 		}
 		if ($name != '' and preg_match("/^$WikiName$/",$name))
 		{
-			// 共通リンクディレクトリを探す
+			// ページが存在しない場合
 			if (!is_page($name))
 			{
-				$_name = get_real_pagename($name);
-				if ($_name) $name = $_name;
+				// ページ名エイリアスを探す
+				if (array_key_exists($name,$pagename_aliases))
+				{
+					$name = $pagename_aliases[$name];
+				}
+				else
+				{
+					// 共通リンクディレクトリを探す
+					$_name = get_real_pagename($name);
+					if ($_name) $name = $_name;
+				}
 			}
 			
 			return parent::setParam($page,$name,'','pagename',$alias);
@@ -571,11 +580,20 @@ EOD;
 				return FALSE;
 			}
 			
-			// 共通リンクディレクトリを探す
+			// ページが存在しない場合
 			if (!is_page($name))
 			{
-				$_name = get_real_pagename($name);
-				if ($_name) $name = $_name;
+				// ページ名エイリアスを探す
+				if (array_key_exists($name,$pagename_aliases))
+				{
+					$name = $pagename_aliases[$name];
+				}
+				else
+				{
+					// 共通リンクディレクトリを探す
+					$_name = get_real_pagename($name);
+					if ($_name) $name = $_name;
+				}
 			}
 		}
 		return parent::setParam($page,$name,'','pagename',$alias);
@@ -584,7 +602,7 @@ EOD;
 	{
 		//プラグインで付加された<a href>タグを取り除く
 		$this->alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
-		//エリアスがページ名ならパン屑リスト指定
+		//エイリアスがページ名ならパン屑リスト指定
 		//if ($this->name == $this->alias) $this->alias = "#/#";
 		if ($this->name == get_fullname($this->alias,$this->page)) $this->alias = "#/#";
 		return make_pagelink(
@@ -617,14 +635,24 @@ class Link_wikiname extends Link
 	}
 	function set($arr,$page)
 	{
+		global $pagename_aliases;
 		list($name) = $this->splice($arr);
 		$alias = $name;
 		
-		// 共通リンクディレクトリを探す
+		// ページが存在しない場合
 		if (!is_page($name))
 		{
-			$_name = get_real_pagename($name);
-			if ($_name) $name = $_name;
+			// ページ名エイリアスを探す
+			if (array_key_exists($name,$pagename_aliases))
+			{
+				$name = $pagename_aliases[$name];
+			}
+			else
+			{
+				// 共通リンクディレクトリを探す
+				$_name = get_real_pagename($name);
+				if ($_name) $name = $_name;
+			}
 		}
 		
 		return parent::setParam($page,$name,'','pagename',$alias);
@@ -697,7 +725,7 @@ class Link_autolink extends Link
 	}
 	function set($arr,$page)
 	{
-		global $WikiName;
+		global $WikiName,$pagename_aliases;
 		
 		list($name) = $this->splice($arr);
 		$alias = $name;
@@ -705,11 +733,20 @@ class Link_autolink extends Link
 		if (in_array($name,$this->forceignorepages))
 			return FALSE;
 		
-		// 共通リンクディレクトリを探す
+		// ページが存在しない場合
 		if (!is_page($name))
 		{
-			if (!$name = get_real_pagename($name))
-				return FALSE;
+			// ページ名エイリアスを探す
+			if (array_key_exists($name,$pagename_aliases))
+			{
+				$name = $pagename_aliases[$name];
+			}
+			else
+			{
+				// 共通リンクディレクトリを探す
+				if (!$name = get_real_pagename($name))
+					return FALSE;
+			}
 		}
 		
 		return parent::setParam($page,$name,'','pagename',$alias);
