@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.25 2004/09/23 14:27:57 nao-pon Exp $
+// $Id: make_link.php,v 1.26 2004/09/29 04:12:25 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -738,16 +738,16 @@ class Link_autolink_a extends Link_autolink
 }
 
 // ページ名のリンクを作成
-function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$get_heading=TRUE)
+function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 {
 	global $script,$vars,$show_title,$show_passage,$link_compact,$related;
-	global $_symbol_noexists,$use_static_url,$vars;
+	global $_symbol_noexists,$use_static_url,$_title_search;
 	
 	static $linktag = array();
 	
 	$page = add_bracket($page);
 	
-	if (isset($linktag[$page.$alias])) return $linktag[$page.$alias];
+	if ($not_where && isset($linktag[$page.$alias])) return $linktag[$page.$alias];
 	
 	$s_page = htmlspecialchars(strip_bracket($page));
 	$s_alias = ($alias == '') ? $s_page : $alias;
@@ -779,14 +779,14 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$get_heading=TRUE
 		foreach ($page_names as $page_name){
 			$access_name .= $page_name."/";
 			$name = substr($access_name,0,strlen($access_name)-1);
-			if ($get_heading && preg_match("/^[0-9\-]+$/",$page_name))
+			if ($not_where && preg_match("/^[0-9\-]+$/",$page_name))
 			{
 				$heading = get_heading($page);
 				if ($heading) $page_name = $heading;
 				// 無限ループ防止　姑息だけど
 				$page_name = preg_replace("/^(#.*#)$/"," $1",$page_name);
 			}
-			$link = make_pagelink($name,$page_name);
+			$link = make_pagelink($name,$page_name,'','',$not_where);
 			if ($i)
 				$retval .= $sep.$link;
 			else
@@ -797,7 +797,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$get_heading=TRUE
 	elseif (is_page($page))
 	{
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-		if ($get_heading && !$alias && preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name))
+		if ($not_where && !$alias && preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name))
 			$s_alias = $f_name[1].get_heading($page);
 		$passage = get_pg_passage($page,FALSE);
 		$title = $link_compact ? '' : " title=\"$s_page$passage\"";
@@ -810,7 +810,12 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$get_heading=TRUE
 				$retval = "<a href=\"$script?$r_page$anchor\"$title>$s_alias</a>";
 		}
 		else
-			$retval = "<span class=\"wiki_this_page\">$s_alias</span>";
+		{
+			if ($not_where)
+				$retval = "<span class=\"wiki_this_page\">$s_alias</span>";
+			else
+				$retval = "<a href=\"$script?cmd=search&amp;word=".rawurlencode(str_replace(array('&amp;','&lt;','&gt;'),array('&','<','>'),$s_alias))."\" title=\"$_title_search:$s_alias\"><span class=\"wiki_this_page\">$s_alias</span></a>";
+		}
 	}
 	else
 	{
