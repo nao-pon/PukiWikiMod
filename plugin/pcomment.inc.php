@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.16 2004/08/04 14:05:04 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.17 2004/08/19 04:02:33 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -165,22 +165,13 @@ function plugin_pcomment_convert() {
 	if (is_page($_page)) $vars['page'] = $_page;
 	list($comments, $digest) = pcmt_get_comments($data,$count,$dir,$params['reply']);
 
-	// xoops //
-	global $xoopsUser;
-	if ($xoopsUser){
-		$x_name = $xoopsUser->uname();
-	} else {
-		$x_name = "";
-	}
-	// ---- //
-
 	//フォームを表示
 	if($params['noname']) {
 		$title = $_pcmt_msg_comment;
 		$name = '';
 	} else {
 		$title = $_pcmt_btn_name;
-		$name = '<input type="text" name="name" size="'.PCMT_COLS_NAME.'" value="'.$x_name.'" />';
+		$name = '<input type="text" name="name" size="'.PCMT_COLS_NAME.'" value="'.WIKI_NAME_DEF.'" />';
 	}
 
 	$radio = $params['reply'] ? '<input class="pcmt" type="radio" name="reply" value="0" checked />' : '';
@@ -243,6 +234,10 @@ function pcmt_insert($page) {
 	
 	//コメントフォーマットを適用
 	$msg = sprintf(PCMT_FORMAT_MSG, rtrim($post['msg']));
+	
+	// 名前をクッキーに保存
+	setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
+	
 	$name = ($post['name'] == '') ? $no_name : $post['name'];
 	if (WIKI_USER_DIR)
 		make_user_link($name);
@@ -261,7 +256,13 @@ function pcmt_insert($page) {
 	
 	$msg = rtrim($msg);
 	//areaedit指定
-	if (PCMT_AREAEDIT_ENABLE || !empty($post['areaedit'])) $msg = "&areaedit(uid:".$X_uid.PCMT_AREAEDIT_OPTION."){".$msg."};";
+	if (PCMT_AREAEDIT_ENABLE || !empty($post['areaedit']))
+	{
+		if ($X_uid)
+			$msg = "&areaedit(uid:".$X_uid.PCMT_AREAEDIT_OPTION."){".$msg."};";
+		else
+			$msg = "&areaedit(ucd:".PUKIWIKI_UCD.PCMT_AREAEDIT_OPTION."){".$msg."};";
+	}
 	
 	if (!is_page($page)) {
 		//$new = PCMT_CATEGORY.' '.htmlspecialchars($post['refer'])."\n\n-$msg\n";
@@ -464,7 +465,7 @@ function pcmt_get_comments($data,$count,$dir,$reply) {
 	while (count($data) > 0 and (substr($data[0],0,1) != '-')) { array_shift($data); }
 	
 	//areaedit用スタートマーカーセット
-	//echo $data[0];
+	//echo $data[0]."<br />";
 	$start = md5(rtrim(preg_replace("/\x01\d+\x02/","",$data[0])));
 
 	//html変換

@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.12 2004/08/04 13:58:55 nao-pon Exp $
+// $Id: comment.inc.php,v 1.13 2004/08/19 04:02:33 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -74,6 +74,10 @@ function plugin_comment_action()
 			}
 			
 			$_msg  = str_replace('$msg', $post['msg'], $msg_format);
+			
+			// 名前をクッキーに保存
+			setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
+			
 			$_name = ($post['name'] == '')? $no_name : $post['name'];
 
 			if (WIKI_USER_DIR)
@@ -90,7 +94,14 @@ function plugin_comment_action()
 			//表中でも使用できるようにしたので|をエスケープ nao-pon
 			$comment = str_replace('|','&#124;',$comment);
 			//areaedit指定
-			if (PUKIWIKI_CMT_AREAEDIT_ENABLE || !empty($post['areaedit'])) $comment = "&areaedit(uid:".$X_uid.PUKIWIKI_CMT_OPTION."){".$comment."};";
+			if (PUKIWIKI_CMT_AREAEDIT_ENABLE || !empty($post['areaedit']))
+			{
+				//$comment = "&areaedit(uid:".$X_uid.PUKIWIKI_CMT_OPTION."){".$comment."};";
+				if ($X_uid)
+					$comment = "&areaedit(uid:".$X_uid.PUKIWIKI_CMT_OPTION."){".$comment."};";
+				else
+					$comment = "&areaedit(ucd:".PUKIWIKI_UCD.PUKIWIKI_CMT_OPTION."){".$comment."};";
+			}
 			$comment = $head.$comment;
 		}
 
@@ -166,11 +177,9 @@ function plugin_comment_convert()
 	global $_btn_comment,$_btn_name,$_msg_comment,$vars,$comment_ins;
 	
 	// xoops //
-	global $xoopsUser;
-	if ($xoopsUser){
-		$name = $xoopsUser->uname();
-	}
+	//global $X_uid,$X_uname;
 	// ---- //
+	
 	$options = func_get_args();
 	//ボタンテキスト指定オプション
 	$btn_text = $_btn_comment;
@@ -189,8 +198,8 @@ function plugin_comment_convert()
 		$areaedit = "<input type=\"hidden\" name=\"areaedit\" value=\"1\" />\n";
 	}
 	
-
-	$nametags = "$_btn_name<input type=\"text\" name=\"name\" size=\"$name_cols\" value=\"$name\" />\n";
+	//$name = ($X_uid)? $X_uname : '_gEsTnAmE_';
+	$nametags = "$_btn_name<input type=\"text\" name=\"name\" size=\"$name_cols\" value=\"".WIKI_NAME_DEF."\" />\n";
 	if(is_array($options) && in_array("noname",$options)) {
 		$nametags = $_msg_comment;
 	}

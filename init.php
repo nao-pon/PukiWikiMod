@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.27 2004/07/31 06:48:04 nao-pon Exp $
+// $Id: init.php,v 1.28 2004/08/19 04:02:58 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -201,4 +201,7 @@ define('WIKI_THEME_CSS',(file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_se
 	XOOPS_THEME_URL.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'
 	:
 	"");
+
+// 名前欄の暫定値(コンバート時にユーザー名に置換される)
+define('WIKI_NAME_DEF','_gEsTnAmE_');
 ?>

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.14 2004/08/04 13:58:55 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.15 2004/08/19 04:02:32 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -67,6 +67,9 @@ function plugin_tracker_action()
 {
 	global $script,$post,$vars,$now,$X_uid,$X_uname,$_tracker_messages;
 	
+	// 名前をクッキーに保存
+	setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
+			
 	// ゲストは承認必要？
 	$guestauth = (!empty($post['guestauth']))? 1:0;
 	$config_name = array_key_exists('_config',$post) ? $post['_config'] : '';
@@ -310,7 +313,7 @@ class Tracker_field_text extends Tracker_field
 		$s_name = htmlspecialchars($this->name);
 		$s_size = htmlspecialchars($this->values[0]);
 		$s_value = htmlspecialchars($this->default_value);
-		if ($s_value == '$X_uname') $s_value = $X_uname;
+		if ($s_value == '$X_uname') $s_value = WIKI_NAME_DEF;
 		return "<input type=\"text\" name=\"$s_name\" size=\"$s_size\" value=\"$s_value\" />";
 	}
 }
