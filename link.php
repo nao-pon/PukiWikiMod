@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: link.php,v 1.6 2004/07/31 06:48:04 nao-pon Exp $
+// $Id: link.php,v 1.7 2004/09/07 12:14:46 nao-pon Exp $
 // ORG: link.php,v 1.6 2003/07/29 09:09:20 arino Exp $
 //
 
@@ -37,15 +37,15 @@ function links_get_related_db($page)
 	return $links;
 }
 //ページの関連を更新する
-function links_update($page,$time=null)
+function links_update($page)
 {
-	if (is_null($time)) $time = is_page($page,TRUE) ? get_filetime($page) : 0;
-	
 	$page = strip_bracket($page);
+	
+	$time = is_page($page,TRUE) ? get_filetime($page) : 0;
 	
 	$rel_old = array();
 	$rel_file = CACHE_DIR.encode($page).'.rel';
-	if (file_exists($rel_file))
+	if ($rel_file_exist = file_exists($rel_file))
 	{
 		$lines = file($rel_file);
 		if (array_key_exists(0,$lines))
@@ -66,11 +66,15 @@ function links_update($page,$time=null)
 		if (is_a($_obj,'Link_autolink')) // 行儀が悪い
 		{
 			if (is_page($_obj->name))
+			{
 				$rel_auto[] = $_obj->name;
+				//echo "Page:".$page." - Auto:".$_obj->name."<br />";
+			}
 		}
 		else
 		{
 			$rel_new[] = $_obj->name;
+			//echo "Page:".$page." - Link:".$_obj->name."<br />";
 		}
 	}
 	$rel_new = array_unique($rel_new);
@@ -80,12 +84,15 @@ function links_update($page,$time=null)
 	$rel_new = array_merge($rel_new,$rel_auto);
 	
 	// .rel:$pageが参照しているページの一覧
-	if (count($rel_new))
+	if ($time) // ページが存在している
 	{
-		$fp = fopen($rel_file,'wb')
-			or die_message('cannot write '.htmlspecialchars($rel_file));
-		fputs($fp,join("\t",$rel_new));
-		fclose($fp);
+		if (count($rel_new))
+		{
+			$fp = fopen($rel_file,'wb')
+				or die_message('cannot write '.htmlspecialchars($rel_file));
+			fputs($fp,join("\t",$rel_new));
+			fclose($fp);
+		}
 	}
 	// .ref:$_pageを参照しているページの一覧
 	links_add($page,array_diff($rel_new,$rel_old),$rel_auto);
@@ -93,7 +100,7 @@ function links_update($page,$time=null)
 	
 	global $WikiName,$autolink,$nowikiname,$search_non_list,$wiki_common_dirs;
 	// $pageが新規作成されたページで、AutoLinkの対象となり得る場合
-	if (!$time and $autolink
+	if ($time and !$rel_file_exist and $autolink
 		and (preg_match("/^$WikiName$/",$page) ? $nowikiname : strlen($page) >= $autolink))
 	{
 		// $pageを参照していそうなページを一斉更新する(おい)
@@ -119,8 +126,7 @@ function links_update($page,$time=null)
 		{
 			if ($_page != $page)
 			{
-				//echo "$_page:$page<br>";
-				links_update($_page,null);
+				links_update($_page);
 			}
 		}
 	}
@@ -273,9 +279,10 @@ function links_delete($page,$del)
 			}
 		}
 		unlink($ref_file);
-		if ($is_page and !$all_auto and $ref != '')
+		//if ($is_page and !$all_auto and $ref != '')
+		if ($is_page and $ref != '')
 		{
-			$fp = fopen($ref_file,'w')
+			$fp = fopen($ref_file,'wb')
 				or die_message('cannot write '.htmlspecialchars($ref_file));
 			fputs($fp,$ref);
 			fclose($fp);
