@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.5 2004/10/09 06:59:48 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.6 2004/10/09 08:16:41 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -373,7 +373,10 @@ echo '/postdata_old=',join('/',$postdata_old);
 	}
 
 	if ( array_key_exists('areaedit_msg', $vars) ){
-		$targetdata = str_replace("\n", '&br;', str_replace("\r",'',$vars['areaedit_msg']));
+		// 改行有効
+		$targetdata = $vars['areaedit_msg'];
+		if (!empty($vars['enter_enable'])) $targetdata = str_replace("\n", '&br;', $targetdata);
+		$targetdata = str_replace(array("\r","\n"),'',$targetdata);
 	}
 	if (array_key_exists('write',$vars)) {
 		$nowdata = $headdata . '{' . $targetdata . '}' . $taildata;
@@ -400,6 +403,9 @@ function plugin_areaedit_action_block()
 	
 	$page    = $vars['page'];
 	$collect = array_key_exists('refer', $vars) ? $vars['refer'] : '';
+	
+	// 改行有効
+	if (!empty($vars['enter_enable'])) $vars['areaedit_msg'] = auto_br($vars['areaedit_msg']);
 	
 	$headdata = $targetdata = $taildata = $para = $tailpara = '';
 	if (  ! array_key_exists('preview',$vars) ) {
@@ -620,8 +626,8 @@ function plugin_areaedit_preview($refer,$targetdata,$headdata,$taildata,$inline_
 
 	if ($postdata_input != '')
 	{
-		$postdata_input = make_str_rules($postdata_input);
-		$postdata_input = explode("\n",$postdata_input);
+		//$postdata_input = make_str_rules($postdata_input);
+		//$postdata_input = explode("\n",$postdata_input);
 		$postdata_input = drop_submit(convert_html($postdata_input));
 		
 		$body .= <<<EOD
@@ -710,8 +716,8 @@ function plugin_areaedit_write($refer, $postdata_input, $postdata)
 // 編集フォームの表示
 function areaedit_form($page, $postdata_input, $headdata, $taildata, $digest = 0)
 {
-	global $script,$vars,$rows,$cols,$hr,$function_freeze;
-	global $_btn_preview,$_btn_repreview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp;
+	global $script,$vars,$rows,$cols,$hr,$function_freeze,$X_admin,$X_uid;
+	global $_btn_enter_enable,$_btn_preview,$_btn_repreview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp;
 	
 	if ($digest == 0) {
 		$digest = md5(join('',get_source($page)));
@@ -729,6 +735,14 @@ function areaedit_form($page, $postdata_input, $headdata, $taildata, $digest = 0
 	$b_preview = array_key_exists('preview',$vars); // プレビュー中TRUE
 	$btn_preview = $b_preview ? $_btn_repreview : $_btn_preview;
 	$fontset_js_tag = fontset_js_tag();
+	$timestamp_tag = ($X_admin || (($X_uid == get_pg_auther($vars['page'])) && $X_uid))?
+		'<input type="checkbox" name="notimestamp" value="true"'.$checked_time.' /><span style="small">'.$_btn_notchangetimestamp.'</span>'
+		:'';
+	if ($b_preview)
+		$enter_enable = (!empty($vars['enter_enable']))? " checked=\"true\"" : "";
+	else
+		$enter_enable = " checked=\"true\"";
+	
 	$body = <<<EOD
 <form action="$script" method="post">
  <div class="edit_form">
@@ -741,13 +755,13 @@ function areaedit_form($page, $postdata_input, $headdata, $taildata, $digest = 0
   <input type="hidden" name="areaedit_no"   value="{$vars['areaedit_no']}" />
   <input type="hidden" name="areaedit_start_no" value="{$vars['areaedit_start_no']}" />
   $fontset_js_tag
+  <input type="checkbox" name="enter_enable" value="true"{$enter_enable} /><span class="small">{$_btn_enter_enable}</span> 
   <br />
   <textarea name="areaedit_msg" rows="$rows" cols="$cols">$s_postdata_input</textarea>
   <br />
   <input type="submit" name="preview" value="$btn_preview" accesskey="p" />
   <input type="submit" name="write"   value="$_btn_update" accesskey="s" />
-  <input type="checkbox" name="notimestamp" value="true"$checked_time />
-  <span style="small">$_btn_notchangetimestamp</span>
+  {$timestamp_tag}
   <textarea name="original" rows="1" cols="1" style="display:none">$s_original</textarea>
   <textarea name="headdata" rows="1" cols="1" style="display:none">$s_headdata</textarea>
   <textarea name="taildata" rows="1" cols="1" style="display:none">$s_taildata</textarea>
