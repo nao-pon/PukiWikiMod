@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.12 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: file.php,v 1.13 2003/11/06 12:44:28 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -296,14 +296,7 @@ function get_pg_passage($page,$sw=true)
 	}
 	if($pgdt = @filemtime(get_filename(encode($page))))
 	{
-		$pgdt = UTIME - $pgdt;
-		if(ceil($pgdt / 60) < 60)
-			$_pg_passage[$page]["label"] = "(".ceil($pgdt / 60)."m)";
-		else if(ceil($pgdt / 60 / 60) < 24)
-			$_pg_passage[$page]["label"] = "(".ceil($pgdt / 60 / 60)."h)";
-		else
-			$_pg_passage[$page]["label"] = "(".ceil($pgdt / 60 / 60 / 24)."d)";
-		
+		$_pg_passage[$page]["label"] = get_passage($pgdt);
 		$_pg_passage[$page]["str"] = "<small>".$_pg_passage[$page]["label"]."</small>";
 	}
 	else
@@ -538,6 +531,37 @@ function get_pg_auther_name($page)
 	
 	$user = new XoopsUser($uid);
 	return $user->getVar("uname");
+}
+
+//継承編集権限がセットされている上位ページ凍結情報を得る
+function get_freezed_uppage($page)
+//継承設定 #newfreeze
+//戻り値配列 0:ページ名, 1:オーナー, 2:許可ユーザー(配列), 3:許可グループ(配列), 4:編集権限がない(0 or 1)
+{
+	$ret = array("",0,null,null,0);
+	$page = strip_bracket($page);
+	// 上位ページ名を得る
+	if (preg_match("/^(.*)\/[^\/]*$/",$page,$arg))
+		$uppage_name = $arg[1];
+	else
+		return $ret;
+	
+	$lines = get_source($uppage_name);
+	
+	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg) && preg_match("/(^|\n)#newfreeze(\n|$)/",join('',$lines)))
+	{
+		$owner = 1;
+		$gids = $aids = array();
+		if (isset($arg[1])) $owner = $arg[1];
+		if (isset($arg[2])) $aids = explode(",",$arg[2].",");
+		if (isset($arg[3])) $gids = explode(",",$arg[3].",");
+		$aids[] = $owner;
+		$uppage_name = add_bracket($uppage_name);
+		return array($uppage_name,$owner,$aids,$gids,is_freeze($uppage_name,false));
+	}
+	else
+		return get_freezed_uppage($uppage_name);
+	
 }
 
 //ページの編集権限を得る
