@@ -1,5 +1,5 @@
 <?php
-// $Id: countdown.inc.php,v 1.7 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: countdown.inc.php,v 1.8 2004/11/01 01:16:25 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -17,16 +17,6 @@ function plugin_countdown_init() {
 		$msg['_countdown_msg'] = "%2\$d%3\$sday(s) to %1\$s";
 	}
 	set_plugin_messages($msg);
-	
-	// calendar拡張モジュールが有効でないなら組み込みを試みる
-	if (!extension_loaded('calendar')) {
-		if (strtoupper(substr(PHP_OS, 0,3) == 'WIN')) {
-			dl('php_calendar.dll');
-		} else {
-			dl('calendar.so');
-		}
-	}
-
 }
 // インラインプラグインとしての挙動
 function plugin_countdown_inline() {
