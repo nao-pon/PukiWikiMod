@@ -110,6 +110,7 @@ function plugin_painter_convert()
 <input type=hidden name="retmode" value="plugin" />
 </form><br />
 <a href="'.$script.'?plugin=painter&amp;pmode=save&amp;refer='.encode($vars['page']).'">☆　アップロード済みデータを探す(しぃペインター)　☆</a>
+<hr />
 ';
 	return "<p>".$out."</p>";
 }
@@ -147,6 +148,8 @@ function plugin_painter_write()
 			$attachname = preg_replace('/^[^\.]+/',$filename,$file);
 		else
 			$attachname = $file;
+			
+		$attachname = str_replace(array(",",");","){"),array("，",")；",")｛"),$attachname);
 		
 		//すでに存在した場合、 ファイル名に'_0','_1',...を付けて回避(姑息)
 		$count = '_0';
@@ -778,7 +781,7 @@ function showHideLayer() { //v3.0
 <param name="image_height" value="'.$pich.'">
 <param name="image_bkcolor" value="#FFFFFF">
 <param name="image_jpeg" value="true">
-<param name="image_size" value="30">
+<param name="image_size" value="60">
 '.$image_canvas.'<param name="compress_level" value="15">
 <param name="undo" value="90">
 <param name="undo_in_mg" value="45">

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.14 2004/10/04 14:20:21 nao-pon Exp $
+// $Id: paint.inc.php,v 1.15 2004/10/08 12:47:53 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -101,10 +101,16 @@ function plugin_paint_action()
 		$post['page'] = $vars['page'] = $post['refer'] = $vars['refer'] = decode($vars['refer']);
 		
 		$filename = $vars['filename'];
-		$filename = mb_convert_encoding($filename,SOURCE_ENCODING,'auto');
+		//$filename = mb_convert_encoding($filename,SOURCE_ENCODING,'auto');
 		
 		//ファイル名置換
-		$attachname = preg_replace('/^[^\.]+/',$filename,$file['name']);
+		if ($filename)
+			$attachname = preg_replace('/^[^\.]+/',$filename,$file['name']);
+		else
+			$attachname = $file['name'];
+		
+		$attachname = str_replace(array(",",");","){"),array("，",")；",")｛"),$attachname);
+		
 		//すでに存在した場合、 ファイル名に'_0','_1',...を付けて回避(姑息)
 		$count = '_0';
 		while (file_exists(PAINT_UPLOAD_DIR.encode($vars['refer']).'_'.encode($attachname)))
@@ -177,7 +183,7 @@ function plugin_paint_action()
  <param name="size" value="$f_w,$f_h" />
  <param name="action" value="$script" />
  <param name="image" value="attach_file" />
- <param name="form1" value="filename={$_paint_messages['field_filename']}=!" />
+ <param name="form1" value="filename={$_paint_messages['field_filename']}==" />
  <param name="form2" value="yourname={$_paint_messages['field_name']}==$X_uname" />
  <param name="form3" value="title={$_paint_messages['field_title']}==" />
  <param name="form4" value="add_comment={$_paint_messages['field_add_comment']}==" />
@@ -187,6 +193,7 @@ function plugin_paint_action()
  <param name="param3" value="digest=$f_digest" />
  <param name="param4" value="max_file_size=1000000" />
  <param name="param5" value="paint_no=$f_no" />
+ <param name="param6" value="encode_hint=ぷ" />
  <param name="enctype" value="multipart/form-data" />
  <param name="return.URL" value="$script?$r_refer" />
  </applet>
