@@ -1,5 +1,4 @@
-#freeze	uid:1	aid:0	gid:0
-// author:0
+#freeze
 *mime-type
 
 この表は、attach.inc.phpがファイルのContent-typeを決定するときに使用します。
