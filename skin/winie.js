@@ -1,9 +1,4 @@
 var pukiwiki_elem;
-var pukiwiki_crl;
-var pukiwiki_scrx;
-var pukiwiki_scry;
-var pukiwiki_rngx;
-var pukiwiki_rngy;
 
 function h_pukiwiki_make_copy_button(arg)
 {
@@ -26,20 +21,8 @@ function pukiwiki_pos(){
 		return;
 	}
 	
-	var r=document.selection.createRange();
 	pukiwiki_elem = document.activeElement;
-	if (et == "text")
-	{
-		r.moveEnd("textedit");
-		pukiwiki_crl =r.text.length;
-	}
-	else if (et == "textarea")
-	{
-		pukiwiki_rngx=r.offsetLeft;
-		pukiwiki_rngy=r.offsetTop;
-		pukiwiki_scrx=document.body.scrollLeft;
-		pukiwiki_scry=document.body.scrollTop;
-	}
+	pukiwiki_elem.caretPos = document.selection.createRange().duplicate();
 }
 
 function pukiwiki_eclr(){
@@ -68,24 +51,8 @@ function pukiwiki_ins(v)
 		v = v + ";";
 	}
 	
-	if (pukiwiki_elem.type=="textarea")
-	{
-		document.body.scrollLeft=pukiwiki_scrx;
-		document.body.scrollTop=pukiwiki_scry;
-		var r=pukiwiki_elem.createTextRange();
-		r.moveToPoint(pukiwiki_rngx,pukiwiki_rngy);
-		r.text= v;
-		pukiwiki_elem.focus();
-		pukiwiki_pos();
-	}
-	else if (pukiwiki_elem.type=="text")
-	{
-		var r=pukiwiki_elem.createTextRange();
-		r.collapse();
-		r.moveStart("character",pukiwiki_elem.value.length-pukiwiki_crl);
-		r.text= v;
-		pukiwiki_elem.focus();
-	}
+	pukiwiki_elem.caretPos.text = v;
+	pukiwiki_elem.focus();
 }
 
 function pukiwiki_face(v)
@@ -95,41 +62,31 @@ function pukiwiki_face(v)
 		alert(pukiwiki_msg_elem);
 		return;	
 	}
-
-	if (pukiwiki_elem.type=="textarea")
-	{
-		document.body.scrollLeft=pukiwiki_scrx;
-		document.body.scrollTop=pukiwiki_scry;
-		var r=pukiwiki_elem.createTextRange();
-		r.moveToPoint(pukiwiki_rngx,pukiwiki_rngy);
-		r.text= ' ' + v + ' ';
-		pukiwiki_elem.focus();
-		pukiwiki_pos();
-	}
-	else if (pukiwiki_elem.type=="text")
-	{
-		var r=pukiwiki_elem.createTextRange();
-		r.collapse();
-		r.moveStart("character",pukiwiki_elem.value.length-pukiwiki_crl);
-		r.text= ' ' + v + ' ';
-		pukiwiki_elem.focus();
-	}
+	
+	if (pukiwiki_elem.caretPos.offsetLeft == pukiwiki_elem.createTextRange().offsetLeft)
+		pukiwiki_elem.caretPos.text = '&nbsp; ' + v + ' ';
+	else
+		pukiwiki_elem.caretPos.text = ' ' + v + ' ';
+	
+	pukiwiki_elem.focus();
 }
 
-function pukiwiki_tag(v) {
+function pukiwiki_tag(v)
+{
 	if (!document.selection || !pukiwiki_elem)
+	if (!pukiwiki_elem || !pukiwiki_elem.caretPos)
 	{
 		alert(pukiwiki_msg_elem);
 		return;	
 	}
 	
-	var str =
-		document.selection.createRange().text;
+	var str = pukiwiki_elem.caretPos.text;
 	if (!str)
 	{
 		alert(pukiwiki_msg_select);
 		return;
 	}
+	
 	if ( v == 'size' )
 	{
 		var default_size = "%";
@@ -148,12 +105,14 @@ function pukiwiki_tag(v) {
 	{
 		str = '&font(' + v + '){' + str + '};';
 	}
-	document.selection.createRange().text = str;
+	
+	pukiwiki_elem.caretPos.text = str;
 	pukiwiki_elem.focus();
-	//if (pukiwiki_elem != null) pukiwiki_elem = null;
+	pukiwiki_pos();
 }
 
-function pukiwiki_linkPrompt(v) {
+function pukiwiki_linkPrompt(v)
+{
 	if (!document.selection || !pukiwiki_elem)
 	{
 		alert(pukiwiki_msg_elem);
@@ -175,7 +134,6 @@ function pukiwiki_linkPrompt(v) {
 	if (my_link != null)
 		document.selection.createRange().text = '[[' + str + ':' + my_link + ']]';
 	pukiwiki_elem.focus();
-	//if (pukiwiki_elem != null) pukiwiki_elem = null;
 }
 
 function pukiwiki_charcode()
