@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.9 2003/10/13 12:23:28 nao-pon Exp $
+// $Id: convert_html.php,v 1.10 2003/10/18 15:19:50 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string)
 {
@@ -111,7 +111,7 @@ class convert
 					$div_style = "";
 					$table_sheet = "";
 					$sell_sheet = "";
-					$td_color = $td_width = $td_align = array();
+					$td_fcolor = $td_color = $td_width = $td_align = array();
 					array_push($result, "</table></div>".$table_around."");
 				}
 			}
@@ -332,19 +332,26 @@ class convert
 						foreach($arytable as $td){
 							$i++;
 							//echo "DEB:($i)$td<br />";
+							// セル規定文字色指定
+							if (preg_match("/FC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i",$td,$tmp)) {
+								if ($tmp[1]==="0") $tmp[1]="transparent";
+								$td_fcolor[$i] = "color:".$tmp[1].";";
+								$td = preg_replace("/FC:(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","FC:$2",$td);
+								$td = preg_replace("/FC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
+							}
 							// セル規定背景色指定
-							if (preg_match("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i",$td,$tmp)) {
+							if (preg_match("/(?:SC|BC):(#?[0-9abcdef]{6}?|$colors_reg|0)/i",$td,$tmp)) {
 								if ($tmp[1]==="0") $tmp[1]="transparent";
 								$td_color[$i] = "background-color:".$tmp[1].";";
-								$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","SC:$2",$td);
-								$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
+								$td = preg_replace("/(?:SC|BC):(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","BC:$2",$td);
+								$td = preg_replace("/(?:SC|BC):(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
 							}
 							// セル規定背景画指定
-							if (preg_match("/SC:\(([^),]*)(,once|,1)?\)/i",$td,$tmp)) {
+							if (preg_match("/(?:SC|BC):\(([^),]*)(,once|,1)?\)/i",$td,$tmp)) {
 								$tmp[1] = str_replace("http","HTTP",$tmp[1]);
 								$td_color[$i] .= "background-image: url(".$tmp[1].");";
 								if ($tmp[2]) $td_color[$i] .= "background-repeat: no-repeat;";
-								$td = preg_replace("/SC:\(([^),]*)(,once|,1)?\)/i","",$td);
+								$td = preg_replace("/(?:SC|BC):\(([^),]*)(,once|,1)?\)/i","",$td);
 							}
 							// セル規定文字揃え、幅指定
 							if (preg_match("/(LEFT|CENTER|RIGHT)?:(TOP|MIDDLE|BOTTOM)?(?::)?([0-9]+[%]?)?/i",$td,$tmp)) {
@@ -379,21 +386,30 @@ class convert
 							if ($td == ">"){
 								$_colspan = $_colspan + 1;
 							} else {
+								// セル文字色指定
+								if (preg_match("/FC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i",$td,$tmp)) {
+									if ($tmp[1]==="0") $tmp[1]="transparent";
+									$sell_sheet .= "color:".$tmp[1].";";
+									$td = preg_replace("/FC:(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","FC:$2",$td);
+									$td = preg_replace("/FC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
+								} else {
+									if ($td_fcolor[$i]) $sell_sheet .= $td_fcolor[$i];
+								}
 								// セル背景色指定
-								if (preg_match("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i",$td,$tmp)) {
+								if (preg_match("/(?:SC|BC):(#?[0-9abcdef]{6}?|$colors_reg|0)/i",$td,$tmp)) {
 									if ($tmp[1]==="0") $tmp[1]="transparent";
 									$sell_sheet .= "background-color:".$tmp[1].";";
-									$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","SC:$2",$td);
-									$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
+									$td = preg_replace("/(?:SC|BC):(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","BC:$2",$td);
+									$td = preg_replace("/(?:SC|BC):(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
 								} else {
 									if ($td_color[$i]) $sell_sheet .= $td_color[$i];
 								}
 								// セル背景画指定
-								if (preg_match("/SC:\(([^),]*)(,once|,1)?\)/i",$td,$tmp)) {
+								if (preg_match("/(?:SC|BC):\(([^),]*)(,once|,1)?\)/i",$td,$tmp)) {
 									$tmp[1] = str_replace("http","HTTP",$tmp[1]);
 									$sell_sheet .= "background-image: url(".$tmp[1].");";
 									if ($tmp[2]) $sell_sheet .= "background-repeat: no-repeat;";
-									$td = preg_replace("/SC:\(([^),]*)(,once|,1)?\)/i","",$td);
+									$td = preg_replace("/(?:SC|BC):\(([^),]*)(,once|,1)?\)/i","",$td);
 								}
 								// セル内文字揃え指定
 								if (preg_match("/^(LEFT|CENTER|RIGHT)?(:)(TOP|MIDDLE|BOTTOM)?([^\r]*)$/i",$td,$tmp)) {
@@ -565,17 +581,16 @@ class convert
 				if (!strip_tags($line) || preg_match("/^[ #\s\t]/",$line))
 					$_str[] = $line;
 				else
-					$_str[] = make_link($line);
+					//$_str[] = make_link($line);
+					$_str[] = make_user_rules(make_link($line));
 			}
 			$str = $_str;
 			unlink($_str);
 		}
 		else
-			$str = make_link($str);
+			$str = make_user_rules(make_link($str));
 		
 		$str = preg_replace("/#related/e",'make_related($vars["page"],TRUE)',$str);
-
-		$str = make_user_rules($str);
 
 		$tmp = $str;
 		$str = preg_replace("/^#norelated$/","",$str);
