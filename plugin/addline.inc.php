@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: addline.inc.php,v 1.2 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: addline.inc.php,v 1.3 2004/01/24 14:38:57 nao-pon Exp $
 // ORG: addline.inc.php,v 0.2 2003/07/29 22:47:10 sha Exp $
 //
 /* 
@@ -83,7 +83,7 @@ function plugin_addline_action()
 			$postdata .= $line;
 		}
 	}
-	
+	$postdata = auto_br($postdata);
 	$title = $_title_updated;
 	$body = '';
 	if (md5(@join('',get_source($post['refer']))) != $post['digest'])
@@ -121,8 +121,17 @@ function plugin_addline_convert()
 			if ( $opt === 'above' || $opt === 'up' ){
 				$above = 1;
 			}
-			else if (preg_match("/btn:(.+)/i",$opt,$args)){
+			else if (preg_match("/btn(:.+)/i",$opt,$args)){
 				$btn_text = htmlspecialchars($args[1]);
+				if (strtolower(substr($btn_text,-5)) == ":auth")
+				{
+					$btn_text = substr($btn_text,0,strlen($btn_text)-5);
+					if (is_freeze($vars['page']))
+						$btn_text = ":";
+					else
+						if (!$btn_text) $btn_text = ":". $_addline_messages['btn_submit'];
+				}
+				$btn_text = substr($btn_text,1);
 			}
 			else if ( $opt === 'below' || $opt === 'down' ){
 				$above = 0;
@@ -134,8 +143,10 @@ function plugin_addline_convert()
 	}
 	
 	$s_page = htmlspecialchars($vars['page']);
-	
-	$string = <<<EOD
+	$string = "";
+	if ($btn_text)
+	{
+		$string = <<<EOD
 <form action="$script" method="post">
  <div>
   <input type="hidden" name="addline_no" value="$addline_no" />
@@ -148,7 +159,7 @@ function plugin_addline_convert()
  </div>
 </form>
 EOD;
-	
+	}
 	return $string;
 }
 function addline_get_source($page) // tracker_list¤«¤é¡£
