@@ -2,15 +2,17 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.4 2003/07/04 01:55:53 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.5 2003/07/14 09:00:20 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //       Thanks to reimy.
 //	 GNU/GPL にしたがって配布する。
 //
-define('NOIMAGE','./image/noimage.png'); // ここ、あるいは pukiwiki.ini.php に持っていく。
-define('SOURCE_ENCODING','EUC'); // ここ、あるいは pukiwiki.ini.php に持っていく。
-define('AMAZON_ASE_ID','hypweb-22'); // AmazonアソシエイトID
+if (!defined('NOIMAGE')) define('NOIMAGE','./image/noimage.png'); // ここ、あるいは pukiwiki.ini.php に持っていく。
+if (!defined('SOURCE_ENCODING')) define('SOURCE_ENCODING','EUC'); // ここ、あるいは pukiwiki.ini.php に持っていく。
+if (!defined('AMAZON_ASE_ID')) define('AMAZON_ASE_ID','hypweb-22'); // AmazonアソシエイトID
+// upload dir(must set end of /)
+if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR','./attach/');
 
 
 function plugin_isbn_convert() {
@@ -64,7 +66,7 @@ function plugin_isbn_inline() {
   if ($option != 'img'){
 	  return '<a href="http://www.amazon.co.jp/exec/obidos/ASIN/'.$isbn.'/ref=ase_'.AMAZON_ASE_ID.'" target="_blank" title="'.$alt.'">' . $title . '</a>';
 	} else {
-		$url = plugin_isbn_cache_image_fetch($isbn, CACHE_DIR);
+		$url = plugin_isbn_cache_image_fetch($isbn, UPLOAD_DIR);
 		return '<a href="http://www.amazon.co.jp/exec/obidos/ASIN/'.$isbn.'/ref=ase_'.AMAZON_ASE_ID.'" target="_blank"><img src="'.$url.'" alt="'.$alt.'" /></a>';
 	}
 }
@@ -75,7 +77,7 @@ function plugin_isbn_print_isbn_img($isbn, $align, $alt, $title, $h_title, $pric
     return '<div style="clear:both"></div>';
   }
 
-  if (! ($url = plugin_isbn_cache_image_fetch($isbn, CACHE_DIR))) return false;
+  if (! ($url = plugin_isbn_cache_image_fetch($isbn, UPLOAD_DIR))) return false;
 
   if ($title == '') {			  // タイトルがなければ、画像のみ表示
     return <<<EOD
@@ -114,10 +116,10 @@ function plugin_isbn_get_isbn_title($isbn) {
   $nocache = $nocachable = 0;
   $title = '';
   $url = "http://www.amazon.co.jp/exec/obidos/ASIN/$isbn";
-  if (file_exists(CACHE_DIR) === false or is_writable(CACHE_DIR) === false) {
+  if (file_exists(UPLOAD_DIR) === false or is_writable(UPLOAD_DIR) === false) {
     $nocachable = 1;		          // キャッシュ不可の場合
   }
-  if ($title = plugin_isbn_cache_fetch($isbn, CACHE_DIR)) {
+  if ($title = plugin_isbn_cache_fetch($isbn, UPLOAD_DIR)) {
 		list($title,$category,$price) = $title;
   } else {
     $nocache = 1;			  // キャッシュ見つからず
@@ -130,12 +132,13 @@ function plugin_isbn_get_isbn_title($isbn) {
     $body = str_replace("\r","",$body);
     $body = str_replace("\n","",$body);
     $body = strip_tags($body);
+    //echo $body;
     preg_match('/価格：￥([0-9,]+)/',$body,$tmpary);
-    $price = trim($tmpary[2]);
+    $price = trim($tmpary[1]);
   }
   if ($title != '') {			  // タイトルがあれば、できるだけキャッシュに保存
     if ($nocache == 1 and $nocachable != 1) {
-      plugin_isbn_cache_save("$title<>$category<>$price", $isbn, CACHE_DIR);
+      plugin_isbn_cache_save("$title<>$category<>$price", $isbn, UPLOAD_DIR);
     }
   } else {				  // しかたない場合 ISBN:xxxxxxxx 形式のタイトル
     $title = 'ISBN:' . $isbn;
@@ -146,7 +149,10 @@ function plugin_isbn_get_isbn_title($isbn) {
 
 // キャッシュがあるか調べる
 function plugin_isbn_cache_fetch($target, $dir) {
-  $filename = $dir . encode($target) . ".tmp";
+	global $vars;
+
+  //$filename = $dir . encode($target) . ".tmp";
+  $filename = $dir.encode($vars["page"])."_".encode("ISBN".$target.".dat");
   if (!is_readable($filename)) {
     return false;
   }
@@ -161,7 +167,9 @@ function plugin_isbn_cache_fetch($target, $dir) {
 
 // 画像キャッシュがあるか調べる
 function plugin_isbn_cache_image_fetch($target, $dir) {
-  $filename = $dir . "ISBN" . $target . ".jpg";
+	global $vars;
+
+  $filename = $dir.encode($vars["page"])."_".encode("ISBN".$target.".jpg");
 
   if (!is_readable($filename)) {
     $url = "http://images-jp.amazon.com/images/P/" . $target . ".09.MZZZZZZZ.jpg";
@@ -186,7 +194,7 @@ function plugin_isbn_cache_image_fetch($target, $dir) {
       $data = fread($file, 100000); 
       fclose ($file);
     }
-    plugin_isbn_cache_image_save($data, $target, CACHE_DIR);
+    plugin_isbn_cache_image_save($data, $target, UPLOAD_DIR);
     return $filename;
   } else
     return $filename;
@@ -194,7 +202,10 @@ function plugin_isbn_cache_image_fetch($target, $dir) {
 
 // キャッシュを保存
 function plugin_isbn_cache_save($data, $target, $dir) {
-  $filename = $dir . encode($target) . ".tmp";
+	global $vars;
+	
+  //$filename = $dir . encode($target) . ".tmp";
+  $filename = $dir.encode($vars["page"])."_".encode("ISBN".$target.".dat");
   $fp = fopen($filename, "w");
   fwrite($fp, $data);
   fclose($fp);
@@ -203,7 +214,10 @@ function plugin_isbn_cache_save($data, $target, $dir) {
 
 // 画像キャッシュを保存
 function plugin_isbn_cache_image_save($data, $target, $dir) {
-  $filename = $dir . "ISBN" . $target . ".jpg";
+	global $vars;
+	
+	$filename = $dir . encode($vars["page"])."_".encode("ISBN".$target.".jpg");
+  //$filename = $dir . "ISBN" . $target . ".jpg";
 
   $fp = fopen($filename, "wb");
   fwrite($fp, $data);
