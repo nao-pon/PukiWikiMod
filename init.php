@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.24 2004/05/15 02:55:10 nao-pon Exp $
+// $Id: init.php,v 1.25 2004/05/18 12:05:38 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -98,6 +98,7 @@ $content_id = 0;
 $noattach = 0;
 $noheader = 0;
 $vars['is_rsstop'] = 0;
+$wiki_head_keywords = array();
 
 
 // 設定ファイルの読込

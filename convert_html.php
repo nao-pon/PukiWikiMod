@@ -1,10 +1,15 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.22 2004/05/15 11:37:07 nao-pon Exp $
+// $Id: convert_html.php,v 1.23 2004/05/18 12:05:38 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
-	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id;
+	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id,$wiki_strong_words,$wiki_head_keywords;
+	
+	static $convert_load = 0;
+	$convert_load++;
+	
+	$wiki_strong_words = array();
 	
 	if ($page_cvt)
 	{
@@ -14,8 +19,23 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		if (!$X_uid && file_exists($filename) && ($cache || (filemtime($filename) + PAGE_CACHE_MIN * 60) > time()))
 		{
 			$htmls = file($filename);
-			list($related_link,$noattach,$noheader,$h_excerpt,$wiki_ads_shown,$vars['is_rsstop'],$foot_explain) = explode("\t",trim(array_shift($htmls)),6);
-			$foot_explain = explode("\t",$foot_explain);
+			//list($related_link,$noattach,$noheader,$h_excerpt,$wiki_ads_shown,$vars['is_rsstop'],$foot_explain) = explode("\t",trim(array_shift($htmls)),6);
+			//$foot_explain = explode("\t",$foot_explain);
+			$var_data = unserialize(rtrim(array_shift($htmls)));
+			if (!is_array($var_data)) $var_data = array();
+			$related_link = $var_data[0];
+			$noattach =  $var_data[1];
+			$noheader =  $var_data[2];
+			$h_excerpt =  $var_data[3];
+			$wiki_ads_shown =  $var_data[4];
+			$vars['is_rsstop'] =  $var_data[5];
+			$foot_explain = explode("\t",$var_data[6]);
+			$wiki_strong_words =  $var_data[7];
+			
+			$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
+			
+			$convert_load--;
+			
 			return join('',$htmls);
 		}
 		else
@@ -71,6 +91,11 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 	//整形済み指定の" "を削除 nao-pon
 	$str = preg_replace("/(^|\n) /", "$1", $str);
 	
+	//キーワード強調
+	$wiki_strong_words = array_unique($wiki_strong_words);
+	keyword_to_strong(&$str,$wiki_strong_words);
+	$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
+	
 	//ゲストアカウントでページコンバート指定時
 	if (!$X_uid && $page_cvt && !$cache)
 	{
@@ -81,9 +106,20 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		//#toprssを記述したページがインクルードされた場合問題も少し残るが
 		//calendar_viewer などでインクルードされたページに元ページの値がセット
 		//されてしまう問題のほうが大きいので、とりあえずこうする。
-		$rsstop_set = ($content_id === 1)? $vars['is_rsstop'] : 0;
+		$rsstop_set = ($convert_load === 1)? $vars['is_rsstop'] : 0;
 		
-		$html = $related_link."\t".$noattach."\t".$noheader."\t".$h_excerpt."\t".$wiki_ads_shown."\t".$rsstop_set."\t".preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain))."\n".$str;
+		
+		//$html = $related_link."\t".$noattach."\t".$noheader."\t".$h_excerpt."\t".$wiki_ads_shown."\t".$rsstop_set."\t".preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain))."\n".$str;
+		$var_data = array();
+		$var_data[0] = $related_link;
+		$var_data[1] = $noattach;
+		$var_data[2] = $noheader;
+		$var_data[3] = $h_excerpt;
+		$var_data[4] = $wiki_ads_shown;
+		$var_data[5] = $vars['is_rsstop'];
+		$var_data[6] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain));
+		$var_data[7] = ($convert_load === 1)? $wiki_head_keywords : $wiki_strong_words;
+		$html = serialize($var_data)."\n".$str;
 		
 		//キャッシュ書き込み
 		if ($fp = @fopen($filename,"w"))
@@ -93,6 +129,9 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		}
 	}
 
+	$convert_load--;
+
+	
 	//一応アンセットしてみる
 	unset ($body,$cnts_plain,$arykeep,$result_last,$html);
 	
@@ -843,4 +882,28 @@ function list_push(&$result,&$saved,$tag,$level) {
 		array_push($result, '</li>');
 }
 
+//キーワード強調
+function keyword_to_strong(&$str,$words=array())
+{
+	if (!$words || !$str) return ;
+	$keys = array();
+	foreach ($words as $word)
+	{
+		$keys[$word] = strlen($word);
+	}
+	arsort($keys,SORT_NUMERIC);
+	$keys = get_search_words(array_keys($keys));
+	foreach ($keys as $key=>$pattern)
+	{
+		$s_key = htmlspecialchars($key);
+		$pattern = ($s_key{0} == '&') ?
+			"/(<[^>]*>)|($pattern)/" :
+			"/(<[^>]*>|&(?:#[0-9]+|#x[0-9a-f]+|[0-9a-zA-Z]+);)|($pattern)/";
+		$str = preg_replace_callback($pattern,
+			create_function('$arr',
+				'return $arr[1] ? $arr[1] : "<strong>{$arr[2]}</strong>";'),$str);
+	}
+	
+	return ;
+}
 ?>
