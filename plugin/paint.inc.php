@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.11 2004/08/19 05:30:37 nao-pon Exp $
+// $Id: paint.inc.php,v 1.12 2004/08/19 13:00:42 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -31,11 +31,11 @@ define('PAINT_DEFAULT_HEIGHT',60);
 //
 // 描画領域の幅と高さの制限値
 define('PAINT_MAX_WIDTH',320);
-define('PAINT_MAX_HEIGHT',240);
+define('PAINT_MAX_HEIGHT',320);
 //
 // アプレット領域の幅と高さ 50x50未満で別ウインドウが開く
 define('PAINT_APPLET_WIDTH',800);
-define('PAINT_APPLET_HEIGHT',300);
+define('PAINT_APPLET_HEIGHT',370);
 //
 //コメントの挿入フォーマット
 define('PAINT_FORMAT_NAME','[[%s]]');
@@ -54,15 +54,16 @@ function plugin_paint_init() {
 		$messages = array('_paint_messages'=>array(
 			'field_name'    => 'お名前',
 			'field_filename'=> 'ファイル名',
-			'field_comment' => 'コメント',
+			'field_comment' => 'メッセージ',
 			'field_title' => 'タイトル',
+			'field_add_comment' => 'コメント受付',
 			'btn_submit'    => 'お絵かきする！',
 			'msg_max'       => '(最大 %d x %d)',
 			'msg_title'     => 'お絵かき画像を $1 へ添付して更新しました。',
 			'msg_title_collided' => '$1 で【更新の衝突】が起きました',
 			'msg_collided'  => 'あなたが画像を編集している間に、他の人が同じページを更新してしまったようです。<br />
 	画像とコメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
-			'msg_bottom'  => '<div>送信ボタンは1回のみクリックしてください。<br />※処理に数十秒かかる場合もあります。お待ちください。</div>',
+			'msg_bottom'  => '<div>送信ボタンは1回のみクリックしてください。<br />※処理に数十秒かかる場合もあります。お待ちください。<br />コメントを受け付ける場合は [ コメント受付 ] 欄に「 はい 」または 「 1 」を記入してください。</div>',
 		));
 	} else {
 		$messages = array('_paint_messages'=>array(
@@ -179,6 +180,7 @@ function plugin_paint_action()
  <param name="form1" value="filename={$_paint_messages['field_filename']}=!" />
  <param name="form2" value="yourname={$_paint_messages['field_name']}==$X_uname" />
  <param name="form3" value="title={$_paint_messages['field_title']}==" />
+ <param name="form4" value="add_comment={$_paint_messages['field_add_comment']}==" />
  <param name="comment" value="msg={$_paint_messages['field_comment']}" />
  <param name="param1" value="plugin=paint" />
  <param name="param2" value="refer=$f_refer" />
