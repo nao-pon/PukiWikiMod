@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.69 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.70 2005/03/16 14:32:29 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する
 if (
@@ -997,10 +997,11 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			}
 			
 			//モジュール用キャッシュデータの更新
-			if (!empty($vars['mc_refresh']) && file_exists(P_CACHE_DIR.$pgid.".mcr"))
+			if (!empty($vars['mc_refresh'])
+			 && (!file_exists(P_CACHE_DIR.$pgid.".mcr") || time() - filemtime(P_CACHE_DIR.$pgid.".mcr") > 1800))
 			{
-				// 有効化ファイルを削除
-				@unlink(P_CACHE_DIR.$pgid.".mcr");
+				// チェックファイルをtouch
+				touch(P_CACHE_DIR.$pgid.".mcr");
 				// パラメーターセット
 				$vars['mc_refresh'] = join(" ",array_values($vars['mc_refresh']));
 				// 非同期でモードでデータ更新

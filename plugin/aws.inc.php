@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.10 2005/03/16 12:51:47 nao-pon Exp $
+// $Id: aws.inc.php,v 1.11 2005/03/16 14:32:29 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -125,7 +125,6 @@ function plugin_aws_convert()
 	if ($refresh)
 	{
 		$vars['mc_refresh'][] = "?plugin=aws&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&f=".rawurlencode($f)."&m=".rawurlencode($m)."&k=".rawurlencode($k)."&b=".rawurlencode($b)."&s=".rawurlencode($s);
-		@touch(P_CACHE_DIR.get_pgid_by_name($vars["page"]).".mcr");
 	}
 	
 	//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
