@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.15 2004/11/01 09:03:55 nao-pon Exp $
+// $Id: admin.php,v 1.16 2004/12/09 00:46:18 nao-pon Exp $
 
 define("_AM_WIKI_TITLE0", "PukiWiki 初期設定");
 define("_AM_WIKI_INFO0", "初期設定を完了するために次の２つのリンク先にアクセスして処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
@@ -69,5 +69,14 @@ define("_AM_WIKI_ANCHOR_VISIBLE","見出しに固定リンクアンカーを表示する");
 
 // Ver 1.0.8
 define("_AM_WIKI_TRACKBACK_ENCODING","トラックバック送信時の文字コード");
+
+// ver 1.0.9.1
+define("_AM_WIKI_COUNTUP_XOOPS","ページ作成時にXOOPSの投稿数をカウントアップする");
+define("_AM_WIKI_TITLE3","全ユーザーの投稿数の再カウント");
+define("_AM_WIKI_DBDENIED","アクセスが拒否されました。<br />(フォームの有効時間は10分間です)");
+define("_AM_WIKI_CONFIG_SUBMIT","基本設定を更新する");
+define("_AM_WIKI_PERM_SUBMIT","パーミッションを変更する");
+define("_AM_WIKI_SYNC_SUBMIT","全ユーザーの投稿数を再カウントする");
+define("_AM_WIKI_SYNC_MSG","<p>XOOPSの基本機能の投稿数を再カウントします。<br />PukiWikiModでのページ作成をカウントアップしてない場合は、このボタンをクリックしないでください。<br />ユーザー数に比例して処理時間が長くなります。終了するまで気長にお待ちください。</p><p>ここで再カウントされる対象は、フォーラムの投稿数、XOOPS標準のコメント件数とPukiWikiModのページ作成数です。<br />".XOOPS_ROOT_PATH."/modules/system/admin/users/users.php を独自に改造して、他のモジュールもカウント対象にしている場合は、同様に ".XOOPS_ROOT_PATH."/modules/pukiwiki/admin/index.php の29行目あたりを改造してください。</p>");
 
 ?>

@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.28 2004/11/24 14:40:11 nao-pon Exp $
+// $Id: index.php,v 1.29 2004/12/09 00:46:18 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -12,6 +12,64 @@ define("_AM_WIKI_CONFIG_FILE", "../cache/config.php");
 define("_AM_WIKI_ADMIN_PASS", "../cache/adminpass.php");
 define("_AM_WIKI_CSS_FILE", XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css");
 define("_WIKI_AM_TEXT_SIZE", "50");
+
+function wiki_synchronize_allusers($id="",$type="all users")
+{
+	global $xoopsUser,$xoopsModule;
+	//include_once XOOPS_ROOT_PATH."/modules/system/admin/users/users.php";
+	global $xoopsDB;
+	switch($type) {
+	case 'user':
+		// Array of tables from which to count 'posts'
+		$tables = array();
+		// Count comments (approved only: com_status == XOOPS_COMMENT_ACTIVE)
+		include_once XOOPS_ROOT_PATH . '/include/comment_constants.php';
+		$tables[] = array ('table_name' => 'xoopscomments', 'uid_column' => 'com_uid', 'criteria' => new Criteria('com_status', XOOPS_COMMENT_ACTIVE));
+		// Count forum posts
+		$tables[] = array ('table_name' => 'bb_posts', 'uid_column' => 'uid');
+		// PukiWikiMod
+		$tables[] = array ('table_name' => 'pukiwikimod_pginfo', 'uid_column' => 'uid');
+
+		$total_posts = 0;
+		foreach ($tables as $table) {
+			$criteria = new CriteriaCompo();
+			$criteria->add (new Criteria($table['uid_column'], $id));
+			if (!empty($table['criteria'])) {
+				$criteria->add ($table['criteria']);
+			}
+			$sql = "SELECT COUNT(*) AS total FROM ".$xoopsDB->prefix($table['table_name']) . ' ' . $criteria->renderWhere();
+			if ( $result = $xoopsDB->query($sql) ) {
+				if ($row = $xoopsDB->fetchArray($result)) {
+					$total_posts = $total_posts + $row['total'];
+				}
+			}
+		}
+		$sql = "UPDATE ".$xoopsDB->prefix("users")." SET posts = $total_posts WHERE uid = $id";
+		if ( !$result = $xoopsDB->query($sql) )
+		{
+			exit(sprintf(_AM_CNUUSER %s ,$id));
+		}
+		//echo $sql."<br>";
+		
+		break;
+	case 'all users':
+		$sql = "SELECT uid FROM ".$xoopsDB->prefix("users")."";
+		if ( !$result = $xoopsDB->query($sql) ) {
+			exit(_AM_CNGUSERID);
+		}
+		while ($row = $xoopsDB->fetchArray($result)) {
+			$id = $row['uid'];
+			wiki_synchronize_allusers($id, "user");
+			//echo 'synchronize($id, "user")<br>';
+		}
+		break;
+	default:
+		break;
+	}
+	
+	//redirect_header("./index.php",1,_AM_DBUPDATED);
+	//exit();
+}
 
 function changePermit($_target_dir){
 	global $xoopsModule;
@@ -29,12 +87,13 @@ function changePermit($_target_dir){
 function writeConfig(){
 	global $xoopsConfig, $HTTP_POST_VARS;
 
-	foreach($HTTP_POST_VARS as $k => $v){
+	foreach($HTTP_POST_VARS as $k => $v)
+	{
 		$$k = str_replace("'","\'",$v);
 	}
 
 	$filename = _AM_WIKI_CONFIG_FILE;
-	$file = fopen($filename, "w");
+	$file = fopen($filename, "wb");
 	$gids = implode(",",$gids);
 	$aids = implode(",",$aids);
 	$freeze = (isset($freeze))? 1 : 0;
@@ -105,23 +164,24 @@ function writeConfig(){
 	\$wiki_common_dirs = '$wiki_common_dirs';
 	\$fixed_heading_anchor = $fixed_heading_anchor;
 	\$trackback_encoding = '$trackback_encoding';
+	\$countup_xoops = $f_countup_xoops;
 	";
 	$content .= "\n?>";
 
-	fwrite($file, $content);
+	fwrite($file, str_replace("\r","",$content));
 	fclose($file);
 
 	if($wiki_adminpass != ""){
 		$wiki_adminpass = md5($wiki_adminpass);
 		$filename = _AM_WIKI_ADMIN_PASS;
-		$file = fopen($filename, "w");
+		$file = fopen($filename, "wb");
 		$content = "<?php\n\$adminpass = '$wiki_adminpass';\n?>";
 		fwrite($file, $content);
 		fclose($file);
 	}
 
 	$filename = _AM_WIKI_CSS_FILE;
-	$file = fopen($filename, "w");
+	$file = fopen($filename, "wb");
 	fwrite($file, $wiki_css);
 	fclose($file);
 
@@ -168,7 +228,14 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor,$trackback_encoding;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor,$trackback_encoding,$countup_xoops;
+	
+	// 認証チケット発行
+	$tiket = md5(chr(mt_rand(ord('a'), ord('z'))).UTIME.chr(mt_rand(ord('a'), ord('z'))));
+	$filename = "../cache/t_config.php";
+	$file = fopen($filename, "wb");
+	fwrite($file, "<?php\n".'$tiket="'.$tiket."\";\n?>");
+	fclose($file);
 	
 	xoops_cp_header();
 	OpenTable();
@@ -276,6 +343,13 @@ function displayForm(){
 		$_trackback_encoding_sw[1] = " checked";
 	else
 		$_trackback_encoding_sw[2] = " checked";
+		
+	
+	$_countup_xoops = array("","");
+	if ($countup_xoops)
+		$_countup_xoops[1] = " checked";
+	else
+		$_countup_xoops[0] = " checked";
 
 	echo "
 	| "._AM_SYSTEM_ADMENU." | <a href='./myblocksadmin.php'>"._AM_SYSTEM_ADMENU2."</a> |
@@ -326,6 +400,12 @@ function displayForm(){
 	</td><td>
 		<input type='radio' name='wiki_function_unvisible' value='1'".$_unvisible_sw_[1].">"._AM_WIKI_ENABLE."
 		<input type='radio' name='wiki_function_unvisible' value='0'".$_unvisible_sw_[0].">"._AM_WIKI_DISABLE."
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_COUNTUP_XOOPS."
+	</td><td>
+		<input type='radio' name='f_countup_xoops' value='1'".$_countup_xoops[1].">"._AM_WIKI_ENABLE."
+		<input type='radio' name='f_countup_xoops' value='0'".$_countup_xoops[0].">"._AM_WIKI_DISABLE."
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_FUNCTION_TRACKBACK."
@@ -454,7 +534,8 @@ function displayForm(){
 	<tr><td colspan=2>".$allow_edit_form."</td></tr>
 	</table><p>
 	<input type='hidden' name='wiki_admin_mode' value='change_config'>
-	<input type='submit' value='"._AM_WIKI_SUBMIT."'>
+	<input type='hidden' name='wiki_admin_tiket' value='$tiket'>
+	<input type='submit' value='"._AM_WIKI_CONFIG_SUBMIT."'>
 	</form>";
 
 	echo "
@@ -477,7 +558,18 @@ function displayForm(){
 	</td></tr>
 	</table><p>
 	<input type='hidden' name='wiki_admin_mode' value='change_permit'>
-	<input type='submit' value='"._AM_WIKI_SUBMIT."'>
+	<input type='hidden' name='wiki_admin_tiket' value='$tiket'>
+	<input type='submit' value='"._AM_WIKI_PERM_SUBMIT."'>
+	</form>";
+
+	echo "
+	<p /><hr>
+	<h2>"._AM_WIKI_TITLE3."</h2>
+	<p>"._AM_WIKI_SYNC_MSG."</p>
+	<form method='post' action='index.php'>
+	<input type='hidden' name='wiki_admin_mode' value='synchronize'>
+	<input type='hidden' name='wiki_admin_tiket' value='$tiket'>
+	<input type='submit' value='"._AM_WIKI_SYNC_SUBMIT."'>
 	</form>";
 
 	CloseTable();
@@ -620,13 +712,36 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 	db_check();
 	displayForm();
 } else {
+	$tiket = "";
+	$tiket_file = "../cache/t_config.php";
+	
+	// チケット有効時間 10分
+	if (file_exists($tiket_file) && time()-filemtime($tiket_file) < 600)
+		include ($tiket_file);
+	
+	if (!$tiket || $tiket != $_POST['wiki_admin_tiket'])
+	{
+		redirect_header("./index.php",1,_AM_WIKI_DBDENIED);
+		exit();
+	}
+	unlink($tiket_file);
+	
 	$wiki_admin_mode = (isset($HTTP_POST_VARS['wiki_admin_mode']))? $HTTP_POST_VARS['wiki_admin_mode'] : "";
 	$wiki_permit_change_dir = (isset($HTTP_POST_VARS['wiki_permit_change_dir']))? $HTTP_POST_VARS['wiki_permit_change_dir'] : "";
 	
-	if($wiki_admin_mode == "change_config"){
+	if($wiki_admin_mode == "change_config")
+	{
 		writeConfig();
-	} else if($wiki_admin_mode == "change_permit"){
+	}
+	else if($wiki_admin_mode == "change_permit")
+	{
 		changePermit(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/".$wiki_permit_change_dir."/");
+	}
+	else if($wiki_admin_mode == "synchronize")
+	{
+		wiki_synchronize_allusers();
+		redirect_header("./index.php",1,_AM_DBUPDATED);
+		exit();
 	}
 }
 ?>

@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.14 2004/11/01 13:02:05 nao-pon Exp $
+// $Id: db_func.php,v 1.15 2004/12/09 00:46:18 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
@@ -295,7 +295,7 @@ function get_child_counts($page)
 // pginfo DB を更新
 function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$freeze="",$unvisible="",$notimestamp=false)
 {
-	global $xoopsDB,$X_uid,$X_admin;
+	global $xoopsDB,$X_uid,$X_admin,$countup_xoops;
 	
 	//最初の見出し行取得
 	$title = addslashes(str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),get_heading_init($page)));
@@ -405,6 +405,13 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		//if ($X_admin) echo $query;exit;
 		$result=$xoopsDB->queryF($query);
 		plain_db_write($page,"insert");
+		
+		//投稿数カウントアップ
+		if ($uid && $countup_xoops)
+		{
+			$user =new XoopsUser($uid);
+			$user->incrementPost();
+		}
 	}
 	
 	// ページ更新
