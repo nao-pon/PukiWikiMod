@@ -2,31 +2,45 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tenki.inc.php,v 1.6 2004/09/01 12:26:54 nao-pon Exp $
+// $Id: tenki.inc.php,v 1.7 2004/10/14 13:02:31 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
-//
+//	&tenki([pic],[w:width])[{now?}];
 
 function plugin_tenki_inline()
 {
 	$args = array();
 	$args = func_get_args();
-	//echo $args[0].":".$args[1];
-	if ($args[0] == "pic") {
+	
+	$pic = FALSE;
+	$cid = "";
+	$v_width = 264;
+	
+	foreach($args as $arg)
+	{
+		if (preg_match("/w:(\d+)(px)?/i",$arg,$match))
+			$v_width = $match[1];
+		else if (strtolower($arg) == "pic")
+			$pic = TRUE;
+		else if ($arg == "now?")
+			continue;
+		else
+			$cid = $arg;
+	}
+
+	if ($pic) {
 		//$url = "http://weather.is.kochi-u.ac.jp/FE/00Latest.jpg";
 		$url = "http://www.jwa.or.jp/sat/images/sat-japan.jpg";
 		$alt = "日本付近赤外画像";
 		$picid = "pic";
-		$args[0] = $args[1];
 	} else {
 		$url = "http://www.jma.go.jp/JMA_HP/jp/g3/latest/SPAS-GG.gif";
 		$alt = "気象庁発表天気図";
 		$picid = "";
 	}
 
-	if ($args[0] == "now?") $args[0] = "";
-	if ($args[0]){
-		$id = $args[0].$picid;
+	if ($cid){
+		$id = $cid.$picid;
 		$id = str_replace(" ","",$id);
 		$id = encode($id);
 		$img_arg = plugin_tenki_cache_image_fetch($url, CACHE_DIR, $id);
@@ -36,8 +50,8 @@ function plugin_tenki_inline()
 		$size = @getimagesize($url);
 		if ($size[0] < 1) return false;
 	}
-
-	$v_width = 264;
+	
+	$v_width = min(640,$v_width);
 	$v_height = floor(($v_width * $size[1])/ $size[0]);
 	$body = "<a href=\"$url\"><img src=\"$url\" width=\"$v_width\" height=\"$v_height\" alt=\"$alt\" title=\"$alt\" /></a>\n";
 	return $body;
