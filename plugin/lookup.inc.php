@@ -1,5 +1,5 @@
 <?php
-// $Id: lookup.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: lookup.inc.php,v 1.3 2004/09/23 23:32:04 nao-pon Exp $
 
 function plugin_lookup_convert()
 {
@@ -19,7 +19,7 @@ function plugin_lookup_convert()
 	$ret.= "<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($vars["page"])."\" />\n";
 	$ret.= "<input type=\"hidden\" name=\"inter\" value=\"$iwn\" />\n";
 	$ret.= "$iwn:\n";
-	$ret.= "<input type=\"text\" name=\"page\" size=\"30\" value=\"$default\" />\n";
+	$ret.= "<input type=\"text\" name=\"inter_page\" size=\"30\" value=\"$default\" />\n";
 	$ret.= "<input type=\"submit\" value=\"$btn\" />\n";
 	$ret.= "</div>\n";
 	$ret.= "</form>\n";
@@ -30,9 +30,9 @@ function plugin_lookup_action()
 {
 	global $vars,$script;
 	
-	if(!$vars["inter"] || !$vars["page"]) return;
+	if(!$vars["inter"] || !$vars["inter_page"]) return;
 	
-	$interwikiname = "[[".$vars["inter"].":".$vars["page"]."]]";
+	$interwikiname = "[[".$vars["inter"].":".$vars["inter_page"]."]]";
 	$interwikiname = rawurlencode($interwikiname);
 	
 	header("Location: $script?$interwikiname");
