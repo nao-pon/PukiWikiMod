@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.11 2003/09/02 14:01:49 nao-pon Exp $
+// $Id: ref.inc.php,v 1.12 2003/09/14 13:05:03 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -449,8 +449,23 @@ function plugin_ref_cache_image_fetch($filename, &$url) {
 			$url = NOIMAGE;
 			$size = @getimagesize($url);
 		} else {
-			$data = fread($file, 2000000); 
+			// リモートファイルのパケット有効後対策
+			// http://search.net-newbie.com/php/function.fread.html
+			//$data = fread($file, 2000000); 
+			$contents = "";
+			do {
+				$data = fread($file, 8192);
+				if (strlen($data) == 0) {
+					break;
+				}
+				$contents .= $data;
+			} while(true);
+			
 			fclose ($file);
+			
+			$data = $contents;
+			unset ($contents);
+			
 			$size = @getimagesize($url); // あったら、size を取得、通常は1が返るが念のため0の場合も(reimy)
 			if ($size[0] <= 1){
 				$url = NOIMAGE;
