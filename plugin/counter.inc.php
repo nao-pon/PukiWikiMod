@@ -5,83 +5,156 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: counter.inc.php,v 1.7 2004/11/24 13:15:35 nao-pon Exp $
+ * $Id: counter.inc.php,v 1.8 2004/11/25 02:59:39 nao-pon Exp $
  */
+
+// counter file
+if (!defined('COUNTER_EXT'))
+{
+	define('COUNTER_EXT','.count');
+}
+
+function plugin_counter_inline()
+{
+	global $vars;
+
+	$arg = '';
+	if (func_num_args() > 0)
+	{
+		$args = func_get_args();
+		$arg = strtolower($args[0]);
+	}
+
+	$counter = plugin_counter_get_count($vars['page']);
+
+	switch ($arg)
+	{
+		case 'today':
+		case 'yesterday':
+			$count = $counter[$arg];
+			break;
+		default:
+			$count = $counter['total'];
+	}
+	return $count;
+}
 
 function plugin_counter_convert()
 {
-	global $vars,$HTTP_SERVER_VARS;
+	global $vars;
 
-	if (arg_check("add") || 
-		arg_check("edit") || 
-		arg_check("preview") || 
-		$vars['preview'] != '' || 
-		$vars['write'] != '' || 
-		!is_page($vars['page'])) {
-		return "";
+	$counter = plugin_counter_get_count($vars['page']);
+
+	return <<<EOD
+<div class="counter">
+Counter: {$counter['total']},
+today: {$counter['today']},
+yesterday: {$counter['yesterday']}
+</div>
+EOD;
+}
+
+function plugin_counter_get_count($page)
+{
+	global $vars;
+	static $counters = array();
+	static $default;
+
+	// カウンタのデフォルト値
+	if (!isset($default))
+	{
+		$default = array(
+			'total'     => 0,
+			'date'      => get_date('Y/m/d'),
+			'today'     => 0,
+			'yesterday' => 0,
+			'ip'        => ''
+		);
+	}
+	if (!is_page($page))
+	{
+		return $default;
+	}
+	if (array_key_exists($page,$counters))
+	{
+		return $counters[$page];
 	}
 
-	$file = COUNTER_DIR.encode($vars["page"]).".count";
-	$array = @file($file);
-	if (!$array) unlink($file);
-	
-	if(!file_exists($file))
+	// カウンタのデフォルト値をセット
+	$counters[$page] = $default;
+
+	// カウンタファイルが存在する場合は読み込む
+	$file = COUNTER_DIR.encode($page).COUNTER_EXT;
+	$fp = fopen($file, file_exists($file) ? 'r+' : 'w+')
+		or die_message('counter.inc.php:cannot open '.$file);
+	set_file_buffer($fp, 0);
+	flock($fp,LOCK_EX);
+	rewind($fp);
+
+	foreach ($default as $key=>$val)
 	{
-		if($nf = fopen($file, "wb"))
+		$counters[$page][$key] = rtrim(fgets($fp,256));
+		if (feof($fp)) { break; }
+	}
+	// ファイル更新が必要か?
+	$modify = FALSE;
+
+	// 日付が変わった
+	if ($counters[$page]['date'] != $default['date'])
+	{
+		$modify = TRUE;
+		$is_yesterday = ($counters[$page]['date'] == get_date('Y/m/d',strtotime('yesterday',UTIME)));
+		$counters[$page]['ip']        = $_SERVER['REMOTE_ADDR'];
+		$counters[$page]['date']      = $default['date'];
+		$counters[$page]['yesterday'] = $is_yesterday ? $counters[$page]['today'] : 0;
+		$counters[$page]['today']     = 1;
+		$counters[$page]['total']++;
+	}
+	// IPアドレスが異なる
+	else if ($counters[$page]['ip'] != $_SERVER['REMOTE_ADDR'])
+	{
+		$modify = TRUE;
+		$counters[$page]['ip']        = $_SERVER['REMOTE_ADDR'];
+		$counters[$page]['today']++;
+		$counters[$page]['total']++;
+	}
+
+	//ページ読み出し時のみファイルを更新
+	if ($modify and $vars['cmd'] == 'read')
+	{
+		// ファイルを丸める
+		rewind($fp);
+		ftruncate($fp,0);
+		// 書き出す
+		foreach (array_keys($default) as $key)
 		{
-			flock($nf, LOCK_EX);
-			fputs($nf,"0\n0\n0\n0\n\n");
-			flock($nf, LOCK_UN);
-			fclose($nf);
+			fputs($fp,$counters[$page][$key]."\n");
+			$$key = $counters[$page][$key];
 		}
-	}
-	$count = (int)rtrim($array[0]);
-	$today = rtrim($array[1]);
-	$today_count = (int)rtrim($array[2]);
-	$yesterday_count = (int)rtrim($array[3]);
-	$ip = rtrim($array[4]);
-	if($ip != $HTTP_SERVER_VARS["REMOTE_ADDR"] && !(arg_check("add") || arg_check("edit") || arg_check("preview") || $vars['preview'] != '' || $vars['write'] != '')) {
-		$t = date("Y/m/d");
-		if($t != $today) {
-			$yesterday_count = $today_count;
-			$today_count = 0;
-			$today = $t;
-		}
-		++$count;
-		++$today_count;
-	}
-	
-	$ip = $HTTP_SERVER_VARS["REMOTE_ADDR"];
-	if($nf = fopen($file, "wb"))
-	{
-		flock($nf, LOCK_EX);
-		fputs($nf,"$count\n");
-		fputs($nf,"$today\n");
-		fputs($nf,"$today_count\n");
-		fputs($nf,"$yesterday_count\n");
-		fputs($nf,"$ip\n");
-		flock($nf, LOCK_UN);
-		fclose($nf);
-	
+
 		// DBを更新
 		global $xoopsDB;
-		$name = strip_bracket($vars["page"]);
+		$name = strip_bracket($page);
 		$s_name = addslashes($name);
 		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_count")." WHERE name='$name';";
 		$result=$xoopsDB->query($query);
 
 		if (mysql_num_rows($result))
 		{
-			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_count")." SET count=$count,today='$today',today_count=$today_count,yesterday_count=$yesterday_count,ip='$ip' WHERE name='$name';";
+			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_count")." SET count=$total,today='$date',today_count=$today,yesterday_count=$yesterday,ip='$ip' WHERE name='$name';";
 			$result=$xoopsDB->queryF($query);
 		}
 		else
 		{
-			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_count")." (name,count,today,today_count,yesterday_count,ip) VALUES('$s_name',$count,'$today',$today_count,$yesterday_count,'$ip');";
+			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_count")." (name,count,today,today_count,yesterday_count,ip) VALUES('$s_name',$total,'$date',$today,$yesterday,'$ip');";
 			$result=$xoopsDB->queryF($query);
 		}
-	}
 
-	return "<span class=\"counter\">Counter: $count, today: $today_count, yesterday: $yesterday_count</span>";
+	}
+	// ファイルを閉じる
+	flock($fp,LOCK_UN);
+	fclose($fp);
+
+	return $counters[$page];
 }
 ?>
