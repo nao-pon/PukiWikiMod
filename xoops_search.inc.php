@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.9 2004/05/24 14:40:11 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.10 2004/06/04 13:52:29 nao-pon Exp $
 
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	global $xoopsDB,$xoopsUser;
@@ -90,7 +90,7 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 		$ret[$i]['time'] = $myrow['editedtime'];
 		$ret[$i]['uid'] = $myrow['uid'];
 		$ret[$i]['page'] = $myrow['name'];
-		if (!empty($myrow['plain']))
+		if (!empty($myrow['plain']) && function_exists('xoops_make_context'))
 		{
 			$ret[$i]['context'] = xoops_make_context($myrow['plain'],$queryarray);
 		}
