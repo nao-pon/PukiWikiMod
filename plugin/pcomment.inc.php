@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.19 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.20 2004/12/23 14:07:14 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -193,7 +193,7 @@ function plugin_pcomment_convert() {
   <input type="hidden" name="nodate" value="$f_nodate" />
   <input type="hidden" name="dir" value="$dir" />
   <input type="hidden" name="count" value="$count" />
-  $areaedit <table style="width:auto;"><tr><td style="vertical-align: bottom;"> $radio $title $name </td><td style="vertical-align: bottom;">$fontset_js_tag<br />$comment
+  $areaedit <table style="width:auto;"><tr><td style="vertical-align:bottom;white-space:nowrap;"> $radio $title $name </td><td style="vertical-align: bottom;">$fontset_js_tag<br />$comment
   <input type="submit" value="$btn_text" /></td></tr></table>
   </div>
 EOD;

@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.15 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: comment.inc.php,v 1.16 2004/12/23 14:07:14 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -230,11 +230,12 @@ function plugin_comment_convert()
 		 ."<input type=\"hidden\" name=\"above\" value=\"$above\" />\n"
 		 ."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($digest)."\" />\n"
 		 ."$areaedit"
-		 ."<table style=\"width:auto;\"><tr><td style=\"vertical-align: bottom;\">$nametags<td>"
-		 ."<td style=\"vertical-align: bottom;\">".fontset_js_tag()."<br />"
+		 ."<table style=\"width:auto;\"><tr><td style=\"vertical-align: bottom;\">$nametags</td>"
+		 ."<td style=\"vertical-align:bottom;white-space:nowrap;\">".fontset_js_tag()."<br />"
 		 ."<input type=\"text\" name=\"msg\" size=\"".htmlspecialchars($comment_size)."\" />\n"
 		 .$button."</td>"
-		 ."</tr></table></div>\n"
+		 ."</tr></table>"
+		 ."</div>\n"
 		 ."</form>";
 
 	$comment_no++;
