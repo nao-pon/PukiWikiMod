@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.13 2003/07/08 04:08:38 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.14 2003/07/09 09:03:58 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -390,11 +390,32 @@ else if($post["write"])
 
 		$oldpagesrc = get_source($post["page"]);
 		if(md5(join("",$oldpagesrc)) != $post["digest"])
-		{
+		{ //更新の衝突
 			$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_collided);
 			$page = str_replace('$1',make_search($post["page"]),$_title_collided);
 			$post["digest"] = md5(join("",($oldpagesrc)));
-			list($postdata_input,$auto) = do_update_diff(join("",$oldpagesrc),$postdata_input);
+			
+			$oldpagesrc = join("",$oldpagesrc);
+			
+			//改行コード統一 by nao-pon
+			$oldpagesrc = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$oldpagesrc);
+			
+			
+			unset ($create_uid);
+			if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$oldpagesrc,$arg)) {
+				$create_uid = $arg[1];
+				$freeze_check = "checked ";
+				$oldpagesrc = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$oldpagesrc);
+			}
+			//元のページ情報
+			$author_uid = get_pg_auther($post["page"]);
+			$oldpagesrc = preg_replace("/^\/\/ author:([0-9]+)\n/","",$oldpagesrc);
+			
+			$postdata_input = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$postdata_input);
+			$postdata_input = preg_replace("/^\/\/ author:([0-9]+)\n/","",$postdata_input);
+			
+			//保存されたページと編集内容との差分を得る
+			list($postdata_input,$auto) = do_update_diff($oldpagesrc,$postdata_input);
 			
 			if($auto) {
 			  $body = $_msg_collided_auto."\n";
@@ -402,6 +423,26 @@ else if($post["write"])
 			else {
 			  $body = $_msg_collided."\n";
 			}
+
+			if($post["notimestamp"]) $checked_time = "checked=\"checked\"";
+			if($post["enter_enable"]) $checked_enter = "checked=\"checked\"";
+			if($function_freeze && (($X_uid && $X_uid == $post["f_author_uid"]) || $X_admin)){
+				if ($wiki_writable === 2){
+					$enable_user = _MD_PUKIWIKI_ADMIN;
+				} elseif($wiki_writable === 1){
+					$enable_user = _MD_PUKIWIKI_REGIST;
+				} else {
+					$enable_user = _MD_PUKIWIKI_ALL;
+				}
+				$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($post["f_create_uid"]).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.sprintf($_btn_freeze_enable,$enable_user).'</span>';
+				$allow_edit_tag = allow_edit_form($post["gids"],$post["aids"]);
+			}
+			if ($X_admin){
+				$auther_tag = '  [ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($post["f_author_uid"]).'" /> ]';
+			} else {
+				$auther_tag = '<input type="hidden" name="f_author_uid" value="'.htmlspecialchars($post["f_author_uid"]).'" />';
+			}
+
 			$body .= "<form action=\"$script\" method=\"post\">\n"
 				."<div>\n"
 				."<input type=\"checkbox\" name=\"enter_enable\" value=\"true\" $checked_enter /><span class=\"small\">$_btn_enter_enable</span>\n"
@@ -413,7 +454,9 @@ else if($post["write"])
 				."<input type=\"submit\" name=\"write\" value=\"$_btn_update\" accesskey=\"s\" />\n"
 				."$add_top\n"
 				."<input type=\"checkbox\" name=\"notimestamp\" value=\"true\" $checked_time /><span class=\"small\">$_btn_notchangetimestamp</span>\n"
+				.$auther_tag
 				."</div>\n"
+				.$allow_edit_tag
 				."</form>\n";
 		}
 		else
