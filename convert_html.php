@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.33 2004/10/05 13:10:37 nao-pon Exp $
+// $Id: convert_html.php,v 1.34 2004/10/07 03:09:18 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -17,7 +17,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 		$page = add_bracket($string);
 		$h_excerpt = "";
 		$filename = PAGE_CACHE_DIR.encode($page).".txt";
-		if (!$X_uid && file_exists($filename) && ($cache || (filemtime($filename) + PAGE_CACHE_MIN * 60) > time()))
+		if (!$X_uid && file_exists($filename) && ($cache || (filemtime($filename) + PAGE_CACHE_MIN * 60) > time()) && empty($vars['xoops_block']))
 		{
 			$htmls = file($filename);
 			$var_data = unserialize(rtrim(array_shift($htmls)));
@@ -37,7 +37,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 			
 			$str = join('',$htmls);
 			//名前欄置換
-			$str = str_replace(WIKI_NAME_DEF,$X_uname,$str);
+			//$str = str_replace(WIKI_NAME_DEF,$X_uname,$str);
 			return $str;
 		}
 		else
@@ -99,7 +99,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 	$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 	
 	//ゲストアカウントでページコンバート指定時
-	if (!$X_uid && $page_cvt && !$cache)
+	if (!$X_uid && $page_cvt && !$cache && empty($vars['xoops_block']))
 	{
 		//マルチドメイン対応
 		$str = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$str);
@@ -132,7 +132,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 	$convert_load--;
 	
 	//名前欄置換
-	$str = str_replace(WIKI_NAME_DEF,$X_uname,$str);
+	//$str = str_replace(WIKI_NAME_DEF,$X_uname,$str);
 	
 	//一応アンセットしてみる
 	unset ($body,$cnts_plain,$arykeep,$result_last,$html);

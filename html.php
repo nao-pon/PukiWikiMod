@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.38 2004/10/05 12:46:47 nao-pon Exp $
+// $Id: html.php,v 1.39 2004/10/07 03:09:18 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -21,53 +21,108 @@ function catbodyall($page,$title="",$pg="")
 function catbody($title,$page,$body)
 {
 	global $script,$vars,$arg,$do_backup,$modifier,$modifierlink,$defaultpage,$whatsnew,$hr;
-	global $date_format,$weeklabels,$time_format,$related_link;
+	global $date_format,$weeklabels,$time_format,$related_link,$_msg_trackback;
 	global $HTTP_SERVER_VARS,$cantedit;
 	global $longtaketime;
 	global $foot_explain, $note_hr, $_msg_word, $search_word_color,$use_static_url;
-
-	if($vars["page"] && !arg_check("backup") && $vars["page"] != $whatsnew)
-	{
-		$is_page = 1;
-	}
+	
+	global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $wiki_allow_newpage;
+	global $X_admin,$X_uname,$noattach,$noheader,$trackback;
+	
+	//名前欄置換
+	$body = str_replace(WIKI_NAME_DEF,$X_uname,$body);
+	
+	// 表示中のページ名
+	$_page = $vars["page"];
+	
+	// ページが存在するか
+	$is_page = is_page($_page);
+	
+	// 通常のページ表示モード?
+	$is_read = ($is_page && arg_check("read") && empty($vars["preview"]));
+	
+	// ページを編集出来ないか
+	$_freeze = is_freeze($_page);
+	
 	if ($use_static_url)
 	{
-		$link_page = XOOPS_WIKI_URL."/".get_pgid_by_name($vars["page"]).".html";
+		$link_page = XOOPS_WIKI_URL."/".get_pgid_by_name($_page).".html";
 	}
 	else
 	{
-		$link_page = "$script?".rawurlencode(strip_bracket($vars["page"]));
+		$link_page = "$script?".rawurlencode(strip_bracket($_page));
  	}
 	$link_top = XOOPS_WIKI_URL."/";
- 	$link_add = "$script?cmd=add&amp;page=".rawurlencode($vars["page"]);
- 	$link_edit = "$script?cmd=edit&amp;page=".rawurlencode($vars["page"]);
- 	$link_diff = "$script?cmd=diff&amp;page=".rawurlencode($vars["page"]);
+ 	$link_add = "$script?cmd=add&amp;page=".rawurlencode($_page);
+ 	$link_edit = "$script?cmd=edit&amp;page=".rawurlencode($_page);
+ 	$link_diff = "$script?cmd=diff&amp;page=".rawurlencode($_page);
 	$link_list = "$script?cmd=list";
 	$link_filelist = "$script?cmd=filelist";
 	$link_search = "$script?cmd=search";
 	$link_whatsnew = "$script?$whatsnew";
- 	$link_backup = "$script?cmd=backup&amp;page=".rawurlencode($vars["page"]);
+ 	$link_backup = "$script?cmd=backup&amp;page=".rawurlencode($_page);
 	$link_help = "$script?cmd=help";
-	$link_source = "$script?plugin=source&amp;page=".rawurlencode($vars["page"]);
+	$link_source = "$script?plugin=source&amp;page=".rawurlencode($_page);
 	$link_new = "$script?plugin=newpage";
 	$link_copy = "$script?plugin=template&refer=".rawurlencode(strip_bracket($vars['page']));
 	$link_rename = "$script?plugin=rename&refer=".rawurlencode($vars['page']);
 	$link_attach = "$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page']);
 	$link_attachlist = "$script?plugin=attach&amp;pcmd=list&amp;page=".rawurlencode($vars['page']);
 
-	if(is_page($vars["page"]) && $is_page)
+
+	if($is_read)
 	{
-		$fmt = @filemtime(get_filename(encode($vars["page"])));
+		$fmt = @filemtime(get_filename(encode($_page)));
+		
+		$tb_tag = ($trackback)? "&nbsp;&nbsp;[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]" : "";
+		
+		$sended_ping_tag = ($trackback)? "[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."#sended_ping\">送信したPing(".tb_count($vars['page'],".ping").")</a> ]" : "";
+		
+		if (strip_bracket($_page) != $defaultpage) {
+			require_once(PLUGIN_DIR.'where.inc.php');
+			$where = do_plugin_inline("where");
+		}
+		else
+			$where = "";
+		
+		require_once(PLUGIN_DIR.'counter.inc.php');
+		$counter = do_plugin_convert("counter");
+		
+		if(!$noattach && file_exists(PLUGIN_DIR."attach.inc.php") && $is_read)
+		{
+			require_once(PLUGIN_DIR."attach.inc.php");
+			$attaches = attach_filelist();
+		}
+		
+		$trackback_body = ($trackback)? tb_get_tb_body($_page,TRUE) : "";
+		if ($trackback_body)
+		{
+			$trackback_body = <<<EOT
+	<div class="outer">
+	  <div class="head">{$_msg_trackback} {$tb_tag}</div>
+	  <div class="blog">
+	   {$trackback_body}
+	  </div>
+	</div>
+	<hr />
+EOT;
+		}
+	}
+	
+	if ($is_page)
+	{
+		global $no_name;
+		$pg_auther_name=get_pg_auther_name($_page);
+		$pginfo = get_pg_info_db($_page);
+		$user = new XoopsUser($pginfo['lastediter']);
+		$last_editer = $pginfo['lastediter']? $user->getVar("uname"):$no_name;
+		//$last_editer = $user->getVar("uname");
+		unset($user);
 	}
 
-	if(is_page($vars["page"]) && !in_array($vars["page"],$cantedit) && !arg_check("backup") && !arg_check("edit") && !$vars["preview"])
+	if($is_read && $related_link)
 	{
-		$is_read = TRUE;
-	}
-
-	if(is_page($vars["page"]) && $related_link && $is_page && !arg_check("edit") && !arg_check("freeze") && !arg_check("unfreeze"))
-	{
-		$related = make_related($vars["page"]);
+		$related = make_related($_page);
 	}
 
 	//単語検索
