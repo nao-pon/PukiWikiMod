@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.20 2003/07/22 13:36:42 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.21 2003/07/23 23:53:02 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -114,10 +114,12 @@ if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 	}
 	else
 	{
-		$cmd = "read";
-		$vars["page"] = $vars["refer"];
-		$body = @join("",get_source($vars["refer"]));
-		$body = convert_html($body);
+		//$cmd = "read";
+		//$vars["page"] = $vars["refer"];
+		//$body = @join("",get_source($vars["refer"]));
+		//$body = convert_html($body);
+		redirect_header("$script?".rawurlencode($vars["refer"]),1,$title);
+		exit();
 	}
 }
 // 一覧の表示
@@ -563,9 +565,11 @@ else if($post["write"])
 			if($postdata_org)
 			{
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_updated);
-				$page = str_replace('$1',make_search($post["page"]),$_title_updated);
-				$body = convert_html($postdata);
+				//$page = str_replace('$1',make_search($post["page"]),$_title_updated);
+				//$body = convert_html($postdata);
 				//header("Location: $script?".rawurlencode($post["page"]));
+				redirect_header("$script?".rawurlencode($post["page"]),1,$title);
+				exit();
 			}
 			else
 			{
