@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.30 2004/05/25 14:36:12 nao-pon Exp $
+// $Id: html.php,v 1.31 2004/05/27 13:59:15 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -476,7 +476,13 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	if (!is_array($allow_groups)){
 		$sel = " selected";
 	} else {
-		$sel = (in_array("0",$allow_groups))? " selected" : "";
+		if (in_array("0",$allow_groups))
+		{
+			$sel = " selected";
+			$allow_groups = array();
+		}
+		else
+			$sel = "";
 	}
 	$ret .= "<option value='0'$sel>$_btn_allow_deny</option>";
 	foreach ($groups as $gid => $gname){
@@ -498,7 +504,13 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	if (!is_array($allow_users)){
 		$sel = " selected";
 	} else {
-		$sel = (in_array("0",$allow_users))? " selected" : "";
+		if (in_array("0",$allow_users))
+		{
+			$sel = " selected";
+			$allow_users = array();
+		}
+		else
+			$sel = "";
 	}
 	$ret .= "<option value='0' $sel>$_btn_allow_deny</option>";
 	foreach ($allusers as $uid => $uname){
@@ -546,7 +558,13 @@ function allow_view_form($allow_groups=NULL,$allow_users=NULL) {
 	if (!is_array($allow_groups)){
 		$sel = " selected";
 	} else {
-		$sel = (in_array("0",$allow_groups))? " selected" : "";
+		if (in_array("0",$allow_groups))
+		{
+			$sel = " selected";
+			$allow_groups = array();
+		}
+		else
+			$sel = "";
 	}
 	$ret .= "<option value='0'$sel>$_btn_allow_deny</option>";
 	foreach ($groups as $gid => $gname){
@@ -569,7 +587,13 @@ function allow_view_form($allow_groups=NULL,$allow_users=NULL) {
 	if (!is_array($allow_users)){
 		$sel = " selected";
 	} else {
-		$sel = (in_array("0",$allow_users))? " selected" : "";
+		if (in_array("0",$allow_users))
+		{
+			$sel = " selected";
+			$allow_users = array();
+		}
+		else
+			$sel = "";
 	}
 	$ret .= "<option value='0' $sel>$_btn_allow_deny</option>";
 	foreach ($allusers as $uid => $uname){
