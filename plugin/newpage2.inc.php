@@ -5,7 +5,7 @@
 // newpage.inc.php の改造版です。 
 //     modified by XZR rev.5 (2004030401)
 // Based on
-// $Id: newpage2.inc.php,v 1.1 2004/09/04 00:59:36 nao-pon Exp $
+// $Id: newpage2.inc.php,v 1.2 2004/09/06 08:42:40 nao-pon Exp $
 //////////////////////////////////////////////////////////////////////
 // 引数：
 // #newpage2(表示名,ディレクトリ,......)
