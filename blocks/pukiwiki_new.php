@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.14 2004/12/10 13:30:41 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.15 2005/01/13 13:57:51 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -44,14 +44,19 @@ function b_pukiwiki_new_show($option) {
 	if ($res)
 	{
 		$date = $items = "";
+		$close = FALSE;
 		while($data = mysql_fetch_row($res))
 		{
-			if(date("Y-n-j",$data[3]) != $date) {
+			if(date("Y-n-j",$data[3]) != $date)
+			{
+				if ($close) $items .= "</ul>";
 				$date = date("Y-n-j",$data[3]);
-				$items .= "&nbsp;<strong>".$date."</strong><br />\n";
+				$items .= "<strong>".$date."</strong>\n<ul>\n";
+				$close = TRUE;
 			}
-			$items .="&nbsp;&nbsp;<strong><big>&middot;</big></strong>&nbsp;".xb_make_link($data[1])."<br />\n";
+			$items .="<li>".xb_make_link($data[1])."</li>\n";
 		}
+		if ($close) $items .= "</ul>";
 	}
 
 	$block['title'] = _MI_PUKIWIKI_BTITLE;

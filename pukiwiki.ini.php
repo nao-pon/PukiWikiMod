@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.33 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.34 2005/01/13 13:57:51 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -143,7 +143,7 @@ $alias_set_status = 0;
 
 /////////////////////////////////////////////////
 // リスト構造の左マージン
-$_list_left_margin = 0; // リストと画面左端との間隔(px)
+$_list_left_margin = 10; // リストと画面左端との間隔(px)
 $_list_margin = 8;      // リストの階層間の間隔(px)
 $_list_pad_str = ' class="list%d" style="padding-left:%dpx;margin-left:%dpx"';
 

@@ -19,10 +19,10 @@ function plugin_recent_init()
 {
 	if (LANG == "ja") {
 		$_plugin_recent_messages = array(
-    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%s最新の%d件</h5><div style="margin-left:.8em;margin-right:.8em">%s</div>');
+    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%s最新の%d件</h5>%s');
   } else {
 		$_plugin_recent_messages = array(
-    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%sRecent(%d)</h5><div style="margin-left:.8em;margin-right:.8em">%s</div>');
+    '_recent_plugin_frame'=>'<h5 class="side_label" style="margin:auto;margin-top:0px;margin-bottom:.5em">%sRecent(%d)</h5>%s');
 	}
   set_plugin_messages($_plugin_recent_messages);
 }
@@ -31,6 +31,7 @@ function plugin_recent_convert()
 {
 	global $_recent_plugin_frame;
 	global $WikiName,$BracketName,$script,$whatsnew,$X_admin;
+	global $_list_left_margin, $_list_margin;
 	
 	$recent_lines = 0;
 	$prefix = "";
@@ -82,6 +83,9 @@ function plugin_recent_convert()
 	//echo $query."<br>";
 	if ($res)
 	{
+		$_style = $_list_left_margin + $_list_margin;
+		$_style = " style=\"margin-left:". $_style ."px;padding-left:". $_style ."px;\"";
+
 		$date = $items = "";
 		$cnt = 0;
 		while($data = mysql_fetch_row($res))
@@ -91,7 +95,7 @@ function plugin_recent_convert()
 						$items .= "</ul>";
 					}
 					$date = date("Y-n-j",$data[3]);
-					$items .= "<div class=\"recent_date\">".$date."</div><ul class=\"recent_list\">";
+					$items .= "<div class=\"recent_date\">".$date."</div><ul class=\"recent_list\"{$_style}>";
 			}
 			$pg_link = make_pagelink($data[1]);
 			if ($prefix)

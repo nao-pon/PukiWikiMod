@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.19 2004/12/06 13:48:49 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.20 2005/01/13 13:57:51 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -93,6 +93,8 @@ function plugin_ls2_convert() {
 }
 function ls2_show_lists($prefix,&$params) {
 	global $_ls2_messages;
+	global $_list_left_margin, $_list_margin;
+	
 	$pages = ls2_get_child_pages($prefix,$params['depth']);
 	//list($pages,$child_count) = explode(" ",ls2_get_child_pages($prefix,$params['depth']));
 	if ($params['reverse']) $pages = array_reverse($pages);
@@ -109,9 +111,12 @@ function ls2_show_lists($prefix,&$params) {
 	
 	$c_row = 1;
 	$ret = "";
+	$_style = $_list_left_margin + $_list_margin;
+	$_style = " style=\"margin-left:". $_style ."px;padding-left:". $_style ."px;\"";
+
 	foreach ($pages as $page)
 	{
-		if ($c_row === 1) $ret .= '<div style="float:left;width:'.$width.'%"><ul>';
+		if ($c_row === 1) $ret .= '<div style="float:left;width:'.$width.'%"><ul'.$_style.'>';
 		list($page,$child_count) = explode(" ",$page);
 		$ret .= ls2_show_headings($page,$params,FALSE,$prefix,$child_count);
 		if ($c_row === $rows)
@@ -129,6 +134,8 @@ function ls2_show_lists($prefix,&$params) {
 function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_count="") {
 	global $script,$auto_template_name,$use_static_url;
 	global $_ls2_anchor, $_ls2_messages;
+	global $_list_left_margin, $_list_margin;
+	
 	static $_auto_template_name = "";
 	
 	if (!$_auto_template_name) $_auto_template_name = preg_quote($auto_template_name,'/');
@@ -171,7 +178,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 	if ($params['pagename']){
 		//基準ページ名は省く nao-pon
 		if ($name != $prefix) {
-			$name = str_replace($prefix,"",$name);
+			$name = str_replace($prefix."/","",$name);
 			$_is_base = false;
 		} else {
 			$_is_base = true;
@@ -183,12 +190,12 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 		if ($_is_base) {
 			$c_margin = 0; //基準ページ
 		} else {
-			$c_margin = $c_count[9]*15;//TABのコード＝９
+			$c_margin = $c_count[9] * ($_list_margin + $_list_left_margin);//TABのコード＝９
 		}
 		//[/(\tに変換済)]以前をカット
 		$name = preg_replace("/.*\t/","",$name);
 
-		$ret .= '<li style="margin-left:'.$c_margin.'px;">';
+		$ret .= '<li class="list'.($c_count[9]+1).'" style="margin-left:'.$c_margin.'px;">';
 	} else {
 		$ret .= '<li style="margin-left;">';
 	}

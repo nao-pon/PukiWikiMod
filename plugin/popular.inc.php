@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.10 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: popular.inc.php,v 1.11 2005/01/13 13:57:51 nao-pon Exp $
 //
 
 /*
@@ -48,6 +48,7 @@ function plugin_popular_convert()
 	//return false;
 	global $_popular_plugin_frame, $_popular_plugin_today_frame;
 	global $script,$whatsnew,$non_list;
+	global $_list_left_margin, $_list_margin;
 	
 	$max = 10;
 	$except = '';
@@ -140,8 +141,11 @@ function plugin_popular_convert()
 		$prefix .= "/";
 		$prefix = preg_quote($prefix,"/");
 	}
-	if (count($counters)) {
-		$items = '<ul class="recent_list">';
+	if (count($counters))
+	{
+		$_style = $_list_left_margin + $_list_margin;
+		$_style = " style=\"margin-left:". $_style ."px;padding-left:". $_style ."px;\"";
+		$items = '<ul class="popular_list"'.$_style.'">';
 		
 		foreach ($counters as $page=>$count) {
 			$page = htmlspecialchars(substr($page,1));

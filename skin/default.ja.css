@@ -174,10 +174,17 @@ div.wiki_page_navi
 .pukiwiki_body dl,
 .pukiwiki_body ol,
 .pukiwiki_body ul,
+.pukiwiki_body li,
 .pukiwiki_body blockquote,
 .pukiwiki_body td
 {
 	line-height:1.5;
+}
+
+.pukiwiki_body ol,
+.pukiwiki_body ul
+{
+	list-style-position: outside;
 }
 
 .pukiwiki_body p
@@ -527,14 +534,19 @@ input.copyButton {
 }
 
 .recent_date{
+	margin-left:10px;
 	text-align:left;
-	font-weight: bold;
+	font-weight:bold;
 }
+
 .recent_list{
-	margin:0px;
-	margin-left:1em;
-	padding:0px;
-	border:0px;
+	list-style-type:disc;
+	word-wrap:break-word;
+	word-break:break-all;
+}
+
+.popular_list{
+	list-style-type:decimal;
 	word-wrap:break-word;
 	word-break:break-all;
 }
@@ -599,15 +611,18 @@ span.diff_removed {
 	display:inline-block;
 }
 
-ul.list1{
+ul.list1,
+li.list1{
 	list-style-type:disc;
 }
 
-ul.list2{
+ul.list2,
+li.list2{
 	list-style-type:circle;
 }
 
-ul.list3{
+ul.list3,
+li.list3{
 	list-style-type:square;
 }
 
@@ -754,7 +769,7 @@ p.quotation
 	background-color: #FFFFFF;
 	font-size:85%;
 	line-height:1.5;
-	word-break: break-all;
+	word-break: normal;
 }
 /* source.inc.php */
 div.wiki_source
