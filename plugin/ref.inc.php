@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.9 2003/08/03 13:44:58 nao-pon Exp $
+// $Id: ref.inc.php,v 1.10 2003/08/05 23:46:29 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -287,7 +287,8 @@ function plugin_ref_body($name,$args,$params){
 				$params['_%'] = $m[1];
 			}
 			if (preg_match("/^t:(.*)$/i",$arg,$m)){
-				$title = htmlspecialchars($m[1])."&#13;&#10;".$title;
+				$m[1] = htmlspecialchars(str_replace("&amp;quot;","",$m[1]));
+				if ($m[1]) $title = $m[1]."&#13;&#10;".$title;
 			}
 		}
 		// 指定されたサイズを使用する
@@ -344,6 +345,15 @@ function plugin_ref_body($name,$args,$params){
 			$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info/>";
 		}
 	} else { // 通常ファイル
+		foreach ($params['_args'] as $arg){
+			if (preg_match("/^t:(.*)$/i",$arg,$m)){
+				$m[1] = htmlspecialchars(str_replace("&amp;quot;","",$m[1]));
+				if ($m[1]) $info = $m[1]."&#13;&#10;".$info;
+			}
+		}
+		//IE以外は改行文字をスペースに変換
+		if ( !strstr($_SERVER["HTTP_USER_AGENT"], "MSIE")) $info = str_replace("&#13;&#10;"," ",$info);
+
 		$ret .= "<a href=\"$l_url\" title=\"$info\">$icon$title</a>";
 	}
 	$rets[_body] = $ret;
