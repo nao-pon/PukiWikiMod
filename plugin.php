@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: plugin.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
+// $Id: plugin.php,v 1.3 2003/07/30 14:52:16 nao-pon Exp $
 //
 
 // プラグイン用に未定義の変数を設定
@@ -105,7 +105,9 @@ function do_plugin_convert($name,$args)
 	{
 		return htmlspecialchars('#'.$name.($args ? "($args)" : ''));
 	}
-	
+	//プラグイン側でコンバートすると何故かApacheがこける場合があるので
+	//配列で値が帰ってきたときは、未コンバートなので、コンバートする。
+	if (is_array($retvar)) $retvar = convert_html($retvar);
 	return $retvar;
 }
 
