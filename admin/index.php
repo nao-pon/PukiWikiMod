@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.11 2003/07/08 04:08:38 nao-pon Exp $
+// $Id: index.php,v 1.12 2003/07/22 13:41:44 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -154,8 +154,7 @@ function displayForm(){
 	}
 	if($function_freeze){
 		$_ff_enable = " checked";
-		$_ff_enable = "";
-		$_ff_disable = " checked";
+		$_ff_disable = "";
 	} else {
 		$_ff_disable = " checked";
 		$_ff_enable = "";
