@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.21 2004/10/05 12:46:47 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.22 2004/10/05 13:11:58 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -1033,7 +1033,7 @@ class AttachFiles
 		{
 			if ($mod) $ret .= str_repeat("|>",4-$mod)."|\n";
 			//if ($mod) $ret .= "|\n";
-			$ret = "|TCENTER:704 CENTER:MIDDLE:176|CENTER:MIDDLE:176|CENTER:MIDDLE:176|CENTER:MIDDLE:176|c\n".$ret;
+			$ret = "|TCENTER:704px CENTER:MIDDLE:176px|CENTER:MIDDLE:176px|CENTER:MIDDLE:176px|CENTER:MIDDLE:176px|c\n".$ret;
 		 	$ret = convert_html($ret);
 		}
 		
