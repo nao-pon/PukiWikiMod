@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.9 2004/03/20 07:21:18 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.10 2004/03/20 14:43:36 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -190,7 +190,7 @@ function plugin_tracker_action()
 		page_write($page,$postdata,NULL,"","","","","","1",array('plugin'=>'tracker','mode'=>'all'));
 		return array(
 			'msg'=>$_tracker_messages['msg_done'],
-			'body'=>$_tracker_messages[msg_guestauth']
+			'body'=>$_tracker_messages['msg_guestauth']
 		);
 	}
 	
