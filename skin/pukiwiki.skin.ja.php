@@ -1,15 +1,10 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.25 2004/10/05 08:49:00 nao-pon Exp $
-
-if (!defined('DATA_DIR')) { exit; }
-
-global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $_freeze, $wiki_allow_newpage, $X_admin,$noattach,$noheader,$trackback;
-
-$_freeze = is_freeze($vars[page]);
-if($_freeze){
-	// 凍結ページなら
-	$hide_navi = ($X_admin)? 0 : $hide_navi;
-}
+<?php 
+// $Id: pukiwiki.skin.ja.php,v 1.26 2004/10/07 05:39:51 nao-pon Exp $
+if (!defined('DATA_DIR')) exit;
 ?>
+
+<!-- pukiwikimod -->
+
 	<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">
 <?php if (WIKI_THEME_CSS){ ?>
 	<link rel="stylesheet" href="<?php echo WIKI_THEME_CSS ?>" type="text/css" media="screen" charset="shift_jis">
@@ -20,7 +15,11 @@ if($_freeze){
 	<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">
 <?php } ?>
 	<script language=javascript src="skin/default.ja.js"></script>
-<table border=0 cellspacing="5" style="width:100%;" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()><tr><td class="pukiwiki_body">
+
+<table border=0 cellspacing="5" style="width:100%;" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()>
+ <tr>
+  <td class="pukiwiki_body">
+
 	<?php if((!$hide_navi && !$noheader) || !$is_read){ // header ?>
 		<center><div class="wiki_page_title"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
@@ -77,64 +76,33 @@ if($_freeze){
 	<?php } else { if (!$_freeze) { // header ?>
 		<div style="float:right;width:65px;"><a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="ファイル添付" /></a><a href="<?php echo $link_edit ?>"><img src="./image/edit_button.gif" width="45" height="22" border="0" alt="編集" /></a></div>
 	<?php } } ?>
-	<?php
-	if ($is_page) {
-		$tb_tag = ($trackback)? "&nbsp;&nbsp;[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]" : "";
-		$sended_ping_tag = ($trackback)? "[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."#sended_ping\">送信したPing(".tb_count($vars['page'],".ping").")</a> ]" : "";
-	?>
-	<div style="text-align:left;">
-	<?php
-		if (strip_bracket($vars['page']) != $defaultpage) {
-			require_once(PLUGIN_DIR.'where.inc.php');
-			echo do_plugin_inline("where").$tb_tag;
-		}
-		else
-			echo $tb_tag;
-	?>
-	</div>
-	<?php
-		require_once(PLUGIN_DIR.'counter.inc.php');
-		echo "<div style=\"text-align:right;clear:both;\">".do_plugin_convert("counter")."</div>";
-	}
-	?>
-	<?php if($is_page) { ?>
 
+	<?php if($is_read) { ?>
+	
+	<div style="text-align:left;">
+	<?php echo $where.$tb_tag; ?>
+	</div>
+	
+	<div style="text-align:right;clear:both;">
+	<?php echo $counter ?>
+	</div>
+	
 	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> &lt;&lt;---&gt;&gt; <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
-	<?php } ?>
+	
+	<?php } // is_read ?>
+	
 	<div class="wiki_content" id="body" style="width:100%;">
 	<?php echo $body ?>
 	</div>
-	<?php if($is_page) { ?>
-	<?php } ?>
 	<?php echo $hr ?>
-	<?php
-		if(!$noattach && file_exists(PLUGIN_DIR."attach.inc.php") && $is_read)
+	<?php if($attaches)
 		{
-			require_once(PLUGIN_DIR."attach.inc.php");
-			$attaches = attach_filelist();
-			if($attaches)
-			{
-				print $attaches;
-				print $hr;
-			}
+			print $attaches;
+			print $hr;
 		}
 	?>
-	<?php
-	$trackback_body = tb_get_tb_body($vars['page'],TRUE);
-	if ($trackback_body){
-	?>
-	<div class="centercolumn">
-	  <div class="blockTitle">トラックバック <?php echo $tb_tag ?></div>
-	  <div class="blog">
-	<?php
-		echo $trackback_body;
-	?>
-	  </div>
-	</div>
-	<hr />
-	<?php
-	}
-	?>
+	<?php if ($is_read && $trackback_body){ echo $trackback_body; } ?>
+	
 	<div style="text-align:right">
 		<?php if($is_page) { ?>
 		<a href="<?php echo $link_page ?>"><img src="./image/reload.png" width="20" height="20" border="0" alt="リロード" /></a>
@@ -168,20 +136,13 @@ if($_freeze){
 	</div>
 	<span class="small"><?php echo $sended_ping_tag ?><br /></span>
 	<?php
-	if (is_page($vars["page"]))
+	if ($is_page)
 	{
-		global $no_name;
-		$pg_auther_name=get_pg_auther_name($vars["page"]);
-		$pginfo = get_pg_info_db($vars["page"]);
-		$user = new XoopsUser($pginfo['lastediter']);
-		$last_editer = $pginfo['lastediter']? $user->getVar("uname"):$no_name;
-		//$last_editer = $user->getVar("uname");
-		unset($user);
 	?>
-	<table style="width:auto;"><tr>
-	<td style="text-align:right;margin:0px;padding:0px;"><span class="small">ページ作成:</td><td style="margin:0px;padding:0px;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a></td><td style="margin:0px;padding:0px;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['buildtime'])." <small>".get_passage($pginfo['buildtime']); ?></small></span></td>
+	<table style="width:auto;" class="small"><tr>
+	<td style="text-align:right;margin:0px;padding:0px;">ページ作成:</td><td style="margin:0px;padding:0px;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a></td><td style="margin:0px;padding:0px;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['buildtime']) . "<small>" . get_passage($pginfo['buildtime']); ?></small></td>
 	</tr><tr>
-	<td style="text-align:right;margin:0px;padding:0px;"><span class="small">最終更新:</td><td style="margin:0px;padding:0px;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo $pginfo['lastediter'] ?>"><?php echo $last_editer ?></a></td><td style="margin:0px;padding:0px;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) ?></span> <?php echo get_pg_passage($vars["page"]) ?></td>
+	<td style="text-align:right;margin:0px;padding:0px;">最終更新:</td><td style="margin:0px;padding:0px;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo $pginfo['lastediter'] ?>"><?php echo $last_editer ?></a></td><td style="margin:0px;padding:0px;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) . get_pg_passage($vars["page"]); ?></td>
 	</tr></table>
 	<?php } ?>
 	<?php if($related) { ?>
@@ -195,4 +156,9 @@ if($_freeze){
 		Powered by PHP <?php echo PHP_VERSION ?><br /><br />
 		HTML convert time to <?php echo $taketime ?> sec.
 	</address>
-</td></tr></table>
+
+  </td>
+ </tr>
+</table>
+ 
+<!-- /pukiwikimod -->
