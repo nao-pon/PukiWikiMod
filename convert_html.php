@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.31 2004/09/28 14:21:27 nao-pon Exp $
+// $Id: convert_html.php,v 1.32 2004/10/05 08:46:36 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {

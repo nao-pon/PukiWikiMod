@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: config.php,v 1.5 2004/09/29 00:04:41 nao-pon Exp $
+// $Id: config.php,v 1.6 2004/10/05 08:46:36 nao-pon Exp $
 //
 /*
  * プラグインの設定をPukiWikiのページに記述する
