@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.14 2004/08/29 06:09:57 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.15 2004/09/29 02:35:13 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -320,7 +320,8 @@ if ($cal2 == 1){
     $pagelist[$tmp] = preg_replace("/{$date_sep}-$/","",$pagelist[$tmp]);
     $page = "[[" . $pagelist[$tmp] .  "]]";
 
-    $user_tag = ($wiki_user_dir)? sprintf($wiki_user_dir,get_pg_auther_name($page)) : "[[".get_pg_auther_name($page)."]]";
+		$user_tag = get_pg_auther_name($page);
+		make_user_link($user_tag);
 		$user_tag = make_link($user_tag);
 		$tb_tag = ($trackback)? "<div style=\"text-align:right\">by $user_tag at ".get_makedate_byname($page)." ".make_pagelink($page,"<img src=\"./image/link.gif\" />")." [ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]</div>" : "";
 
