@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.28 2005/02/23 00:16:41 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.29 2005/03/07 14:46:04 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -256,7 +256,18 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL)
 					return array('result'=>TRUE,'msg'=>$_attach_messages['msg_unset_css']);
 				}
 				else
+				{
+					// 外部ファイルの参照を禁止するための書き換え
+					$_data = join('',file($_pagecss_file));
+					$_data = preg_replace("#(ht|f)tps?://#","",$_data);
+					if ($fp = fopen($_pagecss_file,"wb"))
+					{
+						fputs($fp,$_data);
+						fclose($fp);
+					}
+					
 					return array('result'=>TRUE,'msg'=>$_attach_messages['msg_set_css']);
+				}
 			}
 			else
 				return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
@@ -559,6 +570,9 @@ EOD;
 	{
 		$allow_extensions = str_replace('$1',join(", ",$GLOBALS['pukiwiki_allow_extensions']),$_attach_messages['msg_extensions'])."<br />";
 	}
+	
+	$filelist = "<hr />".attach_filelist();
+	
 	return <<<EOD
 <form enctype="multipart/form-data" action="$script" method="post">
  <div>
@@ -580,6 +594,7 @@ EOD;
  </div>
 </form>
 $painter
+$filelist
 EOD;
 }
 //-------- クラス
