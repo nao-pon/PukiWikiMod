@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.13 2004/02/09 13:14:20 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.14 2004/02/10 04:58:09 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -112,14 +112,13 @@ function ls2_show_lists($prefix,&$params) {
 }
 
 function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_count="") {
-	global $script,$auto_template_name;
+	global $script,$auto_template_name,$use_static_url;
 	global $_ls2_anchor, $_ls2_messages;
 	static $_auto_template_name = "";
 	
 	if (!$_auto_template_name) $_auto_template_name = preg_quote($auto_template_name,'/');
 	
 	// テンプレートページは表示しない場合
-	//echo $auto_template_name;
 	if ($params['notemplate'] && preg_match("/\/".$_auto_template_name."(_m)?$/",$page)) return;
 	
 	$ret = '';
@@ -129,8 +128,8 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 	
 	$name = strip_bracket($page);
 	$title = $name.' '.get_pg_passage($page,FALSE);
-	//$href = $script.'?cmd=read&amp;page='.rawurlencode($page);
-	if ($use_static_url = 1)
+
+	if ($use_static_url)
 	{
 		$pgid = get_pgid_by_name($page);
 		$href = XOOPS_WIKI_URL."/{$pgid}.html";
