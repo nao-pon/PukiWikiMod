@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.4 2003/07/02 00:53:04 nao-pon Exp $
+// $Id: index.php,v 1.5 2003/07/02 09:31:55 nao-pon Exp $
 
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -19,13 +19,16 @@ function changePermit($_target_dir){
 		}
 		closedir($dir);
 	}
-	redirect_header(XOOPS_ADMIN_URL,1,_AM_DBUPDATED);
+	redirect_header("./index.php",1,_AM_DBUPDATED);
 	exit();
 }
 
 function writeConfig(){
 	global $xoopsConfig, $HTTP_POST_VARS;
-	global $wiki_defaultpage, $wiki_modifier, $wiki_modifierlink, $wiki_function_freeze, $wiki_adminpass, $wiki_css, $wiki_anon_writable, $wiki_hide_navi,$_wiki_mail_sw;
+
+	foreach($HTTP_POST_VARS as $k => $v){
+		$$k = $v;
+	}
 
 	$filename = _AM_WIKI_CONFIG_FILE;
 	$file = fopen($filename, "w");
