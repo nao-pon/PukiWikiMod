@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.8 2004/01/24 14:51:56 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -68,6 +68,7 @@ function plugin_ls2_convert() {
 	if (func_num_args()) {
 		$args = func_get_args();
 		$prefix = array_shift($args);
+		$prefix = preg_replace("/\/$/","",$prefix);
 	} else {
 		$args = array();
 	}
