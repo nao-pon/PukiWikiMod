@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.39 2004/03/20 07:21:17 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.40 2004/04/03 14:14:43 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -63,6 +63,7 @@ global $xoopsUser,$xoopsDB,$xoopsConfig;
 
 $X_admin =0;
 $X_uid =0;
+$wiki_ads_shown = 0;
 // ゲストユーザーの名称
 $no_name = $xoopsConfig['anonymous'];
 
@@ -150,11 +151,15 @@ if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 	}
 	else
 	{
-		if ($use_static_url)
-			$pg_link_url = XOOPS_WIKI_URL."/".get_pgid_by_name($vars["refer"]).".html";
+		if (!empty($retvars['redirect']))
+			$pg_link_url = $retvars['redirect'];
 		else
-			$pg_link_url = "$script?".rawurlencode(strip_bracket($vars["refer"]));
-		
+		{
+			if ($use_static_url)
+				$pg_link_url = XOOPS_WIKI_URL."/".get_pgid_by_name($vars["refer"]).".html";
+			else
+				$pg_link_url = "$script?".rawurlencode(strip_bracket($vars["refer"]));
+		}
 		redirect_header($pg_link_url,1,$title);
 		exit();
 	}
@@ -1289,6 +1294,8 @@ global $xoopsTpl;
 if ($xoopsTpl){
 	$xoopsTpl->assign("xoops_pagetitle",$xoops_pagetitle);
 	$xoopsTpl->assign("xoops_module_header",$xoops_mod_add_header);
+	//Ads表示済みフラグ
+	$xoopsTpl->assign("ads_shown",$wiki_ads_shown);
 }
 
 // ** 出力処理 **
