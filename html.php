@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.43 2004/10/15 14:59:36 nao-pon Exp $
+// $Id: html.php,v 1.44 2004/10/23 13:14:25 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -30,7 +30,8 @@ function catbody($title,$page,$body)
 	global $X_admin,$X_uname,$noattach,$noheader,$trackback;
 	
 	//名前欄置換
-	$body = str_replace(WIKI_NAME_DEF,$X_uname,$body);
+	if (empty($vars['xoops_block']))
+		$body = str_replace(WIKI_NAME_DEF,$X_uname,$body);
 	
 	// 表示中のページ名
 	$_page = $vars["page"];

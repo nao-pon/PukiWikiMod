@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.5 2004/10/21 23:57:41 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.6 2004/10/23 13:14:25 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -24,6 +24,7 @@ function b_pukiwiki_page_show($options)
 			$url = $wiki_url.'index.php?xoops_block=1&cmd=read&page='.rawurlencode($show_page);
 			$fp = fopen($url,"r");
 			if ($fp)
+			{
 				$contents = "";
 				do {
 					$data = fread($fp, 8192);
@@ -37,23 +38,40 @@ function b_pukiwiki_page_show($options)
 				
 				$data = $contents;
 				unset ($contents);
+			}
 		}
 		
-		//マルチドメイン対応
-		$data = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$data);
+		// Parseエラーが出た場合
+		if (strpos($data,"<b>Parse error</b>:  parse error in <b>") !== FALSE)
+			$data = "";
 		
-		// SID 自動付加環境 は SID を削除
-		if (ini_get("session.use_trans_sid"))
+		if ($data)
 		{
-			$data = preg_replace("/(&|\?)?".preg_quote(ini_get("session.name"),"/")."=[0-9a-f]{32}/","",$data);
-		}
-		
-		if ($fp = fopen($cache_file,"w"))
-		{
-			fputs($fp,$data);
-			fclose($fp);
+			//マルチドメイン対応
+			$data = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$data);
+			
+			// SID 自動付加環境 は SID を削除
+			if (ini_get("session.use_trans_sid"))
+			{
+				$data = preg_replace("/(&|\?)?".preg_quote(ini_get("session.name"),"/")."=[0-9a-f]{32}/","",$data);
+			}
+			
+			if ($fp = fopen($cache_file,"w"))
+			{
+				fputs($fp,$data);
+				fclose($fp);
+			}
 		}
 	}
+	
+	if (strpos($data,"_gEsTnAmE_") !== FALSE)
+	{
+		global $xoopsUser,$xoopsModule,$xoopsConfig;
+		$uname = ($xoopsUser)? $xoopsUser->uname() : $xoopsConfig['anonymous'];
+		//名前欄置換
+		$data = str_replace("_gEsTnAmE_",$uname,$data);
+	}
+	
 	// テーマ専用CSS Link を置換
 	$css_url = (file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'))?
 		XOOPS_THEME_URL.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'
