@@ -1,9 +1,9 @@
 <?php
-// $Id: yetlist.inc.php,v 1.3 2003/06/28 15:48:39 nao-pon Exp $
-
-// modified by PANDA <panda@arino.jp> http://home.arino.jp/
-// Last-Update:2002-09-12 rev.1
-
+/////////////////////////////////////////////////
+// PukiWiki - Yet another WikiWikiWeb clone.
+//
+// $Id: yetlist.inc.php,v 1.4 2004/01/15 13:13:37 nao-pon Exp $
+//
 function plugin_yetlist_init() {
 	if (LANG == "ja"){
 		define("WIKI_PLUGIN_YETLIST_MSG","未入力(作成されていない)ページの一覧");
@@ -12,51 +12,61 @@ function plugin_yetlist_init() {
 	}
 }
 
-function plugin_yetlist_action() {
-	global $script,$LinkPattern;
-
-	$ret['msg'] = WIKI_PLUGIN_YETLIST_MSG;
+function plugin_yetlist_action()
+{
+	global $script;
+	//global $_title_yetlist,$_err_notexist;
 	
-	if (!$dir = @opendir(DATA_DIR)) { return $ret; }
-
-	while($file = readdir($dir)) {
-		if ($file == '..' || $file == '.') continue;
-		$page = decode(str_replace('.txt','',$file));
-		if ($page == "RenameLog") continue;
-		$line = join("\n",preg_replace('/^(\s|\/\/|#).*$/','',file(DATA_DIR.$file)));
-		$obj = new link_wrapper($page);
-		foreach ($obj->get_link($line) as $obj) {
-			if ($obj->name != '' and ($obj->type == 'WikiName' or $obj->type == 'BracketName') and !is_page($obj->name)) {
-				$refer[$obj->name][] = $page;
-			}
+	$retval = array(
+		'msg' => WIKI_PLUGIN_YETLIST_MSG,
+		'body' => ''
+	);
+	
+	$refer = array();
+	$exists = get_existpages();
+	$pages = array_diff(get_existpages(CACHE_DIR,'.ref'),get_existpages());
+	foreach ($pages as $page)
+	{
+		$page = add_bracket($page);
+		foreach (file(CACHE_DIR.encode($page).'.ref') as $line)
+		{
+			list($_page) = explode("\t",$line);
+			$refer[$page][] = $_page;
 		}
 	}
-	closedir($dir);
-
+	
 	if (count($refer) == 0)
-		return $ret;
-
-	ksort($refer);
-
-	foreach($refer as $page=>$refs) {
-		$page_raw  = rawurlencode($page);
-		$page_disp = strip_bracket($page);
+	{
+		$retval['body'] = "no page!";
+		return $retval;
+	}
+	
+	ksort($refer,SORT_STRING);
+	
+	foreach($refer as $page=>$refs)
+	{
+		$r_page = rawurlencode($page);
+		$s_page = htmlspecialchars($page);
 		
 		$link_refs = array();
-		foreach(array_unique($refs) as $ref) {
-			$ref_raw  = rawurlencode($ref);
-			$ref_disp = strip_bracket($ref);
+		foreach(array_unique($refs) as $_refer)
+		{
+			$r_refer = rawurlencode($_refer);
+			$s_refer = htmlspecialchars($_refer);
 			
-			$link_refs[] = "<a href=\"$script?$ref_raw\">$ref_disp</a>";
+			$link_refs[] = "<a href=\"$script?$r_refer\">$s_refer</a>";
+			//$link_refs[] = make_pagelink($_refer);
 		}
 		$link_ref = join(' ',$link_refs);
 		// 参照元ページが複数あった場合、referは最後のページを指す(いいのかな)
-		$ret['body'] .= "<li><a href=\"$script?cmd=edit&amp;page=$page_raw&amp;refer=$ref_raw\">$page_disp</a> ($link_ref)</li>\n";
+		$retval['body'] .= "<li><a href=\"$script?cmd=edit&amp;page=$r_page&amp;refer=$r_refer\">$s_page</a> <em>($link_ref)</em></li>\n";
 	}
-
-	if ($ret['body'] != '')
-		$ret['body'] = "<ul>\n{$ret['body']}</ul>\n";
-
-	return $ret;
+	
+	if ($retval['body'] != '')
+	{
+		$retval['body'] = "<ul>\n".$retval['body']."</ul>\n";
+	}
+	
+	return $retval;
 }
 ?>
