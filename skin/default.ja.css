@@ -9,6 +9,22 @@
 	word-break:normal;
 }
 
+.wiki_content
+{
+
+}
+.wiki_content a
+{
+	border-bottom: 1px dotted #6699FF;
+}
+
+.wiki_content a:hover
+{
+	text-decoration: none;
+	border-bottom: 1px solid #FF0000;
+}
+
+
 div.wiki_body_block
 {
 	background-color: #F5F5F5;
