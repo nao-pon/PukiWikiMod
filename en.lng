@@ -69,11 +69,16 @@ $_msg_week = array("Sun","Mon","Tue","Wed","Thu","Fri","Sat");
 $_msg_content_back_to_top = '<span class="super_index">[back to top]</span>';
 $_msg_filesdel = 'Delete attach files & counter file now.';
 $_msg_read_more = '<< Read more >>';
+$_msg_trackback = 'Track Back';
+$_msg_pagecomment = 'Page comments';
+$_msg_pings = 'Sended pings';
 
 ///////////////////////////////////////
 // symbols
 $_symbol_anchor = '&dagger;';
 $_symbol_noexists = '?';
+$_symbol_anchor = '<img src="./image/anchor.png" width="10" height="10" alt="Fixed link" style="vertical-align:top;" />';
+
 
 ///////////////////////////////////////
 // form buttons
@@ -116,6 +121,10 @@ $_btn_allow_memo = '
 $_btn_name = 'Name: ';
 $_btn_comment = 'Submit';
 $_msg_comment = 'Comment: ';
+$_title_comment_collided = '[The collision of updating] broke out in $1.';
+$_msg_comment_collided = 'It seems that other men have updated the same page while you are editing this page. It may be inserted in the different position although the comment was added.';
+
+
 
 ///////////////////////////////////////
 // attach file
