@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.12 2003/09/02 14:09:11 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.13 2003/09/14 13:10:25 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -209,6 +209,7 @@ $auto_template_rules = array(
 '\[\[((.+)\/([^\/]+))\]\]' => '[[\2/template]]'
 );
 
+
 /////////////////////////////////////////////////
 // ChaSen, KAKASI による、ページ名の読みの取得 (0:無効,1:有効)
 $pagereading_enable = 0;
@@ -226,6 +227,21 @@ $pagereading_kakasi_path = 'c:\kakasi\bin\kakasi.exe';
 // ページ名読みを格納したページの名前
 $pagereading_config_page = ':config/PageReading';
 
+
+///////////////////////////////////////////////// 
+// HTTPリクエストにプロキシサーバを使用する 
+$use_proxy = 0; 
+// proxy ホスト 
+$proxy_host = 'proxy.xxx.yyy.zzz'; 
+// proxy ポート番号 
+$proxy_port = 8080; 
+// プロキシサーバを使用しないホストのリスト 
+$no_proxy = array( 
+'127.0.0.1', 
+'localhost', 
+//'192.168.1.0/24', 
+//'no-proxy.com', 
+); 
 
 /////////////////////////////////////////////////
 // ユーザ定義ルール
