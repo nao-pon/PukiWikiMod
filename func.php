@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
+// $Id: func.php,v 1.3 2003/06/28 16:03:42 nao-pon Exp $
 /////////////////////////////////////////////////
 // 検索語を展開する
 function get_search_words($words,$special=FALSE)
@@ -458,9 +458,11 @@ function auto_br($msg){
 				//取り合えず改行前の~を削除
 				$line = preg_replace("/~(->)?$/","\\1",$line);
 				if (preg_match("/^(.*\|(\{)?(LEFT|CENTER|RIGHT)?(:)?(TOP|MIDDLE|BOTTOM)?)(.*)$/",$line,$reg)){
-					$line = $reg[1] . preg_replace("/(^[^ #\-+*hc].*?)(->)?$/","$1~$2",$reg[6]);
+					//$line = $reg[1] . preg_replace("/(^[^ #\-+*hc].*?)(->)?$/","$1~$2",$reg[6]);
+					$line = $reg[1] . preg_replace("/(^[^ #*hc].*?)(->)?$/","$1~$2",$reg[6]);
 				} else {
-					$line = preg_replace("/(^[^ #\-+*].*?)(->)?$/","$1~$2",$line);
+					//$line = preg_replace("/(^[^ #\-+*].*?)(->)?$/","$1~$2",$line);
+					$line = preg_replace("/(^[^ #*].*?)(->)?$/","$1~$2",$line);
 				}
 			}
 			$msg .= $line."\n";
@@ -468,7 +470,7 @@ function auto_br($msg){
 		$msg = rtrim($msg);
 
 		//余分な~を削除
-		$msg = preg_replace("/~(->)?\n([#\-+*|\n])/","\\1\n\\2",$msg);
+		$msg = preg_replace("/~(->)?\n([#\-+*|:>\n])/","\\1\n\\2",$msg);
 		$msg = preg_replace("/((?:^|\n)[^ ][^\n~]*)~((:?->)?\n )/","\\1\\2",$msg);
 		$msg = preg_replace("/~$/","",$msg);
 
@@ -488,8 +490,12 @@ function auto_br($msg){
 		return $msg;
 }
 // オートブラケット by nao-pon
-function auto_braket($msg){
+function auto_braket($msg,$tgt_name){
 	$WikiName_ORG = '[A-Z][a-z]+(?:[A-Z][a-z]+)+';
+	
+	if ($tgt_name == "InterWikiName"){
+		$msg = preg_replace("/(\[[^[\]]+\])/","[[$1]]",$msg);
+	}
 	
 	$msg=ereg_replace("(^|[\n])( |#|\/\/)","\\1\\2[[",$msg);
 	
@@ -508,7 +514,11 @@ function auto_braket($msg){
 	$msg = str_replace(chr(29),"]]",$msg);
 
 	$msg = ereg_replace("(^|[\n])( |#|\/\/)\[\[","\\1\\2",$msg);
-	
+
+	if ($tgt_name == "InterWikiName"){
+		$msg = preg_replace("/\[\[(\[[^[\]]+\])\]\]/","$1",$msg);
+	}
+
 	return $msg;
 }
 /*
