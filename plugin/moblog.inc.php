@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.5 2004/08/20 09:09:29 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.6 2004/08/20 14:39:02 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -10,7 +10,7 @@ function plugin_moblog_action()
 	
 	//error_reporting(E_ALL);
 	//設定ファイル読み込み
-	require('moblog.ini.php');
+	require('./plugin_data/moblog/moblog.ini.php');
 
 	$chk_file = CACHE_DIR."moblog.chk";
 	if (!file_exists($chk_file))
