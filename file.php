@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.8 2003/07/30 14:46:45 nao-pon Exp $
+// $Id: file.php,v 1.9 2003/08/03 13:38:57 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -54,9 +54,7 @@ function page_write($page,$postdata,$notimestamp=NULL)
 	$oldpostdata = is_page($page) ? join('',get_source($page)) : '';
 	$diffdata = do_diff($oldpostdata,$postdata);
 	file_write(DIFF_DIR,$page,$diffdata);
-	
-	// バックアップの作成
-	make_backup($page,$postdata == '');
+
 	// バックアップの作成
 	if(is_page($page))
 		$oldposttime = filemtime(get_filename(encode($page)));
@@ -359,5 +357,40 @@ function get_pg_allow_editer($page){
 	
 	return $allows;
 	
+}
+
+//EXIFデータを得る
+function get_exif_data($file){
+	if (!function_exists('read_exif_data')) return false;
+	$exif_data = @read_exif_data($file);
+	//$exif_tags .= (isset($exif_data['Make']))? "<hr>- EXIF 撮影データ -" : "";
+	if (isset($exif_data['Make'])) {
+		$ret['title'] = "- EXIF 撮影データ -";
+		$ret['メーカー'] = $exif_data['Make'];
+	}
+	if (isset($exif_data['Model'])) $ret['カメラ'] = $exif_data['Model'];
+	if (isset($exif_data['DateTimeOriginal'])) $ret['撮影日時'] = $exif_data['DateTimeOriginal'];
+	if (isset($exif_data['ExposureTime'])){
+		$exif_tmp = explode("/",$exif_data['ExposureTime']);
+		if ($exif_tmp[0]) $exif_tmp2 = floor($exif_tmp[1]/$exif_tmp[0]);
+		$ret['シャッタースピード'] = "1/".$exif_tmp2;
+	}
+	if (isset($exif_data['FNumber'])){
+		$exif_tmp = explode("/",$exif_data['FNumber']);
+		if ($exif_tmp[1]) $exif_tmp2 = $exif_tmp[0]/$exif_tmp[1];
+		$ret['絞り値'] = "F".$exif_tmp2;
+	}
+	if (isset($exif_data['Flash'])){
+		if ($exif_data['Flash'] == 0) {$ret['フラッシュ'] = "OFF";}
+		elseif ($exif_data['Flash'] == 1) {$ret['フラッシュ'] = "ON";}
+		elseif ($exif_data['Flash'] == 5) {$ret['フラッシュ'] = "発光(反射なし)";}
+		elseif ($exif_data['Flash'] == 7) {$ret['フラッシュ'] = "発光(反射あり)";}
+		elseif ($exif_data['Flash'] == 9) {$ret['フラッシュ'] = "常時ON";}
+		elseif ($exif_data['Flash'] == 16) {$ret['フラッシュ'] = "常時OFF";}
+		elseif ($exif_data['Flash'] == 24) {$ret['フラッシュ'] = "オート(非発光)";}
+		elseif ($exif_data['Flash'] == 25) {$ret['フラッシュ'] = "オート(発光)";}
+		else {$ret['フラッシュ'] = $exif_data['Flash'];}
+	}
+	return $ret;
 }
 ?>
