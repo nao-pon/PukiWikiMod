@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: plugin.php,v 1.8 2004/11/01 14:13:19 nao-pon Exp $
+// $Id: plugin.php,v 1.9 2004/11/05 13:58:51 nao-pon Exp $
 //
 
 // プラグイン用に未定義の変数を設定
@@ -23,20 +23,27 @@ function set_plugin_messages($messages)
 function exist_plugin($name)
 {
 	global $no_plugins;
+	static $exists = array();
 	
 	if (!isset($no_plugins)) $no_plugins = array();
 	
 	$name = strtolower($name);	//Ryuji_edit(2003-03-18) add 大文字と小文字を区別しないファイルシステム対
+	if(isset($exists[$name])) return $exists[$name];
 	
 	if (in_array($name,$no_plugins)) return false;
 	
 	if (preg_match('/^\w{1,64}$/',$name)
 		and file_exists(PLUGIN_DIR.$name.'.inc.php'))
 	{
+		$exists[$name] = TRUE;
 		require_once(PLUGIN_DIR.$name.'.inc.php');
 		return TRUE;
 	}
-	return FALSE;
+	else
+	{
+		$exists[$name] = FALSE;
+		return FALSE;
+	}
 }
 
 //プラグイン(action)が存在するか
