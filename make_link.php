@@ -280,6 +280,8 @@ class link_wikiname extends link
 
 		if (is_page($this->name))
 			return "<a href=\"$script?{$this->rawname}{$this->anchor}\" title=\"{$this->special}".$this->passage()."\">{$this_alias}</a>";
+		elseif (!WIKI_ALLOW_NEWPAGE)
+			return $this_alias;
 		else {
 			$rawrefer = ($refer != '') ? rawurlencode($refer) : $this->rawrefer;
 			return "<span class=\"noexists\">$this->alias<a href=\"$script?cmd=edit&amp;page={$this->rawname}&amp;refer=$rawrefer\">?</a></span>";
@@ -333,8 +335,12 @@ function make_pagelink($page,$alias='',$anchor='',$refer='')
 	}
 	else
 	{
-		$retval = "$s_alias<a href=\"$script?cmd=edit&amp;page=$r_page$r_refer\">$_symbol_noexists</a>";
-		if (!$link_compact)
+		if (WIKI_ALLOW_NEWPAGE)
+			$retval = "$s_alias<a href=\"$script?cmd=edit&amp;page=$r_page$r_refer\">$_symbol_noexists</a>";
+		else
+			$retval = $s_alias;
+
+		if (!$link_compact && WIKI_ALLOW_NEWPAGE)
 		{
 			$retval = "<span class=\"noexists\">$retval</span>";
 		}
