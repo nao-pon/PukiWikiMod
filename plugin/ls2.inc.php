@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.12 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.13 2004/02/09 13:14:20 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -235,18 +235,21 @@ function ls2_get_child_pages($prefix,$depth=FALSE) {
 	return array_keys($pages);
 }
 //オプションを解析する
-function ls2_check_arg($val, $key, &$params) {
+function ls2_check_arg($val, $key, &$params)
+{
 	if ($val == '') { $params['_done'] = TRUE; return; }
 
 	if (!$params['_done']) {
 		foreach (array_keys($params) as $key)
 		{
-			if (strstr($val,':')) // PHP4.3.4＋Apache2 環境で何故かApacheが落ちるとの報告があったので
-				list($val,$thisval) = explode(":",$val);
+			if (strpos($val,':')) // PHP4.3.4＋Apache2 環境で何故かApacheが落ちるとの報告があったので
+				list($_val,$thisval) = explode(":",$val);
 			else
+			{
+				$_val = $val;
 				$thisval = null;
-			
-			if (strtolower($val) == $key)
+			}
+			if (strtolower($_val) == $key)
 			{
 				if (!empty($thisval))
 					$params[$key] = $thisval;
