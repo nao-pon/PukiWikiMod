@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.9 2004/05/15 03:05:55 nao-pon Exp $
+// $Id: trackback.php,v 1.10 2004/05/15 10:59:51 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -271,6 +271,7 @@ function tb_send($page,$data="")
 	
 	if ($sended){
 		// 送信済みエントリを記録
+		$sended = array_unique($sended);
 		$fp = fopen($ping_filename,'w');
 		flock($fp,LOCK_EX);
 		foreach ($sended as $entry)
