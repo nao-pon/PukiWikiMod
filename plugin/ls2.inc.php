@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.15 2004/03/20 07:21:18 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.16 2004/05/13 14:10:39 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -76,7 +76,7 @@ function plugin_ls2_convert() {
 		//$prefix = strip_bracket($vars['page']).'/';
 		$prefix = strip_bracket($vars['page']);
 		
-	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE,'depth'=>FALSE,'nonew'=>FALSE,'_done'=>FALSE);
+	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE,'depth'=>FALSE,'nonew'=>FALSE,'col'=>1,'_done'=>FALSE);
 	array_walk($args, 'ls2_check_arg', &$params);
 	$title = (count($params['_args']) > 0) ?
 		join(',', $params['_args']) :
@@ -99,15 +99,30 @@ function ls2_show_lists($prefix,&$params) {
 
 	foreach ($pages as $page) { $params[$page] = 0; }
 
-	if (count($pages) == 0) { return str_replace('$1',htmlspecialchars($prefix),$_ls2_messages['err_nopages']); }
+	$c_pages = count($pages);
 
-	$ret = '<ul>';
+	if ($c_pages == 0) { return str_replace('$1',htmlspecialchars($prefix),$_ls2_messages['err_nopages']); }
+
+	if ($c_pages < $params['col']) $params['col'] = $c_pages;
+	$rows = (int)(ceil($c_pages / $params['col']));
+	$width = (int)(100 / $params['col'] - 1);
+	
+	$c_row = 1;
+	$ret = "";
 	foreach ($pages as $page)
 	{
+		if ($c_row === 1) $ret .= '<div style="float:left;width:'.$width.'%"><ul>';
 		list($page,$child_count) = explode(" ",$page);
 		$ret .= ls2_show_headings($page,$params,FALSE,$prefix,$child_count);
+		if ($c_row === $rows)
+		{
+			$ret .= '</ul></div>'."\n";
+			$c_row = 0;
+		}
+		$c_row++;
 	}
-	$ret .= '</ul>'."\n";
+	if ($c_row !== 1) $ret .= '</ul></div>'."\n";
+	$ret .= '<div style="clear:both;"></div>'."\n";
 	return $ret;
 }
 

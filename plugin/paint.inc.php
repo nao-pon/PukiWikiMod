@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.7 2004/04/03 14:16:25 nao-pon Exp $
+// $Id: paint.inc.php,v 1.8 2004/05/13 14:10:39 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -59,6 +59,7 @@ function plugin_paint_init() {
 			'msg_title_collided' => '$1 で【更新の衝突】が起きました',
 			'msg_collided'  => 'あなたが画像を編集している間に、他の人が同じページを更新してしまったようです。<br />
 	画像とコメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
+			'msg_bottom'  => '<div>送信ボタンは1回のみクリックしてください。<br />※処理に数十秒かかる場合もあります。お待ちください。</div>',
 		));
 	} else {
 		$messages = array('_paint_messages'=>array(
@@ -184,6 +185,7 @@ function plugin_paint_action()
  </applet>
  </div>
 EOD;
+		$retval['body'] .= $_paint_messages['msg_bottom'];
 		// XHTML 1.0 Transitional
 		$html_transitional = TRUE;
 	}
@@ -308,6 +310,41 @@ function paint_insert_ref($filename)
 		$ret['msg'] = $_paint_messages['msg_title_collided'];
 		$ret['body'] = $_paint_messages['msg_collided'];
 	}
+	
+	// 過去ログ自動作成
+	preg_match_all("/(#ref\(.+?#img\(,clear\))/s",$postdata,$datas,PREG_SET_ORDER);
+	list($head,$foot) = preg_split("/(#ref\(.+#img\(,clear\))/s",$postdata);
+	
+	$data = array();
+	foreach($datas as $tmp)
+	{
+		$data[] = $tmp[0];
+	}
+	
+	$count = count($data);
+	
+	if (count($data) > 25)
+	{
+		$old = array_slice($data,-20);
+		array_splice($data,-20);
+		
+		$postdata = $head.join("\n\n",$data).$foot;
+		
+		//ページ名の決定
+		$i = 0;
+		do {
+			$i++;
+			$page = "[[".strip_bracket($vars['refer'])."/$i]]";
+		} while(is_page($page));
+		
+		$old = str_replace("#ref(","#ref(../",$old);
+		$old = join("\n\n",$old);
+		$old = "**過去ログ($i)\n#navi(../)\n$old\n\n#navi(../)";
+		
+		page_write($page,$old);
+		
+	}
+	
 	
 	page_write($vars['refer'],$postdata);
 	

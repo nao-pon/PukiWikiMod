@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.10 2004/03/20 14:43:36 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.11 2004/05/13 14:10:39 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -354,12 +354,13 @@ class Tracker_field_textarea extends Tracker_field
 	
 	function get_tag()
 	{
-		global $_btn_enter_enable,$_btn_autobracket_enable;
+		global $_btn_enter_enable,$_btn_autobracket_enable,$autolink;
 		$s_name = htmlspecialchars($this->name);
 		$s_cols = htmlspecialchars($this->values[0]);
 		$s_rows = htmlspecialchars($this->values[1]);
 		$s_value = htmlspecialchars($this->default_value);
-		return "<input type=\"checkbox\" name=\"enter_enable[$s_name]\" value=\"true\" checked /><span class=\"small\">$_btn_enter_enable</span> <input type=\"checkbox\" name=\"auto_bra_enable[$s_name]\" value=\"true\" checked /><span class=\"small\">$_btn_autobracket_enable</span><br /><textarea name=\"$s_name\" cols=\"$s_cols\" rows=\"$s_rows\">$s_value</textarea>";
+		$auto_bra_enable = ($autolink)? "":" checked";
+		return "<input type=\"checkbox\" name=\"enter_enable[$s_name]\" value=\"true\" checked /><span class=\"small\">$_btn_enter_enable</span> <input type=\"checkbox\" name=\"auto_bra_enable[$s_name]\" value=\"true\"".$auto_bra_enable." /><span class=\"small\">$_btn_autobracket_enable</span><br /><textarea name=\"$s_name\" cols=\"$s_cols\" rows=\"$s_rows\">$s_value</textarea>";
 	}
 	function format_cell($str)
 	{

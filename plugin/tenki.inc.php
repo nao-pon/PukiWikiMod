@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tenki.inc.php,v 1.4 2003/07/15 13:21:48 nao-pon Exp $
+// $Id: tenki.inc.php,v 1.5 2004/05/13 14:10:39 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -50,8 +50,21 @@ function plugin_tenki_cache_image_fetch($target, $dir, $id) {
 			fclose($file);
 			$url = NOIMAGE;
 		} else {
-			$data = fread($file, 1000000); 
+			// リモートファイルのパケット有効後対策
+			// http://search.net-newbie.com/php/function.fread.html
+			$contents = "";
+			do {
+				$data = fread($file, 8192);
+				if (strlen($data) == 0) {
+					break;
+				}
+				$contents .= $data;
+			} while(true);
+			
 			fclose ($file);
+			
+			$data = $contents;
+			unset ($contents);
 			$size = @getimagesize($target); // あったら、size を取得、通常は1が返るが念のため0の場合も(reimy)
 			if ($size[0] <= 1)
 				$url = NOIMAGE;

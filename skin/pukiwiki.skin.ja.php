@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.16 2004/02/08 12:48:06 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.17 2004/05/13 14:10:39 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -9,19 +9,19 @@ if($_freeze){
 	// 凍結ページなら
 	$hide_navi = ($X_admin)? 0 : $hide_navi;
 }
-
 ?>
-<?php if (! ( ($vars['cmd']==''||$vars['cmd']=='read') && $is_page) ) { ?>
-	<meta name="robots" content="noindex,nofollow" />
-<?php } ?>
+<?php if (WIKI_THEME_CSS){ ?>
+	<link rel="stylesheet" href="<?php echo WIKI_THEME_CSS ?>" type="text/css" media="screen" charset="shift_jis">
+<?php } else { ?>
 	<link rel="stylesheet" href="skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">
-	<?php if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css")){ ?>
-		<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">
-	<?php } ?>
+<?php } ?>
+<?php if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css")){ ?>
+	<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">
+<?php } ?>
 	<script language=javascript src="skin/default.js"></script>
 <table border=0 cellspacing="5" style="width:100%;"><tr><td class="pukiwiki_body">
 	<?php if(!$hide_navi && !$noheader){ // header ?>
-		<center><div style="width:80%;text-align:center;font-size:14px;font-weight:bold;border: #6699FF thick ridge 2px;background-color:#FFFFEE;padding:2px;"><?php echo $page ?></div>
+		<center><div class="wiki_page_title"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
 		[ <a href="<?php echo $link_page ?>">リロード</a> ]
 		&nbsp;
@@ -76,30 +76,31 @@ if($_freeze){
 	<?php } // header ?>
 
 	<?php echo $hr ?>
-
+	
 	<?php
 	if ($is_page) {
-		//$tb_tag = ($trackback)? "<div style=\"float:right\">[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]</div>" : "";
 		$tb_tag = ($trackback)? "&nbsp;&nbsp;[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]" : "";
 		$sended_ping_tag = ($trackback)? "[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."#sended_ping\">送信したPing(".tb_count($vars['page'],".ping").")</a> ]" : "";
-	
-		//echo "<div style=\"float:left;width:80%\">";
-		echo "<div style=\"text-align:left;\">";
+	?>
+	<div style="text-align:left;">
+	<?php
 		if (strip_bracket($vars['page']) != $defaultpage) {
 			require_once(PLUGIN_DIR.'where.inc.php');
 			echo do_plugin_inline("where").$tb_tag;
 		}
 		else
 			echo $tb_tag;
-		echo "</div>";
+	?>
+	</div>
+	<?php
 		require_once(PLUGIN_DIR.'counter.inc.php');
 		echo "<div style=\"text-align:right\">".do_plugin_convert("counter")."</div>";
-		//echo "<div style=\"clear: both;\">".$hr;
-		echo "<hr style='width:95%;'>";
 	}
 	?>
-	
 	<?php if($is_page) { ?>
+
+	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> &lt;&lt;---&gt;&gt; <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
+
 		<table cellspacing="1" cellpadding="0" border="0" style="width:100%;">
 			<tr>
 			<td valign="top" style="word-break:normal;">

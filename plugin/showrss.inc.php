@@ -22,7 +22,7 @@
  *
  * ÈòÆñ½ê       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.5 2003/10/31 12:22:59 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.6 2004/05/13 14:10:39 nao-pon Exp $
  *
  */
 
@@ -110,7 +110,7 @@ class ShowRSS_html
 				$link = $item['LINK'];
 				$title = $item['TITLE'];
 				$passage = get_passage($item['_TIMESTAMP']);
-				$link = "<a href=\"$link\" title=\"$title $passage\">$title</a>";
+				$link = "<a href=\"$link\" title=\"$title $passage\" target=\"_blank\">$title</a>";
 				$this->items[$date][] = $this->format_link($link);
 			}
 		}

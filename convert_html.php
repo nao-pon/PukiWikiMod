@@ -1,8 +1,8 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.19 2004/04/03 14:14:18 nao-pon Exp $
+// $Id: convert_html.php,v 1.20 2004/05/13 14:10:39 nao-pon Exp $
 /////////////////////////////////////////////////
-function convert_html($string,$is_intable=false,$page_cvt=false)
+function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
 	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown;
 	
@@ -11,14 +11,17 @@ function convert_html($string,$is_intable=false,$page_cvt=false)
 		$page = add_bracket($string);
 		$h_excerpt = "";
 		$filename = PAGE_CACHE_DIR.encode($page).".txt";
-		if (!$X_uid && file_exists($filename) && (filemtime($filename) + PAGE_CACHE_MIN * 60) > time())
+		if (!$X_uid && file_exists($filename) && ($cache || (filemtime($filename) + PAGE_CACHE_MIN * 60) > time()))
 		{
 			$htmls = file($filename);
 			list($related_link,$noattach,$noheader,$h_excerpt,$wiki_ads_shown,$foot_explain) = explode("\t",trim(array_shift($htmls)),6);
 			$foot_explain = explode("\t",$foot_explain);
 			return join('',$htmls);
 		}
-		else $string = join("",get_source($page));
+		else
+		{
+			$string = join("",get_source($page));
+		}
 	}
 	$string = preg_replace("/(^|\n)#newfreeze(\n|$)/","$1",$string);
 	
@@ -37,7 +40,9 @@ function convert_html($string,$is_intable=false,$page_cvt=false)
 		else
 			$result_last = preg_replace("/(^|\x08)#related/e",'make_related($vars["page"],TRUE)',$result_last);
 	}
-
+	
+	$result_last = preg_replace("/^#contents/",$body->contents,$result_last);
+	
 	$tmp = $result_last;
 	$result_last = preg_replace("/^#norelated$/","",$result_last);
 	if($tmp != $result_last) $related_link = 0;
@@ -67,9 +72,13 @@ function convert_html($string,$is_intable=false,$page_cvt=false)
 	$str = preg_replace("/(^|\n) /", "$1", $str);
 	
 	//ゲストアカウントでページコンバート指定時
-	if (!$X_uid && $page_cvt)
+	if (!$X_uid && $page_cvt && !$cache)
 	{
+		//マルチドメイン対応
+		$str = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$str);
+		
 		$html = $related_link."\t".$noattach."\t".$noheader."\t".$h_excerpt."\t".$wiki_ads_shown."\t".preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain))."\n".$str;
+		
 		//キャッシュ書き込み
 		if ($fp = @fopen($filename,"w"))
 		{
@@ -87,6 +96,12 @@ function convert_html($string,$is_intable=false,$page_cvt=false)
 
 class convert
 {
+	var $contents;
+	
+	function get_contents()
+	{
+		return $this->contents;
+	}
 	// テキスト本体をHTMLに変換する
 	function to_html($string)
 	{
@@ -308,7 +323,8 @@ class convert
 					list_push($result,$saved,'ol', strlen($out[1]));
 					array_push($result, '<li>'.inline($out[2]));
 				}
-				else if (preg_match("/^:([^:]+):(.*)/",$line,$out))
+				//else if (preg_match("/^:([^:]+):(.*)/",$line,$out))
+				else if (preg_match("/^:((?:\[\[.*]]|(?::\/\/|[^:])*)):(.*)/",$line,$out))
 				{
 					$headform[$_cnt] = ':'.$out[1].':';
 					back_push($result,$saved,'dl', 1);
@@ -707,15 +723,14 @@ class convert
 			}
 			$result = array_merge($result,$saved); $saved = array();
 			
-			$contents = "<a name=\"contents_$content_id_local\"></a>\n";
-			$contents .= join("\n",$result);
+			$this->contents = "<a name=\"contents_$content_id_local\"></a>\n";
+			$this->contents .= join("\n",$result);
 			if($strip_link_wall)
 			{
-				$contents = preg_replace("/\[\[([^\]:]+):(.+)\]\]/","$1",$contents);
-				$contents = preg_replace("/\[\[([^\]]+)\]\]/","$1",$contents);
+				$this->contents = preg_replace("/\[\[([^\]:]+):(.+)\]\]/","$1",$this->contents);
+				$this->contents = preg_replace("/\[\[([^\]]+)\]\]/","$1",$this->contents);
 			}
 		}
-		$result_last = preg_replace("/^#contents/",$contents,$result_last);
 		unset ($result,$saved);//メモリ節約してみる
 		return $result_last;
 

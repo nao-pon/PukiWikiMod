@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.24 2004/03/20 07:21:17 nao-pon Exp $
+// $Id: func.php,v 1.25 2004/05/13 14:10:39 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -770,6 +770,7 @@ function auto_braket($msg,$tgt_name){
 			//$page_name =  preg_quote ($page_name, "/");
 			$page_name = addslashes($page_name);
 			$msg = preg_replace("/(^|\x1d)([^\x1c\x1d]*?)(\x1c|$)/e","auto_br_replace('$1','$2','$3','$page_name')","$msg");
+			//$msg = preg_replace("/(^|\x1d)([^\x1c\x1d]*?)(\x1c|$)/e","'$1'.str_replace($page_name,chr(28).$page_name.chr(29),'$2').'$3'","$msg");
 		}
 	}
 
@@ -865,6 +866,87 @@ function drop_submit($str)
 		'<input$1type="hidden"',
 		$str
 	);
+}
+
+// AutoLinkのパターンを生成する
+// thx for hirofummy
+function get_autolink_pattern(&$pages)
+{
+	global $WikiName,$autolink,$nowikiname;
+	
+	$config = &new Config('AutoLink');
+	$config->read();
+	$ignorepages = $config->get('IgnoreList');
+	$forceignorepages = $config->get('ForceIgnoreList');
+	unset($config);
+	$auto_pages = array_merge($ignorepages,$forceignorepages);
+	
+	foreach ($pages as $page)
+	{
+		if (preg_match("/^$WikiName$/",$page) ?
+			$nowikiname : strlen($page) >= $autolink)
+		{
+			$auto_pages[] = strip_bracket($page);
+		}
+	}
+
+	if (count($auto_pages) == 0)
+	{
+		return $nowikiname ? '(?!)' : $WikiName;
+	}
+	
+	$auto_pages = array_unique($auto_pages);
+	sort($auto_pages,SORT_STRING);
+	
+	$result = get_autolink_pattern_sub($auto_pages,0,count($auto_pages),0);
+	
+	return array($result,$forceignorepages);
+}
+function get_autolink_pattern_sub(&$pages,$start,$end,$pos)
+{
+	$result = '';
+	$count = 0;
+	$x = (mb_strlen($pages[$start]) <= $pos);
+	
+	if ($x)
+	{
+		$start++;
+	}
+	for ($i = $start; $i < $end; $i = $j)
+	{
+		$char = mb_substr($pages[$i],$pos,1);
+		for ($j = $i; $j < $end; $j++)
+		{
+			if (mb_substr($pages[$j],$pos,1) != $char)
+			{
+				break;
+			}
+		}
+		if ($i != $start)
+		{
+			$result .= '|';
+		}
+		if ($i >= ($j - 1))
+		{
+			$result .= preg_quote(mb_substr($pages[$i],$pos),'/'); 
+		}
+		else
+		{
+			$result .=
+				preg_quote($char,'/').
+				get_autolink_pattern_sub($pages,$i,$j,$pos + 1);
+		}
+		$count++;
+	}
+	if ($x or $count > 1)
+	{
+		$result = '(?:'.$result.')';
+	}
+	if ($x)
+	{
+		$result .= '?';
+	}
+	return $result;
 }
 
 // ページ名を指定階層数切り詰める

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.21 2004/04/03 14:13:16 nao-pon Exp $
+// $Id: file.php,v 1.22 2004/05/13 14:10:39 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -186,7 +186,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 // 第4引数追加:最終更新しない=true by nao-pon
 function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="",$agids="",$freeze="",$unvisible="")
 {
-	global $post,$update_exec;
+	global $post,$update_exec,$autolink;
 	
 	if (is_null($notimestamp)) $notimestamp=$post['notimestamp'];
 	
@@ -237,8 +237,22 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		// pginfo DBを更新
 		pginfo_db_write($page,$action,$aids,$gids,$vaids,$agids,$freeze,$unvisible);
 		
-		// ページHTMLキャッシュを削除
+		// ページHTMLキャッシュとRSSキャッシュを削除
 		delete_page_html($page);
+		
+		// for autolink
+		if ($autolink)
+		{
+			list($pattern,$forceignorelist) = get_autolink_pattern(get_existpages());
+			
+			$fp = fopen(CACHE_DIR.'autolink.dat','w')
+				or die_message('cannot write autolink file '.CACHE_DIR.'/autolink.dat<br />maybe permission is not writable');
+			flock($fp,LOCK_EX);
+			fputs($fp,$pattern."\n");
+			fputs($fp,join("\t",$forceignorelist));
+			flock($fp,LOCK_UN);
+			fclose($fp);
+		}
 		
 		// TrackBack Ping用ファイル作成
 		// pcomment用：親ページ名をセット
@@ -272,15 +286,7 @@ function put_recentdeleted($page)
 	}
 	array_unshift($lines,'-'.format_date(UTIME)." - $_page\n");
 	$lines = array_splice($lines,0,$maxshow_deleted);
-/*
-	$fp = fopen(get_filename(encode($whatsdeleted)),'w')
-		or die_message('cannot write page file '.htmlspecialchars($whatsdeleted).'<br />maybe permission is not writable or filename is too long');
-	flock($fp,LOCK_EX);
-	fputs($fp,join('',$lines));
-	fputs($fp,"#norelated\n"); // :)
-	flock($fp,LOCK_UN);
-	fclose($fp);
-*/
+	
 	$postdata = "#freeze\tuid:1\taid:0\tgid:0\n";
 	if ($unvisible_deleted) $postdata .= "#unvisible\tuid:1\taid:0\tgid:0\n";
 	$postdata .= "// author:1\n";
@@ -297,51 +303,6 @@ function put_lastmodified()
 {
 	// 最終更新ページはDBから得るようにしたので必要なくなった
 	return;
-	
-	global $script,$maxshow,$whatsnew,$date_format,$time_format,$weeklabels,$post,$non_list;
-	
-	// ページ閲覧権限のキャッシュをクリアー
-	get_pg_allow_viewer("",false,true);
-
-	$files = get_existpages(true);
-	foreach($files as $page) {
-		if($page == $whatsnew) continue;
-		if(preg_match("/$non_list/",$page)) continue;
-
-		if(file_exists(get_filename(encode($page))))
-			{
-			$page_url = rawurlencode($page);
-			$lastmodtime = filemtime(get_filename(encode($page)));
-			$lastmod = date($date_format,$lastmodtime)
-				 . " (" . $weeklabels[date("w",$lastmodtime)] . ") "
-				 . date($time_format,$lastmodtime);
-
-			$page_auths = get_pg_allow_viewer(strip_bracket($page));
-			$page_auth = "//uid:".$page_auths['owner']."\taid:".$page_auths['user']."\tgid:".$page_auths['group'];
-
-			$putval[$lastmodtime][] = "$page_auth\n-$lastmod - $page";
-		}
-	}
-	
-	$cnt = 1;
-	krsort($putval);
-	$fp = fopen(get_filename(encode($whatsnew)),"w");
-	if($fp===FALSE) die_message("cannot write page file ".htmlspecialchars($whatsnew)."<br>maybe permission is not writable or filename is too long");
-	flock($fp,LOCK_EX);
-	// 閲覧制限する
-	fputs($fp,"#unvisible	uid:1	aid:0	gid:0\n");
-	foreach($putval as $pages)
-	{
-		foreach($pages as $page)
-		{
-			fputs($fp,$page."\n");
-			$cnt++;
-			if($cnt > $maxshow) break;
-		}
-		if($cnt > $maxshow) break;
-	}
-	flock($fp,LOCK_UN);
-	fclose($fp);
 }
 
 // ファイル名を得る(エンコードされている必要有り)
@@ -351,22 +312,9 @@ function get_filename($pagename)
 }
 
 // ページが存在するかしないか
-function is_page($page,$reload=false)
+function is_page($page,$reload=FALSE)
 {
-	global $InterWikiName,$_ispage;
-	
-	$page = add_bracket($page);
-	//if(($_ispage[$page] === true || $_ispage[$page] === false) && !$reload) return $_ispage[$page];
-	if(isset($_ispage[$page]) && !$reload) return $_ispage[$page];
-
-	if(preg_match("/($InterWikiName)/",$page))
-		$_ispage[$page] = false;
-	else if(!page_exists($page))
-		$_ispage[$page] = false;
-	else
-		$_ispage[$page] = true;
-	
-	return $_ispage[$page];
+	return file_exists(get_filename(encode(add_bracket($page))));
 }
 
 // ページが編集可能か
@@ -993,9 +941,14 @@ function get_heading($page)
 //ページ名から最初の見出しを得る(ファイルから)
 function get_heading_init($page)
 {
+	global $nowikiname;
+	
 	$_body = get_source($page);
 	if (!$_body) return;
-	//delete_page_info($_body);
+	
+	$_nowikiname = $nowikiname;
+	$nowikiname = 1;
+
 	$s_page = strip_bracket($page);
 	$first_line = "";
 	foreach($_body as $line){
@@ -1006,29 +959,35 @@ function get_heading_init($page)
 		if (preg_match("/(?:^|\|}?)\*{1,6}([^\|]*)/",$line,$reg))
 		{
 			$reg[1] = preg_replace("/->$/","",rtrim($reg[1]));
-			return trim(strip_htmltag(make_link(htmlspecialchars($reg[1]),add_bracket($page))));
+			$ret = trim(strip_htmltag(make_link(htmlspecialchars($reg[1]),add_bracket($page))));
+			$nowikiname = $_nowikiname;
+			return $ret;
 			break;
 		}
 	}
 	if (!$first_line) $first_line = str_replace("/","",substr($s_page,strrpos($s_page,"/")));
-	//return trim(strip_htmltag(make_link(htmlspecialchars($_body[0]),add_bracket($page))));
-	return trim(strip_htmltag(make_link(htmlspecialchars($first_line),add_bracket($page))));
+	$ret = trim(strip_htmltag(make_link(htmlspecialchars($first_line),add_bracket($page))));
+	$nowikiname = $_nowikiname;
+	return $ret;
 }
 
-// 指定ページのコンバート後のHTMLキャッシュファイルを削除
+// 指定ページのコンバート後のHTMLキャッシュファイルとRSSキャッシュを削除
 function delete_page_html($page)
 {
 	global $defaultpage, $post;
 	$pages = array();
+	$rsss = array();
 	// 削除するページ
 	$pages[] = $page;
 	$pages[] = $defaultpage; //トップページ
+	$rss[] = '';//デフォルト
 	$_page = strip_bracket($page);
 	while(preg_match("/(.+)\/[^\/]+/",$_page,$match))
 	{
 		//上階層のページ
 		$_page = $match[1];
 		$pages[] = add_bracket($_page);
+		$rss[] = $_page;
 	}
 	//呼び出しもとのページ
 	$pages[] = add_bracket($post['refer']);
@@ -1038,6 +997,17 @@ function delete_page_html($page)
 		//echo $del_page."<br>";
 		$filename = PAGE_CACHE_DIR.encode($del_page).".txt";
 		//echo $filename."<br>";
+		if (file_exists($filename)) unlink($filename);
+	}
+	
+	//RSSキャッシュ
+	foreach($rss as $del_page)
+	{
+		$filename = CACHE_DIR.encode($del_page).".rss10";
+		if (file_exists($filename)) unlink($filename);
+		$filename = CACHE_DIR.encode($del_page).".rss20";
+		if (file_exists($filename)) unlink($filename);
+		$filename = CACHE_DIR.encode($del_page).".rss21";
 		if (file_exists($filename)) unlink($filename);
 	}
 	

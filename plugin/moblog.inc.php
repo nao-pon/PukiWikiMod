@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.3 2004/01/24 14:50:27 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.4 2004/05/13 14:10:39 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -251,18 +251,21 @@ function plugin_moblog_convert()
 
 function plugin_moblog_page_write($page,$subject,$text,$filename,$ref_option,$now)
 {
-	global $X_uid,$auto_template_name;
+	global $X_uid,$auto_template_name,$autolink;
+	
 	$aids = $gids = $freeze = "";
 	$date = "at ".date("g:i a", $now);
 	$set_data = "\n\n";
 	$set_data .= ($subject)?  "**$subject\n" : "----\n";
 	if ($filename) $set_data .= "#ref(".$filename.$ref_option.")\n";
-	$set_data .= $text."\n\n".$date."\n#clear\n\n";
+	$set_data .= $text."\n\n".$date."\n#clear";
 	
 	// 改行有効
 	$set_data = auto_br($set_data);
 	// オートブラケット
-	$set_data = auto_braket($set_data,$page);
+	if (!$autolink) $set_data = auto_braket($set_data,$page);
+	// 改行文字調整
+	$set_data = rtrim($set_data)."\n\n";
 	// 念のためページ情報を削除
 	delete_page_info($set_data);
 	

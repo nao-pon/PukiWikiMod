@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.28 2004/04/03 14:12:48 nao-pon Exp $
+// $Id: html.php,v 1.29 2004/05/13 14:10:39 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -124,7 +124,7 @@ function get_page_name(){
 // 編集フォームの表示
 function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
 {
-	global $script,$rows,$cols,$hr,$vars,$function_freeze;
+	global $script,$rows,$cols,$hr,$vars,$function_freeze,$autolink;
 	global $_btn_addtop,$_btn_preview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp,$_btn_enter_enable,$_btn_autobracket_enable,$_btn_freeze_enable,$_btn_auther_id;
 	global $whatsnew,$_btn_template,$_btn_load,$non_list,$load_template_func;
 	global $freeze_check,$create_uid,$author_uid,$X_admin,$X_uid,$freeze_tag,$wiki_writable;
@@ -204,6 +204,8 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
 		$page_s = strip_bracket($page);
 		if($vars["refer"] && $page_s{0} != ":") $refer = $vars["refer"]."\n\n";
 	}
+	
+	$auto_bra_enable = ($autolink)? "" : " checked";
 
 return '
 <form enctype="multipart/form-data" action="'.$script.'" method="post">
@@ -219,7 +221,7 @@ return '
  </tr>
  <tr><td colspan=2>
    <input type="checkbox" name="enter_enable" value="true" checked /><span class="small">'.$_btn_enter_enable.'</span> 
-   <input type="checkbox" name="auto_bra_enable" value="true" checked /><span class="small">'.$_btn_autobracket_enable.'</span>
+   <input type="checkbox" name="auto_bra_enable" value="true"'.$auto_bra_enable.' /><span class="small">'.$_btn_autobracket_enable.'</span>
  </td></tr>
  <tr>
   <td align="right" colspan=2>

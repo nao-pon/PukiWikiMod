@@ -22,10 +22,12 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.7 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.8 2004/05/13 14:10:39 nao-pon Exp $
 
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	global $xoopsDB,$xoopsUser;
+	
+	include (XOOPS_ROOT_PATH."/modules/pukiwiki/cache/config.php");
 	
 	$X_uid = $X_admin = 0;
 	if ( $xoopsUser ) {
@@ -79,7 +81,10 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	while($myrow = $xoopsDB->fetchArray($result)){
 		$title = ($myrow['title'])? " [".$myrow['title']."]" : "";
 		$page_url = rawurlencode($myrow['name']);
-		$ret[$i]['link'] = "index.php?cmd=read&amp;page=$page_url&amp;word=$word_url";
+		if ($use_static_url)
+			$ret[$i]['link'] = $myrow['id'].".html";
+		else
+			$ret[$i]['link'] = "index.php?cmd=read&amp;page=$page_url&amp;word=$word_url";
 		$ret[$i]['title'] = htmlspecialchars($myrow['name'].$title, ENT_QUOTES);
 		$ret[$i]['image'] = "image/search.gif";
 		$ret[$i]['time'] = $myrow['editedtime'];

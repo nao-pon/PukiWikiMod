@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.22 2004/04/03 14:15:10 nao-pon Exp $
+// $Id: init.php,v 1.23 2004/05/13 14:10:39 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -165,6 +165,9 @@ if($do_backup && !is_writable(BACKUP_DIR))
 if($wrong_ini_file)
 	die_message("The setting file runs short of information.<br>The version of a setting file may be old.<br><br>These option are not found : $wrong_ini_file");
 
+//Defaultページ名(WikiName以外に対応)
+$defaultpage = add_bracket($defaultpage);
+
 if(!file_exists(get_filename(encode($defaultpage))))
 	touch(get_filename(encode($defaultpage)));
 if(!file_exists(get_filename(encode($whatsnew))))
@@ -182,4 +185,10 @@ $now = "$ins_date $ins_week $ins_time";
 define('WIKI_USER_DIR',$wiki_user_dir);
 define('PCMT_PAGE',add_bracket($pcmt_page_name));
 define('PAGE_CACHE_MIN',$page_cache_min);
+
+// XOOPS THEME スタイルシート
+define('WIKI_THEME_CSS',(file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'))?
+	XOOPS_THEME_URL.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'
+	:
+	"");
 ?>

@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.10 2004/01/27 14:27:19 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.11 2004/05/13 14:10:39 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -101,7 +101,7 @@ function plugin_bugtrack_print_form($base,$category)
   global $_bugtrack_plugin_summary, $_bugtrack_plugin_submit, $_bugtrack_plugin_version;
   global $_bugtrack_plugin_pagename, $_bugtrack_plugin_pagename_comment;
   global $_bugtrack_plugin_version_comment;
-  global $script,$_btn_enter_enable,$_btn_autobracket_enable;
+  global $script,$_btn_enter_enable,$_btn_autobracket_enable,$autolink;
 
 	// xoops //
 	global $xoopsUser;
@@ -138,6 +138,8 @@ function plugin_bugtrack_print_form($base,$category)
     $encoded_category .= "</select>";
   }
   
+  $auto_bra_enable = ($autolink)? "" : " checked";
+  
   $body = "<table border=\"0\"><form action=\"$script\" method=\"post\">
 <tr><th nowrap>$_bugtrack_plugin_name</th><td><input name=\"name\" size=\"20\" type=\"text\" value=\"$name\"></td></tr>
 <tr><th nowrap>$_bugtrack_plugin_category</th><td>$encoded_category</td></tr>
@@ -146,7 +148,7 @@ function plugin_bugtrack_print_form($base,$category)
 <tr><th nowrap>$_bugtrack_plugin_pagename</th><td><input name=\"pagename\" size=\"20\" type=\"text\">$_bugtrack_plugin_pagename_comment</td></tr>
 <tr><th nowrap>$_bugtrack_plugin_version</th><td><input name=\"version\" size=\"10\" type=\"text\">$_bugtrack_plugin_version_comment</td></tr>
 <tr><th nowrap>$_bugtrack_plugin_summary</th><td><input name=\"summary\" size=\"60\" type=\"text\"></td></tr>
-<tr><th nowrap></th><td><input type=\"checkbox\" name=\"enter_enable\" value=\"true\" checked /><span class=\"small\">$_btn_enter_enable</span> <input type=\"checkbox\" name=\"auto_bra_enable\" value=\"true\" checked /><span class=\"small\">$_btn_autobracket_enable</span></td></tr>
+<tr><th nowrap></th><td><input type=\"checkbox\" name=\"enter_enable\" value=\"true\" checked /><span class=\"small\">$_btn_enter_enable</span> <input type=\"checkbox\" name=\"auto_bra_enable\" value=\"true\"".$auto_bra_enable." /><span class=\"small\">$_btn_autobracket_enable</span></td></tr>
 <tr><th nowrap>$_bugtrack_plugin_body</th><td><textarea name=\"body\" cols=\"60\" rows=\"6\"></textarea></td></tr>
 <tr><td colspan=\"2\" align=\"center\"><input type=\"submit\" value=\"$_bugtrack_plugin_submit\">
 <input type=\"hidden\" name=\"plugin\" value=\"bugtrack\">

@@ -2,24 +2,35 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rsslink.inc.php,v 1.2 2004/01/12 13:12:06 nao-pon Exp $
+// $Id: rsslink.inc.php,v 1.3 2004/05/13 14:10:39 nao-pon Exp $
 //
 
 function plugin_rsslink_inline()
 {
 	global $script;
-	if (func_num_args() == 3)
+	$list_count = 0;
+	if (func_num_args() == 5)
+	{
+		list($page,$type,$with_content,$list_count,$body) = func_get_args();
+	}
+	elseif (func_num_args() == 4)
+	{
+		list($page,$type,$with_content,$body) = func_get_args();
+	}
+	elseif (func_num_args() == 3)
+	{
 		list($page,$type,$body) = func_get_args();
+		$with_content="false";
+	}
 	elseif (func_num_args() == 2)
 	{
 		list($page,$body) = func_get_args();
-		$type = "";
+		$type = $with_content = "";
 	}
 	elseif (func_num_args() == 1)
-		$page = $type = "";
+		$page = $type = $with_content = "";
 	else
 		return FALSE;
-	
 	if ($type == "rss10" || $type == "10")
 		$type = "rss10";
 	else
@@ -31,8 +42,23 @@ function plugin_rsslink_inline()
 		$page = " of ".htmlspecialchars($page);
 	}
 	else
-		$s_page = $page = "";
-	
-	return "<a href=\"$script?cmd=$type$s_page\"><img src=\"".XOOPS_WIKI_URL."/image/rss.png\" alt=\"RSS$page\" /></a>";
+	{
+		global $xoopsModule;
+		$s_page = "";
+		$page = " of ".htmlspecialchars($xoopsModule->name());
+	}
+	if ($type == "rss10")
+	{
+		if ($with_content=="true") 
+		{
+			$s_content = "&amp;content=true";
+		}
+		else
+		{
+			$s_content = "";
+		}
+	}
+	$s_list_count = ($list_count)? "&amp;count=$list_count" : "";
+	return "<a href=\"$script?cmd=$type$s_page$s_content$s_list_count	\"><img src=\"".XOOPS_WIKI_URL."/image/rss.png\" alt=\"RSS$page\" /></a>";
 }
 ?>

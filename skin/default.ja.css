@@ -9,7 +9,32 @@
 	word-break:normal;
 }
 
-pre, dl, ol, p, blockquote { line-height:130%; }
+div.wiki_body_block
+{
+	background-color: #F5F5F5;
+}
+
+div.wiki_page_title
+{
+	width:80%;
+	text-align:center;
+	font-size:14px;
+	font-weight:bold;
+	border: 2px ridge #6699FF;
+	background-color:#FFFFEE;
+	padding:2px;
+}
+
+div.wiki_page_navi
+{
+	text-align:center;
+	background-color:white;
+	border-bottom:  1px solid #6699FF;
+	border-top:     1px solid #6699FF;
+	margin-bottom:  5px;
+	margin-top:     5px;
+}
+pre, dl, ol, ul, p, blockquote { line-height:130%; }
 
 li
 {
@@ -27,7 +52,6 @@ h1
 	background-color: #FFFFFF;
 	padding: 0.2em;
 	margin: 1px;
-	margin-bottom: 3px;
 	text-align: left;
 
 }
@@ -124,10 +148,6 @@ input.copyButton {
 img {
 	border: none;
 	vertical-align: middle;
-}
-
-ul {
-	line-height:130%;
 }
 
 em {

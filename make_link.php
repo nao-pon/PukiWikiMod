@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.18 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: make_link.php,v 1.19 2004/05/13 14:10:39 nao-pon Exp $
 //
 
 // リンクを付加する
@@ -336,15 +336,16 @@ EOD;
 	}
 	function toString()
 	{
-		global $link_target;
+		global $link_target,$alias_set_status;
 		$separator = $this->alias{0};
 		$this->alias = substr($this->alias,1);
 		//プラグインで付加された<a href>タグを取り除く
 		$this->alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
+		$status_script = ($alias_set_status)? " onMouseOver=\"window.status='".str_replace("'","\'",strip_tags($this->alias))."';return true\" onMouseOut=\"window.status='';return true\"":"";
 		if ($separator == ">")
-			return "<a href=\"{$this->name}\">{$this->alias}</a>";
+			return "<a href=\"{$this->name}\"{$status_script}>{$this->alias}</a>";
 		else
-			return "<a href=\"{$this->name}\" target=\"$link_target\">{$this->alias}</a>";
+			return "<a href=\"{$this->name}\" target=\"$link_target\"{$status_script}>{$this->alias}</a>";
 	}
 }
 // url (InterWiki definition type)

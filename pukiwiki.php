@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.40 2004/04/03 14:14:43 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.41 2004/05/13 14:10:39 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -1088,9 +1088,9 @@ else if($vars["md5"])
 else if(arg_check("rss"))
 {
 	if(!arg_check("rss10"))
-		catrss(1,$vars['page']);
+		catrss(1,$vars['page'],false,$vars['count']);
 	else
-		catrss(2,$vars['page']);
+		catrss(2,$vars['page'],$vars['content'],$vars['count']);
 	die();
 }
 // ページの表示とInterWikiNameの解釈
@@ -1269,15 +1269,18 @@ else
 }
 // <title>にページ名をプラス
 $xoops_pagetitle = $xoopsModule->name();
-$xoops_pagetitle = "$h_excerpt-$title-$xoops_pagetitle";
+$xoops_pagetitle = $title."-".$xoops_pagetitle;
+if ($h_excerpt) $xoops_pagetitle = $h_excerpt."-".$xoops_pagetitle;
 // XOOPS 1 用 XOOPS/include/functions.php の改造が必要
 global $xoops_mod_add_title,$xoops_mod_add_header;
 $xoops_mod_add_title = $xoops_pagetitle;
 //<link>タグを追加
 if (is_page($vars["page"]))
 {
-	$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php?cmd=rss10&page=';
-	$rss_url .= rawurlencode(preg_replace("/\/[0-9\-]+$/","",strip_bracket($vars["page"])));
+	$up_page = (strpos($vars["page"],"/"))? "&page=".rawurlencode(preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($vars["page"]))) : "";
+	
+	$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php?cmd=rss10&content=true'.$up_page;
+	
 	$xoops_mod_add_header = '
 <link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list">
 <link rel="contents" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?plugin=map">
