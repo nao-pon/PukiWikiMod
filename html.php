@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.35 2004/09/12 14:05:29 nao-pon Exp $
+// $Id: html.php,v 1.36 2004/09/14 14:47:51 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -150,7 +150,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 		delete_page_info($postdata);
 
 		//ページ作成者を得る
-		if (is_page())
+		if (is_page($page))
 			$author_uid = get_pg_auther($page);
 		else
 			$author_uid = $X_uid;
