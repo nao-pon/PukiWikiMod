@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.8 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: paint.inc.php,v 1.9 2004/05/18 13:34:48 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -55,7 +55,7 @@ function plugin_paint_init() {
 			'field_comment' => 'コメント',
 			'btn_submit'    => 'お絵かきする！',
 			'msg_max'       => '(最大 %d x %d)',
-			'msg_title'     => 'Paint and Attach to $1',
+			'msg_title'     => 'お絵かき画像を $1 へ添付して更新しました。',
 			'msg_title_collided' => '$1 で【更新の衝突】が起きました',
 			'msg_collided'  => 'あなたが画像を編集している間に、他の人が同じページを更新してしまったようです。<br />
 	画像とコメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
@@ -93,7 +93,7 @@ function plugin_paint_action()
 	{
 		$file = $_FILES['attach_file'];
 		//BBSPaiter.jarは、shift-jisで内容を送ってくる。面倒なのでページ名はエンコードしてから送信させるようにした。
-		$vars['page'] = $vars['refer'] = decode($vars['refer']);
+		$post['page'] = $vars['page'] = $post['refer'] = $vars['refer'] = decode($vars['refer']);
 		
 		$filename = $vars['filename'];
 		$filename = mb_convert_encoding($filename,SOURCE_ENCODING,'auto');
@@ -251,6 +251,7 @@ function paint_insert_ref($filename)
 	global $_paint_messages;
 	
 	$ret['msg'] = $_paint_messages['msg_title'];
+	$ret['body'] = "";
 
 	$vars['msg'] = mb_convert_encoding($vars['msg'],SOURCE_ENCODING,'auto');
 	$vars['yourname'] = mb_convert_encoding($vars['yourname'],SOURCE_ENCODING,'auto');
@@ -346,7 +347,7 @@ function paint_insert_ref($filename)
 	}
 	
 	
-	page_write($vars['refer'],$postdata);
+	page_write($vars['refer'],$postdata,NULL,"","","","","","",array('plugin'=>'paint','mode'=>'add'));
 	
 	return $ret;
 }
