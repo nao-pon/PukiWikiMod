@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.14 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: file.php,v 1.15 2004/01/12 13:17:32 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -573,9 +573,13 @@ function get_freezed_uppage($page)
 		$owner = 1;
 		$gids = $aids = array();
 		if (isset($arg[1])) $owner = $arg[1];
-		if (isset($arg[2])) $aids = explode(",",$arg[2].",");
+		if (isset($arg[2]))
+		{
+			$arg[2] .= ",$owner";
+			$aids = explode(",",$arg[2].",");
+		}
 		if (isset($arg[3])) $gids = explode(",",$arg[3].",");
-		$aids[] = $owner;
+		//$aids[] = $owner;
 		$uppage_name = add_bracket($uppage_name);
 		return array($uppage_name,$owner,$aids,$gids,is_freeze($uppage_name,false));
 	}
