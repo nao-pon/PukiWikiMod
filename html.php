@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.24 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: html.php,v 1.25 2004/01/24 14:42:25 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -327,6 +327,11 @@ function user_rules_str($str)
 	return join("\n",$retvars);
 }
 
+// PukiWiki 1.4 互換用
+function make_str_rules($str)
+{
+	return make_user_rules($str);
+}
 // ユーザ定義ルール(ソースは置換せずコンバート)
 function make_user_rules($str)
 {
@@ -422,16 +427,16 @@ function table_inc_add ($arytable)
 		if ($td_level) {
 			if ($td_level == 1){
 				//表内であるかの判定
-				if (preg_match("/^.*&br;$/",$td) || preg_match("/^&br;.*$/",$td)) {
+				if (preg_match("/^.*___td_br___$/",$td) || preg_match("/^___td_br___.*$/",$td)) {
 					$rep_str = "\n";
 				} else {
 					$rep_str = "->\n";
 				}
-				$td = preg_replace("/&br;([ #\-+*]|(&br;)+)/e","str_replace('&br;','$rep_str','$0')",$td);
-				$td_tmp .= str_replace("~&br;","~$rep_str",$td)."|";//ok
+				$td = preg_replace("/___td_br___([ #\-+*]|(___td_br___)+)/e","str_replace('___td_br___','$rep_str','$0')",$td);
+				$td_tmp .= str_replace("~___td_br___","~$rep_str",$td)."|";//ok
 				
 			} else {
-				$td_tmp .= str_replace("&br;","->\n",$td)."|";
+				$td_tmp .= str_replace("___td_br___","->\n",$td)."|";
 			}
 		} else {
 			$td_tmp .= $td;//ok
