@@ -22,20 +22,25 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.3 2003/07/02 00:56:45 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.4 2003/07/14 08:58:05 nao-pon Exp $
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	$files = get_existpages();
+	if (!isset($vars["page"])) $vars["page"]="";
 	$non_format = 1;
 	$ret_count = 0;
 	$ret = array();
 	$arywords = $queryarray;
 	$result_word= "";
-	foreach($queryarray as $tmp){
-		$result_word .= "$tmp ";
+	if (is_array($queryarray)){
+		foreach($queryarray as $tmp){
+			$result_word .= "$tmp ";
+		}
+	} else {
+		$result_word = $queryarray;
 	}
 	$type = $andor;
 	$whatsnew = "RecentChanges";
-
+	$cnt = 0;
 	foreach($files as $name=>$ftime) {
 		$cnt++;
 		if($name == $whatsnew) continue;
@@ -107,7 +112,7 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 			{
 				$name2 = htmlspecialchars(strip_bracket($name));
 				$page_url = rawurlencode($name);
-				$word_url = htmlspecialchars(rawurlencode($word));
+				//$word_url = htmlspecialchars(rawurlencode($word));
 				$str = get_pg_passage($name);
 
 				$ret[$ret_count]['link'] = "index.php?$page_url";
