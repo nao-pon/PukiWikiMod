@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: where.inc.php,v 1.6 2004/02/08 13:21:26 nao-pon Exp $
+// $Id: where.inc.php,v 1.7 2004/09/23 07:08:55 nao-pon Exp $
 //
 // 指定ページへの階層をリンク付で表示するプラグイン
 //
@@ -13,8 +13,7 @@
 // ページへのリンク付で
 // トップ > メイン > サブ > コンテンツ
 //   と表示される。
-//  ページ名を省略した場合は、最後のページ名はリンクがつかない。
-//  ページ名を指定すると、最後のページもリンクがつく。
+//  表示中のページはリンクがつかない
 /////////////////////////////////////////////////
 
 function plugin_where_init() {
@@ -52,30 +51,14 @@ function plugin_where_make($prefix) {
 	global $script,$vars,$defaultpage;
 	$this_page = false;
 
-	if (!($prefix) || !(page_exists("[[".$prefix."]]"))) {
+	if (!($prefix) || !(page_exists(add_bracket($prefix)))) {
 		$prefix = strip_bracket($vars['page']);
-		$this_page = true;
 	}
 	$title = $defaultpage.' '.get_pg_passage($defaultpage,FALSE);
 	$ret = "<a href=\"".XOOPS_WIKI_URL."/\" title=\"$title\">$_where_msg_top</a>";
-
-	$page_names = array();
-	$page_names = explode("/",$prefix);
-	$access_name = "";
-	foreach ($page_names as $page_name){
-		$access_name .= $page_name."/";
-		$name = substr($access_name,0,strlen($access_name)-1);
-		$link = make_pagelink($name,$page_name);
-		if ($prefix == $name)
-		{
-			if ($this_page)
-				$ret .= " &gt; <b>$page_name</b>";
-			else
-				$ret .= " &gt; <b>$link</b></a>";
-		}
-		else
-			$ret .= " &gt; $link";
-	}
+	
+	$ret .= " &gt; ".make_pagelink($prefix,"# > #");
+	
 	return $ret;
 }
 ?>
