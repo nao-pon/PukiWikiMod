@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.7 2003/07/03 13:54:03 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.8 2003/07/04 13:54:00 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -915,9 +915,9 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	else
 	{
 		if (!$anon_writable){
-			$title = strip_bracket($get["page"]);
-			$page = make_search($get["page"]);
-			$body = _MD_PUKIWIKI_NO_AUTH;
+			$body = $title = str_replace('$1',htmlspecialchars(strip_bracket($vars["page"])),_MD_PUKIWIKI_NO_AUTH);
+			$page = str_replace('$1',make_search($vars["page"]),_MD_PUKIWIKI_NO_AUTH);
+			$vars["page"] = "";
 		} else {
 			if(preg_match("/^(($BracketName)|($WikiName))$/",$get["page"])) {
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_edit);
