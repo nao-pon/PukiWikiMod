@@ -229,12 +229,15 @@ address {
 }
 .style_sunday_font {
 	color: #ff0000;
+	font-weight:normal;
 }
 .style_weekday_font {
 	color: #000000;
+	font-weight:normal;
 }
 .style_satday_font {
 	color: #0000ff;
+	font-weight:normal;
 }
 .style_today_font {
 	font-weight:700;
