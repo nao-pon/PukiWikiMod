@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.33 2004/11/24 14:19:59 nao-pon Exp $
+// $Id: func.php,v 1.34 2004/12/10 13:30:41 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -1023,6 +1023,27 @@ function include_page($page)
 	return $body;
 }
 
+// ページ専用CSSタグを得る
+function get_page_css_tag($page)
+{
+	global $xoopsModule;
+	
+	$page = strip_bracket($page);
+	$ret = '';
+	$_page = '';
+	$dir = XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/";
+	foreach(explode('/',$page) as $val)
+	{
+		$_page = ($_page)? $_page."/".$val : $val;
+		$_pagecss_file = encode($_page).".css";
+		if(file_exists($dir.$_pagecss_file))
+		{
+			$ret .= '<link rel="stylesheet" href="cache/'.$_pagecss_file.'" type="text/css" media="screen" charset="shift_jis">'."\n";
+		}
+	}
+	return $ret;
+}
+
 //////////////////////////////////////////////////////
 //
 // XOOPS用　関数
@@ -1076,6 +1097,7 @@ function X_get_users($sort=true)
 	$users[$sort] = $ret;
 	return $ret;
 }
+
 
 //// Compat ////
 

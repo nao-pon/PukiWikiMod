@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.60 2004/12/09 13:54:09 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.61 2004/12/10 13:30:41 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -1131,14 +1131,11 @@ if (empty($vars['xoops_block']))
 		$xoops_mod_add_header .= '<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
 	}
 	// ページ用の .css
-	$_pagecss_file = encode(strip_bracket($vars["page"])).".css";
-	if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/".$_pagecss_file))
-	{
-		$xoops_mod_add_header .= '<link rel="stylesheet" href="cache/'.$_pagecss_file.'" type="text/css" media="screen" charset="shift_jis">'."\n";
-	}
-
+	$xoops_mod_add_header .= get_page_css_tag($vars["page"]);
+	
+	// XOOPSヘッダ
 	include("header.php");
-
+	
 	// <title>にページ名をプラス
 	// XOOPS 2 用
 	global $xoopsTpl;
@@ -1162,12 +1159,9 @@ if (empty($vars['xoops_block']))
 	}
 }
 // ** 出力処理 **
-//echo "<div class=\"pukiwiki_body\">\n";
 catbody($title,$page,$body);
-//echo "</div>\n";
 unset($title,$page,$body);//一応開放してみる
-//XOOPSフッタ
-//CloseTable();
+// XOOPSフッタ
 if (empty($vars['xoops_block'])) include(XOOPS_ROOT_PATH."/footer.php");
 // ** 終了 **
 ?>
