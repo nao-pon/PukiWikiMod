@@ -19,7 +19,7 @@
  -投稿内容のメール自動配信先
  を設定の上、ご使用ください。
 
- $Id: article.inc.php,v 1.3 2003/06/28 16:40:20 nao-pon Exp $
+ $Id: article.inc.php,v 1.4 2003/07/03 13:54:03 nao-pon Exp $
  
  */
 
@@ -87,7 +87,7 @@ function plugin_article_action()
 	global $post,$vars,$script,$cols,$rows,$del_backup,$do_backup,$now;
 	global $name_format, $subject_format, $no_subject, $name, $subject, $article;
 	global $_title_collided,$_msg_collided,$_title_updated;
-	global $_mailto;
+	global $_mailto,$no_name;;
 	
 	if (!$post["msg"]) $post["msg"]="\t";
 	if ($post["msg"])
@@ -96,11 +96,11 @@ function plugin_article_action()
 		$postdata_old  = file(get_filename(encode($post["refer"])));
 		$article_no = 0;
 
-		if($post[name])
-		{
-			$name = str_replace('$name',$post[name],$name_format);
-		}
-		if($post[subject])
+		$name = ($post['name'])? $post['name'] : $no_name;
+		$name = str_replace('$name',$name,$name_format);
+		
+		
+		if($post['subject'])
 		{
 			$subject = str_replace('$subject',$post[subject],$subject_format);
 		} else {

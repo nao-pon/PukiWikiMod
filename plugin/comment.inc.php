@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.3 2003/06/28 16:40:20 nao-pon Exp $
+// $Id: comment.inc.php,v 1.4 2003/07/03 13:54:03 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -36,6 +36,7 @@ function plugin_comment_action()
 	global $name_cols,$comment_cols,$name_format,$msg_format,$now_format,$comment_format,$comment_ins;
 	global $_title_collided,$_msg_collided,$_title_updated;
 	global $_msg_comment_collided,$_title_comment_collided;
+	global $no_name;
 
 	$_comment_format = $comment_format;
 
@@ -67,9 +68,10 @@ function plugin_comment_action()
 				$post["msg"] = $match[2];
 			}
 			
-			$_msg  =                                 str_replace('$msg', $post['msg'], $msg_format);
-			$_name = ($post['name'] == '')    ? '' : str_replace('$name',$post['name'],$name_format);
-			$_now  = ($post['nodate'] == '1') ? '' : str_replace('$now', $now,         $now_format);
+			$_msg  = str_replace('$msg', $post['msg'], $msg_format);
+			$_name = ($post['name'] == '')? $no_name : $post['name'];
+			$_name = str_replace('$name',$_name,$name_format);
+			$_now  = ($post['nodate'] == '1') ? '' : str_replace('$now',$now,$now_format);
 			
 			$comment = str_replace("\x08MSG\x08", $_msg, $comment_format);
 			$comment = str_replace("\x08NAME\x08",$_name,$comment);

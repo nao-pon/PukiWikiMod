@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.6 2003/07/03 04:46:04 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.7 2003/07/03 13:54:03 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -51,10 +51,13 @@ require("init.php");
 // $X_uid:XOOPSユーザーID
 // $X_admin:PukiWikiモジュール管理者(Yes:1 No:0)
 // 
-global $xoopsUser,$xoopsDB;
+global $xoopsUser,$xoopsDB,$xoopsConfig;
 
 $X_admin =0;
 $X_uid =0;
+// ゲストユーザーの名称
+$no_name = $xoopsConfig['anonymous'];
+
 if ( $xoopsUser ) {
 	$xoopsModule = XoopsModule::getByDirname("pukiwiki");
 	if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 

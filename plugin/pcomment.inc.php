@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.3 2003/06/28 16:40:19 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.4 2003/07/03 13:54:03 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -156,7 +156,7 @@ EOD;
 
 function pcmt_insert($page) {
 	global $post,$vars,$script,$now,$do_backup,$BracketName;
-	global $_title_updated;
+	global $_title_updated,$no_name;
 
 	$page = $post['page'];
 	if (!preg_match("/^$BracketName$/",$page))
@@ -171,7 +171,8 @@ function pcmt_insert($page) {
 
 	//コメントフォーマットを適用
 	$msg = sprintf(PCMT_FORMAT_MSG, rtrim($post['msg']));
-	$name = ($post['name'] == '') ? '' :  sprintf(PCMT_FORMAT_NAME, $post['name']);
+	$name = ($post['name'] == '') ? $no_name : $post['name'];
+	$name = sprintf(PCMT_FORMAT_NAME, $name);
 	$date = ($post['nodate'] == '1') ? '' : sprintf(PCMT_FORMAT_DATE, $now);
 	if ($date != '' or $name != '') { 
 		$msg = str_replace("\x08MSG\x08", $msg,  PCMT_FORMAT);

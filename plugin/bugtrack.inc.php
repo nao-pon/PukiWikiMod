@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.4 2003/07/02 13:57:54 wellwine Exp $
+ * $Id: bugtrack.inc.php,v 1.5 2003/07/03 13:54:03 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -63,7 +63,7 @@ function plugin_bugtrack_init()
 
 function plugin_bugtrack_action()
 {
-  global $command,$vars,$_bugtrack_plugin_default_category,$script,$post;
+  global $command,$vars,$_bugtrack_plugin_default_category,$script,$post,$no_name;
 
 	//改行コード統一 by nao-pon
 	$post['body'] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post['body']);
@@ -80,6 +80,7 @@ function plugin_bugtrack_action()
 
   if($post['mode']=='submit') {
     $ret['msg'] = $_bugtrack_plugin_title_submitted;
+    $post['name'] = ($post['name'])? $post['name'] : $no_name;
     $page = plugin_bugtrack_write($post['base'], $post['pagename'], $post['summary'], $post['name'], $post['priority'], $post['state'], $post['category'], $post['version'], $post['body']);
 	js_redirect("$script?".rawurlencode($page));
     die;
