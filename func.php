@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.46 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: func.php,v 1.47 2005/03/29 23:41:47 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -177,28 +177,18 @@ function list_sort($values)
 // ページ名のエンコード
 function encode($key)
 {
-	$enkey = '';
-	$arych = preg_split("//", $key, -1, PREG_SPLIT_NO_EMPTY);
-	
-	foreach($arych as $ch)
-	{
-		$enkey .= sprintf("%02X", ord($ch));
-	}
-
-	return $enkey;
+	return ($key == '') ? '' : strtoupper(bin2hex($key));
+	// Equal to strtoupper(join('', unpack('H*0', $key)));
+	// But PHP 4.3.10 says 'Warning: unpack(): Type H: outside of string in ...'
 }
 
 // ファイル名のデコード
 function decode($key)
 {
-	$dekey = '';
-	
-	for($i=0;$i<strlen($key);$i+=2)
-	{
-		$ch = substr($key,$i,2);
-		$dekey .= chr(intval("0x".$ch,16));
-	}
-	return $dekey;
+	// preg_match()       = Warning: pack(): Type H: illegal hex digit ...
+	// substr('20202020') = Avoid pack() bug
+	return preg_match('/^[0-9a-f]+$/i', $key) ?
+		substr(pack('H*', '20202020' . $key), 4) : $key;
 }
 
 // InterWikiName List の解釈(返値:２次元配列)
