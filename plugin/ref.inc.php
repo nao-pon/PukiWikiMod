@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.4 2003/07/14 09:00:20 nao-pon Exp $
+// $Id: ref.inc.php,v 1.5 2003/07/14 12:45:48 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -193,15 +193,10 @@ function plugin_ref_body($name,$args,$params){
 	if (is_picture($ext)) { // 画像
 		//URLの場合キャッシュ判定
 		if ((is_url($url)) && (!$params['nocache'])){
-			//$img_arg = plugin_ref_cache_image_fetch($url, CACHE_DIR);
-
 			$parse = parse_url($url);
 			$tmpname = $parse['host']."_".basename($parse['path']);
-			
-		  $filename = $dir.encode($vars['page'])."_".encode($tmpname);
-
-			$img_arg = plugin_ref_cache_image_fetch($filename, UPLOAD_DIR);
-			
+			$filename = $dir.encode($vars['page'])."_".encode($tmpname);
+			$img_arg = plugin_ref_cache_image_fetch($filename, $url, UPLOAD_DIR);
 			$url = $img_arg[0];
 			$size = $img_arg[1];
 		}
@@ -213,10 +208,10 @@ function plugin_ref_body($name,$args,$params){
 }
 
 // 画像キャッシュがあるか調べる
-function plugin_ref_cache_image_fetch($target, $dir) {
+function plugin_ref_cache_image_fetch($filename, $target, $dir) {
 	global $vars;
 	
-  $filename = $dir.$target;
+  $filename = $dir.$filename;
 
 	if (!is_readable($filename)) {
 		$file = fopen($target, "rb"); // たぶん size 取得よりこちらが原始的だからやや速い
@@ -232,19 +227,17 @@ function plugin_ref_cache_image_fetch($target, $dir) {
 			else
 				$url = $filename;
 		}
-		//plugin_ref_cache_image_save($data, $filename, CACHE_DIR);
-		plugin_ref_cache_image_save($data, $filename, UPLOAD_DIR);
+		plugin_ref_cache_image_save($data, $filename);
 	}
 	$size = @getimagesize($filename);
 	
 	return array($filename,$size[3]);
 }
 // 画像キャッシュを保存
-function plugin_ref_cache_image_save($data, $filename, $dir) {
+function plugin_ref_cache_image_save($data, $filename) {
 	$fp = fopen($filename, "wb");
 	fwrite($fp, $data);
 	fclose($fp);
-
 	return $filename;
 }
 ?>
