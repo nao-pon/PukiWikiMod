@@ -22,7 +22,7 @@
  *
  * 避難所       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.14 2004/09/01 14:00:11 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.15 2004/09/04 01:13:55 nao-pon Exp $
  *
  */
 
@@ -246,6 +246,8 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 	
 	$filename = P_CACHE_DIR . md5($target) . '.srs';
 	
+	//if ($target == "http://inoue-waka.blog.ocn.ne.jp/kimochi/index.rdf") echo $filename;
+	
 	if ($usecache && !$do_refresh)
 	{
 		// キャッシュがあれば取得する
@@ -278,6 +280,11 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 		else
 		{
 			$buf = $data['data'];
+			// <content:encoded> を削除
+			$buf = preg_replace("#<content:encoded>(.*)</content:encoded>#isU","",$buf);
+			// 余分な文字文字を削除
+			$buf = preg_replace("/\x0b/"," ",$buf);
+
 			$time = UTIME;
 			// キャッシュを保存
 			if ($usecache)
@@ -294,7 +301,9 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 		}
 		
 	}
-
+	// 余分な文字コードを削除
+	$buf = preg_replace("/\x0b/"," ",$buf);
+	
 	// parse
 	$obj = new ShowRSS_XML();
 	return array($obj->parse($buf),$time,$refresh);
