@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.24 2004/05/15 11:14:59 nao-pon Exp $
+// $Id: file.php,v 1.25 2004/05/20 14:00:16 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -8,25 +8,30 @@ function get_source($page,$row=0)
 {	
 	global $WikiName;
 	$page = add_bracket($page);
-	if(page_exists($page)) {
-		if ($row){
+	if(page_exists($page))
+	{
+		if ($row)
+		{
 			$ret = array();
 			$f_name = get_filename(encode($page));
 			$fp = fopen($f_name,"r");
 			if (!$fp) return file(get_filename(encode($page)));
-			while (!feof($fp)) {
+			while (!feof($fp))
+			{
 				$ret[] = fgets($fp, 4096);
 				$row--;
 				if ($row < 1) break;
 			}
 			fclose($fp);
-		} else {
+		}
+		else
+		{
 			$ret = file(get_filename(encode($page)));
 		}
 		$ret = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$ret);
 		return $ret;
-  }
-  return array();
+	}
+	return array();
 }
 
 // ページが存在するか？
@@ -261,8 +266,11 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		{
 			// TrackBack Ping用ファイル作成
 			// pcomment用：親ページ名をセット
-			$page = ($post['refer'])? $post['refer'] : $page; 
-			tb_send($page);
+			$page = ($post['refer'])? $post['refer'] : $page;
+			$s_page = strip_bracket($page);
+			// : で始まるページはPingを打たない
+			if ($s_page[0] !== ":")
+				tb_send($page);
 		}
 	}	
 }
@@ -895,6 +903,12 @@ function check_editable($page,$auth_flag=TRUE,$exit_flag=TRUE)
 function check_readable($page, $auth_flag=true, $exit_flag=true){
 	global $X_admin,$read_auth;
 	static $_X_admin,$_read_auth;
+	static $readable = array();
+	
+	$page = strip_bracket($page);
+	
+	// キャッシュを返す
+	if (!$auth_flag && !$exit_flag && isset($readable[$page])) return $readable[$page];
 	
 	if (!isset($_X_admin))
 	{
@@ -906,8 +920,12 @@ function check_readable($page, $auth_flag=true, $exit_flag=true){
 		global $read_auth;
 		$_read_auth = $read_auth;
 	}
-	if (!$_read_auth) return true;
-	
+	if (!$_read_auth)
+	{
+		// キャッシュ
+		$readable[$page] = true;
+		return true;
+	}
 	$ret = false;
 	
 	// 管理者はすべてOK
@@ -915,9 +933,12 @@ function check_readable($page, $auth_flag=true, $exit_flag=true){
 	
 	else
 	{
-		$auth = get_pg_allow_viewer(strip_bracket($page),true);
+		$auth = get_pg_allow_viewer($page,true);
 		$ret = get_readable($auth);
 	}
+	
+	// キャッシュ
+	$readable[$page] = $ret;
 	
 	return $ret;
 
@@ -965,14 +986,16 @@ function get_heading_init($page)
 		if (preg_match("/(?:^|\|}?)\*{1,6}([^\|]*)/",$line,$reg))
 		{
 			$reg[1] = preg_replace("/->$/","",rtrim($reg[1]));
-			$ret = trim(strip_htmltag(make_link(htmlspecialchars($reg[1]),add_bracket($page))));
+			$ret = trim(htmlspecialchars(strip_htmltag(make_link($reg[1],add_bracket($page)))));
+			//$ret = trim(strip_htmltag(make_link(htmlspecialchars($reg[1]),add_bracket($page))));
 			$nowikiname = $_nowikiname;
 			return $ret;
 			break;
 		}
 	}
 	if (!$first_line) $first_line = str_replace("/","",substr($s_page,strrpos($s_page,"/")));
-	$ret = trim(strip_htmltag(make_link(htmlspecialchars($first_line),add_bracket($page))));
+	$ret = trim(htmlspecialchars(strip_htmltag(make_link($first_line,add_bracket($page)))));
+	//$ret = trim(strip_htmltag(make_link(htmlspecialchars($first_line),add_bracket($page))));
 	$nowikiname = $_nowikiname;
 	return $ret;
 }
