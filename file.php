@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.7 2003/07/22 13:36:42 nao-pon Exp $
+// $Id: file.php,v 1.8 2003/07/30 14:46:45 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -38,7 +38,7 @@ function page_exists($page)
 // ページの更新時刻を得る
 function get_filetime($page)
 {
-	return filemtime(get_filename($page)) - LOCALZONE;
+	return filemtime(get_filename(encode($page))) - LOCALZONE;
 }
 
 // ページの出力
