@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.31 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.32 2003/11/06 12:42:57 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -105,6 +105,15 @@ $h_excerpt = "";
 /////////////////////////////////////////////////
 // メイン処理
 
+// idでのアクセス
+//if (preg_match("/id(\d+)/",$arg,$id))
+if (isset($vars['pgid']))
+{
+//	$vars['page'] = get_pgname_by_id($id[1]);
+	$vars['page'] = get_pgname_by_id($vars['pgid']);
+	if ($vars['page'])
+		$vars['cmd'] = "read";
+}
 // 一覧の表示
 if (arg_check("list")) $vars["plugin"] = "list";
 
@@ -1211,7 +1220,10 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	// WikiName、BracketNameが見つからず、InterWikiNameでもない場合
 	else
 	{
-		if (!WIKI_ALLOW_NEWPAGE || !check_readable($vars["page"],false,false))
+		$up_freeze_info = get_freezed_uppage($vars["page"]);
+		if ($up_freeze_info[0]) $defvalue_freeze = 1;
+		
+		if (!WIKI_ALLOW_NEWPAGE || !check_readable($vars["page"],false,false) || $up_freeze_info[4])
 		{
 			$body = $title = str_replace('$1',htmlspecialchars(strip_bracket($vars["page"])),_MD_PUKIWIKI_NO_AUTH);
 			$page = str_replace('$1',make_search($vars["page"]),_MD_PUKIWIKI_NO_AUTH);
@@ -1221,12 +1233,14 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 		{
 			if(preg_match("/^(($BracketName)|($WikiName))$/",$get["page"]))
 			{
+				//echo $up_freeze_info[3][0].",".$up_freeze_info[2][0];
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_edit);
 				$page = str_replace('$1',make_search($get["page"]),$_title_edit);
 				$template = auto_template($get["page"]);
 				$author_uid = $X_uid;
 				$freeze_check = ($defvalue_freeze)? "checked " : "";
-				$body = edit_form($template,$get["page"]);
+				$body = edit_form($template,$get["page"],0,$up_freeze_info[3],$up_freeze_info[2]);
+				//$body = edit_form($template,$get["page"]);
 				$vars["cmd"] = "edit";
 			}
 			else
