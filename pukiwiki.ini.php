@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.3 2003/06/29 01:02:09 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -95,7 +95,7 @@ $strip_link_wall = 1;
 $list_index = 1;
 /////////////////////////////////////////////////
 // http:// リンクのウィンドウ名指定(_top,_blank,etc)
-$link_target = "hypweb";
+$link_target = "_blank";
 /////////////////////////////////////////////////
 // InterWikiNameのウィンドウ名指定(_top,_blank,etc)
 $interwiki_target = "_top";
