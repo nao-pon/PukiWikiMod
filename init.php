@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.3 2003/07/07 06:09:01 nao-pon Exp $
+// $Id: init.php,v 1.4 2003/07/11 14:11:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -70,6 +70,9 @@ $LinkPattern = "/( (?# <1>:all)
 	|
 	(?# WikiNmae)
 	($WikiName)                  (?#<19>:all)
+	|
+	(?# escape)
+	(\x1c[^\x1c\x1d]*\x1d)       (?#<20>:all)
 	)/x";
 
 //** 入力値の整形 **

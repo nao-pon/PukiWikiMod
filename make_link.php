@@ -31,6 +31,8 @@ class link_wrapper
 			return expand_bracket($arr,$this->page);
 		if ($arr[19] != '')
 			return new link_wikiname($arr[19],$arr[19],'',$this->page);
+		if ($arr[20] != '')
+			return new link($arr[0]);
 
 		return new link($arr[0]); //どれでもない
 	}
