@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.10 2004/12/09 13:54:09 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.11 2004/12/16 13:15:20 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -18,34 +18,26 @@ function b_pukiwiki_page_show($options)
 	}
 	else
 	{
-		$data = "";
+		$error_str = $data = "";
 		if ($show_page)
 		{
 			$url = $wiki_url.'index.php?xoops_block=1&cmd=read&page='.rawurlencode($show_page);
-			$fp = fopen($url,"r");
-			if ($fp)
-			{
-				$contents = "";
-				do {
-					$data = fread($fp, 8192);
-					if (strlen($data) == 0) {
-						break;
-					}
-					$contents .= $data;
-				} while(true);
-				
-				fclose ($fp);
-				
-				$data = $contents;
-				unset ($contents);
-			}
+			include_once(XOOPS_ROOT_PATH."/class/snoopy.php");
+			$snoopy = new Snoopy;
+			$snoopy->fetch($url);
+			
+			if (isset($snoopy->error) && !empty($snoopy->error))
+				$data = $error_str = $snoopy->error;
+			else
+				$data = $snoopy->results;
+			
 		}
 		
 		// Fatal, Parseエラーが出た場合
 		if (preg_match("#<b>(Fatal|Parse) error</b>:#",$data))
 			$data = "";
 		
-		if ($data)
+		if ($data != $error_str)
 		{
 			//マルチドメイン対応
 			$data = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$data);
@@ -81,31 +73,15 @@ function b_pukiwiki_page_show($options)
 		:
 		$wiki_url.'skin/default.ja.css';
 	$css_tag = '<link rel="stylesheet" href="'.$css_url.'" type="text/css" media="screen" charset="shift_jis">';
-	
-	if(is_readable( XOOPS_ROOT_PATH."/modules/pukiwiki/cache/css.css"))
+	// 管理画面の CSS
+	if(file_exists( XOOPS_ROOT_PATH."/modules/pukiwiki/cache/css.css"))
 	{
 		$css_tag .= "\n".'<link rel="stylesheet" href="'.$wiki_url.'cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
 	}
-	
 	// ページ用の .css
-	// strip_bracket
-	$_pagecss_file = preg_replace("/^(?:[[)?(.*)(?:]])?$/","$1",$show_page);
-	//$_pagecss_file = $show_page;
-	// ページ名のエンコード
-	$enkey = '';
-	$arych = preg_split("//", $_pagecss_file, -1, PREG_SPLIT_NO_EMPTY);
-	foreach($arych as $ch)
-	{
-		$enkey .= sprintf("%02X", ord($ch));
-	}
-	$_pagecss_file = $enkey;
-	$_pagecss_file .= ".css";
+	$css_tag .= b_pukiwiki_page_get_page_css_tag($show_page,$wiki_url);
 	
-	if(is_readable(XOOPS_ROOT_PATH."/modules/pukiwiki/cache/".$_pagecss_file))
-	{
-		$css_tag .= '<link rel="stylesheet" href="'.$wiki_url.'cache/'.$_pagecss_file.'" type="text/css" media="screen" charset="shift_jis">'."\n";
-	}
-	
+	// ヘッダ情報付加
 	global $xoopsTpl;
 	if ($xoopsTpl)
 	{
@@ -131,4 +107,47 @@ function b_pukiwiki_page_edit($options)
 	$form .= "Cache file number: ";
 	$form .= "<input type='text' name='options[]' value='".$options[2]."' />";
 	return $form;
+}
+
+// ページ名のエンコード
+function b_pukiwiki_page_encode($key)
+{
+	$enkey = '';
+	$arych = preg_split("//", $key, -1, PREG_SPLIT_NO_EMPTY);
+	
+	foreach($arych as $ch)
+	{
+		$enkey .= sprintf("%02X", ord($ch));
+	}
+
+	return $enkey;
+}
+
+// [[ ]] を取り除く
+function b_pukiwiki_page_strip_bracket($str)
+{
+	if(preg_match("/^\[\[(.*)\]\]$/",$str,$match))
+	{
+		$str = $match[1];
+	}
+	return $str;
+}
+
+// ページ専用CSSタグを得る
+function b_pukiwiki_page_get_page_css_tag($page,$wiki_url)
+{
+	$page = b_pukiwiki_page_strip_bracket($page);
+	$ret = '';
+	$_page = '';
+	$dir = XOOPS_ROOT_PATH."/modules/pukiwiki/cache/";
+	foreach(explode('/',$page) as $val)
+	{
+		$_page = ($_page)? $_page."/".$val : $val;
+		$_pagecss_file = b_pukiwiki_page_encode($_page).".css";
+		if(file_exists($dir.$_pagecss_file))
+		{
+			$ret .= '<link rel="stylesheet" href="'.$wiki_url.'cache/'.$_pagecss_file.'" type="text/css" media="screen" charset="shift_jis">'."\n";
+		}
+	}
+	return $ret;
 }
