@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.25 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: func.php,v 1.26 2004/05/22 14:50:25 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -94,11 +94,24 @@ function do_search($word,$type='AND',$non_format=FALSE)
 	//$keys = get_search_words(preg_split('/\s+/',$word,-1,PREG_SPLIT_NO_EMPTY));
 	$keys = preg_split('/\s+/',$word,-1,PREG_SPLIT_NO_EMPTY);
 
-	//とりあえず未対応ということで
-	if ($non_format) return array();
 	
 	include_once("./xoops_search.inc.php");
 	$pages = wiki_search($keys, $type);
+
+	//$non_format=TRUEでページ名(ブラケットなし)を配列で返す
+	if ($non_format)
+	{
+		$retval = array();
+		if (count($pages))
+		{
+			foreach ($pages as $page)
+			{
+				$retval[] = $page['page'];
+			}
+		}
+		return $retval;
+	}
+
 	$_pages = get_existpages();
 
 	$r_word = rawurlencode($word);
