@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.6 2004/10/23 13:14:25 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.7 2004/10/28 11:32:21 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -41,8 +41,8 @@ function b_pukiwiki_page_show($options)
 			}
 		}
 		
-		// Parseエラーが出た場合
-		if (strpos($data,"<b>Parse error</b>:  parse error in <b>") !== FALSE)
+		// Fatal, Parseエラーが出た場合
+		if (preg_match("#<b>(Fatal|Parse) error</b>:#",$data))
 			$data = "";
 		
 		if ($data)
@@ -71,6 +71,9 @@ function b_pukiwiki_page_show($options)
 		//名前欄置換
 		$data = str_replace("_gEsTnAmE_",$uname,$data);
 	}
+	
+	// 外部リンクマーク用 class設定
+	$data = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/i","$1class=\"ext\" $2",$data);
 	
 	// テーマ専用CSS Link を置換
 	$css_url = (file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'))?
