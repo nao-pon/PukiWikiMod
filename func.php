@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.36 2005/02/23 14:53:11 nao-pon Exp $
+// $Id: func.php,v 1.37 2005/02/24 15:35:33 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -987,7 +987,7 @@ function ltrim_pagename($page,$num)
 // 指定ページをインクルードする
 function include_page($page)
 {
-	global $vars,$post,$get,$comment_no,$h_excerpt,$digest;
+	global $vars,$post,$get,$comment_no,$article_no,$h_excerpt,$digest;
 	global $_msg_read_more;
 	
 	//変数値退避
@@ -995,9 +995,11 @@ function include_page($page)
 	$_comment_no = $comment_no;
 	$_h_excerpt = $h_excerpt;
 	$_digest = $digest;
+	$_article_no = $article_no;
 	
 	//comment_no 初期化
 	$comment_no = 0;
+	$article_no = 0;
 	
 	//現ページ名書き換え
 	$vars["page"] = $post["page"] = $get["page"] = add_bracket($page);
@@ -1028,6 +1030,7 @@ function include_page($page)
 	$comment_no = $_comment_no;
 	$h_excerpt = $_h_excerpt;
 	$digest = $_digest;
+	$article_no = $_article_no;
 	
 	return $body;
 }

@@ -13,13 +13,8 @@
 	$_btn_subject = '題名: ';
 
  ※$_btn_nameはcommentプラグインで既に設定されている場合があります
- 
- 投稿内容の自動メール転送機能をご使用になりたい場合は
- -投稿内容のメール自動配信
- -投稿内容のメール自動配信先
- を設定の上、ご使用ください。
 
- $Id: article.inc.php,v 1.11 2004/11/24 13:15:35 nao-pon Exp $
+ $Id: article.inc.php,v 1.12 2005/02/24 15:35:33 nao-pon Exp $
  
  */
 
@@ -56,20 +51,8 @@ define("ARTICLE_COMMENT",1);
 // 改行を自動的変換 1:する 0:しない
 define("ARTICLE_AUTO_BR",1);
 
-/////////////////////////////////////////////////
-// 投稿内容のメール自動配信 1:する 0:しない
-define("MAIL_AUTO_SEND",0);
-/////////////////////////////////////////////////
-// 投稿内容のメール送信時の送信者メールアドレス
-define("MAIL_FROM",'');
-/////////////////////////////////////////////////
-// 投稿内容のメール送信時の題名
-define("MAIL_SUBJECT_PREFIX",'[someone\'sPukiWiki]');
-/////////////////////////////////////////////////
-// 投稿内容のメール自動配信先
-$_mailto = array (
-	''
-);
+// initialize
+$article_no = 0;
 
 
 function plugin_article_init()
@@ -119,37 +102,21 @@ function plugin_article_action()
 		$article  = $subject." SIZE(10){> ".$name." (".$now.")}\n";
 
 		if(ARTICLE_AUTO_BR){
-			//改行の取り扱いはけっこう厄介。特にURLが絡んだときは…
-//			$article_body = $post[msg];
-//			$article_body = str_replace("\n","\n>~\n",$article_body);
-//			$article_body = str_replace("\n","~\n",$article_body);
-//			$article_body = preg_replace("/\n\n/","\n",$article_body);
-//			$article .= $article_body;
-			//挙動がおかしいので修正 nao-pon
-			//取り合えず改行前の~を削除
-			$post["msg"] = preg_replace("/~\n/","\n",$post["msg"]);
-			//行の配列に変換して1行毎に処理
-			$post_lines = array();
-			$post_lines = split("\n",$post["msg"]);
-			$post_lines = preg_replace("/(^[^ #\-+*|].*)/","\\1~",$post_lines);
-			$post["msg"] = join("\n",$post_lines);
-			//余分な~を削除
-			$post["msg"] = preg_replace("/~\n([ #\-+*|\n]|$)/","\n\\1",$post["msg"]);
-			$post["msg"] = preg_replace("/~$/","",$post["msg"]);
-			$article .= $post[msg];
+			$article .= auto_br($post['msg']);
 		} else {
-			$article .= ">".$post[msg];
+			$article .= ">".$post['msg'];
 		}
 
 		if(ARTICLE_COMMENT){
 			$article .= "\n#comment";
 		}
+		
+		$article .= "\n----\n";
 
 		foreach($postdata_old as $line)
 		{
 			if(!ARTICLE_INS) $postdata .= $line;
 			if(preg_match("/^#article$/",trim($line)))
-//			if(preg_match("/^#article\s?$/",$line))
 			{
 				if($article_no == $post["article_no"] && $post[msg]!="")
 				{
@@ -198,7 +165,7 @@ function plugin_article_convert()
 {
 	global $script,$vars,$digest;
 	global $_btn_article,$_btn_name,$_btn_subject,$vars;
-	static $article_no = 0;
+	global $article_no;
 
 	if((arg_check("read")||$vars["cmd"] == ""||arg_check("unfreeze")||arg_check("freeze")||$vars["write"]||$vars["article"]))
 		$button = "<input type=\"submit\" name=\"article\" value=\"$_btn_article\" />\n";
