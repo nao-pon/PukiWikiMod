@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.23 2004/09/07 13:27:51 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.24 2004/09/20 12:33:23 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -20,24 +20,24 @@ if($_freeze){
 <?php } ?>
 	<script language=javascript src="skin/default.ja.js"></script>
 <table border=0 cellspacing="5" style="width:100%;" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()><tr><td class="pukiwiki_body">
-	<?php if(!$hide_navi && !$noheader){ // header ?>
+	<?php if((!$hide_navi && !$noheader) || !$is_read){ // header ?>
 		<center><div class="wiki_page_title"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
 		[ <a href="<?php echo $link_page ?>">リロード</a> ]
 		&nbsp;
 	<?php
-	$source_tag = "<a href=\"$script?plugin=source&amp;page=".rawurlencode($vars['page'])."\">ソース</a>";
+	$source_tag = "<a href=\"$link_source\">ソース</a>";
 	if ($anon_writable){
 		if ($wiki_allow_newpage){
-			echo "[ <a href=\"$script?plugin=newpage\">新規</a> | ";
+			echo "[ <a href=\"$link_new\">新規</a> | ";
 		} else {
 			echo "[ ";
 		}
 		if (!$_freeze) {
 			echo "
-			<a href=\"$link_edit\">編集</a> | <a href=\"$link_diff\">差分</a> | <a href=\"$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page'])."\">添付</a> ";
+			<a href=\"$link_edit\">編集</a> | <a href=\"$link_diff\">差分</a> | <a href=\"$link_attach\">添付</a> ";
 			if ($X_admin){
-				echo "| <a href=\"$script?plugin=rename&refer=".rawurlencode($vars['page'])."\">リネーム</a> ";
+				echo "| <a href=\"$link_rename\">リネーム</a> ";
 			}
 		} else {
 			echo $source_tag." ";
@@ -72,11 +72,10 @@ if($_freeze){
 	<?php } ?>
 	| <a href="<?php echo "$script?".rawurlencode("ヘルプ") ?>">ヘルプ</a>
 	]<br /></center>
-
-	<?php } // header ?>
-
 	<?php echo $hr ?>
-	
+	<?php } else { if (!$_freeze) { // header ?>
+		<div style="float:right;width:65px;"><a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="ファイル添付" /></a><a href="<?php echo $link_edit ?>"><img src="./image/edit_button.gif" width="45" height="22" border="0" alt="編集" /></a></div>
+	<?php } } ?>
 	<?php
 	if ($is_page) {
 		$tb_tag = ($trackback)? "&nbsp;&nbsp;[ <a href=\"$script?plugin=tb&amp;__mode=view&amp;tb_id=".tb_get_id($vars['page'])."\">TrackBack(".tb_count($vars['page']).")</a> ]" : "";
@@ -94,7 +93,7 @@ if($_freeze){
 	</div>
 	<?php
 		require_once(PLUGIN_DIR.'counter.inc.php');
-		echo "<div style=\"text-align:right\">".do_plugin_convert("counter")."</div>";
+		echo "<div style=\"text-align:right;clear:both;\">".do_plugin_convert("counter")."</div>";
 	}
 	?>
 	<?php if($is_page) { ?>
@@ -121,29 +120,33 @@ if($_freeze){
 	?>
 	<div style="text-align:right">
 		<?php if($is_page) { ?>
-			<a href="<?php echo $link_page ?>"><img src="./image/reload.gif" width="20" height="20" border="0" alt="リロード" /></a>
-			&nbsp;
-		  <?php if (!$_freeze){ ?>
-		  <?php if ($wiki_allow_newpage){ ?>
-			<a href="<?php echo $script ?>?plugin=newpage"><img src="./image/new.gif" width="20" height="20" border="0" alt="新規" /></a>
-			<a href="<?php echo $script ?>?plugin=template&refer=<?php echo rawurlencode(strip_bracket($vars['page']))?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="コピー" /></a>
-			<?php } ?>
-			<a href="<?php echo $link_edit ?>"><img src="./image/edit.gif" width="20" height="20" border="0" alt="編集" /></a>
-			<a href="<?php echo $link_diff ?>"><img src="./image/diff.gif" width="20" height="20" border="0" alt="差分" /></a>
-			&nbsp;
-		  <?php } ?>
-		<?php } ?>
-		<a href="<?php echo $link_top ?>"><img src="./image/top.gif" width="20" height="20" border="0" alt="トップ" /></a>
-		<a href="<?php echo $link_list ?>"><img src="./image/list.gif" width="20" height="20" border="0" alt="一覧" /></a>
-		<a href="<?php echo $link_search ?>"><img src="./image/search.gif" width="20" height="20" border="0" alt="検索" /></a>
-		<a href="<?php echo $link_whatsnew ?>"><img src="./image/recentchanges.gif" width="20" height="20" border="0" alt="最終更新" /></a>
+		<a href="<?php echo $link_page ?>"><img src="./image/reload.png" width="20" height="20" border="0" alt="リロード" /></a>
+		&nbsp;
+		<?php if (!$_freeze){ ?>
+		<?php if ($wiki_allow_newpage){ ?>
+		<a href="<?php echo $link_new ?>"><img src="./image/new.png" width="20" height="20" border="0" alt="新規" /></a>
+		<a href="<?php echo $link_copy ?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="コピー" /></a>
+		<?php } // $wiki_allow_newpage ?>
+		<a href="<?php echo $link_edit ?>"><img src="./image/edit.png" width="20" height="20" border="0" alt="編集" /></a>
+		<a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="ファイル添付" /></a>
+		<a href="<?php echo $link_rename ?>"><img src="./image/rename.png" width="20" height="20" border="0" alt="リネーム" /></a>
+		&nbsp;
+		<?php } // !$_freeze ?>
+		<a href="<?php echo $link_diff ?>"><img src="./image/diff.png" width="20" height="20" border="0" alt="差分" /></a>
+		<a href="<?php echo $link_source ?>"><img src="./image/source.png" width="20" height="20" border="0" alt="ソース" /></a>
+		&nbsp;
+		<?php } // $is_page ?>
+		<a href="<?php echo $link_top ?>"><img src="./image/top.png" width="20" height="20" border="0" alt="Wikiトップ" /></a>
+		<a href="<?php echo $link_list ?>"><img src="./image/list.png" width="20" height="20" border="0" alt="一覧" /></a>
+		<a href="<?php echo $link_search ?>"><img src="./image/search.png" width="20" height="20" border="0" alt="検索" /></a>
+		<a href="<?php echo $link_whatsnew ?>"><img src="./image/recentchanges.png" width="20" height="20" border="0" alt="最終更新" /></a>
 		<?php if($do_backup) { ?>
-			<a href="<?php echo $link_backup ?>"><img src="./image/backup.gif" width="20" height="20" border="0" alt="バックアップ" /></a>
-		<?php } ?>
+		<a href="<?php echo $link_backup ?>"><img src="./image/backup.png" width="20" height="20" border="0" alt="バックアップ" /></a>
+		<?php } // $do_backup ?>
 		&nbsp;
-		<a href="<?php echo "$script?".rawurlencode("ヘルプ") ?>"><img src="./image/help.gif" width="20" height="20" border="0" alt="ヘルプ" /></a>
+		<a href="<?php echo "$script?".rawurlencode("ヘルプ") ?>"><img src="./image/help.png" width="20" height="20" border="0" alt="ヘルプ" /></a>
 		&nbsp;
-		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.gif" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
+		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.png" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
 	</div>
 	<span class="small"><?php echo $sended_ping_tag ?><br /></span>
 	<?php

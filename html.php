@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.36 2004/09/14 14:47:51 nao-pon Exp $
+// $Id: html.php,v 1.37 2004/09/20 12:33:23 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -48,6 +48,11 @@ function catbody($title,$page,$body)
 	$link_whatsnew = "$script?$whatsnew";
  	$link_backup = "$script?cmd=backup&amp;page=".rawurlencode($vars["page"]);
 	$link_help = "$script?cmd=help";
+	$link_source = "$script?plugin=source&amp;page=".rawurlencode($vars["page"]);
+	$link_new = "$script?plugin=newpage";
+	$link_copy = "$script?plugin=template&refer=".rawurlencode(strip_bracket($vars['page']));
+	$link_rename = "$script?plugin=rename&refer=".rawurlencode($vars['page']);
+	$link_attach = "$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page']);
 
 	if(is_page($vars["page"]) && $is_page)
 	{
