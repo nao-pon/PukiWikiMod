@@ -1,11 +1,12 @@
 <?php
-// $Id: vote.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: vote.inc.php,v 1.3 2003/10/02 12:18:38 nao-pon Exp $
 
 function plugin_vote_init()
 {
   $_plugin_vote_messages = array(
     '_vote_plugin_choice' => '選択肢',
     '_vote_plugin_votes' => '投票',
+    '_vote_plugin_deny' => '無効な値です',
     );
   set_plugin_messages($_plugin_vote_messages);
 }
@@ -14,49 +15,113 @@ function plugin_vote_action()
 {
 	global $post,$vars,$script,$cols,$rows,$del_backup,$do_backup;
 	global $_title_collided,$_msg_collided,$_title_updated;
-	global $_vote_plugin_choice, $_vote_plugin_votes;
+	global $_vote_plugin_choice, $_vote_plugin_votes, $_vote_plugin_deny;
 
-	$postdata_old  = file(get_filename(encode($post["refer"])));
-	$vote_no = 0;
-
-	foreach($postdata_old as $line)
+	if (preg_match("/^(#add|#(k)?sort|#notimestamp)(\[\d+\])?$/i",$post['vote_newitem']))
 	{
-		if(preg_match("/^#vote\((.*)\)$/",trim($line),$arg))
-		{
-			if($vote_no == $post["vote_no"])
-			{
-				$args = explode(",",$arg[1]);
+		$retvars["msg"] = $_vote_plugin_deny;
+		return $retvars;
+	}
+	
+	$postdata_old  = get_source($post["refer"]);
+	$vote_no = 0;
+	$notimestamp = FALSE;
 
-				foreach($args as $arg)
+	// エスケープ＆文字実体参照へ)
+	$post['vote_newitem'] = htmlspecialchars($post['vote_newitem']);
+	$post['vote_newitem'] = str_replace(",","&sbquo;",$post['vote_newitem']);
+	$post['vote_newitem'] = str_replace("|","&#x7c;",$post['vote_newitem']);
+	
+	//表中改行を連結
+	$postdata_old = join('',$postdata_old);
+	$postdata_old = str_replace("->\n","->&br;",$postdata_old);
+	$postdata_old = explode("\n",$postdata_old);
+	foreach($postdata_old as $lines)
+	{
+		if ($lines{0} == "|")
+			$_line = explode("|",$lines);
+		else
+			$_line = array($lines);
+
+		$cell_line = array();
+		foreach($_line as $__line)
+		{
+			$__line = explode("->&br;",$__line);
+			$celldata = array();
+			foreach($__line as $line)
+			{
+				if(preg_match("/^(.*)?#vote\((.*)\)$/i",$line,$arg))
 				{
-					if(preg_match("/^(.+)\[(\d+)\]$/",$arg,$match))
+					$celltag = $arg[1];
+					if ($celltag) $celltag = cell_format_tag_del($celltag);
+					
+					if(($vote_no == $post["vote_no"]) && !$celltag)
 					{
-						$arg = $match[1];
-						$cnt = $match[2];
+						$args = explode(",",$arg[2]);
+						foreach($args as $item)
+						{
+							if(preg_match("/^(.+)\[(\d+)\]$/",$item,$match))
+							{
+								$item = $match[1];
+								$cnt = $match[2];
+								$is_cmd = 0;
+							}
+							else
+							{
+								if (strtolower($item) == "#notimestamp")
+								{
+									$notimestamp = TRUE;
+									$is_cmd = 1;
+								}
+								elseif (strtolower($item) == "#sort" || strtolower($item) == "#ksort")
+									$is_cmd = 1;
+								else
+									$is_cmd = 0;
+
+								$cnt = 0;
+							}
+							
+							if (!$is_cmd)
+							{
+								$e_arg = encode($item);
+								if ($item == $post['vote_newitem']) {
+									$post['vote_newitem'] = "";
+									$post["vote_$e_arg"] = $_vote_plugin_votes;
+								}
+								if (strtolower($item) == "#add" && $post['vote_newitem'] && strtolower($post['vote_newitem']) != "#add")
+									$votes[] = $post['vote_newitem'].'[1]';
+								elseif($post["vote_$e_arg"]==$_vote_plugin_votes)
+									$cnt++;
+
+								$votes[] = $item.'['.$cnt.']';
+							}
+							else
+								$votes[] = $item;
+						}
+
+						$vote_str = "$arg[1]#vote(" . @join(",",$votes) . ")";
+
+						$postdata_input = $vote_str;
+						$celldata[] = $vote_str;
 					}
 					else
-					{
-						$cnt = 0;
-					}
+						$celldata[] = $line;
 
-					$e_arg = encode($arg);
-					if($post["vote_$e_arg"]==$_vote_plugin_votes) $cnt++;
-
-					$votes[] = $arg.'['.$cnt.']';
+					if (!$celltag) $vote_no++;
 				}
+				else
+					$celldata[] = $line;
 
-				$vote_str = "#vote(" . @join(",",$votes) . ")\n";
-
-				$postdata_input = $vote_str;
-				$postdata .= $vote_str;
-				$line = "";
 			}
-			$vote_no++;
+			$cell_line[] = join("->&br;",$celldata);
 		}
-		$postdata .= $line;
+		$postdata .= join("|",$cell_line)."\n";
 	}
 
-	if(md5(@join("",@file(get_filename(encode($post["refer"]))))) != $post["digest"])
+	//行中改行連結解除
+	$postdata = str_replace("->&br;","->\n",rtrim($postdata));
+
+	if(md5(@join("",get_source($post["refer"]))) != $post["digest"])
 	{
 		$title = $_title_collided;
 
@@ -90,9 +155,30 @@ function plugin_vote_action()
 		else if($do_backup && is_page($post["refer"]))
 			make_backup(encode($post["refer"]).".txt",$oldpostdata,$oldposttime);
 
-		file_write(DATA_DIR,$post["refer"],$postdata);
+		file_write(DATA_DIR,$post["refer"],$postdata,$notimestamp);
 
 		is_page($post["refer"],true);
+		
+		if (WIKI_MAIL_NOTISE && $post['vote_newitem']) {
+			// メール送信 by nao-pon
+			global $xoopsConfig;
+			$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
+			$mail_body .= _MD_PUKIWIKI_MAIL_URL."XOOPS_URL/modules/pukiwiki/?".rawurlencode(trim($post["refer"]))."\n";
+			$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($post["refer"]))."\n";
+			$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.strip_bracket(trim($name))."\n";
+			$mail_body .= sprintf(_MD_PUKIWIKI_MAIL_HEAD,"vote")."\n";
+			$mail_body .= $post['vote_newitem'];
+			$mail_body .= _MD_PUKIWIKI_MAIL_FOOT."\n";
+			$xoopsMailer =& getMailer();
+			$xoopsMailer->useMail();
+			$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
+			$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
+			$xoopsMailer->setFromName($xoopsConfig['sitename']);
+			$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["refer"])));
+			$xoopsMailer->setBody($mail_body);
+			$xoopsMailer->send();
+			//メール送信ここまで by nao-pon
+		}
 
 		$title = $_title_updated;
 	}
@@ -129,25 +215,79 @@ function plugin_vote_convert()
 		. "</tr>\n";
 
 	$tdcnt = 0;
+	$lines = $s_items = $items = $cnts = array();
+	$line = $sort = $ksort = $add = 0;
+	
 	foreach($args as $arg)
 	{
-		$cnt = 0;
-
-		if(preg_match("/^(.+)\[(\d+)\]$/",$arg,$match))
+		if (strtolower($arg) == "#sort") $sort = 1;
+		elseif (strtolower($arg) == "#ksort") $ksort = 1;
+		elseif (strtolower($arg) != "#notimestamp")
 		{
-			$arg = $match[1];
-			$cnt = $match[2];
+			if(preg_match("/^(.+)\[(\d+)\]$/",$arg,$match))
+			{
+				$arg = $match[1];
+				$cnt = $match[2];
+			}
+			else
+				$cnt = 0;
+			
+			if (strtolower($arg) == "#add")
+			{
+				$addcnt = $cnt;
+				$add = 1;
+			}
+			else
+			{
+				$lines[] = $line;
+				$items[] = $arg;
+				$links[] = $_item = make_link($arg);
+				$s_items[] = strip_tags($_item);
+				$cnts[] = $cnt;
+				$line ++;
+			}
 		}
-
-		$link = make_link($arg);
+		if ($sort && $ksort) 
+			array_multisort (	$cnts,SORT_NUMERIC, SORT_DESC,
+												$s_items,SORT_REGULAR, SORT_ASC,
+												$lines,SORT_NUMERIC, SORT_ASC,
+												$items,$links);
+		elseif ($sort)
+			array_multisort (	$cnts,SORT_NUMERIC, SORT_DESC,
+												$lines,SORT_NUMERIC, SORT_ASC,
+												$s_items,SORT_REGULAR, SORT_ASC,
+												$items,$links);
+		elseif ($ksort)
+			array_multisort (	$s_items,SORT_REGULAR, SORT_ASC,
+												$lines,SORT_NUMERIC, SORT_ASC,
+												$cnts,SORT_NUMERIC, SORT_DESC,
+												$items,$links);
+	}
+	$line = 0;
+	foreach($items as $arg)
+	{
+		$cnt = $cnts[$line];
+		$link = $links[$line];
 		$e_arg = encode($arg);
 
 		if($tdcnt++ % 2) $cls = "vote_td1";
 		else           $cls = "vote_td2";
-
+		
 		$string .= "<tr>"
-			.  "<td align=\"left\" class=\"$cls\" style=\"padding-left:1em;padding-right:1em;\" nowrap=\"nowrap\">$link</td>"
+			.  "<td align=\"left\" class=\"$cls\" style=\"padding-left:1em;padding-right:1em;\">$link</td>"
 			.  "<td align=\"right\" class=\"$cls\" nowrap=\"nowrap\">$cnt&nbsp;&nbsp;<input type=\"submit\" name=\"vote_".htmlspecialchars($e_arg)."\" value=\"$_vote_plugin_votes\" class=\"submit\" /></td>"
+			.  "</tr>\n";
+		$line ++;
+	}
+	if ($add){
+		if($tdcnt++ % 2) $cls = "vote_td1";
+		else           $cls = "vote_td2";
+		
+		if (!$addcnt) $addcnt = 30;
+		
+		$string .= "<tr>"
+			.  "<td align=\"left\" class=\"$cls\" style=\"padding-left:1em;padding-right:1em;\"><input type=\"text\" name=\"vote_newitem\" size=\"$addcnt\"/></td>"
+			.  "<td align=\"right\" class=\"$cls\" nowrap=\"nowrap\">0&nbsp;&nbsp;<input type=\"submit\" name=\"vote_".htmlspecialchars($e_arg)."\" value=\"$_vote_plugin_votes\" class=\"submit\" /></td>"
 			.  "</tr>\n";
 	}
 
