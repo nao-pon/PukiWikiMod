@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.7 2003/07/21 14:21:51 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.8 2003/07/23 23:54:08 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -241,7 +241,7 @@ function plugin_calendar2_convert()
 			$link = "<a href=\"$script?plugin=calendar2&amp;&amp;file=$prefix_&amp;date=$linkdt\" title=\"$title_tag\" class=\"small\"><span class=\"_DAY_STYLE_\">$day</span></a>";
 		}else{
 			$td_style = " style=\"background-image:url(image/pencil.gif);background-repeat:no-repeat;\"";
-			$link = "<a href=\"$script?plugin=calendar2&amp;&amp;file=$prefix_&amp;date=$linkdt\" title=\"$title_tag\" class=\"small\"><strong><span class=\"_DAY_STYLE_\">$day</span></strong></a>";
+			$link = "<a href=\"$script?plugin=calendar2&amp;&amp;file=$prefix_&amp;date=$linkdt\" title=\"$title_tag\" class=\"small\"><span class=\"_DAY_STYLE_\"><strong>$day</strong></span></a>";
 		}
 
 		if($fweek)
