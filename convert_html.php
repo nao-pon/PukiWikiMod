@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.28 2004/08/21 04:26:51 nao-pon Exp $
+// $Id: convert_html.php,v 1.29 2004/08/29 06:04:18 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -601,6 +601,7 @@ class convert
 									array_push($result,"<$td_name class=\"style_$td_name\"$style$sell_sheet>");
 								} else {
 									array_push($result,"<$td_name class=\"style_$td_name\"$style colspan=\"$_colspan\"$sell_sheet>");
+									$_colspan = 1;
 								}
 
 								// テーブル内で書式有効化のため再帰処理する条件
