@@ -25,7 +25,6 @@
 	border-bottom: 1px solid #FF0000;
 }
 
-
 div.wiki_body_block
 {
 	background-color: #F5F5F5;
@@ -601,6 +600,7 @@ p.quotation
 	background-color: #FFFFFF;
 	font-size:85%;
 	line-height:1.5;
+	word-break: break-all;
 }
 /* source.inc.php */
 div.wiki_source
