@@ -1,4 +1,4 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.7 2003/07/08 14:11:16 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.8 2003/07/08 14:20:03 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
@@ -116,7 +116,7 @@ if($_freeze){
 		<?php if($is_page) { ?>
 			<a href="<?php echo "$script?".rawurlencode($vars[page]) ?>"><img src="./image/reload.gif" width="20" height="20" border="0" alt="リロード" /></a>
 			&nbsp;
-		  <?php if ($anon_writable){ ?>
+		  <?php if (!$_freeze){ ?>
 		  <?php if ($wiki_allow_newpage){ ?>
 			<a href="<?php echo $script ?>?plugin=newpage"><img src="./image/new.gif" width="20" height="20" border="0" alt="新規" /></a>
 			<?php } ?>
