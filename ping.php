@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ping.php,v 1.4 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: ping.php,v 1.5 2005/03/29 23:37:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 //XOOPS設定読み込み
@@ -53,14 +53,16 @@ if (file_exists($filename))
 {
 	unlink($filename);
 	
+	//常にゲストモード
+	$X_admin = $X_uid = 0;
+	
+	//ゲスト閲覧権限チェック
+	if (!check_readable($page,FALSE,FALSE)) exit;
+
 	// 実行時間を長めに設定
 	set_time_limit(120);
 	
 	sleep(mt_rand(40,60)); //適当に遅延させる
-	
-	
-	//常にゲストモード
-	$X_admin = $X_uid = 0;
 	
 	//キャッシュ作成 (ページ)
 	convert_html($page,false,true);
@@ -68,7 +70,7 @@ if (file_exists($filename))
 	//キャッシュ作成 (RSS)
 	http_request($rss_url);
 	
-	sleep(10);
+	sleep(3);
 	
 	//ソースを取得
 	$data = get_source($page);
