@@ -1,7 +1,22 @@
 <?php
-// $Id: include.inc.php,v 1.2 2003/06/28 11:33:03 nao-pon Exp $
+// $Id: include.inc.php,v 1.3 2003/08/23 07:23:52 wellwine Exp $
+// internationalization
+function plugin_include_init() {
+	if (LANG=='ja') {
+		$_plugin_include_messages = array(
+			'_include_msg_see' => '%s<font size=-2> を参照</font>'
+		);
+	} else {
+		$_plugin_include_messages = array(
+			'_include_msg_see' => '<font size=-2>See </font>%s'
+		);
+	}
+	set_plugin_messages($_plugin_include_messages);
+}
+
 function plugin_include_convert()
 {
+    global $_include_msg_see;
 	global $script,$get,$post,$vars,$WikiName,$BracketName,$hr,$digest;
 	static $include_list; //処理済ページ名の配列
 	$digest_esc = $digest; //一時退避
@@ -38,7 +53,7 @@ function plugin_include_convert()
 		$body = "$head\n<small>$body</small>\n";
 	} else {
 		if ($com != "notitle"){
-			$head = "<h4>$link<font size=-2> を参照</font></h4>\n";
+			$head = "<h4>".sprintf($_include_msg_see, $link)."</h4>\n";
 		}
 		$body = "$head\n$body\n";
 	}
