@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.7 2004/11/24 14:19:59 nao-pon Exp $
+// $Id: xoops_version.php,v 1.8 2004/12/02 13:45:11 nao-pon Exp $
  
 $modversion['name'] = "PukiWiki";
 $modversion['version'] = "1.0.x";
@@ -31,9 +31,11 @@ $modversion['adminmenu'] = "admin/menu.php";
 // Menu
 $modversion['hasMain'] = 1;
 $modversion['sub'][1]['name'] = _MI_PUKIWIKI_RECENT;
-$modversion['sub'][1]['url'] = "index.php?RecentChanges";
+$modversion['sub'][1]['url'] = "?RecentChanges";
 $modversion['sub'][2]['name'] = _MI_PUKIWIKI_LIST;
-$modversion['sub'][2]['url'] = "index.php?cmd=list";
+$modversion['sub'][2]['url'] = "?cmd=list";
+$modversion['sub'][3]['name'] = _MI_PUKIWIKI_NEWPAGE;
+$modversion['sub'][3]['url'] = "?plugin=newpage";
 
 // Search
 $modversion['hasSearch'] = 1;
