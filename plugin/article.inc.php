@@ -19,7 +19,7 @@
  -投稿内容のメール自動配信先
  を設定の上、ご使用ください。
 
- $Id: article.inc.php,v 1.8 2004/08/04 13:58:55 nao-pon Exp $
+ $Id: article.inc.php,v 1.9 2004/08/19 05:26:53 nao-pon Exp $
  
  */
 
@@ -197,17 +197,6 @@ function plugin_article_convert()
 	global $_btn_article,$_btn_name,$_btn_subject,$vars;
 	static $article_no = 0;
 
-	// xoops //
-	global $xoopsUser;
-	if ($xoopsUser){
-		//$name = $xoopsUser->name();
-		$uname = $xoopsUser->uname();
-		if($name == "") {
-		    $name = $uname;
-		}
-	}
-	// ---- //
-
 	if((arg_check("read")||$vars["cmd"] == ""||arg_check("unfreeze")||arg_check("freeze")||$vars["write"]||$vars["article"]))
 		$button = "<input type=\"submit\" name=\"article\" value=\"$_btn_article\" />\n";
 
@@ -217,7 +206,7 @@ function plugin_article_convert()
 		 ."<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($vars["page"])."\" />\n"
 		 ."<input type=\"hidden\" name=\"plugin\" value=\"article\" />\n"
 		 ."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($digest)."\" />\n"
-		 ."$_btn_name<input type=\"text\" name=\"name\" size=\"".NAME_COLS."\" value=\"$name\" /><br />\n"
+		 ."$_btn_name<input type=\"text\" name=\"name\" size=\"".NAME_COLS."\" value=\"".WIKI_NAME_DEF."\" /><br />\n"
 		 ."$_btn_subject<input type=\"text\" name=\"subject\" size=\"".SUBJECT_COLS."\" /><br />\n"
 		 .fontset_js_tag()."<br />\n"
 		 ."<textarea name=\"msg\" rows=\"".article_ROWS."\" cols=\"".article_COLS."\">\n</textarea><br />\n"
