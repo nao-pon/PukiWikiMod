@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.35 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.36 2005/03/05 02:13:12 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -35,6 +35,12 @@ define("CACHE_DIR",XOOPS_WIKI_PATH."/cache/");
 /////////////////////////////////////////////////
 // プラグイン用キャッシュディレクトリ
 define("P_CACHE_DIR",CACHE_DIR."p/");
+
+
+/////////////////////////////////////////////////
+// インクルードを許可する段数
+define("PLUGIN_INCLUDE_MAX",4);
+
 
 /////////////////////////////////////////////////
 // Language
@@ -293,7 +299,7 @@ $str_rules = array(
 // ユーザ定義ルール(コンバート時に置換、直接しない)
 $line_rules = array(
 //"/!([A-Z][a-z]+(?:[A-Z][a-z]+)+)/" => "$1",
-"((氏|死)(ね|ネ)|うんこ|つんぼ|ちん(ば|こ)|まんこ|ウンコ|ツンボ|チン(バ|コ)|マンコ)" => "<span style=\"color:white;background-color:white;\">$0</span>", //禁止ワード
+"((氏|死)(ね|ネ)|うんこ|つんぼ|ちんこ|まんこ|ウンコ|ツンボ|(?<!パ)チンコ|マンコ)" => "<span style=\"color:white;background-color:white;\">$0</span>", //禁止ワード
 );
 
 /////////////////////////////////////////////////

@@ -1,7 +1,9 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.39 2005/03/02 00:10:13 nao-pon Exp $
+// $Id: func.php,v 1.40 2005/03/05 02:13:12 nao-pon Exp $
 /////////////////////////////////////////////////
+if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
+
 // 文字列がページ名かどうか
 function is_pagename($str)
 {
@@ -1006,6 +1008,37 @@ function include_page($page,$ret_array=false)
 	global $vars,$post,$get,$comment_no,$article_no,$h_excerpt,$digest;
 	global $_msg_read_more;
 	
+	static $included = array();
+	static $parents = array();
+	static $count = 1;
+	
+	$page = strip_bracket($page);
+	
+	// 自己ページ
+	$root = isset($vars['page']) ? strip_bracket($vars['page']) : '';
+	$included[$root] = TRUE;
+	
+	// 読み出し元
+	$parents[$root] = TRUE;
+	
+	$ret = "";
+	// チェック
+	if (isset($included[$page])) {
+		$ret = '#include(): Included already: ' . make_pagelink($page) . '<br />' . "\n";
+	} if (! is_page($page)) {
+		$ret = '#include(): No such page: ' . htmlspecialchars($page) . '<br />' . "\n";
+	} if ($count > PLUGIN_INCLUDE_MAX) {
+		$ret = '#include(): Limit exceeded: ' . make_pagelink($page) . '<br />' . "\n";
+	} else {
+		if (isset($parents[$page])) ++$count;
+	}
+	
+	if ($ret) return ($ret_array)? array($ret,"") : $ret;
+	
+	// 読み込み済みにする
+	$included[$page] = TRUE;
+	
+	
 	//変数値退避
 	$tmppage = $vars["page"];
 	$_comment_no = $comment_no;
@@ -1135,6 +1168,18 @@ function select_contents_by_level_sub($link,$pid)
 	$s_page = htmlspecialchars($page);
 	$title = " title=\"$s_page$passage\"";
 	return $link.$title.">";
+}
+
+// <a>タグ内の長すぎる英単語をワードラップ
+function wordwrap4tolong(&$str)
+{
+
+	$str = str_replace('\"','\\\"',$str);
+	//$str = preg_replace("/(<[^>]+>)?([!~*\"'();\/?:\@&=+\$,%#\w.-]+)/e","'$1'.wordwrap('$2',36,'&#173;',1)",$str);
+	$str = preg_replace("/(<\s*a[^>]+>)?([!~*\"'();\/?:\@&=+\$,%#\w.-]+?)(<\/a>)/e","'$1'.wordwrap('$2',36,'&#173;',1).'$3'",$str);
+	$str = str_replace(array('\&#173;','\"'),array('&#173;','"'),$str);
+	return $str;
+
 }
 
 //////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 <?php
-// $Id: include.inc.php,v 1.7 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: include.inc.php,v 1.8 2005/03/05 02:13:12 nao-pon Exp $
 // internationalization
 function plugin_include_init() {
 	if (LANG=='ja') {
@@ -16,31 +16,18 @@ function plugin_include_init() {
 
 function plugin_include_convert()
 {
-    global $_include_msg_see;
+	global $_include_msg_see;
 	global $script,$get,$post,$vars,$WikiName,$BracketName,$hr,$digest,$comment_no,$h_excerpt;
-	static $include_list; //処理済ページ名の配列
-	if (!isset($include_list))
-		$include_list = array($vars['page']=>TRUE);
 	
-	if(func_num_args() == 0)
-		return;
+	if(func_num_args() == 0) return;
 	
 	list($page,$com) = func_get_args();
 	
-	if (!preg_match("/^($WikiName|$BracketName)$/",$page))
-		$page = "[[$page]]";
-	
-	if (!is_page($page))
-		return '';
+	$page = add_bracket($page);
 
 	// 閲覧権限
 	if (!check_readable($page,false,false))
 		return str_replace('$1',strip_bracket($page),_MD_PUKIWIKI_NO_VISIBLE);
-	
-	if (isset($include_list[$page]))
-		return '';
-	
-	$include_list[$page] = TRUE;
 
 	//インクルード
 	$body = include_page($page);
