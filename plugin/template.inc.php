@@ -1,5 +1,5 @@
 <?php
-// $Id: template.inc.php,v 1.8 2004/10/11 14:03:30 nao-pon Exp $
+// $Id: template.inc.php,v 1.9 2004/10/31 14:17:23 nao-pon Exp $
 
 define("MAX_LEN",60);
 function plugin_template_action()
@@ -15,13 +15,7 @@ function plugin_template_action()
 	// edit
 	if($vars["refer"] && $vars["page"] && $vars["check"] && !is_page($vars["refer"]))
 	{
-		// ページ名がWikiNameでなく、BracketNameでなければBracketNameとして解釈
-		if(!preg_match("/^(($WikiName)|($BracketName))$/",$vars["refer"]))
-		{
-			$vars["refer"] = "[[".$vars["refer"]."]]";
-		}
-		
-		$page = $vars["refer"];
+		$page = add_bracket($vars["refer"]);
 		
 		// 無効なページ名のチェック
 		if (!is_pagename($page))
@@ -101,7 +95,7 @@ function plugin_template_action()
 			
 			
 		}
-		$s_refer = htmlspecialchars($vars['refer']);
+		$s_refer = htmlspecialchars(strip_bracket($vars['refer']));
 		$ret.= "<form action=\"$script\" method=\"post\">\n";
 		$ret.= "<div>\n";
 		$ret.= "<input type=\"hidden\" name=\"plugin\" value=\"template\" />\n";
