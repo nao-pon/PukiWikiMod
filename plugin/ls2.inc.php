@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.18 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.19 2004/12/06 13:48:49 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -214,7 +214,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 	$_ret = '';
 	foreach (get_source($page) as $line) {
 		if ($params['title'] and preg_match('/^(\*+)(.*)$/',$line,$matches)) {
-			$special = strip_htmltag(make_line_rules(inline($matches[2],TRUE)));
+			$special = strip_tags(make_line_rules(inline($matches[2],TRUE)));
 			$left = (strlen($matches[1]) - 1) * 16;
 			$_ret .= '<li style="margin-left:'.$left.'px">'.$special.
 				'<a href="'.$href.LS2_CONTENT_HEAD.$anchor.'">'.$_ls2_messages['msg_go'].'</a></li>'."\n";
@@ -274,6 +274,6 @@ function ls2_check_arg($val, $key, &$params)
 		}
 		$params['_done'] = TRUE;
 	}
-	$params['_args'][] = $val;
+	$params['_args'][] = htmlspecialchars($val);
 }
 ?>
