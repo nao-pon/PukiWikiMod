@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.14 2004/03/20 07:21:18 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.15 2004/04/03 14:16:58 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -666,7 +666,7 @@ EOD;
 			touch(get_filename($this->page));
 		}
 		
-		return array('msg'=>$_attach_messages['msg_deleted']);
+		return array('msg'=>$_attach_messages['msg_deleted'],'redirect'=>$script."?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($this->page));
 	}
 	function freeze($freeze,$pass)
 	{
