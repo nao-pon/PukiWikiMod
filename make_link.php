@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.14 2004/01/15 13:09:34 nao-pon Exp $
+// $Id: make_link.php,v 1.15 2004/01/15 13:11:44 nao-pon Exp $
 //
 
 // リンクを付加する
@@ -742,7 +742,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 				$heading = get_heading($page);
 				if ($heading) $page_name = $heading;
 				// 無限ループ防止　姑息だけど
-				$page_name = preg_replace("/^(#.*#)$/"," $1",$page_name);
+				$page_name = preg_replace("/^(#.*#)$/","$1 ",$page_name);
 			}
 			$link = make_pagelink($name,$page_name);
 			if ($i)

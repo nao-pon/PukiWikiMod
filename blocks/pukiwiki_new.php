@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.9 2004/01/15 13:09:34 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.10 2004/01/15 13:11:44 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -89,7 +89,7 @@ function xb_make_link($page,$alias="#/#")
 				$heading = xb_get_heading($page);
 				if ($heading) $page_name = $heading;
 				// 無限ループ防止　姑息だけど
-				$page_name = preg_replace("/^(#.*#)$/"," $1",$page_name);
+				$page_name = preg_replace("/^(#.*#)$/","$1 ",$page_name);
 			}
 			$link = xb_make_link($name,$page_name);
 			if ($i)
