@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.36 2004/11/01 14:13:18 nao-pon Exp $
+// $Id: convert_html.php,v 1.37 2004/11/02 09:25:44 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -380,7 +380,7 @@ class convert
 					array_push($result, '<li>'.inline($out[2]));
 				}
 				//else if (preg_match("/^:([^:]+):(.*)/",$line,$out))
-				else if (preg_match("/^:((?:\[\[.*]]|(?::\/\/|[^:])*)):(.*)/",$line,$out))
+				else if (preg_match("/^:((?:\[\[.*]]|(?::\/\/|[^:\|])*))(?::|\|)(.*)/",$line,$out))
 				{
 					$headform[$_cnt] = ':'.$out[1].':';
 					back_push($result,$saved,'dl', 1);
