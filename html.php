@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.29 2004/05/13 14:10:39 nao-pon Exp $
+// $Id: html.php,v 1.30 2004/05/25 14:36:12 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -280,16 +280,17 @@ function make_related($page,$tag='')
 		$r_page = rawurlencode($page);
 		$s_page = htmlspecialchars($page);
 		$passage = get_passage(($lastmod));
-		if ($use_static_url)
-			$pg_link = XOOPS_WIKI_URL."/".get_pgid_by_name($page).".html";
-		else
-			$pg_link = "$script?$r_page";
 
-		$pg_link = 
+		//ページ名が「数字と-」だけの場合は、*(**)行を取得
+		if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_page))
+			$alias = get_heading($page);
+		else
+		{
+			$alias = (preg_match("/^.*\/([^\/]+)$/",$s_page,$match))? $match[1] : $s_page;
+		}
 		$_links[] = $tag ?
-//			"<a href=\"$script?$r_page\" title=\"$s_page $passage\">$s_page</a>" :
 			make_pagelink($page) :
-			"<a href=\"$pg_link\">$s_page</a>$passage";
+			make_pagelink($page,$alias)."<small>$passage</small>";
 	}
 	
 	if (count($_links) == 0)
@@ -314,13 +315,6 @@ function make_related($page,$tag='')
 	return $retval;
 }
 
-/*
-// リンクを付加する
-function make_link($name,$page = '')
-{
-	return p_make_link($name,$page);
-}
-*/
 // ユーザ定義ルール(ソースを置換する)
 function user_rules_str($str)
 {
