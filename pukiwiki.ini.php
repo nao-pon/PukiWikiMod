@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.24 2004/02/08 13:25:07 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.25 2004/05/13 14:17:19 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -55,10 +55,10 @@ ini_set("file_uploads","1");
 define("UPLOAD_DIR","./attach/");
 
 // max file size for upload on PHP(PHP default 2MB)
-ini_set("upload_max_filesize","2M");
+ini_set("upload_max_filesize","10M");
 
 // max file size for upload on script of PukiWiki(default 1MB)
-define("MAX_FILESIZE",2000000);
+define("MAX_FILESIZE",10000000);
 
 
 /////////////////////////////////////////////////
@@ -73,12 +73,11 @@ $whatsnew = "RecentChanges";
 
 ///////////////////////////////////////////////// 
 // 削除履歴ページの名前 
-$whatsdeleted = 'RecentDeleted'; 
+$whatsdeleted = ':RecentDeleted'; 
 
 /////////////////////////////////////////////////
 // InterWikiNameページの名前
 $interwiki = "InterWikiName";
-
 
 /////////////////////////////////////////////////
 // 更新履歴を表示するときの最大件数
@@ -96,8 +95,18 @@ $unvisible_deleted = 0;
 $cantedit = array( $whatsnew, );
 
 /////////////////////////////////////////////////
+// WikiNameを*無効に*する
+$nowikiname = 0;
+
+/////////////////////////////////////////////////
+// AutoLinkを有効にする場合は、AutoLink対象となる
+// ページ名の最短バイト数を指定
+// AutoLinkを無効にする場合は0
+$autolink = 3;
+
+/////////////////////////////////////////////////
 // 単語検索時にキーワードをハイライトするか
-$search_word_color = 1;
+$search_word_color = 0;
 /////////////////////////////////////////////////
 // プレビューを表示するときのテーブルの背景色
 $preview_color = "#F5F8FF";
@@ -113,11 +122,15 @@ $link_target = "_blank";
 /////////////////////////////////////////////////
 // InterWikiNameのウィンドウ名指定(_top,_blank,etc)
 $interwiki_target = "_top";
+/////////////////////////////////////////////////
+// URLリンク指定時にステータスバーに
+// URLを表示せずに対象文字列を表示する
+$alias_set_status = 1;
 
 /////////////////////////////////////////////////
 // リスト構造の左マージン
 $_list_left_margin = 0; // リストと画面左端との間隔(px)
-$_list_margin = 16;      // リストの階層間の間隔(px)
+$_list_margin = 8;      // リストの階層間の間隔(px)
 $_list_pad_str = ' class="list%d" style="padding-left:%dpx;margin-left:%dpx"';
 
 /////////////////////////////////////////////////
@@ -206,12 +219,12 @@ $auto_template_rules = array(
 /////////////////////////////////////////////////
 // TrackBackでのPing先URL抽出時に除外するプラグイン
 // カンマ区切りで、#をつけずに記述
-$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list";
+$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,aws,blogs";
 
 /////////////////////////////////////////////////
 // 検索用Plainソース作成時に除外するプラグイン
 // カンマ区切りで、#をつけずに記述
-$noplain_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,ls2,ls,recent,popular,pcomment,contents,showrss,tenki,ref,exrate,xoopsblock,attachref,related";
+$noplain_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,ls2,ls,recent,popular,pcomment,contents,showrss,tenki,ref,exrate,xoopsblock,attachref,related,blogs";
 
 /////////////// ParaEdit //////////////////
 // ParaEdit 改行の代替文字列
