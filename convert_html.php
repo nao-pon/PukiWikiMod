@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.32 2004/10/05 08:46:36 nao-pon Exp $
+// $Id: convert_html.php,v 1.33 2004/10/05 13:10:37 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -485,11 +485,11 @@ class convert
 							$table_sheet .= "margin-left:auto;margin-right:auto;";
 							$table_around = "";
 						}
-						if (preg_match("/T(LEFT|CENTER|RIGHT)?:([0-9]+[%]?)/i",$out[1],$reg)) {
+						if (preg_match("/T(LEFT|CENTER|RIGHT)?:([0-9]+(%|px)?)/i",$out[1],$reg)) {
 							//if (!strpos("%",$reg[2])) $reg[2] .= "px";
 							$table_sheet .= "width:".$reg[2].";";
 						}
-						$out[1] = preg_replace("/^(TLEFT|TCENTER|TRIGHT|T):([0-9]+[%]?)?/i","",$out[1]);
+						$out[1] = preg_replace("/^(TLEFT|TCENTER|TRIGHT|T):([0-9]+(%|px)?)?/i","",$out[1]);
 						
 						$arytable = explode("|",$out[1]);
 						$i = 0;
@@ -519,7 +519,7 @@ class convert
 								$td = preg_replace("/(?:SC|BC):\(([^),]*)(,once|,1)?\)/i","",$td);
 							}
 							// セル規定文字揃え、幅指定
-							if (preg_match("/(LEFT|CENTER|RIGHT)?:(TOP|MIDDLE|BOTTOM)?(?::)?([0-9]+[%]?)?/i",$td,$tmp)) {
+							if (preg_match("/(LEFT|CENTER|RIGHT)?:(TOP|MIDDLE|BOTTOM)?(?::)?([0-9]+(%|px)?)?/i",$td,$tmp)) {
 								if ($tmp[3]) $td_width[$i] = "width:".$tmp[3].";";
 								if ($tmp[1]) $td_align[$i] = "text-align:".strtolower($tmp[1]).";";
 								if ($tmp[2]) $td_valign[$i] = "vertical-align:".strtolower($tmp[2]).";";
