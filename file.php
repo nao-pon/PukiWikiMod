@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.33 2004/09/07 12:14:46 nao-pon Exp $
+// $Id: file.php,v 1.34 2004/09/28 14:23:48 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -700,13 +700,13 @@ function get_pg_auther($page)
 }
 
 //ページ作成者名を得る
-function get_pg_auther_name($page)
+function get_pg_auther_name($str,$is_id=FALSE)
 {
 	global $no_name;
 	
-	if (!is_page($page)) return "";
+	if (!$is_id && !is_page($str)) return "";
 	
-	$uid = get_pg_auther($page);
+	$uid = (!$is_id)? get_pg_auther($str) : $str;
 	if (!$uid) return "$no_name";
 	
 	$user = new XoopsUser($uid);
