@@ -1,9 +1,9 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.13 2004/10/29 12:54:09 nao-pon Exp $
+// $Id: db_func.php,v 1.14 2004/11/01 13:02:05 nao-pon Exp $
 
-// ‘Sƒy[ƒW–¼‚ğ”z—ñ‚ÉDB”Å
+// Á´¥Ú¡¼¥¸Ì¾¤òÇÛÎó¤ËDBÈÇ
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
 {
 	static $_aryret = array();
@@ -82,7 +82,7 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 	return $aryret;
 }
 
-//DB‚©‚çƒy[ƒWî•ñ‚ğ“¾‚é
+//DB¤«¤é¥Ú¡¼¥¸¾ğÊó¤òÆÀ¤ë
 function get_pg_info_db($page)
 {
 	global $xoopsDB;
@@ -95,7 +95,7 @@ function get_pg_info_db($page)
 	return $ret;
 }
 
-//ƒy[ƒWID‚©‚çƒy[ƒW–¼‚ğ‹‚ß‚é
+//¥Ú¡¼¥¸ID¤«¤é¥Ú¡¼¥¸Ì¾¤òµá¤á¤ë
 function get_pgname_by_id($id)
 {
 	global $xoopsDB;
@@ -106,7 +106,7 @@ function get_pgname_by_id($id)
 	return $ret[1];
 }
 
-//ƒy[ƒW–¼‚©‚çƒy[ƒWID‚ğ‹‚ß‚é
+//¥Ú¡¼¥¸Ì¾¤«¤é¥Ú¡¼¥¸ID¤òµá¤á¤ë
 function get_pgid_by_name($page)
 {
 	global $xoopsDB;
@@ -121,7 +121,7 @@ function get_pgid_by_name($page)
 	return $ret[0];
 }
 
-//ƒy[ƒW–¼‚©‚çã‘wƒy[ƒW‚Æ‘OŒãƒy[ƒW‚Ìƒy[ƒW–¼‚Æƒy[ƒWID‚ğ“¾‚é
+//¥Ú¡¼¥¸Ì¾¤«¤é¾åÁØ¥Ú¡¼¥¸¤ÈÁ°¸å¥Ú¡¼¥¸¤Î¥Ú¡¼¥¸Ì¾¤È¥Ú¡¼¥¸ID¤òÆÀ¤ë
 function get_relaypage_by_name($page)
 {
 	global $xoopsDB,$X_admin,$X_uid;
@@ -134,7 +134,7 @@ function get_relaypage_by_name($page)
 	$this_id = get_pgid_by_name($page);
 	
 	$where2 = "";
-	// ƒy[ƒW‰{——Œ ŒÀ
+	// ¥Ú¡¼¥¸±ÜÍ÷¸¢¸Â
 	if ($X_admin)
 		$where = "";
 	else
@@ -150,7 +150,7 @@ function get_relaypage_by_name($page)
 		$where = "AND($where) ";
 	}
 	
-	// ŠK‘w‚ğ’Šo
+	// ³¬ÁØ¤òÃê½Ğ
 	if (preg_match("/(.+)\/[^\/]+/",$page,$match))
 	{
 		$up_page = $match[1];
@@ -214,7 +214,7 @@ function get_relaypage_by_name($page)
 	return $ret[$page];
 }
 
-//ƒy[ƒW–¼‚©‚ç‘Oƒy[ƒW‚Ö‚ÌƒŠƒ“ƒN‚ğ“¾‚é
+//¥Ú¡¼¥¸Ì¾¤«¤éÁ°¥Ú¡¼¥¸¤Ø¤Î¥ê¥ó¥¯¤òÆÀ¤ë
 function get_prevpage_link_by_name($page)
 {
 	$data = get_relaypage_by_name($page);
@@ -228,7 +228,7 @@ function get_prevpage_link_by_name($page)
 	//return ($data['prev'][1])? make_link("[[".preg_replace("/.+\//","",$data['prev'][1]).">".$data['prev'][1]."]]"):"";
 }
 
-//ƒy[ƒW–¼‚©‚çŒã‚ëƒy[ƒW‚Ö‚ÌƒŠƒ“ƒN‚ğ“¾‚é
+//¥Ú¡¼¥¸Ì¾¤«¤é¸å¤í¥Ú¡¼¥¸¤Ø¤Î¥ê¥ó¥¯¤òÆÀ¤ë
 function get_nextpage_link_by_name($page)
 {
 	$data = get_relaypage_by_name($page);
@@ -241,7 +241,7 @@ function get_nextpage_link_by_name($page)
 	return $link;
 
 }
-//ƒy[ƒW–¼‚©‚ç‘OŒã‚Ìƒy[ƒW‚Ö‚Ì<link>ƒ^ƒO‚ğ“¾‚é
+//¥Ú¡¼¥¸Ì¾¤«¤éÁ°¸å¤Î¥Ú¡¼¥¸¤Ø¤Î<link>¥¿¥°¤òÆÀ¤ë
 function get_header_link_tag_by_name($page)
 {
 	global $use_static_url;
@@ -283,7 +283,7 @@ function get_header_link_tag_by_name($page)
 
 }
 
-// w’èƒy[ƒWˆÈ‰º‚Ìƒy[ƒW”‚ğƒJƒEƒ“ƒg‚·‚é
+// »ØÄê¥Ú¡¼¥¸°Ê²¼¤Î¥Ú¡¼¥¸¿ô¤ò¥«¥¦¥ó¥È¤¹¤ë
 function get_child_counts($page)
 {
 	$page = strip_bracket($page);
@@ -292,21 +292,21 @@ function get_child_counts($page)
 }
 
 
-// pginfo DB ‚ğXV
+// pginfo DB ¤ò¹¹¿·
 function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$freeze="",$unvisible="",$notimestamp=false)
 {
 	global $xoopsDB,$X_uid,$X_admin;
 	
-	//Å‰‚ÌŒ©o‚µsæ“¾
+	//ºÇ½é¤Î¸«½Ğ¤·¹Ô¼èÆÀ
 	$title = addslashes(str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),get_heading_init($page)));
 	
-	//ƒy[ƒWì¬Ò
+	//¥Ú¡¼¥¸ºîÀ®¼Ô
 	//$uid = $X_uid;
 	$uid = get_pg_auther($page);
-	//ƒy[ƒWXVÒ
+	//¥Ú¡¼¥¸¹¹¿·¼Ô
 	$lastediter = $X_uid;
 	
-	// ƒy[ƒWíœ
+	// ¥Ú¡¼¥¸ºï½ü»ş
 	if ($action == "delete")
 		$unvisible = false;
 	
@@ -314,7 +314,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	$s_name = addslashes($name);
 	$editedtime = filemtime(DATA_DIR.encode($page).".txt");
 	
-	// •ÒWŒ ŒÀî•ñ
+	// ÊÔ½¸¸¢¸Â¾ğÊó
 	if ($freeze === "")
 	{
 		if ($action == "insert")
@@ -339,7 +339,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		$freeze = 0;
 	}
 	
-	// ‰{——Œ ŒÀî•ñ
+	// ±ÜÍ÷¸¢¸Â¾ğÊó
 	if ($unvisible === "")
 	{
 		if ($action == "insert")
@@ -372,7 +372,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		$unvisible = 0;
 	}
 
-	// V‹Kì¬
+	// ¿·µ¬ºîÀ®
 	if ($action == "insert")
 	{
 		$buildtime = $editedtime;
@@ -384,7 +384,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		
 		if ($count[0])
 		{
-			// ˆÈ‘O‚Éíœ‚µ‚½ƒy[ƒW
+			// °ÊÁ°¤Ëºï½ü¤·¤¿¥Ú¡¼¥¸
 			$value = "editedtime=$editedtime";
 			$value .= ",buildtime=$buildtime";
 			$value .= ",title='$title'";
@@ -407,7 +407,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		plain_db_write($page,"insert");
 	}
 	
-	// ƒy[ƒWXV
+	// ¥Ú¡¼¥¸¹¹¿·
 	elseif ($action == "update")
 	{
 		$value = "editedtime=$editedtime,title='$title'";
@@ -423,10 +423,10 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		//echo $query;
 		//exit;
 		$result=$xoopsDB->queryF($query);
-		// ‰º‘wƒy[ƒW‚Ì‰{——Œ ŒÀXV
+		// ²¼ÁØ¥Ú¡¼¥¸¤Î±ÜÍ÷¸¢¸Â¹¹¿·
 		if ($vaids && $vgids)
 		{
-			//ƒRƒƒ“ƒgƒy[ƒW‚àŠÜ‚Ş
+			//¥³¥á¥ó¥È¥Ú¡¼¥¸¤â´Ş¤à
 			$comment_page = addslashes(strip_bracket(sprintf(PCMT_PAGE,$name)));
 			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET vaids='$vaids', vgids='$vgids' WHERE ((name LIKE '$s_name/%') OR (name = '$comment_page') OR (name LIKE '$comment_page/%')) AND (unvisible = 0);";
 			$result=$xoopsDB->queryF($query);
@@ -434,7 +434,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		plain_db_write($page,"update");
 	}
 	
-	// ƒy[ƒWíœ
+	// ¥Ú¡¼¥¸ºï½ü
 	elseif ($action == "delete")
 	{
 
@@ -446,11 +446,11 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		plain_db_write($page,"delete");
 	}
 	
-	// Š®—¹
+	// ´°Î»
 	return;
 }
 
-// plane_text DB ‚ğXV
+// plane_text DB ¤ò¹¹¿·
 function plain_db_write($page,$action)
 {
 	global $xoopsDB,$noplain_plugin,$post,$get,$vars;
@@ -458,17 +458,17 @@ function plain_db_write($page,$action)
 	
 	if (!$pgid = get_pgid_by_name($page)) return false;
 	
-	//ƒ\[ƒX‚ğæ“¾
+	//¥½¡¼¥¹¤ò¼èÆÀ
 	$data = join('',get_source($page));
 	delete_page_info($data);
 	
-	//ˆ—‚µ‚È‚¢ƒvƒ‰ƒOƒCƒ“‚ğíœ
+	//½èÍı¤·¤Ê¤¤¥×¥é¥°¥¤¥ó¤òºï½ü
 	$no_plugins = split(',',$noplain_plugin);
 	
 	$data = str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),strip_tags(convert_html($data,false)));
 	$data = addslashes(preg_replace("/[\s]+/","",$data));
 	//echo $data."<hr>";
-	// V‹Kì¬
+	// ¿·µ¬ºîÀ®
 	if ($action == "insert")
 	{
 		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_plain")." (pgid,plain) VALUES($pgid,'$data');";
@@ -476,7 +476,7 @@ function plain_db_write($page,$action)
 		if (!$result) echo $query."<hr>";
 	}
 	
-	// ƒy[ƒWXV
+	// ¥Ú¡¼¥¸¹¹¿·
 	elseif ($action == "update")
 	{
 		$value = "plain='$data'";
@@ -485,7 +485,7 @@ function plain_db_write($page,$action)
 		if (!$result) echo $query."<hr>";
 	}
 	
-	// ƒy[ƒWíœ
+	// ¥Ú¡¼¥¸ºï½ü
 	elseif ($action == "delete")
 	{
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_plain")." WHERE pgid = $pgid;";
@@ -498,7 +498,7 @@ function plain_db_write($page,$action)
 	return true;
 }
 
-// attach DB ‚ğXV
+// attach DB ¤ò¹¹¿·
 function attach_db_write($data,$action)
 {
 	global $xoopsDB,$post,$get,$vars;
@@ -519,7 +519,7 @@ function attach_db_write($data,$action)
 	$copyright = (int)$data['status']['copyright'];
 	$owner = (int)$data['status']['owner'];
 	
-	// V‹Kì¬
+	// ¿·µ¬ºîÀ®
 	if ($action == "insert")
 	{
 		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_attach")." (pgid,name,type,mtime,size,mode,count,age,pass,freeze,copyright,owner) VALUES($pgid,'$name','$type',$mtime,$size,'$mode',$count,$age,'$pass',$freeze,$copyright,$owner);";
@@ -527,7 +527,7 @@ function attach_db_write($data,$action)
 		if (!$result) echo $query."<hr>";
 	}
 	
-	// XV
+	// ¹¹¿·
 	elseif ($action == "update")
 	{
 		$value = "pgid=$pgid"
@@ -547,7 +547,7 @@ function attach_db_write($data,$action)
 		if (!$result) echo $query."<hr>";
 	}
 	
-	// ƒtƒ@ƒCƒ‹íœ
+	// ¥Õ¥¡¥¤¥ëºï½ü
 	elseif ($action == "delete")
 	{
 		$q_name = ($name)? " AND name='{$name}' LIMIT 1" : "";
@@ -563,7 +563,7 @@ function attach_db_write($data,$action)
 	return true;
 }
 
-// ƒvƒ‰ƒOƒCƒ“‚©‚çplane_text DB ‚ğXV‚ğw¦(ƒRƒ“ƒo[ƒg)
+// ¥×¥é¥°¥¤¥ó¤«¤éplane_text DB ¤ò¹¹¿·¤ò»Ø¼¨(¥³¥ó¥Ğ¡¼¥È»ş)
 function need_update_plaindb($page = null)
 {
 	global $vars;
@@ -572,7 +572,7 @@ function need_update_plaindb($page = null)
 	if (is_page($page))
 	{
 		$page =strip_bracket($page);
-		// ƒ‰ƒ“ƒ`ƒƒ[ƒtƒ@ƒCƒ‹ì¬
+		// ¥é¥ó¥Á¥ã¡¼¥Õ¥¡¥¤¥ëºîÀ®
 		$filename = CACHE_DIR.encode($page).".udp";
 		if (!($fp = fopen($filename,'w')))
 		{
@@ -589,7 +589,7 @@ function check_pginfo($page)
 	
 	if (!$page) return;
 	
-	// idæ“¾
+	// id¼èÆÀ
 	$id = get_pgid_by_name($page);
 	
 	if ($id) return;
@@ -600,21 +600,21 @@ function check_pginfo($page)
 	$buildtime = 0;
 	$editedtime = 0;
 	
-	// •ÒWŒ ŒÀ
+	// ÊÔ½¸¸¢¸Â
 	$aids = "&all";
 	$gids = "&3&";
 	$freeze = 0;
 	
-	// ‰{——Œ ŒÀ
+	// ±ÜÍ÷¸¢¸Â
 	$unvisible = 0;
 	$vaids = "";
 	$vgids = "";
 
-	// ƒy[ƒWì¬Ò
+	// ¥Ú¡¼¥¸ºîÀ®¼Ô
 	$uid = $X_uid;
 	$lastediter = $uid;
 	
-	// V‹Kì¬
+	// ¿·µ¬ºîÀ®
 	$query = "insert into ".$xoopsDB->prefix("pukiwikimod_pginfo")." (`name`,`buildtime`,`editedtime`,`aids`,`gids`,`vaids`,`vgids`,`lastediter`,`uid`,`freeze`,`unvisible`) values('$name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible);";
 	
 	$result=$xoopsDB->queryF($query);
