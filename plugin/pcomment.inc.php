@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.15 2004/08/04 13:58:55 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.16 2004/08/04 14:05:04 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -412,8 +412,6 @@ function pcmt_auto_log($page, $dir, $count, &$postdata)
 	{
 		$page_info = "// author:".get_pg_auther($post['refer'])."\n";
 	}
-	
-	$head = "*過去ログ($i)\n\n";
 	
 	// ページ作成
 	page_write($_page, $head."#navi(../)\n\n[[$page]]\n\n".$page_info.join('', $old)."\n#navi(../)", NULL,$aids,$gids,"","",$freeze);
