@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.22 2003/07/30 14:49:44 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.23 2003/08/03 13:40:01 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -190,6 +190,7 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 {
 	if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
 		//添付ファイルあり
+		$HTTP_POST_FILES["attach_file"]["name"] = basename(str_replace("\\","/",$HTTP_POST_FILES["attach_file"]["name"]));
 		include_once (PLUGIN_DIR.'attach.inc.php');
 		$attach_msg = plugin_attach_action();
 		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$HTTP_POST_FILES["attach_file"]["name"]."$1)",$post["msg"]);
@@ -323,6 +324,7 @@ else if($post["write"])
 {
 	if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
 		//添付ファイルあり
+		$HTTP_POST_FILES["attach_file"]["name"] = basename(str_replace("\\","/",$HTTP_POST_FILES["attach_file"]["name"]));
 		include_once (PLUGIN_DIR.'attach.inc.php');
 		$attach_msg = plugin_attach_action();
 		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$HTTP_POST_FILES["attach_file"]["name"]."$1)",$post["msg"]);
@@ -493,9 +495,6 @@ else if($post["write"])
 			$postdata = user_rules_str($postdata);
 			
 			// 差分ファイルの作成
-			if($postdata)
-				$diffdata = do_diff($oldpostdata,$postdata);
-			file_write(DIFF_DIR,$post["page"],$diffdata);
 			if($postdata)
 				$diffdata = do_diff($oldpostdata,$postdata);
 			file_write(DIFF_DIR,$post["page"],$diffdata);
