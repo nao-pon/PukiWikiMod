@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.16 2004/01/15 13:12:49 nao-pon Exp $
+// $Id: file.php,v 1.17 2004/01/24 14:41:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -43,9 +43,17 @@ function get_filetime($page)
 }
 
 // ページの出力
-function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="",$agids="",$freeze="",$unvisible="")
+function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="",$agids="",$freeze="",$unvisible="",$mail_op=array())
 {
 	global $do_backup,$del_backup;
+	global $X_uid,$X_admin,$X_uname,$wiki_mail_sw,$xoopsConfig;
+	
+	// メールオプション抽出
+	$mail_mode = (isset($mail_op['mode']))? explode("&",$mail_op['mode']):$mail_mode = array("del","add","all");
+	$plugin_title = (isset($mail_op['plugin']))? sprintf(_MD_PUKIWIKI_MAIL_HEAD,$mail_op['plugin'])."\n":"";
+	$add_text = (isset($mail_op['text']))? $mail_op['text'] : "";
+	
+	if ($postdata) $postdata = rtrim($postdata)."\n";
 
 	$page = add_bracket($page);
 
@@ -71,6 +79,94 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	// ファイルの書き込み
 	file_write(DATA_DIR,$page,$postdata,$notimestamp,$aids,$gids,$vaids,$agids,$freeze,$unvisible);
 	
+	// メール送信先のセット
+	$pukiwiki_send_mails = "";
+	$pukiwiki_pg_auther_mail = get_pg_auther_mail($page);
+	if ($wiki_mail_sw === 2)
+	{
+		//無条件
+		$pukiwiki_send_mails = $xoopsConfig['adminmail'];
+		if ($xoopsConfig['adminmail'] != $pukiwiki_pg_auther_mail)
+			$pukiwiki_send_mails .= " ".$pukiwiki_pg_auther_mail;
+	}
+	elseif ($wiki_mail_sw === 1)
+	{
+		$pukiwiki_pg_auther = get_pg_auther($page);
+		//管理者以外
+		if ($X_admin)
+		{
+			//管理人アクセス
+			if ($X_uid != $pukiwiki_pg_auther)
+			{
+				//他ユーザーが作ったページ
+				$pukiwiki_send_mails = get_pg_auther_mail($page);
+			}
+		}
+		else
+		{
+			//一般
+			$pukiwiki_send_mails = $xoopsConfig['adminmail'];
+			if ($X_uid != $pukiwiki_pg_auther && $xoopsConfig['adminmail'] != $pukiwiki_pg_auther_mail)
+			{
+				//他ユーザーが作ったページ
+				$pukiwiki_send_mails .= " ".get_pg_auther_mail($page);
+			}
+		}
+	}
+
+	if ($pukiwiki_send_mails) {
+		// メール送信 by nao-pon
+		global $xoopsConfig;
+
+		 //- メール用差分データの作成
+		$mail_add = $mail_del = "";
+		$diffdata_ar = array();
+		$diffdata_ar=split("\n",$diffdata);
+		foreach($diffdata_ar as $diffdata_line){
+			if (ereg("^\+(.*)",$diffdata_line,$regs)){
+				$mail_add .= $regs[1]."\n";
+			}
+			if (ereg("^\-(.*)",$diffdata_line,$regs)){
+				$mail_del .= $regs[1]."\n";
+			}
+		}
+		$s_page = strip_bracket($page);
+		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode($s_page)."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.$s_page."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$X_uname."\n";
+		$mail_body .= $plugin_title;
+		if (in_array("del",$mail_mode))
+		{
+			$mail_body .= _MD_PUKIWIKI_MAIL_DEL_LINES."\n";
+			$mail_body .= $mail_del;
+		}
+		if (in_array("add",$mail_mode))
+		{
+			$mail_body .= _MD_PUKIWIKI_MAIL_ADD_LINES."\n";
+			$mail_body .= $mail_add;
+		}
+		if (in_array("all",$mail_mode))
+		{
+			$mail_body .= _MD_PUKIWIKI_MAIL_ALL_LINES."\n";
+			$mail_body .= $postdata;
+		}
+		$mail_body .= $add_text;
+		$mail_body .= _MD_PUKIWIKI_MAIL_FOOT."\n";
+		$xoopsMailer =& getMailer();
+		foreach(explode(" ",$pukiwiki_send_mails) as $pukiwiki_sendto_mail)
+		{
+			$xoopsMailer->useMail();
+			$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
+			$xoopsMailer->setFromName($xoopsConfig['sitename']);
+			$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.$s_page);
+			$xoopsMailer->setBody($mail_body);
+			$xoopsMailer->setToEmails($pukiwiki_sendto_mail);
+			$xoopsMailer->send();
+			$xoopsMailer->reset();
+		}
+		//メール送信ここまで by nao-pon
+	}
 }
 
 // ファイルへの出力
@@ -87,6 +183,7 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	{
 		@unlink($dir.encode($page).".txt");
 		$action = "delete";
+		put_recentdeleted(strip_bracket($page));
 	}
 	else
 	{
@@ -135,6 +232,51 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		$page = ($post['refer'])? $post['refer'] : $page; 
 		tb_send($page);
 	}	
+}
+
+// 削除履歴ページの更新
+function put_recentdeleted($page)
+{
+	global $whatsdeleted,$maxshow_deleted,$unvisible_deleted;
+	
+	if ($maxshow_deleted == 0 || $page == $whatsdeleted)
+	{
+		return;
+	}
+	// update RecentDeleted
+	$lines = array();
+	foreach (get_source($whatsdeleted) as $line)
+	{
+		if (preg_match('/^-(.+) - (\[\[.+\]\])$/',$line,$matches))
+		{
+			$lines[$matches[2]] = $line;
+		}
+	}
+	$_page = "[[$page]]";
+	if (array_key_exists($_page,$lines))
+	{
+		unset($lines[$_page]);
+	}
+	array_unshift($lines,'-'.format_date(UTIME)." - $_page\n");
+	$lines = array_splice($lines,0,$maxshow_deleted);
+/*
+	$fp = fopen(get_filename(encode($whatsdeleted)),'w')
+		or die_message('cannot write page file '.htmlspecialchars($whatsdeleted).'<br />maybe permission is not writable or filename is too long');
+	flock($fp,LOCK_EX);
+	fputs($fp,join('',$lines));
+	fputs($fp,"#norelated\n"); // :)
+	flock($fp,LOCK_UN);
+	fclose($fp);
+*/
+	$postdata = "#freeze\tuid:1\taid:0\tgid:0\n";
+	if ($unvisible_deleted) $postdata .= "#unvisible\tuid:1\taid:0\tgid:0\n";
+	$postdata .= "// author:1\n";
+	$postdata .= join('',$lines);
+	$postdata .= "#norelated\n";
+	if ($unvisible_deleted)
+		file_write(DATA_DIR,$whatsdeleted,$postdata,0,"0","0","0","0","1","1");
+	else
+		file_write(DATA_DIR,$whatsdeleted,$postdata,0,"0","0","","","1","0");
 }
 
 // 最終更新ページの更新
@@ -532,6 +674,10 @@ function links_get_related($page)
 //ページ作成者IDを得る
 function get_pg_auther($page)
 {
+	static $get_pg_auther = array();
+	if (isset($get_pg_auther[$page]))
+		return $get_pg_auther[$page];
+	
 	$author_uid = 0;
 	if (!is_page($page)) return $author_uid;
 	
@@ -541,9 +687,9 @@ function get_pg_auther($page)
 	
 	
 	if (preg_match("/^\/\/ author:([0-9]+)($|\n)/",$string,$arg))
-		$author_uid = $arg[1];
+		$get_pg_auther[$page] = $arg[1];
 
-	return $author_uid;
+	return $get_pg_auther[$page];
 }
 
 //ページ作成者名を得る
@@ -558,6 +704,27 @@ function get_pg_auther_name($page)
 	
 	$user = new XoopsUser($uid);
 	return $user->getVar("uname");
+}
+
+// ページ作成者のE-mailアドレスを得る
+function get_pg_auther_mail($page)
+{
+	$uname = get_pg_auther_name($page);
+	//configページのチェック
+	$obj = new Config('user/'.$uname);
+	if ($obj->read())
+	{
+		$mail = $obj->get("Mail");
+		if (preg_match("/いいえ|no/i",$mail[0]))
+			return "";
+	}
+	
+	$uid = get_pg_auther($page);
+	if (!$uid) return "";
+	
+	$user = new XoopsUser($uid);
+	//strip_tags:XOOPS 1.3 系対策
+	return strip_tags($user->getVar("email"));
 }
 
 //編集権限継承がセットされている上位ページ凍結情報を得る
@@ -599,7 +766,7 @@ function get_freezed_uppage($page)
 function get_pg_allow_editer($page){
 	$lines = get_source($page,2);
 
-	$allows['group'] = $allows['user']= "";
+	$allows['group'] = $allows['user']= $allows['uid'] ="";
 	foreach($lines as $line)
 	{
 		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$line,$arg)){
@@ -607,6 +774,7 @@ function get_pg_allow_editer($page){
 			if (!$arg[3]) $arg[3]=0;
 			$allows['user'] = $arg[2].",";
 			$allows['group'] = $arg[3].",";
+			if (!empty($arg[1])) $allows['uid'] = $arg[1];
 			break;
 		}
 	}
@@ -679,6 +847,13 @@ function get_pg_allow_viewer($page, $uppage=true, $clr=false){
 //閲覧権限があるかチェックする。
 function read_auth($page, $auth_flag=true, $exit_flag=true){
 	return check_readable($page, $auth_flag, $exit_flag);
+}
+
+// PukiWiki 1.4 互換用
+// 編集権限チェック
+function edit_auth($page, $auth_flag=true, $exit_flag=true)
+{
+	return (!is_freeze($page));
 }
 
 //閲覧権限を得る
