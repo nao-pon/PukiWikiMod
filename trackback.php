@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.22 2005/03/23 15:31:56 nao-pon Exp $
+// $Id: trackback.php,v 1.23 2005/03/29 23:46:23 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -31,7 +31,6 @@ if (!defined('TRACKBACK_DIR'))
 function tb_get_id($page)
 {
 	return get_pgid_by_name($page);
-	//return md5(strip_bracket($page));
 }
 
 // TrackBack Ping ID からページ名を取得
@@ -40,30 +39,6 @@ function tb_id2page($tb_id)
 	$page = strip_bracket(get_pgname_by_id($tb_id));
 	
 	return ($page)? $page : FALSE;
-/*	
-	static $pages,$cache = array();
-	
-	if (array_key_exists($tb_id,$cache))
-	{
-		return $cache[$tb_id];
-	}
-	if (!isset($pages))
-	{
-		$pages = get_existpages();
-	}
-	foreach ($pages as $page)
-	{
-		$page = strip_bracket($page);
-		$_tb_id = tb_get_id($page);
-		$cache[$_tb_id] = $page;
-		unset($pages[$page]);
-		if ($_tb_id == $tb_id)
-		{
-			return $page;
-		}
-	}
-	return FALSE; // 見つからない場合
-*/
 }
 
 // TrackBack Ping データファイル名を取得
@@ -127,13 +102,6 @@ function tb_send($page,$data="")
 		XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']
 		,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5,30,0);
 		
-		/*
-		$filename = CACHE_DIR."debug.txt";
-		$fp = fopen($filename,'a+');
-		fputs($fp,$ret['query']."\n");
-		fclose($fp);
-		*/
-		
 		return;
 	}
 	
@@ -175,7 +143,6 @@ function tb_send($page,$data="")
 	$pings = array_unique($pings);
 	
 	$title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
-	//$xml_title = $title = preg_replace("/\/[0-9\-]+$/","",$page);//末尾の数字とハイフンは除く
 	$up_page = (strpos($page,"/")) ? preg_replace("/(.+)\/[^\/]+/","$1",strip_bracket($page)) : $defaultpage;
 	if (!is_page($up_page)) $up_page = $defaultpage;
 	
@@ -185,7 +152,6 @@ function tb_send($page,$data="")
 	$xml_myurl = XOOPS_WIKI_HOST.get_url_by_name($up_page);
 	
 	$xml_title = $page_title."/".$up_page;
-	//$xml_title = $page_title."/".$xml_title;
 	
 	$data = trim(strip_htmltag($data));
 	$data = preg_replace("/^".preg_quote($h_excerpt,"/")."/","",$data);
@@ -241,7 +207,7 @@ function tb_send($page,$data="")
 				{
 					continue;
 				}
-				$result = http_request($tb_id,'POST','',$putdata,3,TRUE,5,30,60);
+				$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,60);
 				if ($result['rc'] === 200 || strpos($result['data'],"<error>0</error>") !== false)
 				{
 					$sended[] = $tb_id;
@@ -272,11 +238,9 @@ function tb_send($page,$data="")
 		{
 			set_time_limit(120); // 処理実行時間を長めに再設定
 			
-			//tb_debug_output($tb_id);
-			
 			$done = false;
 			// XML RPC Ping を打ってみる
-			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,3,30,60);
+			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,3,10,60);
 			if ($result['rc'] === 200)
 			{
 				// 超手抜きなチェック
@@ -285,19 +249,24 @@ function tb_send($page,$data="")
 				else
 				{
 					//Track Back Ping
-					$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,30,60);
+					$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,60);
 					// 超手抜きなチェック
 					if (strpos($result['data'],"<error>0</error>") !== false)
 						$done = true;
 				}
 			}
+			
 			/*
-			echo htmlspecialchars($tb_id).":ping<hr />";
-			echo $result['query']."<hr />";
-			echo $result['rc']."<hr />";
-			echo $result['header']."<hr />";
-			echo $result['data']."<hr />";
+			tb_debug_output
+			(
+				$tb_id."\n"
+				.$result['query']."\n"
+				.$result['rc']."\n"
+				.$result['header']."\n"
+				.$result['data']."\n"
+			);
 			*/
+			
 			if ($done)
 				$sended[] = $tb_id;
 		}
@@ -368,8 +337,7 @@ function tb_get_rdf($page)
 	$r_page = rawurlencode($page);
 	$creator = get_pg_auther_name(add_bracket($page));
 	$tb_id = tb_get_id($page);
-	//$self = (getenv('SERVER_PORT')==443?'https://':('http://')).getenv('SERVER_NAME').(getenv('SERVER_PORT')==80?'':(':'.getenv('SERVER_PORT'))).getenv('SERVER_NAME').getenv('REQUEST_URI');
-	$self = (getenv('SERVER_PORT')==443?'https://':('http://')).getenv('SERVER_NAME').(getenv('SERVER_PORT')==80?'':(':'.getenv('SERVER_PORT'))).getenv('REQUEST_URI');
+	$self = XOOPS_WIKI_HOST.getenv('REQUEST_URI');
 	$dcdate = substr_replace(get_date('Y-m-d\TH:i:sO',$time),':',-2,0);
 	$tb_url = tb_get_my_tb_url($tb_id);
 	// dc:date="$dcdate"
@@ -417,7 +385,7 @@ function tb_get_url($url)
 		return '';
 	}
 	
-	$data = http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,TRUE,5,30,60);
+	$data = http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,TRUE,3,10,60);
 	
 	if ($data['rc'] !== 200)
 	{
