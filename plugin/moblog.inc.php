@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.7 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.8 2005/02/23 03:02:57 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -110,7 +110,7 @@ function plugin_moblog_action()
 			$from = plugin_moblog_addr_search($freg[1]);
 		}
 		
-		$today = getdate();
+		$today = getdate($now);
 		$date = sprintf("/%04d-%02d-%02d-0",$today['year'],$today['mon'],$today['mday']);
 		
 		$page = "";
