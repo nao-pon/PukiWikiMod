@@ -1,8 +1,8 @@
-<?php // $Id: pukiwiki.skin.ja.php,v 1.5 2003/07/07 14:43:57 nao-pon Exp $
+<?php // $Id: pukiwiki.skin.ja.php,v 1.6 2003/07/08 04:08:38 nao-pon Exp $
 
 if (!defined('DATA_DIR')) { exit; }
 
-global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $_freeze;
+global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $_freeze, $wiki_allow_newpage, $X_admin;
 
 $_freeze = is_freeze($vars[page]);
 if($_freeze){
@@ -30,14 +30,17 @@ if($_freeze){
 	<?php
 	$source_tag = "<a href=\"$script?plugin=source&amp;page=".rawurlencode($vars['page'])."\">ソース</a>";
 	if ($anon_writable){
-		echo "
-		[ <a href=\"$script?plugin=newpage\">新規</a>";
+		if ($wiki_allow_newpage){
+			echo "[ <a href=\"$script?plugin=newpage\">新規</a> | ";
+		} else {
+			echo "[ ";
+		}
 		if (!$_freeze) {
 			echo "
-			| <a href=\"$link_edit\">編集</a>
-			| <a href=\"$link_diff\">差分</a>
-			| <a href=\"$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page'])."\">添付</a>
-			| <a href=\"$script?plugin=rename\">リネーム</a>";
+			<a href=\"$link_edit\">編集</a> | <a href=\"$link_diff\">差分</a> | <a href=\"$script?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($vars['page'])."\">添付</a> ";
+			if ($X_admin){
+				echo "| <a href=\"$script?plugin=rename\">リネーム</a> ";
+			}
 		} else {
 			echo " | ".$source_tag." ";
 		}
@@ -114,7 +117,9 @@ if($_freeze){
 			<a href="<?php echo "$script?".rawurlencode($vars[page]) ?>"><img src="./image/reload.gif" width="20" height="20" border="0" alt="リロード" /></a>
 			&nbsp;
 		  <?php if ($anon_writable){ ?>
+		  <?php if ($wiki_allow_newpage){ ?>
 			<a href="<?php echo $script ?>?plugin=newpage"><img src="./image/new.gif" width="20" height="20" border="0" alt="新規" /></a>
+			<?php } ?>
 			<a href="<?php echo $link_edit ?>"><img src="./image/edit.gif" width="20" height="20" border="0" alt="編集" /></a>
 			<a href="<?php echo $link_diff ?>"><img src="./image/diff.gif" width="20" height="20" border="0" alt="差分" /></a>
 			&nbsp;

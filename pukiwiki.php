@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.12 2003/07/07 06:09:48 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.13 2003/07/08 04:08:38 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -40,6 +40,8 @@ require("html.php");
 require("backup.php");
 require("rss.php");
 require('make_link.php');
+//require('config.php');
+
 
 
 /////////////////////////////////////////////////
@@ -74,6 +76,12 @@ if ($X_admin || ($wiki_writable === 0) || (($X_uid && ($wiki_writable < 2)))) {
 	$anon_writable = 1;
 } else {
 	$anon_writable = 0;
+}	
+// 新規作成権限セット
+if ($X_admin || ($wiki_allow_new === 0) || (($X_uid && ($wiki_allow_new < 2)))) {
+	$wiki_allow_newpage = 1;
+} else {
+	$wiki_allow_newpage = 0;
 }	
 /////////////////////////////////////////////////
 // メール通知の有効 or 無効
@@ -924,7 +932,8 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	// WikiName、BracketNameが見つからず、InterWikiNameでもない場合
 	else
 	{
-		if (!$anon_writable){
+//		if (!$anon_writable){
+		if (!$wiki_allow_newpage){
 			$body = $title = str_replace('$1',htmlspecialchars(strip_bracket($vars["page"])),_MD_PUKIWIKI_NO_AUTH);
 			$page = str_replace('$1',make_search($vars["page"]),_MD_PUKIWIKI_NO_AUTH);
 			$vars["page"] = "";
