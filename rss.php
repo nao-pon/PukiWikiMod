@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.2 2003/06/28 11:33:01 nao-pon Exp $
+// $Id: rss.php,v 1.3 2003/09/02 14:03:16 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -31,11 +31,21 @@ function catrss($rss)
 			}
 			else
 			{
-				if(function_exists("mb_convert_encoding"))
-					$title = mb_convert_encoding(strip_bracket($match[1]),"UTF-8","auto");
-				else
+				if(function_exists("mb_convert_encoding")){
 					$title = strip_bracket($match[1]);
-
+					if (preg_match("/^(.*\/)?[0-9\-]+$/",$title,$reg_title)){
+						$_body = get_source(add_bracket($title));
+						foreach($_body as $line){
+							if (preg_match("/^\*{1,3}(.*)/",$line,$reg)){
+								$title = $reg_title[1].str_replace(array("[[","]]"),"",$reg[1]);
+								break;
+							}
+						}
+					}
+					$title = mb_convert_encoding($title,"UTF-8","auto");
+				} else {
+					$title = strip_bracket($match[1]);
+				}
 				$url = $match[1];
 			}
 			

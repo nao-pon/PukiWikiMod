@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.2 2003/06/28 11:33:04 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.3 2003/09/02 14:03:16 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -116,13 +116,35 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 	$title = $name.' '.get_pg_passage($page,FALSE);
 	$href = $script.'?cmd=read&amp;page='.rawurlencode($page);
 
+	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
+	$_name = "";
+	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name)){
+		$_body = get_source($page);
+		foreach($_body as $line){
+			if (preg_match("/^\*{1,3}(.*)/",$line,$reg)){
+				$_name = str_replace(array("[[","]]"),"",$reg[1]);
+				break;
+			}
+		}
+	}
+
 	if ($params['pagename']){
-		//呼び出しページ名は省く nao-pon
-		if ($name != $prefix) $name = str_replace($prefix,"",$name);
+		//基準ページ名は省く nao-pon
+		if ($name != $prefix) {
+			$name = str_replace($prefix,"",$name);
+			$_is_base = false;
+		} else {
+			$_is_base = true;
+		}
+		
 		//階層でマージン設定
 		$name = str_replace("/","\t",$name);//マルチバイトを考慮してTABに変換
 		$c_count =count_chars($name);
-		$c_margin = $c_count[9]*15;//TABのコード＝９
+		if ($_is_base) {
+			$c_margin = 0; //基準ページ
+		} else {
+			$c_margin = $c_count[9]*15;//TABのコード＝９
+		}
 		//[/(\tに変換済)]以前をカット
 		$name = preg_replace("/.*\t/","",$name);
 
@@ -130,6 +152,9 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="") {
 	} else {
 		$ret .= '<li style="margin-left;">';
 	}
+	
+	if ($_name) $name = $_name;
+	
 	if ($include) { $ret .= 'include '; }
 	$ret .= '<a id="list_'.$params[$page].'" href="'.$href.'" title="'.$title.'">'.htmlspecialchars($name).'</a>';
 	if ($params['title'] and $is_done) {
