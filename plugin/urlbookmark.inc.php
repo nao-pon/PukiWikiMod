@@ -1,5 +1,5 @@
 <?php
-// $Id: urlbookmark.inc.php,v 1.1 2004/10/12 14:45:30 nao-pon Exp $
+// $Id: urlbookmark.inc.php,v 1.2 2004/10/20 12:25:17 nao-pon Exp $
 
 /*
  * PukiWiki urlbookmark プラグイン
@@ -24,10 +24,10 @@
 
 /////////////////////////////////////////////////
 // URLテキストエリアのカラム数
-define('URLBOOKMARK_URL_COLS',30);
+define('URLBOOKMARK_URL_COLS',70);
 /////////////////////////////////////////////////
 // タイトルテキストエリアのカラム数
-define('URLBOOKMARK_TITLE_COLS',30);
+define('URLBOOKMARK_TITLE_COLS',40);
 /////////////////////////////////////////////////
 // コメントのテキストエリアのカラム数
 define('URLBOOKMARK_COMMENT_COLS',70);
@@ -50,7 +50,7 @@ function plugin_urlbookmark_init()
 {
 	$messages = array(
 		'_btn_url'		=> 'URL: ',
-		'_title_urlbookmark'	=> 'タイトル(省略可): ',
+		'_title_urlbookmark'	=> 'タイトル(省略で自動取得): ',
 		'_btn_urlbookmark'	=> 'URLの追加',
 		'_msg_urlbookmark'	=> 'コメント(省略可): ',
 		'_title_urlbookmark_collided'	=> '$1 で【更新の衝突】が起きました',
