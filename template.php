@@ -1,36 +1,54 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: template.php,v 1.4 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: template.php,v 1.5 2004/05/20 13:59:11 nao-pon Exp $
 /////////////////////////////////////////////////
 
-function auto_template($page)
+function auto_template($page,$this=false)
 {
-	global $auto_template_rules,$auto_template_func;
+	global $auto_template_rules,$auto_template_func,$vars;
 	if(!$auto_template_func) return '';
 
 	$body = '';
-	foreach($auto_template_rules as $rule => $template)
+	if (!$this)
 	{
-		if(preg_match("/$rule/",$page,$matches))
+		foreach($auto_template_rules as $rule => $template)
 		{
-			$template_page = preg_replace("/$rule/",$template,$page);
-			
-			if (!is_page($template_page)) $template_page = get_uptemplate_page($template_page);
-			
-			if (is_page($template_page))
+			if(preg_match("/$rule/",$page,$matches))
 			{
-				$body = join('',get_source($template_page));
-				$body = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$body);
-				delete_page_info($body);
-				for($i=0; $i<count($matches); ++$i)
+				$template_page = preg_replace("/$rule/",$template,$page);
+				
+				if (!is_page($template_page)) $template_page = get_uptemplate_page($template_page);
+				
+				if (is_page($template_page) && check_readable($template_page,false,false))
 				{
-					$body = str_replace("\$$i",$matches[$i],$body);
+					$body = join('',get_source($template_page));
+					$body = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$body);
+					delete_page_info($body);
+					for($i=0; $i<count($matches); ++$i)
+					{
+						$body = str_replace("\$$i",$matches[$i],$body);
+					}
+					break;
 				}
-				break;
 			}
 		}
 	}
+	else
+	{
+		if (is_page($page) && check_readable($page,false,false))
+		{
+			$body = join('',get_source($page));
+			$body = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$body);
+			delete_page_info($body);
+			for($i=0; $i<count($matches); ++$i)
+			{
+				$body = str_replace("\$$i",$matches[$i],$body);
+			}
+			$vars["refer"] = "";
+		}
+	}
 	return $body;
+	
 }
 
 function get_uptemplate_page($page)

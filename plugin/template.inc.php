@@ -1,5 +1,5 @@
 <?php
-// $Id: template.inc.php,v 1.3 2003/06/28 16:11:13 nao-pon Exp $
+// $Id: template.inc.php,v 1.4 2004/05/20 13:59:11 nao-pon Exp $
 
 define("MAX_LEN",60);
 function plugin_template_action()
@@ -23,64 +23,78 @@ function plugin_template_action()
 		
 		$page = $vars["refer"];
 		
-		$lines = @file(get_filename(encode($vars["page"])));
+		// ページ作成権限チェック
+		$up_freeze_info = get_freezed_uppage($page);
+		if ($up_freeze_info[0]) $defvalue_freeze = 1;
 		
-		if($vars["begin"] <= $vars["end"])
+		if (!WIKI_ALLOW_NEWPAGE || !check_readable($page,false,false) || $up_freeze_info[4])
 		{
-			for($i=$vars["begin"];$i<=$vars["end"];$i++)
-			{
-				$postdata.= $lines[$i];
-			}
+			$ret['body'] = $ret['msg'] = str_replace('$1',htmlspecialchars(strip_bracket($page)),_MD_PUKIWIKI_NO_AUTH);
+			$vars["page"] = "";
+			return $ret;
 		}
-		
-		if($vars["help"] == "true")
-			$help = $hr.catrule();
 		else
-			$help = "<br />\n<ul><li><a href=\"$script?cmd=edit&amp;help=true&amp;page=".rawurlencode($page)."\">$_msg_help</a></ul></li>\n";
+		{
+			$lines = get_source($vars["page"]);
+			delete_page_info($lines);
+			
+			if($vars["begin"] <= $vars["end"])
+			{
+				for($i=$vars["begin"];$i<=$vars["end"];$i++)
+				{
+					$postdata.= $lines[$i];
+				}
+			}
+			
+			if($vars["help"] == "true")
+				$help = $hr.catrule();
+			else
+				$help = "<br />\n<ul><li><a href=\"$script?cmd=edit&amp;help=true&amp;page=".rawurlencode($page)."\">$_msg_help</a></ul></li>\n";
 
-		if($function_freeze)
-			$str_freeze = '<input type="submit" name="freeze" value="'.$_btn_freeze.'" accesskey="f" />';
-$retvar["body"] =  '
-<form action="'.$script.'" method="post">
-<table cellspacing="3" cellpadding="0" border="0">
- <tr>
-  <td align="right">
-'.$template.'
-  </td>
- </tr>
- <tr>
-  <td align="right">
-   <input type="hidden" name="page" value="'.$page.'" />
-   <input type="hidden" name="digest" value="'.$digest.'" />
-   <textarea name="msg" rows="'.$rows.'" cols="'.$cols.'" wrap="virtual">
-'.$postdata.'</textarea>
-  </td>
- </tr>
- <tr>
-  <td>
-   <input type="submit" name="preview" value="'.$_btn_preview.'" accesskey="p" />
-   <input type="submit" name="write" value="'.$_btn_update.'" accesskey="s" />
-   '.$add_top.'
-   <input type="checkbox" name="notimestamp" value="true" /><span class="small">'.$_btn_notchangetimestamp.'</span>
-  </td>
- </tr>
-</table>
-</form>
-<form action="'.$script.'?cmd=freeze" method="post">
-<table cellspacing="3" cellpadding="0" border="0">
-  <td align="right">
-   <input type="hidden" name="page" value="'.$vars["page"].'" />
-   '.$str_freeze.'
-  </td>
- </tr>
-</table>
-</form>
-' . $help;
+			if($function_freeze)
+				$str_freeze = '<input type="submit" name="freeze" value="'.$_btn_freeze.'" accesskey="f" />';
+	$retvar["body"] =  '
+	<form action="'.$script.'" method="post">
+	<table cellspacing="3" cellpadding="0" border="0">
+	 <tr>
+	  <td align="right">
+	'.$template.'
+	  </td>
+	 </tr>
+	 <tr>
+	  <td align="right">
+	   <input type="hidden" name="page" value="'.$page.'" />
+	   <input type="hidden" name="digest" value="'.$digest.'" />
+	   <textarea name="msg" rows="'.$rows.'" cols="'.$cols.'" wrap="virtual">
+	'.$postdata.'</textarea>
+	  </td>
+	 </tr>
+	 <tr>
+	  <td>
+	   <input type="submit" name="preview" value="'.$_btn_preview.'" accesskey="p" />
+	   <input type="submit" name="write" value="'.$_btn_update.'" accesskey="s" />
+	   '.$add_top.'
+	   <input type="checkbox" name="notimestamp" value="true" /><span class="small">'.$_btn_notchangetimestamp.'</span>
+	  </td>
+	 </tr>
+	</table>
+	</form>
+	<form action="'.$script.'?cmd=freeze" method="post">
+	<table cellspacing="3" cellpadding="0" border="0">
+	  <td align="right">
+	   <input type="hidden" name="page" value="'.$vars["page"].'" />
+	   '.$str_freeze.'
+	  </td>
+	 </tr>
+	</table>
+	</form>
+	' . $help;
 
-		$retvar["msg"] = "$1 の編集";
-		
-		$vars["page"] = $vars["refer"];
-		return $retvar;
+			$retvar["msg"] = "$1 の編集";
+			
+			$vars["page"] = $vars["refer"];
+			return $retvar;
+		}
 	}
 	// input mb_strwidth()
 	else if($vars["refer"])
@@ -90,7 +104,8 @@ $retvar["body"] =  '
 			
 			$begin_select = "";
 			$end_select = "";
-			$lines = @file(get_filename(encode($vars["refer"])));
+			$lines = get_source($vars["refer"]);
+			delete_page_info($lines);
 			$begin_select.= "開始行:<br /><select name=\"begin\" size=\"10\">\n";
 			for($i=0;$i<count($lines);$i++)
 			{
@@ -163,7 +178,7 @@ $retvar["body"] =  '
 		$ret.= $begin_select;
 		$ret.= $end_select;
 		//$ret.= $select;
-		$ret.= "ページ名: <input type=\"text\" name=\"refer\" value=\"$s_refer/複製\" />\n";
+		$ret.= "ページ名: <input type=\"text\" size=\"50\" name=\"refer\" value=\"$s_refer/複製\" />\n";
 		$ret.= "<input type=\"submit\" name=\"submit\" value=\"作成\" />\n";
 		$ret.= "</div>\n";
 		$ret.= "</form>\n";
