@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: newsclip.inc.php,v 1.2 2004/09/01 14:00:11 nao-pon Exp $
+// $Id: newsclip.inc.php,v 1.3 2004/09/27 04:42:39 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -32,13 +32,15 @@ function plugin_newsclip_split($_data)
 
 function plugin_newsclip_action()
 {
-	global $get,$plugin_newsclip_dataset;
+	global $get,$plugin_newsclip_dataset,$vars;
 	
 	
 	if ($get['pmode'] == "refresh")
 	{
 		$word = (isset($get['q']))? $get['q'] : "";
 		$page = (isset($get['ref']))? $get['ref'] : "";
+		$vars['page'] = add_bracket($page);
+		$vars['cmd'] = "read";
 		
 		// キャッシュファイル名
 		$filename = P_CACHE_DIR.md5($word).".ncp";
@@ -114,7 +116,7 @@ function plugin_newsclip_get($word,$do_refresh=FALSE)
 	// キャッシュファイル名
 	$c_file = P_CACHE_DIR.md5($word).".ncp";
 
-	if (file_exists($c_file))
+	if (!$do_refresh && file_exists($c_file))
 	{
 		$data = join('',file($c_file));
 		if (time() - filemtime($c_file) > $cache_time * 3600)
