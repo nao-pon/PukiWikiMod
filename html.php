@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.34 2004/08/23 13:32:38 nao-pon Exp $
+// $Id: html.php,v 1.35 2004/09/12 14:05:29 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -92,8 +92,7 @@ function catbody($title,$page,$body)
 		$body = "<div class=\"small\">$_msg_word$search_word</div>$hr\n$body";
 	}
 
-	$longtaketime = getmicrotime() - MUTIME;
-	$taketime = sprintf("%01.03f",$longtaketime);
+	$taketime = sprintf("%01.03f",getmicrotime() - MUTIME);
 
 	if ($foot_explain)
 		//$body .= "\n$note_hr\n".join("\n",convert::inline2($foot_explain));
@@ -122,28 +121,79 @@ function get_page_name(){
 }
 
 // 編集フォームの表示
-function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
+function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$freeze_check="")
 {
 	global $script,$rows,$cols,$hr,$vars,$function_freeze,$autolink;
 	global $_btn_addtop,$_btn_preview,$_btn_update,$_btn_freeze,$_msg_help,$_btn_notchangetimestamp,$_btn_enter_enable,$_btn_autobracket_enable,$_btn_freeze_enable,$_btn_auther_id;
 	global $whatsnew,$_btn_template,$_btn_load,$non_list,$load_template_func;
-	global $freeze_check,$create_uid,$author_uid,$X_admin,$X_uid,$freeze_tag,$wiki_writable;
+	global $X_admin,$X_uid,$freeze_tag,$wiki_writable;
 	global $unvisible_tag,$_btn_unvisible_enable,$_btn_v_allow_memo,$read_auth;
 	
-	$digest = md5(@join("",get_source($page)));
-	$create_uid = (isset($create_uid))? $create_uid : $X_uid ;
+	$b_preview = array_key_exists('preview',$vars); // プレビュー中 TRUE
+	
+	// 各種初期値設定
+	$refer = "";
+	if (!$b_preview)
+	{
+		// ページ編集時
+		
+		$digest = md5(@join("",get_source($page)));
+		
+		unset ($create_uid);
+		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$postdata,$arg))
+		{
+			$create_uid = $arg[1];
+			$freeze_check = "checked ";
+		}
+
+		// ページ情報削除
+		delete_page_info($postdata);
+
+		//ページ作成者を得る
+		if (is_page())
+			$author_uid = get_pg_auther($page);
+		else
+			$author_uid = $X_uid;
+		
+		$create_uid = (isset($create_uid))? $create_uid : $X_uid ;
+		
+		$add_top_enable = "";
+		$enter_enable = " checked";
+		$auto_bra_enable = ($autolink)? "" : " checked";
+		$notimestamp_enable = "";
+		$v_gids = $v_aids = NULL;
+		$paraedit_tag = "";
+	}
+	else
+	{
+		// プレビュー時
+		$digest = $vars["digest"];
+		$add_top_enable = $vars["add_top"];
+		$create_uid = $vars["f_create_uid"];
+		$author_uid = $vars["f_author_uid"];
+		$freeze_check = $vars["freeze"]? " checked" : "";
+		$enter_enable = $vars["enter_enable"]? " checked" : "";
+		$auto_bra_enable = $vars["auto_bra_enable"]? " checked" : "";
+		$notimestamp_enable = $vars["notimestamp"]? " checked" : "";
+		$v_gids = $vars["v_gids"];
+		$v_aids = $vars["v_aids"];
+		
+		//paraedit
+		$paraedit_tag  = "   <input type=\"hidden\" name=\"msg_before\" value=\"".htmlspecialchars($vars["msg_before"])."\">\n";
+		$paraedit_tag .= "   <input type=\"hidden\" name=\"msg_after\"  value=\"".htmlspecialchars($vars["msg_after"])."\">\n";
+	}
 
 	if($add)
 	{
 		$addtag = '<input type="hidden" name="add" value="true" />';
-		$add_top = '<input type="checkbox" name="add_top" value="true" /><span class="small">'.$_btn_addtop.'</span>';
+		$add_top = '<input type="checkbox" name="add_top" value="true"'.$add_top_enable.' /><span class="small">'.$_btn_addtop.'</span>';
 	}
 
 	if($vars["help"] == "true")
 		$help = $hr.catrule();
 	else
  		$help = "<br />\n<ul><li><a href=\"$script?cmd=edit&amp;help=true&amp;page=".rawurlencode($page)."\">$_msg_help</a></ul></li>\n";
-
+	//echo sprintf("%01.03f",getmicrotime() - MUTIME)."<br />";
 	$allow_edit_tag = $freeze_tag = $unvisible_tag = '';
 	if($function_freeze){
 		if (($X_uid && $X_uid == $author_uid) || $X_admin) {
@@ -158,19 +208,25 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
 			$allow_edit_tag = allow_edit_form($allow_groups,$allow_users);
 		}
 	}
-	
+	//echo sprintf("%01.03f",getmicrotime() - MUTIME)."<br />";
 	// 閲覧制限フォーム
 	if ($read_auth)
 	{
-		if (($X_uid && $X_uid == $author_uid) || $X_admin) {
-			$auth_viewer = get_pg_allow_viewer($page,false);
-			$unvisible_check = ($auth_viewer['owner'])? "checked" : "";
+		if (($X_uid && $X_uid == $author_uid) || $X_admin)
+		{
+			if (!$b_preview)
+			{
+				$auth_viewer = get_pg_allow_viewer($page,false);
+				$unvisible_check = $auth_viewer['owner']? "checked" : "";
+			}
+			else
+				$unvisible_check = !empty($vars['unvisible'])? "checked" : "";
 			$unvisible_tag = ($function_freeze)? '' : '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" />';
 			$unvisible_tag .= '<input type="checkbox" name="unvisible" value="true" '.$unvisible_check.'/><span class="small">'.sprintf($_btn_unvisible_enable).'</span>';
-			$allow_view_tag = allow_view_form();
+			$allow_view_tag = allow_view_form($v_gids,$v_aids);
 		}
 	}
-
+	//echo sprintf("%01.03f",getmicrotime() - MUTIME)."<br />";
 
 
 	if ($X_admin){
@@ -179,7 +235,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
 		$auther_tag = '<input type="hidden" name="f_author_uid" value="'.htmlspecialchars($author_uid).'" />';
 	}
 	
-	if($load_template_func)
+	if($load_template_func && !$b_preview && empty($vars['id']) && !is_page($page))
 	{
 		$vals = array();
 
@@ -205,8 +261,6 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
 		if($vars["refer"] && $page_s{0} != ":") $refer = $vars["refer"]."\n\n";
 	}
 	
-	$auto_bra_enable = ($autolink)? "" : " checked";
-	
 	return '
 <form enctype="multipart/form-data" action="'.$script.'" method="post">
 '.$addtag.'
@@ -220,14 +274,16 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
   </td>
  </tr>
  <tr><td colspan=2>
-   <input type="checkbox" name="enter_enable" value="true" checked /><span class="small">'.$_btn_enter_enable.'</span> 
+'.fontset_js_tag().'
+   <input type="checkbox" name="enter_enable" value="true"'.$enter_enable.' /><span class="small">'.$_btn_enter_enable.'</span> 
    <input type="checkbox" name="auto_bra_enable" value="true"'.$auto_bra_enable.' /><span class="small">'.$_btn_autobracket_enable.'</span>
  </td></tr>
  <tr>
   <td align="left" colspan=2>
+   <input type="hidden" name="encode_hint" value="ぷ" />
    <input type="hidden" name="page" value="'.htmlspecialchars($page).'" />
    <input type="hidden" name="digest" value="'.htmlspecialchars($digest).'" />
-'.fontset_js_tag().'
+'.$paraedit_tag.'
    <textarea name="msg" rows="'.$rows.'" cols="'.$cols.'" wrap="virtual">
 '.htmlspecialchars($refer.$postdata).'</textarea>
   </td>
@@ -237,21 +293,13 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL)
    <input type="submit" name="preview" value="'.$_btn_preview.'" accesskey="p" />
    <input type="submit" name="write" value="'.$_btn_update.'" accesskey="s" />
    '.$add_top.'
-   <input type="checkbox" name="notimestamp" value="true" /><span style="small">'.$_btn_notchangetimestamp.'</span>
+   <input type="checkbox" name="notimestamp" value="true"'.$notimestamp_enable.' /><span style="small">'.$_btn_notchangetimestamp.'</span>
    '.$auther_tag.'
   </td>
  </tr>
 </table>
 '.$allow_edit_tag.$allow_view_tag.'
 </form>
-<!--
-<form action="'.$script.'?cmd=freeze" method="post">
-<div>
-<input type="hidden" name="page" value="'.htmlspecialchars($vars["page"]).'" />
-'.$str_freeze.'
-</div>
-</form>
--->
 ' . $help;
 }
 
@@ -497,7 +545,7 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	
 	if ($wiki_writable !== 2){
 		$allusers = X_get_users();
-		asort($allusers);
+		//asort($allusers);
 	}
 
 	// ユーザ一覧表示
@@ -580,7 +628,7 @@ function allow_view_form($allow_groups=NULL,$allow_users=NULL) {
 	
 	//if ($wiki_writable !== 2){
 		$allusers = X_get_users();
-		asort($allusers);
+		//asort($allusers);
 	//}
 
 	// ユーザ一覧表示
@@ -618,8 +666,8 @@ function file_attache_form() {
 	$ret.= "<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($vars["page"])."\">\n";
 	$ret.= "<input type=\"hidden\" name=\"max_file_size\" value=\"".MAX_FILESIZE."\" />\n";
 	$ret.= "<b>".$_msg_attachfile."</b>:<input type=\"file\" name=\"attach_file\" />";
-	$ret .= "<input type=\"checkbox\" name=\"copyright\" value=\"1\" />{$_attach_messages['msg_copyright_s']}|";
-	$ret.= "Max[$max_size]\n";
+	$ret .= "<span class=\"small\"><input type=\"checkbox\" name=\"copyright\" value=\"1\" />{$_attach_messages['msg_copyright_s']}|";
+	$ret.= "Max[$max_size]</span>\n";
 
 	return $ret;
 }

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.29 2004/08/18 23:19:17 nao-pon Exp $
+// $Id: func.php,v 1.30 2004/09/12 14:05:29 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -577,23 +577,28 @@ PHPはfopen("hoge.php\0.txt")で"hoge.php"を開いてしまうなどの問題あり
 
 http://ns1.php.gr.jp/pipermail/php-users/2003-January/012742.html
 [PHP-users 12736] null byte attack
-*/ 
-function sanitize_null_character($param)
+
+2003-05-16: magic quotes gpcの復元処理を統合
+2003-05-21: 連想配列のキーはbinary safe
+*/
+function input_filter($param)
 {
-	if (is_array($param))
-	{
-		$result = array();
-		foreach ($param as $key => $value)
-		{
-			$key = sanitize_null_character($key);
-			$result[$key] = sanitize_null_character($value);
-		}
+	static $magic_quotes_gpc = NULL;
+	if ($magic_quotes_gpc === NULL)
+	    $magic_quotes_gpc = get_magic_quotes_gpc();
+
+	if (is_array($param)) {
+		return array_map('input_filter', $param);
+	} else {
+		$result = str_replace("\0", '', $param);
+		if ($magic_quotes_gpc) $result = stripslashes($result);
+		return $result;
 	}
-	else
-	{
-		$result = str_replace("\0",'',$param);
-	}
-	return $result;
+}
+
+// Compat for 3rd party plugins. Remove this later
+function sanitize_null_character($param) {
+	return input_filter($param);
 }
 
 // URLかどうか
@@ -1037,7 +1042,8 @@ function X_get_groups(){
 	}
 }
 // グループ一覧を得る
-function X_get_group_list(){
+function X_get_group_list()
+{
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
 		global $xoopsDB;
@@ -1050,16 +1056,24 @@ function X_get_group_list(){
 }
 
 // 登録ユーザー一覧を得る
-function X_get_users(){
+function X_get_users($sort=true)
+{
+	$sort = $sort? 1 : 0;
+	static $users = array();
+	if (isset($users[$sort])) return $users[$sort];
+	
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
 		global $xoopsDB;
 		$X_M = new XoopsMemberHandler($xoopsDB);
-		return $X_M->getUserList();
+		$ret = $X_M->getUserList();
 	} else {
 		// XOOPS 1
-		return XoopsUser::getAllUsersList();
+		$ret =  XoopsUser::getAllUsersList();
 	}
+	if ($sort) asort($ret);
+	$users[$sort] = $ret;
+	return $ret;
 }
 
 ?>

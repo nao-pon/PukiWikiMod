@@ -25,15 +25,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.49 2004/08/19 02:03:18 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.50 2004/09/12 14:05:29 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
+global $xoopsUser,$xoopsDB,$xoopsConfig;
 
 /////////////////////////////////////////////////
 // プログラムファイル読み込み
-global $xoopsUser,$xoopsDB,$xoopsConfig;
-
 require("func.php");
 require("file.php");
 require("plugin.php");
@@ -52,86 +51,10 @@ if (!extension_loaded('mbstring'))
 {
 	require('mbstring.php');
 }
-
-
 require("init.php");
-
-// XOOPSデータ読み込み
-// $anon_writable:編集可能(Yes:1 No:0)
-// $X_uid:XOOPSユーザーID
-// $X_admin:PukiWikiモジュール管理者(Yes:1 No:0)
-// 
-
-$X_admin =0;
-$X_uid =0;
-$wiki_ads_shown = 0;
-// ゲストユーザーの名称
-$no_name = $xoopsConfig['anonymous'];
-
-if ( $xoopsUser ) {
-	$xoopsModule = XoopsModule::getByDirname("pukiwiki");
-	if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
-		$X_admin = 1;
-	}
-	$X_uid = $xoopsUser->uid();
-	$X_uname = $xoopsUser->uname();
-} else {
-	$X_uname = (!empty($_COOKIE["pukiwiki_un"]))? $_COOKIE["pukiwiki_un"] : $no_name;
-}
-
-// UserCode with cookie
-$X_ucd = (isset($_COOKIE["pukiwiki_uc"]))? $_COOKIE["pukiwiki_uc"] : "";
-//user-codeの発行
-// ↓この方式はやめた
-//if(!$X_ucd){ $X_ucd = substr(crypt(md5(getenv("REMOTE_ADDR").$adminpass.gmdate("Ymd", time()+9*60*60)),'id'),-12); }
-if(!$X_ucd || strlen($X_ucd) == 12){ $X_ucd = md5(getenv("REMOTE_ADDR").$adminpass.gmdate("Ymd", time()+9*60*60)); }
-setcookie("pukiwiki_uc", $X_ucd, time()+86400*365);//1年間
-$X_ucd = substr(crypt($X_ucd,($adminpass)? $adminpass : 'id'),-12);
-define('PUKIWIKI_UCD',$X_ucd); //定数化
-unset ($X_ucd);
-
-/////////////////////////////////////////////////
-// 編集権限セット
-if ($X_admin || ($wiki_writable === 0) || (($X_uid && ($wiki_writable < 2)))) {
-	$anon_writable = 1;
-} else {
-	$anon_writable = 0;
-}	
-// 新規作成権限セット
-if ($X_admin || ($wiki_allow_new === 0) || (($X_uid && ($wiki_allow_new < 2)))) {
-	define("WIKI_ALLOW_NEWPAGE",TRUE);
-} else {
-	define("WIKI_ALLOW_NEWPAGE",FALSE);
-}	
-$wiki_allow_newpage = WIKI_ALLOW_NEWPAGE; //Skin用に残す
-
-// <title>用
-$h_excerpt = "";
 
 /////////////////////////////////////////////////
 // メイン処理
-
-// idでのアクセス
-//if (preg_match("/id(\d+)/",$arg,$id))
-if (isset($vars['pgid']))
-{
-//	$vars['page'] = get_pgname_by_id($id[1]);
-	$vars['page'] = get_pgname_by_id($vars['pgid']);
-	if ($vars['page'])
-		$vars['cmd'] = "read";
-	else
-	{
-		header("Location: ".XOOPS_WIKI_URL."/");
-		exit;
-	}
-}
-
-// pwm_ping受信
-if (isset($vars['pwm_ping']))
-{
-	$vars['plugin'] = "tb";
-	$vars['tb_id'] = $vars['pwm_ping'];
-}
 
 // 一覧の表示
 if (arg_check("list")) $vars["plugin"] = "list";
@@ -183,13 +106,11 @@ if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 }
 
 // 編集不可能なページを編集しようとしたとき
-else if(((arg_check("add") || arg_check("edit") || arg_check("preview")) && (is_freeze($vars["page"]) || !is_editable($vars["page"]) || $vars["page"] == "" || !$anon_writable)))
+else if((arg_check("add") || arg_check("edit") || arg_check("preview") || $post["preview"] || $post["write"]) && (!is_editable($vars["page"]) || $vars["page"] == "" || !$anon_writable))
 {
 	$body = $title = str_replace('$1',htmlspecialchars(strip_bracket($vars["page"])),$_title_cannotedit);
 	$page = str_replace('$1',make_search($vars["page"]),$_title_cannotedit);
 
-//	if(is_freeze($vars["page"]))
-//		$body .= "(<a href=\"$script?cmd=unfreeze&amp;page=".rawurlencode($vars["page"])."\">$_msg_unfreeze</a>)";
 }
 // 追加
 else if(arg_check("add"))
@@ -219,26 +140,15 @@ else if(arg_check("edit"))
 		$page = str_replace('$1',make_search($vars["page"]),_MD_PUKIWIKI_NO_AUTH);
 		$vars["page"] = "";
 	} else {
-		unset ($create_uid);
-		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$postdata,$arg)) {
-			$create_uid = $arg[1];
-			$freeze_check = "checked ";
-			//$postdata = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$postdata);
-		}
-
-		// ページ情報削除
-		delete_page_info($postdata);
-
-		//ページ作成者を得る
-		$author_uid = get_pg_auther($get["page"]);
-
 		if($postdata == '') {
 			$postdata = auto_template($get["page"]);
 			$author_uid = $X_uid;
 		}  
 		$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_edit);
 		$page = str_replace('$1',make_search($get["page"]),$_title_edit);
-		$body = edit_form($postdata,$get["page"],0,$up_freeze_info[3],$up_freeze_info[2]);
+		//echo sprintf("%01.03f",getmicrotime() - MUTIME)."<br />";
+		$body = edit_form($postdata,$get["page"],0,$up_freeze_info[3],$up_freeze_info[2],$freeze_check);
+		//echo sprintf("%01.03f",getmicrotime() - MUTIME)."<br />";
 		
 		///// ParaEdit /////
 		if ($vars['id']){
@@ -335,7 +245,6 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 	
 	//ページ情報削除
 	delete_page_info($post["msg"]);
-	//$post["msg"] = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$post["msg"]);
 	
 	//整形済みブロックの | を &#x7c; に置換
 	$post["msg"] = rep_for_pre($post["msg"]);
@@ -408,67 +317,8 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 			."\n</td></tr>\n"
 			."</table><hr />\n";
 	}
-
-	if($post["add"])
-	{
-		if($post["add_top"]) $checked_top = " checked=\"checked\"";
-		$addtag = '<input type="hidden" name="add" value="true" />';
-		$add_top = '<input type="checkbox" name="add_top" value="true"'.$checked_top.' /><span class="small">$_btn_addtop</span>';
-	}
-	if($post["notimestamp"]) $checked_time = "checked=\"checked\"";
-	if($post["enter_enable"]) $checked_enter = "checked=\"checked\"";
-	if (($X_uid && $X_uid == $post["f_author_uid"]) || $X_admin)
-	{
-		if ($wiki_writable === 2){
-			$enable_user = _MD_PUKIWIKI_ADMIN;
-		} elseif($wiki_writable === 1){
-			$enable_user = _MD_PUKIWIKI_REGIST;
-		} else {
-			$enable_user = _MD_PUKIWIKI_ALL;
-		}
-		if($function_freeze){
-			$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($post["f_create_uid"]).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.sprintf($_btn_freeze_enable,$enable_user).'</span>';
-			$allow_edit_tag = allow_edit_form($post["gids"],$post["aids"]);
-		}
-		
-		
-		// 閲覧権限
-		if ($read_auth)
-		{
-			$unvisible_tag = ($function_freeze)? '' : '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" />';
-			$unvisible_tag .= '<input type="checkbox" name="unvisible" value="true" '.$unvisible_check.'/><span class="small">'.sprintf($_btn_unvisible_enable).'</span>';
-			$allow_view_tag = allow_view_form($post["v_gids"],$post["v_aids"]);
-		}
-
-	}
-	if ($X_admin){
-		$auther_tag = '  [ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($post["f_author_uid"]).'" /> ]';
-	} else {
-		$auther_tag = '<input type="hidden" name="f_author_uid" value="'.htmlspecialchars($post["f_author_uid"]).'" />';
-	}
-
-	$body .= "<form enctype=\"multipart/form-data\" action=\"$script\" method=\"post\">\n"
-		."<div>\n"
-		."<input type=\"checkbox\" name=\"enter_enable\" value=\"true\" $checked_enter /><span class=\"small\">$_btn_enter_enable</span>\n"
-		."　<input type=\"checkbox\" name=\"auto_bra_enable\" value=\"true\" /><span class=\"small\">$_btn_autobracket_enable</span>\n"
-		.file_attache_form()
-		."<input type=\"hidden\" name=\"help\" value=\"".htmlspecialchars($post["add"])."\" />\n"
-		."<input type=\"hidden\" name=\"page\" value=\"".htmlspecialchars($post["page"])."\" />\n"
-		."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($post["digest"])."\" />\n"
-		."<input type=\"hidden\" name=\"f_create_uid\" value=\"".htmlspecialchars($post["f_create_uid"])."\" />\n"
-		."<input type=\"hidden\" name=\"msg_before\" value=\"".htmlspecialchars($post["msg_before"])."\">\n"
-		."<input type=\"hidden\" name=\"msg_after\"  value=\"".htmlspecialchars($post["msg_after"])."\">\n"
-		."$addtag\n"
-		.fontset_js_tag()
-		."<textarea name=\"msg\" rows=\"$rows\" cols=\"$cols\" wrap=\"virtual\" width=\"100%\">\n".htmlspecialchars($postdata_input)."</textarea><br />\n"
-		."<input type=\"submit\" name=\"preview\" value=\"$_btn_repreview\" accesskey=\"p\" />\n"
-		."<input type=\"submit\" name=\"write\" value=\"$_btn_update\" accesskey=\"s\" />\n"
-		."$add_top\n"
-		."<input type=\"checkbox\" name=\"notimestamp\" value=\"true\" $checked_time /><span class=\"small\">$_btn_notchangetimestamp</span>\n"
-		.$auther_tag
-		."</div>\n"
-		.$allow_edit_tag.$allow_view_tag
-		."</form>\n";
+	
+	$body .= edit_form($postdata_input,$vars["page"],0,$vars["gids"],$vars["aids"]);
 }
 // 書き込みもしくは追加もしくはコメントの挿入
 else if($post["write"])
@@ -625,60 +475,8 @@ else if($post["write"])
 			else {
 			  $body = $_msg_collided."\n";
 			}
-			if($post["notimestamp"]) $checked_time = "checked=\"checked\"";
-			if($post["enter_enable"]) $checked_enter = "checked=\"checked\"";
-			if (($X_uid && $X_uid == $post["f_author_uid"]) || $X_admin)
-			{
-				if ($wiki_writable === 2){
-					$enable_user = _MD_PUKIWIKI_ADMIN;
-				} elseif($wiki_writable === 1){
-					$enable_user = _MD_PUKIWIKI_REGIST;
-				} else {
-					$enable_user = _MD_PUKIWIKI_ALL;
-				}
-				if($function_freeze){
-					$freeze_tag = '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($post["f_create_uid"]).'" /><input type="checkbox" name="freeze" value="true" '.$freeze_check.'/><span class="small">'.sprintf($_btn_freeze_enable,$enable_user).'</span>';
-					$allow_edit_tag = allow_edit_form($post["gids"],$post["aids"]);
-				}
-				
-				
-				// 閲覧権限
-				if ($read_auth)
-				{
-					$unvisible_tag = ($function_freeze)? '' : '<input type="hidden" name="f_create_uid" value="'.htmlspecialchars($create_uid).'" />';
-					$unvisible_tag .= '<input type="checkbox" name="unvisible" value="true" '.$unvisible_check.'/><span class="small">'.sprintf($_btn_unvisible_enable).'</span>';
-					$allow_view_tag = allow_view_form($post["v_gids"],$post["v_aids"]);
-				}
-
-			}
-			if ($X_admin){
-				$auther_tag = '  [ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($post["f_author_uid"]).'" /> ]';
-			} else {
-				$auther_tag = '<input type="hidden" name="f_author_uid" value="'.htmlspecialchars($post["f_author_uid"]).'" />';
-			}
-
-			$body .= "<form enctype=\"multipart/form-data\" action=\"$script\" method=\"post\">\n"
-				."<div>\n"
-				."<input type=\"checkbox\" name=\"enter_enable\" value=\"true\" $checked_enter /><span class=\"small\">$_btn_enter_enable</span>\n"
-				."　<input type=\"checkbox\" name=\"auto_bra_enable\" value=\"true\" /><span class=\"small\">$_btn_autobracket_enable</span>\n"
-				.file_attache_form()
-				."<input type=\"hidden\" name=\"help\" value=\"".htmlspecialchars($post["add"])."\" />\n"
-				."<input type=\"hidden\" name=\"page\" value=\"".htmlspecialchars($post["page"])."\" />\n"
-				."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($post["digest"])."\" />\n"
-				."<input type=\"hidden\" name=\"f_create_uid\" value=\"".htmlspecialchars($post["f_create_uid"])."\" />\n"
-				."<input type=\"hidden\" name=\"msg_before\" value=\"".htmlspecialchars($post["msg_before"])."\">\n"
-				."<input type=\"hidden\" name=\"msg_after\"  value=\"".htmlspecialchars($post["msg_after"])."\">\n"
-				."$addtag\n"
-				."<textarea name=\"msg\" rows=\"$rows\" cols=\"$cols\" wrap=\"virtual\" width=\"100%\">\n".htmlspecialchars($postdata_input)."</textarea><br />\n"
-				."<input type=\"submit\" name=\"preview\" value=\"$_btn_repreview\" accesskey=\"p\" />\n"
-				."<input type=\"submit\" name=\"write\" value=\"$_btn_update\" accesskey=\"s\" />\n"
-				."$add_top\n"
-				."<input type=\"checkbox\" name=\"notimestamp\" value=\"true\" $checked_time /><span class=\"small\">$_btn_notchangetimestamp</span>\n"
-				.$auther_tag
-				."</div>\n"
-				.$allow_edit_tag.$allow_view_tag
-				."</form>\n";
-
+			$vars['preview'] = TRUE;
+			$body .= edit_form($postdata_input,$vars["page"],0,$vars["gids"],$vars["aids"]);
 		}
 		else
 		{
@@ -740,10 +538,10 @@ else if($post["write"])
 						$post["freeze"] = false;
 				}
 			}
-
+			
 			// ページの出力
 			page_write($post["page"],$postdata,$post['notimestamp'],$freeze_aid,$freeze_gid,$unvisible_aid,$unvisible_gid,$post["freeze"],$post["unvisible"]);
-
+			
 			if($postdata)
 			{
 				$title = str_replace('$1',htmlspecialchars(strip_bracket($post["page"])),$_title_updated);
@@ -1120,17 +918,6 @@ else if(arg_check("rss"))
 // ページの表示とInterWikiNameの解釈
 else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $arg != "" && $vars["page"] == ""))
 {
-	// アクションを明示的に指定していない場合ページ名として解釈
-	if($arg != "" && $vars["page"] == "" && $vars["cmd"] == "")
-	{
-		$arg = mb_convert_encoding(trim($arg),SOURCE_ENCODING,"AUTO");
-		//文字化けして正常動作しない場合は以下を試してみてください
-		//$arg = mb_convert_encoding(trim($arg),SOURCE_ENCODING,"ASCII,EUC-JP,UTF-8,JIS,SJIS");
-		$post["page"] = $arg;
-		$get["page"] = $arg;
-		$vars["page"] = $arg;
-	}
-	
 	// ページ名がWikiNameでなく、BracketNameでなければBracketNameとして解釈
 	if(!preg_match("/^(($WikiName)|($BracketName)|($InterWikiName))$/",$get["page"]))
 	{
@@ -1284,20 +1071,7 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 		}
 	}
 }
-// 何も指定されない場合、トップページを表示
-else
-{
-	//$postdata = join("",get_source($defaultpage));
-	//$postdata =  get_page_html($defaultpage);
-	$vars["page"] = $defaultpage;
-	$postdata = convert_html($defaultpage,false,true);
-	$title = htmlspecialchars(strip_bracket($defaultpage));
-	$page = make_search($vars["page"]);
-	//$body = tb_get_rdf($vars['page'])."\n".convert_html($postdata);
-	$body = tb_get_rdf($vars['page'])."\n".$postdata;
 
-	header_lastmod($vars["page"]);
-}
 // <title>にページ名をプラス
 $xoops_pagetitle = $xoopsModule->name();
 $xoops_pagetitle = $title."-".$xoops_pagetitle;
