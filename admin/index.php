@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.22 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: index.php,v 1.23 2004/09/29 00:54:44 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -130,6 +130,7 @@ function checkPermit(){
 		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/counter/",
 		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/diff/",
 		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/pagehtml/",
+		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/plugin_data/painter/tmp/",
 		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/trackback/",
 		XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/wiki/");
 
