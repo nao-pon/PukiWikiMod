@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.31 2004/05/27 13:59:15 nao-pon Exp $
+// $Id: html.php,v 1.32 2004/06/22 14:34:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -609,16 +609,16 @@ function allow_view_form($allow_groups=NULL,$allow_users=NULL) {
 
 // 添付ファイルアップロードフォーム
 function file_attache_form() {
-	global $_msg_attach_filelist,$max_size,$_msg_maxsize,$_msg_attachfile,$vars;
+	global $_msg_attach_filelist,$max_size,$_msg_maxsize,$_msg_attachfile,$vars,$_attach_messages;
 
 	$max_size = number_format(MAX_FILESIZE/1000);
 	$max_size.= "KB";
 
 	$ret.= "<input type=\"hidden\" name=\"refer\" value=\"".htmlspecialchars($vars["page"])."\">\n";
 	$ret.= "<input type=\"hidden\" name=\"max_file_size\" value=\"".MAX_FILESIZE."\" />\n";
-	//$ret.= "<span class=\"small\">[<a href=\"$script?plugin=attach&amp;pcmd=list\" target=\"_blank\">$_msg_attach_filelist</a>]</span><br />\n";
-	$ret.= "<b>".$_msg_attachfile."</b>:<input type=\"file\" name=\"attach_file\" />Max[$max_size]\n";
-	//$ret.= "<br /><span class=\"small\">".str_replace('$1',$max_size,$_msg_maxsize)."</span><br />\n";
+	$ret.= "<b>".$_msg_attachfile."</b>:<input type=\"file\" name=\"attach_file\" />";
+	$ret .= "<input type=\"checkbox\" name=\"copyright\" value=\"1\" />{$_attach_messages['msg_copyright_s']}|";
+	$ret.= "Max[$max_size]\n";
 
 	return $ret;
 }

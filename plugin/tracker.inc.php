@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tracker.inc.php,v 1.12 2004/06/20 13:35:59 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.13 2004/06/22 14:34:34 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.11 2003/09/27 15:28:12 arino Exp $
 //
 
@@ -427,16 +427,18 @@ class Tracker_field_file extends Tracker_field_format
 	
 	function get_tag()
 	{
+		global $_attach_messages;
 		$s_name = htmlspecialchars($this->name);
 		$s_size = htmlspecialchars($this->values[0]);
-		return "<input type=\"file\" name=\"$s_name\" size=\"$s_size\" />";
+		return "<input type=\"file\" name=\"$s_name\" size=\"$s_size\" /> <input type=\"checkbox\" name=\"{$s_name}_copyright\" value=\"1\" /> {$_attach_messages['msg_copyright']}";
 	}
 	function format_value($str)
 	{
 		if (array_key_exists($this->name,$_FILES))
 		{
 			require_once(PLUGIN_DIR.'attach.inc.php');
-			$result = attach_upload($_FILES[$this->name],$this->page);
+			$copyright = (isset($_POST[$this->name.'_copyright']))? TRUE : FALSE;
+			$result = attach_upload($_FILES[$this->name],$this->page,NULL,$copyright);
 			if ($result['result']) // アップロード成功
 			{
 				return parent::format_value(strip_bracket($this->page).'/'.$_FILES[$this->name]['name']);

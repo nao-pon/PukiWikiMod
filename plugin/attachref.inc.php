@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: attachref.inc.php,v 1.4 2004/01/24 14:39:49 nao-pon Exp $
+// $Id: attachref.inc.php,v 1.5 2004/06/22 14:34:34 nao-pon Exp $
 // ORG: attachref.inc.php,v0.5 2003/07/31 14:15:29 sha Exp $
 //
 
@@ -157,7 +157,7 @@ EOD;
 }
 function plugin_attachref_action()
 {
-	global $script,$vars;
+	global $script,$vars,$post;
 	global $_attachref_messages;
 	global $html_transitional;
 
@@ -188,7 +188,9 @@ function plugin_attachref_action()
 			return array('msg'=>'attach.inc.php not found or not correct version.');
 		}
 		
-		$retval = attach_upload($file,$vars['refer'],TRUE);
+		$copyright = (isset($post['copyright']))? TRUE : FALSE ;
+		
+		$retval = attach_upload($file,$vars['refer'],TRUE,$copyright);
 		if ($retval['result'] == TRUE)
 		{
 			$retval = attachref_insert_ref($file['name']);
@@ -271,29 +273,7 @@ function attachref_insert_ref($filename)
 	}
 	$mail_body = "Attached File: ".$filename."\n";
 	page_write($vars['refer'],$postdata,NULL,"","","","","","",array('plugin'=>'attachref','mode'=>'none','text'=>$mail_body));
-/*
-	if (WIKI_MAIL_NOTISE) {
-		// メール送信 by nao-pon
-		global $xoopsConfig,$X_uname;
-		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_URL."/modules/pukiwiki/?".rawurlencode(trim($vars["refer"]))."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.strip_bracket(trim($vars["refer"]))."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$X_uname."\n";
-		$mail_body .= "\n";
-		$mail_body .= $retval['msg'];
-		$mail_body .= "\n";
-		$mail_body .= "Attached File: ".$filename;
-		$xoopsMailer =& getMailer();
-		$xoopsMailer->useMail();
-		$xoopsMailer->setToEmails($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
-		$xoopsMailer->setFromName($xoopsConfig['sitename']);
-		$xoopsMailer->setSubject(_MD_PUKIWIKI_MAIL_SUBJECT.strip_bracket(trim($post["page"])));
-		$xoopsMailer->setBody($mail_body);
-		$xoopsMailer->send();
-		//メール送信ここまで by nao-pon
-	}
-*/	
+	
 	return $ret;
 }
 //アップロードフォームを表示
@@ -357,6 +337,7 @@ function attachref_form($page)
    $msg_maxsize
   </span><br /><br />
   {$_attach_messages['msg_file']}: <input type="file" name="attach_file" size="40" /><br />
+  <input type="checkbox" name="copyright" value="1" /> &uarr; {$_attach_messages['msg_copyright']}<hr />
   or URL: <input type="text" name="url" size="60" /><hr />
   Comment: <input type="text" name="comment" size="60" value="{$comment}" /><br /><br />
   $pass

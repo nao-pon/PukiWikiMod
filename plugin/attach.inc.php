@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.16 2004/05/13 14:36:01 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.17 2004/06/22 14:34:34 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -85,7 +85,7 @@ function plugin_attach_convert()
 //-------- action
 function plugin_attach_action()
 {
-	global $vars;
+	global $vars,$post;
 	
 	
 	// backward compatible
@@ -115,7 +115,8 @@ function plugin_attach_action()
 	if (array_key_exists('attach_file',$_FILES))
 	{
 		$pass = array_key_exists('pass',$vars) ? md5($vars['pass']) : NULL;
-		return attach_upload($_FILES['attach_file'],$vars['refer'],$pass);
+		$copyright = (isset($post['copyright']))? TRUE : FALSE;
+		return attach_upload($_FILES['attach_file'],$vars['refer'],$pass,$copyright);
 	}
 	
 	switch ($pcmd)
@@ -127,6 +128,7 @@ function plugin_attach_action()
 		case 'freeze':  return attach_freeze(TRUE);
 		case 'unfreeze':return attach_freeze(FALSE);
 		case 'upload':  return attach_showform();
+		case 'copyright':  return attach_copyright();
 	}
 	if ($vars['page'] == '' or !is_page($vars['page']))
 	{
@@ -152,7 +154,7 @@ function attach_filelist($thumb=1,$isbn=false)
 }
 //-------- 実体
 //ファイルアップロード
-function attach_upload($file,$page,$pass=NULL)
+function attach_upload($file,$page,$pass=NULL,$copyright=FALSE)
 {
 // $pass=NULL : パスワードが指定されていない
 // $pass=TRUE : アップロード許可
@@ -175,6 +177,7 @@ function attach_upload($file,$page,$pass=NULL)
 	{
 		return array('result'=>FALSE,'msg'=>$_attach_messages['err_adminpass']);
 	}
+	//$copyright = (isset($post['copyright']))? TRUE : FALSE;
 	
 	if ( strcasecmp(substr($file['name'],-4),".tar") == 0 && $post['untar_mode'] == "on" ) {
 		// UploadされたTarアーカイブを展開添付する
@@ -186,7 +189,7 @@ function attach_upload($file,$page,$pass=NULL)
 		foreach ( $etars as $efile ) {
 			$res = do_upload( $page,
 				mb_convert_encoding($efile['extname'], SOURCE_ENCODING,"auto"),
-				$efile['tmpname']);
+				$efile['tmpname'],$copyright);
 			if ( ! $res['result'] ) {
 				unlink( $efile['tmpname']);
 			}
@@ -196,11 +199,11 @@ function attach_upload($file,$page,$pass=NULL)
 		return $res;
 	} else {
 		// 通常の単一ファイル添付処理
-		return do_upload($page,$file['name'],$file['tmp_name']);
+		return do_upload($page,$file['name'],$file['tmp_name'],$copyright);
 	}
 }
 
-function do_upload($page,$fname,$tmpname)
+function do_upload($page,$fname,$tmpname,$copyright)
 {
 	global $_attach_messages;
 	
@@ -230,6 +233,7 @@ function do_upload($page,$fname,$tmpname)
 	
 	$obj->getstatus();
 	$obj->status['pass'] = ($pass !== TRUE and $pass !== NULL) ? $pass : '';
+	$obj->status['copyright'] = $copyright;
 	$obj->putstatus();
 
 	return array('result'=>TRUE,'msg'=>$_attach_messages['msg_uploaded']);
@@ -282,6 +286,24 @@ function attach_freeze($freeze)
 	
 	$obj = &new AttachFile($refer,$file,$age);
 	return $obj->getstatus() ? $obj->freeze($freeze,$pass) : array('msg'=>$_attach_messages['err_notfound']);
+}
+//著作権設定
+function attach_copyright()
+{
+	global $vars,$_attach_messages;
+	foreach (array('refer','file','age','pass','copyright') as $var)
+	{
+		$$var = array_key_exists($var,$vars) ? $vars[$var] : '';
+	}
+	
+	if (is_freeze($refer) or !is_editable($refer))
+	{
+		return array('msg'=>$_attach_messages['err_noparm']);
+	}
+	
+	$copyright = ($copyright)? TRUE : FALSE;
+	$obj = &new AttachFile($refer,$file,$age);
+	return $obj->getstatus() ? $obj->copyright($copyright,$pass) : array('msg'=>$_attach_messages['err_notfound']);
 }
 //ダウンロード
 function attach_open()
@@ -425,7 +447,8 @@ EOD;
   {$_attach_messages['msg_file']}: <input type="file" name="attach_file" />
   $pass
   <input type="submit" value="{$_attach_messages['btn_upload']}" />
-  (Untar:<input type="checkbox" name="untar_mode">)
+  (Untar:<input type="checkbox" name="untar_mode">)<br />
+  <input type="checkbox" name="copyright" value="1" /> {$_attach_messages['msg_copyright']}
 
  </div>
 </form>
@@ -435,12 +458,12 @@ EOD;
 //ファイル
 class AttachFile
 {
-	var $page,$file,$age,$basename,$filename,$logname;
+	var $page,$file,$age,$basename,$filename,$logname,$copyright;
 	var $time = 0;
 	var $size = 0;
 	var $time_str = '';
 	var $size_str = '';
-	var $status = array('count'=>array(0),'age'=>'','pass'=>'','freeze'=>FALSE);
+	var $status = array('count'=>array(0),'age'=>'','pass'=>'','freeze'=>FALSE,'copyright'=>FALSE);
 	
 	function AttachFile($page,$file,$age=0)
 	{
@@ -563,6 +586,7 @@ class AttachFile
 			}
 		}
 		$info = $this->toString(TRUE,FALSE);
+		$copyright = ($this->status['copyright'])? ' checked=TRUE' : '';
 		
 		$retval = array('msg'=>sprintf($_attach_messages['msg_info'],htmlspecialchars($this->file)));
 		$page_link = make_pagelink($s_page);
@@ -574,6 +598,8 @@ class AttachFile
 				if ($key != "title") $exif_tags .= "<br />$key: $value";
 			}
 		}
+		$v_filename = ($this->status['copyright'])? "" : "<dd>{$_attach_messages['msg_filename']}:{$this->filename}</dd>";
+		$v_md5hash  = ($this->status['copyright'])? "" : "<dd>{$_attach_messages['msg_md5hash']}:{$this->md5hash}</dd>";
 		$retval['body'] = <<< EOD
 <p class="small">
  [<a href="$script?plugin=attach&amp;pcmd=list&amp;refer=$r_page">{$_attach_messages['msg_list']}</a>]
@@ -582,8 +608,8 @@ class AttachFile
 <dl>
  <dt>$info</dt>
  <dd>{$_attach_messages['msg_page']}:$page_link</dd>
- <dd>{$_attach_messages['msg_filename']}:{$this->filename}</dd>
- <dd>{$_attach_messages['msg_md5hash']}:{$this->md5hash}</dd>
+ {$v_filename}
+ {$v_md5hash}
  <dd>{$_attach_messages['msg_filesize']}:{$this->size_str} ({$this->size} bytes)</dd>
  <dd>Content-type:{$this->type}</dd>
  <dd>{$_attach_messages['msg_date']}:{$this->time_str}</dd>
@@ -591,12 +617,12 @@ class AttachFile
  $exif_tags
  $msg_freezed
 </dl>
+<hr />
+$s_err
 EOD;
 		$uid = get_pg_auther($s_page);
 		if (!ATTACH_DELETE_ADMIN_ONLY || (($X_admin || $X_uid == $uid) && $X_uid != 0)){
 			$retval['body'] .= <<< EOD
-<hr />
-$s_err
 <form action="$script" method="post">
  <div>
   <input type="hidden" name="plugin" value="attach" />
@@ -605,6 +631,18 @@ $s_err
   <input type="hidden" name="age" value="{$this->age}" />
   $msg_delete
   $msg_freeze
+  <input type="submit" value="{$_attach_messages['btn_submit']}" />
+ </div>
+</form>
+<hr />
+<form action="$script" method="post">
+ <div>
+  <input type="hidden" name="plugin" value="attach" />
+  <input type="hidden" name="refer" value="$s_page" />
+  <input type="hidden" name="file" value="$s_file" />
+  <input type="hidden" name="age" value="{$this->age}" />
+  <input type="hidden" name="pcmd" value="copyright" />
+  <input type="checkbox" name="copyright" value="1"{$copyright} /> {$_attach_messages['msg_copyright']}
   <input type="submit" value="{$_attach_messages['btn_submit']}" />
  </div>
 </form>
@@ -685,9 +723,33 @@ EOD;
 		
 		return array('msg'=>$_attach_messages[$freeze ? 'msg_freezed' : 'msg_unfreezed']);
 	}
+	function copyright($copyright,$pass)
+	{
+		global $adminpass,$vars,$X_admin,$X_uid;
+		
+		$uid = get_pg_auther($vars['page']);
+		if ((!X_admin && $X_uid !== $uid) || $X_uid == 0)
+		//if (md5($pass) != $adminpass)
+		{
+			return attach_info('err_adminpass');
+		}
+		
+		$this->getstatus();
+		$this->status['copyright'] = $copyright;
+		$this->putstatus();
+		
+		return array('msg'=>$_attach_messages[$copyright ? 'msg_freezed' : 'msg_unfreezed']);
+	}
 	function open()
 	{
+		global $X_admin,$X_uid;
 		$this->getstatus();
+		$uid = get_pg_auther($vars['page']);
+		if ((!X_admin && $X_uid !== $uid) || $X_uid == 0)
+		{
+			if ($this->status['copyright'])
+				return attach_info('err_copyright');
+		}
 		$this->status['count'][$this->age]++;
 		$this->putstatus();
 		

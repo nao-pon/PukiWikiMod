@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.45 2004/06/04 13:57:57 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.46 2004/06/22 14:34:34 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -300,7 +300,9 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 			return array('msg'=>'attach.inc.php not found or not correct version.');
 		}
 		
-		$attach_msg = attach_upload($file,$vars['refer'],TRUE);
+		$copyright = (isset($post['copyright']))? TRUE : FALSE ;
+		$attach_msg = attach_upload($file,$vars['refer'],TRUE,$copyright);
+		
 		// ソース中の空ref()にファイル名をセット
 		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$attachname."$1)",$post["msg"]);
 		unset($file,$attachname,$filename);
@@ -480,7 +482,9 @@ else if($post["write"])
 			return array('msg'=>'attach.inc.php not found or not correct version.');
 		}
 		
-		$attach_msg = attach_upload($file,$vars['refer'],TRUE);
+		$copyright = (isset($post['copyright']))? TRUE : FALSE ;
+		$attach_msg = attach_upload($file,$vars['refer'],TRUE,$copyright);
+		
 		// ソース中の空ref()にファイル名をセット
 		$post["msg"] = preg_replace("/ref\((,[^)]*)?\)/","ref(".$attachname."$1)",$post["msg"]);
 		unset($file,$attachname,$filename);
