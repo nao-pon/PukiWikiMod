@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.17 2003/09/02 14:09:11 nao-pon Exp $
+// $Id: func.php,v 1.18 2003/10/02 12:17:04 nao-pon Exp $
 /////////////////////////////////////////////////
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -674,6 +674,9 @@ function auto_br($msg){
 }
 // オートブラケット by nao-pon
 function auto_braket($msg,$tgt_name){
+	// \をエスケープ
+	$msg = str_replace('\\','_yEn_',$msg);
+	
 	$WikiName_ORG = '[A-Z][a-z]+(?:[A-Z][a-z]+)+';
 	$http_URL_regex = '(s?https?://[-_.!~*\'()a-zA-Z0-9;/?:@&=+$,%#]+)';
 	$mail_ADR_regex = "((mailto:)?([0-9A-Za-z._-]+@[0-9A-Za-z.-]+))";
@@ -727,7 +730,8 @@ function auto_braket($msg,$tgt_name){
 		$msg = ereg_replace("\[\[".$http_URL_regex."\]\]","\\1",$msg);
 		$msg = eregi_replace("\[\[".$mail_ADR_regex."\]\]", "\\1", $msg);
 	}
-	
+	// \をアンエスケープ
+	$msg = str_replace('_yEn_','\\',$msg);
 	return $msg;
 }
 // オートブラケット用サブ関数
@@ -781,6 +785,22 @@ function X_get_users(){
 		// XOOPS 1
 		return XoopsUser::getAllUsersList();
 	}
+}
+
+// テーブルセルのフォーマート指定子を削除する
+function cell_format_tag_del ($td) {
+	// カラーネームの正規表現
+	$colors_reg = "aqua|navy|black|olive|blue|purple|fuchsia|red|gray|silver|green|teal|lime|white|maroon|yellow|transparent";
+	// 背景色指定削除
+	$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)(\(([^),]*)(,no|,one|,1)?\))/i","SC:$2",$td);
+	$td = preg_replace("/SC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i","",$td);
+	// 背景画指定削除
+	$td = preg_replace("/SC:\(([^),]*)(,once|,1)?\)/i","",$td);
+	// 文字揃え指定削除
+	if (preg_match("/^(LEFT|CENTER|RIGHT)?(:)(TOP|MIDDLE|BOTTOM)?/i",$td,$tmp)) {
+		$td = (!$tmp[1] && !$tmp[3])? $tmp[2] : "";
+	}
+	return $td;
 }
 
 ?>
