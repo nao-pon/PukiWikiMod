@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.12 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: make_link.php,v 1.13 2004/01/12 13:14:32 nao-pon Exp $
 //
 
 // リンクを付加する
@@ -690,75 +690,7 @@ class Link_autolink extends Link
 		);
 	}
 }
-// ユーザ定義ルール
-/*
-class Link_rules extends Link
-{
-	var $replaces;
-	var $count;
-	
-	function Link_rules($start)
-	{
-		parent::Link($start);
-	}
-	function get_pattern()
-	{
-		global $line_rules;
-		
-		$rules = array();
-		$this->replaces = array();
-		$this->count = 0;
-		
-		foreach ($line_rules as $pattern=>$replace)
-		{
-			$rules[] = "($pattern)";
-			$this->replaces[++$this->count] = $replace;
-			if (preg_match_all('/\$\d/',$replace,$matches,PREG_SET_ORDER))
-			{
-				$this->count += count($matches);
-			}
-		}
-		$this->replaces[++$this->count] = ''; // sentinel
-		return join("|",$rules);
-	}
-	function get_count()
-	{
-		return $this->count;
-	}
-	function set($arr,$page)
-	{
-		list($name) = $this->splice($arr);
-		
-		reset($this->replaces);
-		while (list($start,$replace) = each($this->replaces))
-		{
-			if ($replace == '')
-			{
-				$name = htmlspecialchars($name);
-				break;
-			}
-			if (!array_key_exists($start,$arr) or $arr[$start] == '')
-			{
-				continue;
-			}
-			list($end,$dummy) = each($this->replaces);
-			$count = $end - $start;
-			$_arr = array_splice($arr,$start,$count);
-			$name = $replace;
-			for ($n = 1; $n < $count; $n++)
-			{
-				$name = str_replace('$'.$n,make_link($_arr[$n]),$name);
-			}
-			break;
-		}
-		return parent::setParam($page,$name,'rule','');
-	}
-	function toString()
-	{
-		return $this->name;
-	}
-}
-*/
+
 // ページ名のリンクを作成
 function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 {
@@ -791,7 +723,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='')
 		
 	}
 	
-	if (preg_match("/#(.*)#/",$alias,$sep))
+	if (preg_match("/^#(.*)#$/",$alias,$sep))
 	{
 		// パン屑リスト出力
 		$sep = htmlspecialchars($sep[1]);
