@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.41 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: init.php,v 1.42 2005/03/23 14:16:29 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -46,8 +46,11 @@ define("PUKIWIKI_DIR_NAME", $xoopsModule->dirname());
 // PukiWikiMod ルートDir
 define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
 
-// PukiWikiMod ルートURL
-define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/pukiwiki');
+// スキーム + ドメイン名まで
+define("XOOPS_WIKI_HOST",(getenv('SERVER_PORT')==443?'https://':('http://')).getenv('SERVER_NAME').(getenv('SERVER_PORT')==80?'':(':'.getenv('SERVER_PORT'))));
+
+// PukiWikiMod ルートURL(スキームとドメインを省いたもの)
+define("XOOPS_WIKI_URL",preg_replace("#^".preg_quote(XOOPS_WIKI_HOST)."(:[\d]+)?#","",XOOPS_URL).'/modules/pukiwiki');
 
 /////////////////////////////////////////////////
 // 初期設定 (サーバ変数)

@@ -1,5 +1,5 @@
 <?php
-// $Id: navi.inc.php,v 1.6 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: navi.inc.php,v 1.7 2005/03/23 14:16:29 nao-pon Exp $
 /*
 Last-Update:2002-12-05 rev.3
 
@@ -57,17 +57,9 @@ function plugin_navi_convert() {
 
 	$footer = isset($_navi_pages);
 	if (!$footer) {
-		if ($dir = @opendir(DATA_DIR)) {
-			while ($name = readdir($dir)) {
-				if ($name == '..' || $name == '.') { continue; }
-				if (strpos($name, $pattern) === 0) {
-					$_pages = strip_bracket(decode(trim(preg_replace('/\.txt$/',' ',$name))));
-					// 閲覧権限
-					if (check_readable($_pages,false,false)) $pages[] = $_pages;
-				}
-			}
-			closedir($dir);
-		}
+		// ページ一覧取得
+		$pages = get_existpages_db(false,$home,0,"",FALSE,FALSE,TRUE,TRUE);
+		
 		// 未作成時のための番兵(プレビューとか)
 		if (in_array($current,$pages) === FALSE)
 			$pages[] = $current;

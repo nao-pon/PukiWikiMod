@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.47 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: file.php,v 1.48 2005/03/23 14:16:29 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -304,6 +304,9 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		// ページHTMLキャッシュとRSSキャッシュを削除
 		delete_page_html($page);
 		
+		// バックアップリストキャッシュの削除
+		@unlink(CACHE_DIR."backup_list.tmp");
+		
 		if (!$notimestamp && !$unvisible && $action != "delete")
 		{
 			// TrackBack Ping用ファイル作成
@@ -538,8 +541,9 @@ function get_readings()
 			foreach ($unknownPage as $page) {
 				$s_page = strip_bracket($page);
 				//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-				if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_page,$f_name))
-					$s_page = $f_name[1].get_heading($s_page);
+				//if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_page,$f_name))
+				//	$s_page = $f_name[1].get_heading($s_page);
+				$s_page = replace_pagename_d2s($s_page);
 				fputs($fp, mb_convert_encoding($s_page."\n", $pagereading_kanji2kana_encoding, SOURCE_ENCODING));
 			}
 			fclose($fp);
@@ -1044,25 +1048,33 @@ function delete_page_info(&$str,$clr_anchor)
 //ページ名から最初の見出しを得る
 function get_heading($page)
 {
-	global $xoopsDB;
+	static $ret = array();
+	$page = strip_bracket($page);
+	
+	if (isset($ret[$page])) return $ret[$page];
+	
 	$page = addslashes(strip_bracket($page));
+	global $xoopsDB;
 	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return "";
-	$ret = mysql_fetch_row($res);
-	return htmlspecialchars($ret[12]);
+	$_ret = mysql_fetch_row($res);
+	return $ret[$page] = htmlspecialchars($_ret[12]);
 }
 
 //ページ名から最初の見出しを得る(ファイルから)
 function get_heading_init($page)
 {
-	global $nowikiname;
+	global $nowikiname,$breadcrumbs,$convert_d2s;
+	global $script,$_symbol_noexists;
 	
 	$_body = get_source($page);
 	if (!$_body) return;
 	
-	$_nowikiname = $nowikiname;
+	$_save = array($nowikiname,$breadcrumbs,$convert_d2s);
 	$nowikiname = 1;
+	$breadcrumbs = 0;
+	$convert_d2s = 0;
 
 	$s_page = strip_bracket($page);
 	$first_line = "";
@@ -1077,8 +1089,10 @@ function get_heading_init($page)
 			$reg[1] = preg_replace("/\s*\[#([A-Za-z][\w-]+)\]\s*/","",rtrim($reg[1]));
 			$reg[1] = preg_replace("/->$/","",rtrim($reg[1]));
 			$reg[1] = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$reg[1]);
-			$ret = trim(strip_tags(make_link($reg[1],add_bracket($page))));
-			//$ret = trim(strip_htmltag(make_link(htmlspecialchars($reg[1]),add_bracket($page))));
+			$ret = make_link($reg[1],add_bracket($page),TRUE);
+			$ret = preg_replace("/".preg_quote("<a href=\"$script?cmd=edit&amp;page=","/")."[^\"]+".preg_quote("\">$_symbol_noexists</a>","/")."/","",$ret);
+			$ret = trim(strip_tags($ret));
+
 			if ($ret)
 			{
 				$nowikiname = $_nowikiname;
@@ -1090,8 +1104,11 @@ function get_heading_init($page)
 	if (!$first_line) $first_line = str_replace("/","",substr($s_page,strrpos($s_page,"/")));
 	$first_line = preg_replace("/\(\(((?:(?!\)\)).)*)\)\)/x","",$first_line);
 	$ret = trim(strip_tags(make_link($first_line,add_bracket($page))));
-	//$ret = trim(strip_htmltag(make_link(htmlspecialchars($first_line),add_bracket($page))));
-	$nowikiname = $_nowikiname;
+	
+	$nowikiname = $_save[0];
+	$breadcrumbs = $_save[1];
+	$convert_d2s = $_save[2];
+	
 	return ($ret)? $ret : "- no title -";
 }
 

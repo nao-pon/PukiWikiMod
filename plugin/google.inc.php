@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.11 2005/03/16 14:32:29 nao-pon Exp $
+// $Id: google.inc.php,v 1.12 2005/03/23 14:16:29 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -10,7 +10,7 @@
 function plugin_google_init()
 {
 	$msg = array('plugin_google_dataset'=>array(
-		'cache_time'    => 6,                                  // キャッシュ有効時間(h)
+		'cache_time'    => 24,                                  // キャッシュ有効時間(h)
 		'def_max'       => 10,                                 // デフォルト表示数
 		'max_limit'     => 50,                                 // 最大表示数
 		'head_msg'      => '<h4>検索結果: %s <span class="small">by Google</span></h4><p class="empty"></p>',
@@ -287,7 +287,7 @@ function plugin_google_result_google_api($word,$max=10,$start=0,$do_refresh=FALS
 			$resp = explode("\r\n\r\n",$response,2);
 			$rccd = explode(' ',$resp[0],3); // array('HTTP/1.1','200','OK\r\n...')
 			
-			if ($resp[1])
+			if ($resp[1] && strpos($resp[1],"<SOAP-ENV:Fault>") === FALSE)
 			{
 				// キャッシュ保存
 				$fp = fopen($c_file, "wb");

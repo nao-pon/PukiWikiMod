@@ -1,6 +1,6 @@
 <?php
 //
-// $Id: category.inc.php,v 1.2 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: category.inc.php,v 1.3 2005/03/23 14:16:29 nao-pon Exp $
 //
 
 function plugin_category_convert()
@@ -41,7 +41,7 @@ function pligin_category_maketag($args)
 				page_write($base_name,"#norelated\n***Category lists of ''".substr(strip_bracket($base_name),1)."''\n#ls2(,pagename,notemplate,relatedcount)\n");
 				//if (!is_page(add_bracket($base."template")))
 				//{
-					page_write(add_bracket($base."template"),"***Category: [[$1]]\n|T:100% TC:0 SC:0 :TOP|SC:0 :TOP|c\n|#related|****Sub Categorys->\n#ls2(,pagename,notemplate,relatedcount)|\n");
+					page_write(add_bracket($base."template"),"**$3\n***Category: [[$1]]\n|T:100% TC:0 SC:0 :TOP|SC:0 :TOP|c\n|#related|****Sub Categorys->\n#ls2(,pagename,notemplate,relatedcount)|\n");
 				//}
 			}
 			$page_names = explode("/",$cat);

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.31 2005/03/11 15:00:39 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.32 2005/03/23 14:16:29 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -737,7 +737,7 @@ class AttachFile
 		{
 			$_title = str_replace('$1',rawurlencode($this->file),$_attach_messages['msg_info']);
 			if ($mode == "imglist")
-				$info = "[ [[{$_attach_messages['btn_info']}:{$script}?plugin=attach&pcmd=info".str_replace("&amp;","&",$param)."]] ]";
+				$info = "[ [[{$_attach_messages['btn_info']}:".XOOPS_WIKI_HOST."{$script}?plugin=attach&pcmd=info".str_replace("&amp;","&",$param)."]] ]";
 			else
 				$info = "\n<span class=\"small\">[<a href=\"$script?plugin=attach&amp;pcmd=info$param\" title=\"$_title\">{$_attach_messages['btn_info']}</a>]</span>";
 			$count = ($showicon and !empty($this->status['count'][$this->age])) ?

@@ -25,8 +25,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.70 2005/03/16 14:32:29 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.71 2005/03/23 14:16:29 nao-pon Exp $
 /////////////////////////////////////////////////
+/*
 // Protectorのチェックを回避する
 if (
 	(isset($_GET['plugin']) && $_GET['plugin']=='showrss' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
@@ -38,6 +39,7 @@ if (
 {
 	$_SERVER['REMOTE_ADDR'] = "";
 }
+*/
 
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -88,8 +90,11 @@ elseif ($arg === $whatsnew)
 // Plug-in action
 if(!empty($vars["plugin"]))
 {
-	if (!$retvars = do_plugin_action($vars["plugin"]))
+	if (in_array($vars["plugin"],explode(",",$disabled_plugin))
+		|| !$retvars = do_plugin_action($vars["plugin"]))
+	{
 		$retvars = array('msg'=>"Action plugin '{$vars['plugin']}' is not installed.",'body'=>"Action plugin '{$vars['plugin']}' is not installed.");;
+	}
 	
 	$title = strip_bracket($vars["refer"]);
 	$page = make_search($vars["refer"]);
@@ -799,6 +804,8 @@ else if($do_backup && arg_check("backup"))
 			$body =  "<ul>\n";
 
 			$body .= "<li><a href=\"$script?cmd=backup\">$_msg_backuplist</a></li>\n";
+			$body .= "<ul>\n";
+			$body .= "<li><a href=\"$script?cmd=backup&amp;page=".rawurlencode($get["page"])."\">".str_replace('$1',htmlspecialchars(strip_bracket($get['page'])),$_msg_backuplist_page)."</a></li>\n";
 
 			if(!arg_check("backup_diff") && is_page($get["page"]))
 			{
@@ -847,7 +854,7 @@ else if($do_backup && arg_check("backup"))
 					$body .= "<li><em>$key $backupdate</em></li>\n";
 			}
 			if(count($backups)) $body .= "</ul>\n";
-			$body .= "</li>\n";
+			$body .= "</ul></li>\n";
 			
 			if(arg_check("backup_diff"))
 			{
@@ -907,9 +914,20 @@ else if($do_backup && arg_check("backup"))
 		}
 		else if($get["page"] && (file_exists(BACKUP_DIR.encode($get["page"]).".txt") || file_exists(BACKUP_DIR.encode($get["page"]).".gz")))
 		{
-			$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_pagebackuplist);
-			$page = str_replace('$1',make_search($get["page"]),$_title_pagebackuplist);
-			$body = get_backup_list($get["page"]);
+			if ($get["action"] == "delete" && $X_uid && ($X_admin || $X_uid == get_pg_auther($get["page"])))
+			{
+				backup_delete(BACKUP_DIR.encode($get["page"]).".txt");
+				@unlink(CACHE_DIR."backup_list.tmp");
+				$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_backup_deleted);
+				$page = str_replace('$1',make_search($get["page"]),$_title_backup_deleted);
+				$body = get_backup_list($get["page"]);
+			}
+			else
+			{
+				$title = str_replace('$1',htmlspecialchars(strip_bracket($get["page"])),$_title_pagebackuplist);
+				$page = str_replace('$1',make_search($get["page"]),$_title_pagebackuplist);
+				$body = get_backup_list($get["page"]);
+			}
 		}
 		else
 		{
@@ -964,7 +982,6 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	{
 		if (check_readable($get["page"],false,false))
 		{
-			//$pcon = new pukiwiki_converter();
 			
 			if (isset($get['com_mode']))
 			{
@@ -972,33 +989,32 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 				$page_comment_mode = "*ページコメント表示モード\n\n-ページコメント表示モードのため本文(ページ内容)を表示していません。\n-本文を表示するには、[[こちら>__PAGE__]]へアクセスしてください。";
 				
 				$postdata = convert_html(str_replace("__PAGE__",strip_bracket($vars['page']),$page_comment_mode));
-				//$pcon->string = str_replace("__PAGE__",strip_bracket($vars['page']),$page_comment_mode);
-				//$postdata = $pcon->convert();
 			}
 			else
 			{
 				$postdata = convert_html($get["page"],false,true);
-				//$pcon->string = $get["page"];
-				//$pcon->page_cvt = TRUE;
-				//$postdata = $pcon->convert();
 			}
 			
 			$title = htmlspecialchars(strip_bracket($get["page"]));
 			$page = make_search($get["page"]);
 			$body = tb_get_rdf($vars['page'])."\n";
 			
+			/*
 			//PlainTXT DB 更新の必要がある場合
 			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".udp"))
 			{
 				// 非同期でモードでデータ更新
 				http_request(
-				XOOPS_URL."/modules/pukiwiki/ud_plain.php?".rawurlencode(strip_bracket($vars["page"]))
+				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/ud_plain.php?".rawurlencode(strip_bracket($vars["page"]))
 				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
 			}
+			*/
 			
 			//モジュール用キャッシュデータの更新
 			if (!empty($vars['mc_refresh'])
-			 && (!file_exists(P_CACHE_DIR.$pgid.".mcr") || time() - filemtime(P_CACHE_DIR.$pgid.".mcr") > 1800))
+				&& (!file_exists(P_CACHE_DIR."mc_refresh_run.flg") || time() - filemtime(P_CACHE_DIR."mc_refresh_run.flg") > 120)
+				&& (!file_exists(P_CACHE_DIR.$pgid.".mcr") || time() - filemtime(P_CACHE_DIR.$pgid.".mcr") > 300)
+				)
 			{
 				// チェックファイルをtouch
 				touch(P_CACHE_DIR.$pgid.".mcr");
@@ -1006,7 +1022,7 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 				$vars['mc_refresh'] = join(" ",array_values($vars['mc_refresh']));
 				// 非同期でモードでデータ更新
 				http_request(
-				XOOPS_WIKI_URL."/mc_refrash.php"
+				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/mc_refrash.php"
 				,'POST','',array('mc_refresh'=>$vars['mc_refresh'],'tgt_page'=>$vars['page']),HTTP_REQUEST_URL_REDIRECT_MAX,0,3);
 			}
 			

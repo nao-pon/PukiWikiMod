@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.20 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: trackback.php,v 1.21 2005/03/23 14:16:29 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -163,13 +163,13 @@ function tb_send($page,$data="")
 	preg_match_all('#href="(https?://[^"]+)"#',$data,$links,PREG_PATTERN_ORDER);
 
 	// 自ホスト(XOOPS_WIKI_URLで始まるurl)を除く
-	$links = preg_grep("/^(?!".preg_quote(XOOPS_WIKI_URL,'/').")./",$links[1]);
+	$links = preg_grep("/^(?!".preg_quote(XOOPS_WIKI_HOST.XOOPS_WIKI_URL,'/').")./",$links[1]);
 	
 	// convert_html() 変換結果から Ping 送出  URL 抽出
 	preg_match_all('#<!--__PINGSEND__"(https?://[^"]+)"-->#',$data,$pings,PREG_PATTERN_ORDER);
 	
 	// 自ホスト($scriptで始まるurl)を除く
-	$pings = preg_grep("/^(?!".preg_quote($script,'/')."\?)./",$pings[1]);
+	$pings = preg_grep("/^(?!".preg_quote(XOOPS_WIKI_HOST.$script,'/')."\?)./",$pings[1]);
 	
 	$pings = str_replace("&amp;","&",$pings);
 	$pings = array_unique($pings);
@@ -395,9 +395,9 @@ function tb_get_my_tb_url($pid)
 {
 	global $use_static_url;
 	if ($use_static_url)
-		return XOOPS_WIKI_URL."/tb/".$pid;
+		return XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/tb/".$pid;
 	else
-		return XOOPS_WIKI_URL."/index.php?pwm_ping=".$pid;
+		return XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/index.php?pwm_ping=".$pid;
 }
 
 // 文書をGETし、埋め込まれたTrackBack Ping urlを取得

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: images.php,v 1.4 2004/11/24 14:48:29 nao-pon Exp $
+// $Id: images.php,v 1.5 2005/03/23 14:16:29 nao-pon Exp $
 /////////////////////////////////////////////////
 
 error_reporting(0);
@@ -22,11 +22,12 @@ exit;
 function get_image_filename($q)
 {
 	$dir = "./cache/p/";
+	$q = str_replace(array("%","+"),array("%25","%2B"),$q);
 	$file = $dir.md5($q).".tig";
 	if (file_exists($file))
 		return $file;
 	
-	$q = "http://images-partners.google.com/images?q=".str_replace("%","%25",$q);
+	$q = "http://images-partners.google.com/images?q=".$q;
 	
 	if ($url = @fopen($q, "rb"))
 	{

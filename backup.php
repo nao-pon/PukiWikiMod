@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: backup.php,v 1.5 2004/11/24 14:19:59 nao-pon Exp $
+// $Id: backup.php,v 1.6 2005/03/23 14:16:29 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // バックアップデータを作成する
@@ -130,76 +130,87 @@ function read_backup($filename)
 function get_backup_list($_page="")
 {
 	global $script,$date_format,$time_format,$weeklabels,$cantedit;
-	global $_msg_backuplist,$_msg_diff,$_msg_nowdiff,$_msg_source;
+	global $_msg_backuplist,$_msg_diff,$_msg_nowdiff,$_msg_source,$_title_backup_delete;
+	global $X_admin,$X_uid;
 
 	$ins_date = date($date_format,$val);
 	$ins_time = date($time_format,$val);
 	$ins_week = "(".$weeklabels[date("w",$val)].")";
 	$ins = "$ins_date $ins_week $ins_time";
-
-	if (($dir = @opendir(BACKUP_DIR)) && !$_page)
+	
+	if (!$_page)
 	{
-		while($file = readdir($dir))
+		global $cantedit;
+		
+		if (!$X_uid)
 		{
-			if (!preg_match('/^((?:[0-9A-F]{2})+)\.(?:txt|gz)$/',$file,$matches))
-			{
-				continue;
-			}
-			$page = decode($matches[1]);
-			if(in_array($page,$cantedit)) continue;
-			$page_url = rawurlencode($page);
-			$name = strip_bracket($page);
-			$s_name = htmlspecialchars($name);
-			if(is_page($page))
-				$vals[$name]["link"] = "<li><a href=\"$script?$page_url\">$s_name</a>";
-			else
-				$vals[$name]["link"] = "<li>$s_name";
-			$vals[$name]["name"] = $page;
+			$f_cache = CACHE_DIR."backup_list.tmp";
+			if (file_exists($f_cache)) return join('',file($f_cache));
 		}
-		closedir($dir);
-		$vals = list_sort($vals);
-		$retvars[] = "<ul>";
+		
+		$pages = array_intersect(get_existpages(BACKUP_DIR, function_exists(gzopen)? ".gz" : ".txt"),get_existpages_db());
+		$pages = array_diff($pages, $cantedit);
+		
+		if (count($pages) == 0)
+			return '';
+		
+		$retvars = page_list($pages,'backup',$withfilename);
+		
+		if (!$X_uid && $fp = @fopen($f_cache,"wb"))
+		{
+			fputs($fp,$retvars);
+			fclose($fp);
+		}
+		
+		return $retvars;
 	}
 	else
 	{
 		$page_url = rawurlencode($_page);
-		$name = strip_bracket($_page);
-		$vals[$name]["link"] = "";
-		$vals[$name]["name"] = $_page;
+		$s_page = htmlspecialchars(strip_bracket($_page));
+		$line["link"] = "";
+		$line["name"] = $_page;
 		$retvars[] = "<ul>";
 		$retvars[] .= "<li><a href=\"$script?cmd=backup\">$_msg_backuplist</a>\n";
 	}
 	
+	$_script = preg_replace("/^https?:\/\/".$_SERVER["HTTP_HOST"]."/i","",$script);
 	
-	foreach($vals as $page => $line)
+	$arybackups = get_backup_info(encode($line["name"]).".txt");
+	$page_url = rawurlencode($line["name"]);
+	if(count($arybackups))
 	{
-		$arybackups = get_backup_info(encode($line["name"]).".txt");
-		$page_url = rawurlencode($line["name"]);
-		if(count($arybackups))
-			$line["link"] .= "<ul>\n";
-		else
-			$line["link"] .= "</li>\n";
-		foreach($arybackups as $key => $val)
+		$line["link"] .= "<ul>\n";
+		if ($X_uid && ($X_admin || $X_uid == get_pg_auther($get["page"])))
 		{
-			$ins_date = date($date_format,$val);
-			$ins_time = date($time_format,$val);
-			$ins_week = "(".$weeklabels[date("w",$val)].")";
-			$backupdate = "($ins_date $ins_week $ins_time)";
-			if(!$_page)
-			{
- 				$line["link"] .= "<li><a href=\"$script?cmd=backup&amp;page=$page_url&amp;age=$key\">$key $backupdate</a></li>\n";
-			}
-			else
-			{
- 				$line["link"] .= "<li><a href=\"$script?cmd=backup&amp;page=$page_url&amp;age=$key\">$key $backupdate</a> [ <a href=\"$script?cmd=backup_diff&amp;page=$page_url&amp;age=$key\">$_msg_diff</a> | <a href=\"$script?cmd=backup_nowdiff&amp;page=$page_url&amp;age=$key\">$_msg_nowdiff</a> | <a href=\"$script?cmd=backup_source&amp;page=$page_url&amp;age=$key\">$_msg_source</a> ]</li>\n";
-			}
+			$line["link"] .= "<li><a href=\"$_script?cmd=backup&amp;page=$page_url&amp;action=delete\">".str_replace('$1',$s_page,$_title_backup_delete)."</li>\n";
 		}
-		if(count($arybackups)) $line["link"] .= "</ul></li>";
-		$retvars[] = $line["link"];
 	}
+	else
+		$line["link"] .= "</li>\n";
+		
+	foreach($arybackups as $key => $val)
+	{
+		$ins_date = date($date_format,$val);
+		$ins_time = date($time_format,$val);
+		$ins_week = "(".$weeklabels[date("w",$val)].")";
+		$backupdate = "($ins_date $ins_week $ins_time)";
+		if(!$_page)
+		{
+				$line["link"] .= "<li><a href=\"$_script?cmd=backup&amp;page=$page_url&amp;age=$key\">$key $backupdate</a></li>\n";
+		}
+		else
+		{
+				$line["link"] .= "<li><a href=\"$_script?cmd=backup&amp;page=$page_url&amp;age=$key\">$key $backupdate</a> [ <a href=\"$script?cmd=backup_diff&amp;page=$page_url&amp;age=$key\">$_msg_diff</a> | <a href=\"$script?cmd=backup_nowdiff&amp;page=$page_url&amp;age=$key\">$_msg_nowdiff</a> | <a href=\"$script?cmd=backup_source&amp;page=$page_url&amp;age=$key\">$_msg_source</a> ]</li>\n";
+		}
+	}
+	if(count($arybackups)) $line["link"] .= "</ul></li>";
+	$retvars[] = $line["link"];
 	$retvars[] = "</ul>";
 	
-	return join("\n",$retvars);
+	$retvars = join("\n",$retvars);
+	
+	return $retvars;
 }
 
 // zlib関数が使用できれば、圧縮して使用するためのファイルシステム関数

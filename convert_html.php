@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.45 2005/03/10 13:25:21 nao-pon Exp $
+// $Id: convert_html.php,v 1.46 2005/03/23 14:16:29 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -117,13 +117,13 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 	}
 	
 	// <a>タグ内の長すぎる英単語をワードラップ
-	wordwrap4tolong($str);
+	//wordwrap4tolong($str);
 	
 	//ゲストアカウントでページコンバート指定時
 	if (!$X_uid && $page_cvt && !$cache && empty($vars['xoops_block']))
 	{
 		//マルチドメイン対応
-		$str = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$str);
+		//$str = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$str);
 		
 		//rsstopはインクルードページは常に0
 		//#rsstopを記述したページがインクルードされた場合問題も少し残るが
@@ -182,7 +182,7 @@ class convert
 		global $WikiName,$InterWikiName, $BracketName;
 		global $_table_left_margin,$_table_right_margin;
 		global $anon_writable,$h_excerpt;
-		global $no_plugins,$nowikiname,$fixed_heading_anchor,$_symbol_anchor;
+		global $no_plugins,$nowikiname,$fixed_heading_anchor,$_symbol_anchor,$_symbol_noexists;
 		
 		// テーブルセル中フラグ
 		static $is_intable = 0;
@@ -352,7 +352,8 @@ class convert
 						$_fh_id = $_match[2];
 					}
 					
-					$_c_text = trim(strip_tags(preg_replace("/<a[^>]+>\?<\/a>/","",make_line_rules(inline($str,TRUE)))));
+					//$_c_text = trim(strip_tags(preg_replace("/<a[^>]+>\?<\/a>/","",make_line_rules(inline($str,TRUE)))));
+					$_c_text = trim(strip_tags(preg_replace("/".preg_quote("<a href=\"$script?cmd=edit&amp;page=","/")."[^\"]+".preg_quote("\">$_symbol_noexists</a>","/")."/","",make_line_rules(inline($str,TRUE)))));
 					
 					// <title>用
 					if (!$h_excerpt) 

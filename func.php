@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.45 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: func.php,v 1.46 2005/03/23 14:16:29 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -287,19 +287,20 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 	{
 		$passage = get_pg_passage($page);
 		$page = strip_bracket($page);
-		$_page = htmlspecialchars($page);
-		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-		if (preg_match("/^(.*\/)?[0-9\-]+$/",$_page,$f_page))
-			$_page = $f_page[1].get_heading($page);
 		
-		$alias = ($prefix)? substr($_page,strlen(htmlspecialchars($prefix))+1):"";
-		
-		$chiled = get_child_counts($page);
-		$chiled = ($chiled)? " [<a href='$script?plugin=list&prefix=".rawurlencode(strip_bracket($page))."'>+$chiled</a>]":"";
-		if (!$alias)
-			$str = "   <li>".make_pagelink($page)."$passage".$chiled;
+		if ($cmd == 'read')
+		{
+			$chiled = get_child_counts($page);
+			$chiled = ($chiled)? " [<a href='$script?plugin=list&prefix=".rawurlencode(strip_bracket($page))."'>+$chiled</a>]":"";
+			$str = "   <li>".make_pagelink($page,"#compact#")."$passage".$chiled;
+		}
 		else
-			$str = "   <li>".make_pagelink($page,$alias)."$passage".$chiled;
+		{
+			$r_page = rawurlencode($page);
+			$s_page = htmlspecialchars($page, ENT_QUOTES);
+			$str = "   <li><a href=\"$script?cmd=$cmd&amp;page=$r_page\">$s_page</a>$passage";
+		}
+		
 		
 		if ($withfilename)
 		{
@@ -315,7 +316,7 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 		
 		if($pagereading_enable) {
 			$reading = $readings[$page];
-			if ($alias)
+			if ($prefix)
 			{
 				$c_count =count_chars($reading);
 				$reading = ltrim_pagename($reading,$c_count[47]);

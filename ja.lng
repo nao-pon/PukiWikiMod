@@ -31,7 +31,9 @@ $_title_backuplist = 'バックアップ一覧';
 $_title_help = 'ヘルプ';
 $_title_invalidiwn = '有効なInterWikiNameではありません';
 $_title_invalidwn = '有効なWikiNameではありません';
-$_title_backuplist = 'バックアップ一覧';
+$_title_backuplist = '全ページのバックアップ一覧';
+$_title_backup_delete = '$1 のバックアップを削除';
+$_title_backup_deleted = '$1 のバックアップを削除しました。';
 
 ///////////////////////////////////////
 // messages
@@ -54,7 +56,8 @@ $_msg_addline = '追加された行は<span class="diff_added">この色</span>です。';
 $_msg_delline = '削除された行は<span class="diff_removed">この色</span>です。';
 $_msg_goto = '$1 へ行く。';
 $_msg_searching = '全てのページから単語を検索します。大文字小文字の区別はありません。';
-$_msg_backuplist = 'バックアップ一覧';
+$_msg_backuplist = '全ページのバックアップ一覧';
+$_msg_backuplist_page = '$1 のバックアップ一覧';
 $_msg_diff = '差分';
 $_msg_nowdiff = '現在との差分';
 $_msg_source = 'ソース';

@@ -1,6 +1,6 @@
 <?php
 //
-// $Id: blogs.inc.php,v 1.6 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: blogs.inc.php,v 1.7 2005/03/23 14:16:29 nao-pon Exp $
 //
 
 function plugin_blogs_convert()
@@ -32,7 +32,7 @@ function plugin_blogs_convert()
 	
 	if ($word == "like")
 	{
-		$url = "http://blog.goo.ne.jp/search/search.php?status=select&tg=rel&st=score&dc=25&dp=all&bu=&ts=all&da=all&rss=1&MT=".rawurlencode(get_url_by_name($vars['page']));
+		$url = "http://blog.goo.ne.jp/search/search.php?status=select&tg=rel&st=score&dc=25&dp=all&bu=&ts=all&da=all&rss=1&MT=".rawurlencode(XOOPS_WIKI_HOST.get_url_by_name($vars['page']));
 		$template = "menubar";
 	}
 	else

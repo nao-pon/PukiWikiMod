@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: mc_refrash.php,v 1.2 2005/03/16 12:51:47 nao-pon Exp $
+// $Id: mc_refrash.php,v 1.3 2005/03/23 14:16:29 nao-pon Exp $
 /////////////////////////////////////////////////
 
 //XOOPS設定読み込み
@@ -27,13 +27,17 @@ require("init.php");
 /////////////////////////////
 
 //error_reporting(E_ALL);
+//$debug = CACHE_DIR."mc_cache.debug.txt";
+$debug = "";
 
+// 動作中フラグ ON
+touch(P_CACHE_DIR."mc_refresh_run.flg");
 
-$data = (isset($_POST['mc_refresh']))? explode(" ",$_POST['mc_refresh']) : array();
+$data = (isset($post['mc_refresh']))? explode(" ",$post['mc_refresh']) : array();
 $page = add_bracket($post['tgt_page']);
 
 $done = 0;
-//$done_data = array();
+$done_data = array();
 foreach($data as $uri)
 {
 	// 無効なURIはパス
@@ -44,13 +48,14 @@ foreach($data as $uri)
 	
 	// データ更新 同期モードで順番に
 	$rc = http_request(
-	$script.$uri
+	XOOPS_WIKI_HOST.$script.$uri
 	,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,1,3);
+
 	
 	if ($rc['rc'] == 200)
 	{
 		$done = 1;
-		//$done_data[] = $script.$uri;
+		$done_data[] = $script.$uri;
 	}
 }
 
@@ -66,16 +71,21 @@ if ($done)
 			// plane_text DB を更新
 			plain_db_write($page,"update");
 		}
-
 	}
-	/*
-	$data = $page."\n----\n".join("\n\n",$done_data);
-	
-	$c_file = "./debug.txt";
-	$fp = fopen($c_file, "ab");
-	fwrite($fp, date("Y/m/d H:i")."\n".$data."\n----\n\n");
-	fclose($fp);
-	*/
+
 }
+
+if ($debug)
+{
+	$data = $page."($done)\n----\n".join("\n\n",$done_data);
+	
+	$fp = fopen($debug, "ab");
+	fwrite($fp, date("Y/m/d H:i:s")."\n".$data."\n----\n\n");
+	fclose($fp);
+}
+
+// 動作中フラグ OFF
+unlink(P_CACHE_DIR."mc_refresh_run.flg");
+
 exit();
 ?>

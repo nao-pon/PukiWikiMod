@@ -1,10 +1,10 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.21 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: db_func.php,v 1.22 2005/03/23 14:16:29 nao-pon Exp $
 
 // 全ページ名を配列にDB版
-function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true)
+function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
 {
 	static $_aryret = array();
 	if ($_aryret && $nocheck == false && $page == "") return $_aryret;
@@ -75,7 +75,7 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 	{
 		while($data = mysql_fetch_row($res))
 		{
-			array_push($aryret,add_bracket($data[1]));
+			array_push($aryret,($strip)? $data[1] : add_bracket($data[1]));
 		}
 	}
 	if ($nocheck == false && $page == "") $_aryret = $aryret;
@@ -456,6 +456,7 @@ function plain_db_write($page,$action)
 	global $xoopsDB,$noplain_plugin,$post,$get,$vars;
 	global $no_plugins;
 	global $pagereading_config_page;
+	global $script,$_symbol_noexists;
 	
 	if (!$pgid = get_pgid_by_name($page)) return false;
 	
@@ -491,7 +492,9 @@ function plain_db_write($page,$action)
 				" ",
 			)
 		);
-		$data = str_replace($spc[0],$spc[1],strip_tags(convert_html($data,false)));
+		$data = convert_html($data,false);
+		$data = preg_replace("/".preg_quote("<a href=\"$script?cmd=edit&amp;page=","/")."[^\"]+".preg_quote("\">$_symbol_noexists</a>","/")."/","",$data);
+		$data = str_replace($spc[0],$spc[1],strip_tags($data));
 	}
 	$data = addslashes(preg_replace("/[\s]+/","",$data));
 	//echo $data."<hr>";

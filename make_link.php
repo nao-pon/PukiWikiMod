@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.34 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: make_link.php,v 1.35 2005/03/23 14:16:29 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -342,7 +342,12 @@ EOD;
 		$this->separator = $separator;
 		// https?:\/\/\/ -> XOOPS_URL
 		$name = preg_replace("/^https?:\/\/\//",XOOPS_URL."/",$name);
-		return parent::setParam($page,htmlspecialchars($name),'','url',$alias == '' ? $name : $alias);
+		if (!$alias)
+		{
+			// 36文字ごとに &#173; を挿入
+			$alias = wordwrap($name,36,'&#173;',1);
+		}
+		return parent::setParam($page,htmlspecialchars($name),'','url',$alias);
 	}
 	function toString()
 	{
@@ -824,27 +829,36 @@ class Link_eword extends Link
 function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 {
 	global $script,$vars,$show_title,$show_passage,$link_compact,$related;
-	global $_symbol_noexists,$_title_search;
+	global $_symbol_noexists,$_title_search,$breadcrumbs,$convert_d2s;
 	
 	static $linktag = array();
-	$compact = FALSE;
-	
+
 	$page = add_bracket($page);
 	
 	if ($not_where && isset($linktag[$page.$alias])) return $linktag[$page.$alias];
 	
-	$compact = 0;
+	$compact = FALSE;
+	$_convert_d2s = $convert_d2s;
 	if ($alias == "#compact#")
 	{
 		$compact = TRUE;
 		$alias = "";
 	} 
+	else if ($alias == "#real#")
+	{
+		$alias = "#/#";
+		$convert_d2s = 0;
+	} 
+	
+	if (!$breadcrumbs && $not_where && preg_match("/^#.*#$/",$alias))
+		$alias = "";
 	
 	$s_page = htmlspecialchars(strip_bracket($page));
 	$s_alias = ($alias == '') ? $s_page : $alias;
 	
 	if ($page == '')
 	{
+		$convert_d2s = $_convert_d2s;
 		return "<a href=\"$anchor\">$s_alias</a>";
 	}
 	
@@ -872,8 +886,9 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 			$name = substr($access_name,0,strlen($access_name)-1);
 			if ($not_where && preg_match("/^[0-9\-]+$/",$page_name))
 			{
-				$heading = get_heading($page);
-				if ($heading) $page_name = $heading;
+				//$heading = get_heading($page);
+				//if ($heading) $page_name = $heading;
+				$page_name = replace_pagename_d2s($page,TRUE);
 				// 無限ループ防止　姑息だけど
 				$page_name = preg_replace("/^(#.*#)$/"," $1",$page_name);
 			}
@@ -887,10 +902,11 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	}
 	elseif (is_page($page))
 	{
-		if ($compact) $s_alias = preg_replace("#^.+/([^/]+)$#","$1",$s_alias);
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-		if ($not_where && !$alias && preg_match("/^(.*\/)?[0-9\-]+$/",$s_alias,$f_name))
-			$s_alias = $f_name[1].get_heading($page);
+		if ($not_where && !$alias)
+		{
+			$s_alias = htmlspecialchars(replace_pagename_d2s($page,$compact));
+		}
 		$passage = get_pg_passage($page,FALSE);
 		$title = $link_compact ? '' : " title=\"$s_page$passage\"";
 
@@ -919,6 +935,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 		}
 	}
 	$linktag[$page.$alias] = $retval;
+	$convert_d2s = $_convert_d2s;
 	return $retval;
 }
 // 相対参照を展開
@@ -1068,5 +1085,39 @@ function get_real_pagename($page)
 		}
 	}
 	return $real_pages[$page];
+}
+
+// ページ名の [数字_-] 部分をページタイトルに置換する
+// 戻り値はブラケットなし
+function replace_pagename_d2s($str,$compact=0)
+{
+	global $convert_d2s;
+	
+	static $ret = array();
+	$str = strip_bracket($str);
+	
+	if (!$convert_d2s)
+		return ($compact)? preg_replace("#^(?:.+/)?([^/]+)$#","$1",$str) : $str ;
+	
+	if (!$compact && isset($ret[$str])) return $ret[$str];
+	
+	if (strpos($str,"/") !== FALSE)
+	{
+		preg_match("#^(.+)/([^/]+)$#",$str,$arg);
+		if (preg_match("/^[0-9\-]+$/",$arg[2]))
+		{
+			$arg[2] = get_heading($str);
+		}
+		if ($compact) return $arg[2];
+		$ret[$str] = replace_pagename_d2s($arg[1])."/".$arg[2];
+	}
+	else
+	{
+		if (preg_match("/^[0-9\-]+$/",$str))
+			$ret[$str] = get_heading($str);
+		else
+			$ret[$str] = $str;
+	}
+	return $ret[$str];
 }
 ?>

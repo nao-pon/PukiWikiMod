@@ -3,7 +3,7 @@
 function plugin_gimage_init()
 {
 	$data = array('plugin_gimage_dataset'=>array(
-	'cache_time'    => 24,                                  // キャッシュ有効時間(h)
+	'cache_time'    => 36,                                  // キャッシュ有効時間(h)
 	'head_msg'      => '<h4>イメージ検索結果(%s): %s <span class="small">from WWW</span></h4><p class="empty"></p>',
 	'research'      => 'さらに goo で探す',
 	'err_noresult'  => 'Google では見つかりませんでした。',
@@ -61,7 +61,7 @@ function plugin_gimage_convert()
 {
 	global $plugin_gimage_dataset,$script,$vars;
 	
-	//$start = getmicrotime();
+	$start = getmicrotime();
 	
 	$array = func_get_args();
 	
@@ -84,15 +84,14 @@ function plugin_gimage_convert()
 	else
 		$_qmode = "AND";
 	
-	@list($ret,$refresh) = plugin_gimage_search($query,$qmode);
+	list($ret,$refresh) = plugin_gimage_search($query,$qmode);
 	
 	if ($refresh)
 	{
 		$vars['mc_refresh'][] = "?plugin=gimage&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&q=".rawurlencode($query)."&m=".rawurlencode($qmode);
 	}
 	
-	//$taketime = "<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."</div>";
-	return "<div>".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>";
+	return "<div>".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>"."<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."($refresh)</div>";
 }
 
 function plugin_gimage_search($q,$qmode,$do_refresh=FALSE)
@@ -114,6 +113,7 @@ function plugin_gimage_search($q,$qmode,$do_refresh=FALSE)
 		if (time() - filemtime($c_file) > $cache_time * 3600)
 		{
 			$refresh = TRUE;
+			$ret = $ret;
 		}
 	}
 	

@@ -37,17 +37,26 @@ function plugin_recent_convert()
 	$prefix = "";
 	if(func_num_args()>0) {
 		$args = func_get_args();
-		$prefix = array_shift($args);
+		$recent_lines = (int)$args[0];
+		$prefix = $args[0];
 		$prefix = preg_replace("/\/$/","",$prefix);
 		if (is_page($prefix))
 		{
-			$recent_lines = (int)$args[0];
+			$recent_lines = isset($args[1])? (int)$args[1] : 0;
+		}
+		else if (isset($args[1]))
+		{
+			$prefix = $args[1];
+			$prefix = preg_replace("/\/$/","",$prefix);
+			if (is_page($prefix))
+			{
+				$recent_lines = isset($args[0])? (int)$args[0] : 0;
+			}
+			else
+				$prefix = "";
 		}
 		else
-		{
-			$recent_lines = (int)$prefix;
 			$prefix = "";
-		}
 	}
 	if (!$recent_lines) $recent_lines = 10;
 
@@ -99,7 +108,11 @@ function plugin_recent_convert()
 			}
 			
 			if ($prefix)
-				$pg_link = make_pagelink($data[1],preg_replace("/^".preg_quote($prefix,"/")."\//","",strip_bracket($data[1])));
+			{
+				$_p = replace_pagename_d2s($data[1]);
+				$prefix = replace_pagename_d2s($prefix);
+				$pg_link = make_pagelink($data[1],preg_replace("/^".preg_quote($prefix,"/")."\//","",$_p));
+			}
 			else
 				$pg_link = make_pagelink($data[1]);
 			

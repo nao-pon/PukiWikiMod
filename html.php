@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.52 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: html.php,v 1.53 2005/03/23 14:16:29 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -55,7 +55,7 @@ function catbody($title,$page,$body)
 	// ページを編集出来ないか
 	$_freeze = is_freeze($_page);
 	
-	$link_page = get_url_by_id($id);
+	$link_page = get_url_by_id($pid);
 	if ($use_static_url)
 	{
 		$con_str = "?";
