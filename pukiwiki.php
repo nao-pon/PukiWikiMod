@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.51 2004/09/12 23:46:28 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.52 2004/09/28 14:20:12 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -311,11 +311,10 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 
 		$postdata = convert_html($postdata);
 		
-		$body .= "<table width=\"100%\" style=\"background-color:$preview_color\">\n"
-			."<tr><td>\n"
+		$body .= "<div style=\"width:100%;background-color:$preview_color\">\n"
 			.$postdata.$attaches
-			."\n</td></tr>\n"
-			."</table><hr />\n";
+			."\n</div>\n"
+			."<hr />\n";
 	}
 	
 	$body .= edit_form($postdata_input,$vars["page"],0,$vars["gids"],$vars["aids"]);
