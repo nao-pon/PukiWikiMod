@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.15 2004/01/12 13:17:32 nao-pon Exp $
+// $Id: file.php,v 1.16 2004/01/15 13:12:49 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -126,6 +126,9 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		
 		// pginfo DBを更新
 		pginfo_db_write($page,$action,$aids,$gids,$vaids,$agids,$freeze,$unvisible);
+		
+		// ページHTMLキャッシュを削除
+		delete_page_html($page);
 		
 		// TrackBack Ping用ファイル作成
 		// pcomment用：親ページ名をセット
@@ -442,26 +445,30 @@ function get_readings()
 // 全ページ名を配列に
 function get_existpages($nocheck=false,$page="",$limit=0,$order="",$nolisting=false)
 {
-	return get_existpages_db($nocheck,$page,$limit,$order,$nolisting);
-
-	static $aryret = array();
+	// 通常はDB版へ丸投げ
+	if (!is_string($nocheck) || $nocheck == DATA_DIR)
+		return get_existpages_db($nocheck,$page,$limit,$order,$nolisting);
 	
-	if ($aryret) return $aryret;
+	// PukiWiki 1.4 互換用
+	$dir = $nocheck;
+	$ext = ($page)? $page : ".txt";
+	$aryret = array();
 	
-
-	if ($dir = @opendir(DATA_DIR))
+	$pattern = '^((?:[0-9A-F]{2})+)';
+	if ($ext != '')
 	{
-		while($file = readdir($dir))
-		{
-			if($file == ".." || $file == "." || strstr($file,".txt")===FALSE) continue;
-			$page = decode(trim(preg_replace("/\.txt$/"," ",$file)));
-			// 閲覧権限
-			if ($nocheck || check_readable($page,false,false))
-				array_push($aryret,$page);
-		}
-		closedir($dir);
+		$pattern .= preg_quote($ext,'/').'$';
 	}
-	
+	$dp = @opendir($dir)
+		or die_message($dir. ' is not found or not readable.');
+	while ($file = readdir($dp))
+	{
+		if (preg_match("/$pattern/",$file,$matches))
+		{
+			$aryret[$file] = decode($matches[1]);
+		}
+	}
+	closedir($dp);
 	return $aryret;
 }
 
@@ -787,6 +794,32 @@ function get_heading_init($page)
 		}
 	}
 	return trim(strip_htmltag(make_link(htmlspecialchars($_body[0]),add_bracket($page))));
+}
+
+// 指定ページのコンバート後のHTMLキャッシュファイルを削除
+function delete_page_html($page)
+{
+	global $defaultpage;
+	$pages = array();
+	// 削除するページ
+	$pages[] = $page;
+	$pages[] = $defaultpage; //トップページ
+	$_page = strip_bracket($page);
+	while(preg_match("/(.+)\/[^\/]+/",$_page,$match))
+	{
+		//上階層のページ
+		$_page = $match[1];
+		$pages[] = add_bracket($_page);
+	}
+	
+	foreach($pages as $del_page)
+	{
+		//echo $del_page."<br>";
+		$filename = PAGE_CACHE_DIR.encode($del_page).".txt";
+		//echo $filename."<br>";
+		if (file_exists($filename)) unlink($filename);
+	}
+	
 }
 
 //EXIFデータを得る
