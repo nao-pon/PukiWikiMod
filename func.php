@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.4 2003/06/29 12:43:56 nao-pon Exp $
+// $Id: func.php,v 1.5 2003/06/30 00:10:10 nao-pon Exp $
 /////////////////////////////////////////////////
 // 検索語を展開する
 function get_search_words($words,$special=FALSE)
@@ -498,10 +498,12 @@ function auto_braket($msg,$tgt_name){
 	//InterWikiNameは [ ] で囲むのでエスケープ
 	if ($tgt_name == "InterWikiName"){
 		$msg = preg_replace("/(\[[^[\]]+\])/","[[$1]]",$msg);
+	} else {
+		// InterWikiNameページ以外
+		// URL E-mail はエスケープ
+		$msg = ereg_replace($http_URL_regex,"[[\\1]]",$msg);
+		$msg = eregi_replace($mail_ADR_regex, "[[\\1]]", $msg);
 	}
-	// URL E-mail はエスケープ
-	$msg = ereg_replace($http_URL_regex,"[[\\1]]",$msg);
-	$msg = eregi_replace($mail_ADR_regex, "[[\\1]]", $msg);
 	// #で始まるプラグイン行、//で始まるメッセージ行を処理しない為の前処理
 	$msg=ereg_replace("(^|[\n])( |#|\/\/)","\\1\\2[[",$msg);
 
@@ -521,12 +523,14 @@ function auto_braket($msg,$tgt_name){
 	$msg = str_replace(chr(29),"]]",$msg);
 	// #で始まるプラグイン行、//で始まるメッセージ行を処理しない為の後処理
 	$msg = ereg_replace("(^|[\n])( |#|\/\/)\[\[","\\1\\2",$msg);
-	// 各エスケープを元に戻す
+	// エスケープを元に戻す
 	if ($tgt_name == "InterWikiName"){
 		$msg = preg_replace("/\[\[(\[[^[\]]+\])\]\]/","$1",$msg);
+	} else {
+		// InterWikiNameページ以外
+		$msg = ereg_replace("\[\[".$http_URL_regex."\]\]","\\1",$msg);
+		$msg = eregi_replace("\[\[".$mail_ADR_regex."\]\]", "\\1", $msg);
 	}
-	$msg = ereg_replace("[[".$http_URL_regex."]]","\\1",$msg);
-	$msg = eregi_replace("[[".$mail_ADR_regex."]]", "\\1", $msg);
 	
 	return $msg;
 }
