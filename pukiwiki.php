@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.26 2003/09/14 13:09:04 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.27 2003/09/17 14:17:25 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -97,6 +97,12 @@ if ($wiki_mail_sw === 2 || ($wiki_mail_sw === 1 && (!$X_admin))) {
 // 一覧の表示
 if (arg_check("list")) $vars["plugin"] = "list";
 
+// ファイル名一覧の表示
+else if(arg_check("filelist")) {
+	$vars['plugin'] = "attach";
+	$vars['pcmd'] = "list";
+}
+
 // Plug-in action
 if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 {
@@ -121,14 +127,7 @@ if(!empty($vars["plugin"]) && exist_plugin_action($vars["plugin"]))
 		exit();
 	}
 }
-// ファイル名一覧の表示
-else if(arg_check("filelist"))
-{
-	header_lastmod($whatsnew);
 
-	$page = $title = $_title_filelist;
-	$body = get_list(true);
-}
 // 編集不可能なページを編集しようとしたとき
 else if(((arg_check("add") || arg_check("edit") || arg_check("preview")) && (is_freeze($vars["page"]) || !is_editable($vars["page"]) || $vars["page"] == "" || !$anon_writable)))
 {
