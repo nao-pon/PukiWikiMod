@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.8 2004/01/30 15:00:30 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.9 2004/04/03 14:17:22 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -18,7 +18,7 @@ if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR','./attach/');
 if (!defined('AMAZON_ASE_ID')) define('AMAZON_ASE_ID','hypweb-22');
 // amazon 商品情報問合せ URI(dev-t はマニュアルのディフォルト値)
 if (!defined('ISBN_AMAZON_XML'))
-	define('ISBN_AMAZON_XML','http://xml.amazon.com/onca/xml3?t=webservices-20&dev-t=GTYDRES564THU&type=lite&page=1&f=xml&locale=jp&AsinSearch=');
+	define('ISBN_AMAZON_XML','http://xml.amazon.co.jp/onca/xml3?t=webservices-20&dev-t=GTYDRES564THU&type=lite&page=1&f=xml&locale=jp&AsinSearch=');
 // amazon shop URI (_ISBN_ に商品IDがセットされる)
 if (!defined('ISBN_AMAZON_SHOP'))
 	define('ISBN_AMAZON_SHOP','http://www.amazon.co.jp/exec/obidos/ASIN/_ISBN_/ref=nosim/'.AMAZON_ASE_ID);
