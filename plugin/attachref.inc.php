@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: attachref.inc.php,v 1.2 2003/08/05 23:45:08 nao-pon Exp $
+// $Id: attachref.inc.php,v 1.3 2003/10/02 12:21:48 nao-pon Exp $
 // ORG: attachref.inc.php,v0.5 2003/07/31 14:15:29 sha Exp $
 //
 
@@ -215,6 +215,7 @@ function attachref_insert_ref($filename)
 	//コメント挿入
 	if ($vars['comment']) {
 		$vars['comment'] = htmlspecialchars($vars['comment']);
+		$vars['comment'] = str_replace("|","&#x7c;",$vars['comment']);
 		$s_args .= ",\"t:".$vars['comment']."\"";
 	}
 	
