@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.27 2004/11/24 14:22:06 nao-pon Exp $
+// $Id: index.php,v 1.28 2004/11/24 14:40:11 nao-pon Exp $
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
@@ -629,4 +629,4 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 		changePermit(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/".$wiki_permit_change_dir."/");
 	}
 }
-
+?>
