@@ -300,18 +300,19 @@ div.multi {
 	border-bottom: #888899 1px solid;
 	border-left:   #DDDDEE 1px solid;
 	border-right:  #888899 1px solid;
+	font-size:12px;
 	line-height:1.5;
 	padding:5px 0px 5px 10px;
-	margin: 5px 0px 5px 30px;
+	margin: 5px 0px 0px 30px;
 	white-space: pre;
-	background-color: #F0F8FF;
-	color: black;
-	font-size:12px;
+	background-color: white;
 	width: 700px;
 	overflow: auto;
-	margin-bottom: 0px;
 }
-
+div.multi pre {
+	background-color: white;
+	color: black;
+}
 
 
 input.copyButton {
