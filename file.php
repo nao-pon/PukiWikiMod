@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.37 2004/10/11 14:03:30 nao-pon Exp $
+// $Id: file.php,v 1.38 2004/10/18 13:42:04 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -494,29 +494,26 @@ function get_readings()
 	}
 	if($pagereading_enable) {
 		// ChaSen/KAKASI 呼び出しが有効に設定されている場合
-
+		
+		$unknownPage = array();
 		// 読みが不明のページがあるかチェック
 		foreach ($readings as $page => $reading) {
-			if($reading=='') {
-				$unknownPage = TRUE;
-				break;
+			if($reading=='')
+			{
+				$unknownPage[] = $page;
 			}
 		}
 		if($unknownPage) {
 			// 読みが不明のページがある場合
-			//			$tmpfname = tempnam(CACHE_DIR, 'PageReading');
 			$tmpfname = tempnam(CACHE_DIR, 'PageReading');
 			$fp = fopen($tmpfname, "w")
 				or die_message("cannot write temporary file '$tmpfname'.\n");
-			foreach ($readings as $page => $reading) {
-				if($reading=='')
-				{
-					$s_page = strip_bracket($page);
-					//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
-					if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_page,$f_name))
-						$s_page = $f_name[1].get_heading($s_page);
-					fputs($fp, mb_convert_encoding($s_page."\n", $pagereading_kanji2kana_encoding, SOURCE_ENCODING));
-				}
+			foreach ($unknownPage as $page) {
+				$s_page = strip_bracket($page);
+				//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
+				if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_page,$f_name))
+					$s_page = $f_name[1].get_heading($s_page);
+				fputs($fp, mb_convert_encoding($s_page."\n", $pagereading_kanji2kana_encoding, SOURCE_ENCODING));
 			}
 			fclose($fp);
 
@@ -558,12 +555,10 @@ function get_readings()
 				die_message("unknown kanji-kana converter: $pagereading_kanji2kana_converter.");
 				break;
 			}
-			foreach ($readings as $page => $reading) {
-				if($reading=='') {
-					$line = mb_convert_encoding(fgets($fp), SOURCE_ENCODING, $pagereading_kanji2kana_encoding);
-					$line = preg_replace('/[\s\r\n]+$/', '', $line);
-					$readings[$page] = $line;
-				}
+			foreach ($unknownPage as $page) {
+				$line = mb_convert_encoding(fgets($fp), SOURCE_ENCODING, $pagereading_kanji2kana_encoding);
+				$line = preg_replace('/[\s\r\n]+$/', '', $line);
+				$readings[$page] = $line;
 			}
 			pclose($fp);
 			unlink($tmpfname) or die_message("temporary file can not be removed: $tmpfname");
