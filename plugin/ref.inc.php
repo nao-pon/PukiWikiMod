@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.12 2003/09/14 13:05:03 nao-pon Exp $
+// $Id: ref.inc.php,v 1.13 2003/10/02 12:19:28 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -331,6 +331,8 @@ function plugin_ref_body($name,$args,$params){
 				if ($key != "title") $title .= "&#13;&#10;$key: $value";
 			}
 		}
+		// &amp;を変換
+		$title = str_replace("&amp;","&",$title);
 		//IE以外は改行文字をスペースに変換
 		if ( !strstr($_SERVER["HTTP_USER_AGENT"], "MSIE")) $title = str_replace("&#13;&#10;"," ",$title);
 		
@@ -430,6 +432,8 @@ _HTML_;
 				if ($m[1]) $info = $m[1]."&#13;&#10;".$info;
 			}
 		}
+		// &amp;を変換
+		$info = str_replace("&amp;","&",$info);
 		//IE以外は改行文字をスペースに変換
 		if ( !strstr($_SERVER["HTTP_USER_AGENT"], "MSIE")) $info = str_replace("&#13;&#10;"," ",$info);
 
