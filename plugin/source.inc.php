@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: source.inc.php,v 1.5 2003/07/22 13:36:27 nao-pon Exp $
+// $Id: source.inc.php,v 1.6 2003/07/30 14:56:00 nao-pon Exp $
 //
 // ページソースを表示
 
@@ -35,7 +35,7 @@ function plugin_source_action()
 	$source = join('',get_source($vars['page']));
 	$source = preg_replace("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/","",$source);
 	$source = preg_replace("/^\/\/ author:([0-9]+)\n/","",$source);
-	$source = nl2br(htmlspecialchars($source));
+	$source = nl2br(str_replace(" ","&nbsp;",htmlspecialchars($source)));
 	
 	return array(
 		'msg'=>$_source_messages['msg_title'],

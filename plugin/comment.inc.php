@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.5 2003/07/04 08:42:47 nao-pon Exp $
+// $Id: comment.inc.php,v 1.6 2003/07/30 14:56:00 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -129,7 +129,7 @@ function plugin_comment_action()
 	}
 
 	$title = $_title_updated;
-	if(md5(@join("",@file(get_filename(encode($post["refer"]))))) != $post["digest"])
+	if(md5(@join("",get_source($post["refer"]))) != $post["digest"])
 	{
 		$title = $_title_comment_collided;
 		$body = $_msg_comment_collided . make_link($post["refer"]);

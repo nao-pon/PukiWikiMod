@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.7 2003/07/21 01:23:35 nao-pon Exp $
+// $Id: ref.inc.php,v 1.8 2003/07/30 14:56:00 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -28,6 +28,8 @@ Last-Update:2002-10-29 rev.33
  画像ファイルのサイズ指定。
  w: h: どちらかの指定で縦横の比率を保ってリサイズ。
  %指定で、指定のパーセントで表示。
+-t:タイトル
+ 画像のチップテキストを指定
 
 */
 
@@ -186,8 +188,17 @@ function plugin_ref_body($name,$args,$params){
 				array_shift($args);
 			}
 		}
-		if (!is_page($page)) { return 'page not found.'; }
 
+		if (preg_match('/^(.+)\/([^\/]+)$/',$name,$matches))
+		{
+			if ($matches[1] == '.' or $matches[1] == '..')
+			{
+				$matches[1] .= '/';
+			}
+			$page = add_bracket(get_fullname($matches[1],$page));
+			$name = $matches[2];
+		}
+		if (!is_page($page)) { return 'page not found.'; }
 		$ext = $name;
 		$file = UPLOAD_DIR.encode($page).'_'.encode($name);
 		if (!is_file($file)) { return 'not found.'; }
@@ -195,8 +206,10 @@ function plugin_ref_body($name,$args,$params){
 		if (is_picture($ext)) {
 			$url = $file;
 			$size = getimagesize($file);
-			$org_w = $width = $size[0];
-			$org_h = $height = $size[1];
+			//$org_w = $width = $size[0];
+			$org_w = $size[0];
+			//$org_h = $height = $size[1];
+			$org_h = $size[1];
 		} else {
 			$url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 			$lastmod = date('Y/m/d H:i:s',filemtime($file));
@@ -225,16 +238,21 @@ function plugin_ref_body($name,$args,$params){
 			$org_h = $size[1];
 		}
 		foreach ($params['_args'] as $arg){
-			if (preg_match("/^w:([0-9]+)$/i",$arg,$m)){
+			if (preg_match("/^(m)?w:([0-9]+)$/i",$arg,$m)){
 				$params['_size'] = TRUE;
-				$params['_w'] = $m[1];
+				$params['_w'] = $m[2];
+				$max_flg = $m[1];
 			}
-			if (preg_match("/^h:([0-9]+)$/i",$arg,$m)){
+			if (preg_match("/^(m)?h:([0-9]+)$/i",$arg,$m)){
 				$params['_size'] = TRUE;
-				$params['_h'] = $m[1];
+				$params['_h'] = $m[2];
+				$max_flg = $m[1];
 			}
 			if (preg_match("/^([0-9.]+)%$/i",$arg,$m)){
 				$params['_%'] = $m[1];
+			}
+			if (preg_match("/^t:(.*)$/i",$arg,$m)){
+				$title .= " ".htmlspecialchars($m[1]);
 			}
 		}
 		// 指定されたサイズを使用する
@@ -247,8 +265,10 @@ function plugin_ref_body($name,$args,$params){
 				$_h = $params['_h'] ? $org_h / $params['_h'] : 0;
 				$zoom = max($_w,$_h);
 				if ($zoom) {
-					$width = (int)($org_w / $zoom);
-					$height = (int)($org_h / $zoom);
+					if (!$max_flg || ($zoom >= 1 && $max_flg)){
+						$width = (int)($org_w / $zoom);
+						$height = (int)($org_h / $zoom);
+					}
 				}
 			}
 		}
@@ -259,13 +279,13 @@ function plugin_ref_body($name,$args,$params){
 		if ($width and $height) {
 			$info = "width=\"$width\" height=\"$height\" ";
 			$title .= " SIZE:{$org_w}x{$org_h}";
-			$ret .= "<a href=\"$url\" title=\"$title\"><img src=\"$url\" alt=\"$title\" title=\"$title\" $info/></a>\n";
+			$ret .= "<a href=\"$url\" title=\"$title\"><img src=\"$url\" alt=\"$title\" title=\"$title\" $info/></a>";
 		} else {
 			if ($org_w and $org_h) $info = "width=\"$org_w\" height=\"$org_h\" ";
 			$ret .= "<img src=\"$url\" alt=\"$title\" title=\"$title\" $info/>";
 		}
 	} else { // 通常ファイル
-		$ret .= "<a href=\"$url\" title=\"$info\">$icon$title</a>\n";
+		$ret .= "<a href=\"$url\" title=\"$info\">$icon$title</a>";
 	}
 	return $ret;
 }
