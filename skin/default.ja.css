@@ -146,11 +146,13 @@ pre {
 	white-space: pre;
 	background-color: #F0F8FF;
 	color: black;
+	font-size:12px;
 }
 
 pre.multi {
 	width: 700px;
 	overflow: auto;
+	margin-bottom: 0px;
 }
 
 input.copyButton {

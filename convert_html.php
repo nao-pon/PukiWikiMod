@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.30 2004/09/18 02:43:15 nao-pon Exp $
+// $Id: convert_html.php,v 1.31 2004/09/28 14:21:27 nao-pon Exp $
 /////////////////////////////////////////////////
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false)
 {
@@ -264,6 +264,7 @@ class convert
 				$line = "";
 				if (!$_pre) $_pre_headform = $headform[$_cnt-1];
 				$_pre ++;
+				continue;
 			}
 			if ($_pre)
 				$c_pre_line ++;
@@ -653,7 +654,8 @@ class convert
 				$j_script = "";
 				if (!$_pre)
 				{
-					$c_pre_line = ($c_pre_line-2) * 14 + 32;
+					// font-size:12px; line-height:1.5; padding(上下合わせて)10px; で最適化
+					$c_pre_line = ($c_pre_line-1) * (12 * 1.5) + 10 + 2 ;
 					if ($c_pre_line > 420) $c_pre_line = 420;
 					array_splice ($result, array_search ( "<pre style=\"\">", $result), 1, "<pre id=\"code_area{$content_id}_{$pre_id}\" style=\"height:".$c_pre_line."px;\" class=\"multi\">");
 					$c_pre_line = 0;
@@ -725,29 +727,26 @@ class convert
 							array_push($result, $_tmp);
 					}
 				}
-				if( substr($line,0,1) != '' ){
-					if ($_pre)
-					{
-						// ~\nで繋げた行を元に戻す
-						$line = str_replace("\t&br;\t","~\n",$line);
-						// &#x7c; を戻す
-						$line = str_replace("&#x7c;","|",$line);
-						
-						$_result = array_pop($result);
-						if ($_result == "</pre>")
-							array_push($result, " </pre>".htmlspecialchars($line,ENT_NOQUOTES));
-						else
-						{
-							array_push($result, $_result);
-							array_push($result, " ".htmlspecialchars($line,ENT_NOQUOTES));
-						}
-
-						//array_push($result, " ".htmlspecialchars($line,ENT_NOQUOTES));
-					}
+				if ($_pre)
+				{
+					// ~\nで繋げた行を元に戻す
+					$line = str_replace("\t&br;\t","~\n",$line);
+					// &#x7c; を戻す
+					$line = str_replace("&#x7c;","|",$line);
+					
+					$_result = array_pop($result);
+					if ($_result == "</pre>")
+						array_push($result, " </pre>".htmlspecialchars($line,ENT_NOQUOTES));
 					else
-						array_push($result, inline($line));
-				}
+					{
+						array_push($result, $_result);
+						array_push($result, " ".htmlspecialchars($line,ENT_NOQUOTES));
+					}
 
+					//array_push($result, " ".htmlspecialchars($line,ENT_NOQUOTES));
+				}
+				else
+					if( substr($line,0,1) != '' ) array_push($result, inline($line));
 			}
 		$_cnt++;
 		}
