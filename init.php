@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.43 2005/03/29 23:40:17 nao-pon Exp $
+// $Id: init.php,v 1.44 2005/04/17 12:48:14 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -54,7 +54,8 @@ define("XOOPS_WIKI_URL",preg_replace("#^".preg_quote(XOOPS_WIKI_HOST)."(:[\d]+)?
 foreach (array('SCRIPT_NAME', 'SERVER_ADMIN', 'SERVER_NAME',
 	'SERVER_PORT', 'SERVER_SOFTWARE', 'HTTP_USER_AGENT', 'PHP_SELF', 'SERVER_NAME') as $key) {
 	define($key, isset($_SERVER[$key]) ? $_SERVER[$key] : '');
-	unset(${$key}, $_SERVER[$key], $HTTP_SERVER_VARS[$key]);
+	//XOOPS環境では、XOOPS本体またはブロックで参照することがあるので unset しない。
+	//unset(${$key}, $_SERVER[$key], $HTTP_SERVER_VARS[$key]);
 }
 
 /////////////////////////////////////////////////
@@ -70,6 +71,9 @@ $noattach = 0;
 $noheader = 0;
 $vars['is_rsstop'] = 0;
 $wiki_head_keywords = array();
+$now_inculde_convert = false;
+$disable_page_cache = false;
+$nocache_plugin_on_include = "(#fusen)";
 
 // 設定ファイルの読込
 if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
@@ -426,4 +430,5 @@ define('WIKI_THEME_CSS',(file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_se
 
 // 名前欄の暫定値(コンバート時にユーザー名に置換される)
 define('WIKI_NAME_DEF','_gEsTnAmE_');
+define('WIKI_UCD_DEF','_UsErCd_');
 ?>
