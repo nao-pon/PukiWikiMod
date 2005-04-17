@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.46 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: convert_html.php,v 1.47 2005/04/17 12:47:24 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -461,7 +461,7 @@ class convert
 					//1行目行末が c なら書式設定 拡張書式 by nao-pon
 					if ((!$table) && ($out[2] == "c")) { 
 						//$table_around = "<br clear=all /><br />";
-						$table_around = "<br clear=all />";
+						$table_around = "<div style=\"clear:both;\"></div>";
 						// 回り込み指定
 						if (preg_match("/AROUND/i",$out[1])) $table_around = "";
 						// ボーダー指定
