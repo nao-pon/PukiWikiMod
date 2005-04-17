@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.22 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: ref.inc.php,v 1.23 2005/04/17 12:56:26 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -567,7 +567,8 @@ function plugin_ref_cache_image_save($data, $filename, $name)
 		exit ('attach.inc.php not found or not correct version.');
 	}
 	
-	do_upload($vars['page'],$name,$filename.".tmp");
+	$GLOBALS['pukiwiki_allow_extensions'] = "";
+	do_upload($vars['page'],$name,$filename.".tmp",FALSE,NULL,TRUE);
 	
 	return $filename;
 }
