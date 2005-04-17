@@ -92,7 +92,7 @@ function plugin_gimage_convert()
 	}
 	
 	//return "<div>".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>"."<div style=\"text-align:right;\">".sprintf("%01.03f",getmicrotime() - $start)."($refresh)</div>";
-	return "<div>".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>";
+	return "<div class=\"plugin_gimage\">".sprintf($plugin_gimage_dataset['head_msg'],$_qmode,htmlspecialchars($query)).$ret."</div>";
 }
 
 function plugin_gimage_search($q,$qmode,$do_refresh=FALSE)
