@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.21 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.22 2005/04/17 12:56:05 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -107,7 +107,14 @@ function ls2_show_lists($prefix,&$params) {
 
 	if ($c_pages < $params['col']) $params['col'] = $c_pages;
 	$rows = (int)(ceil($c_pages / $params['col']));
-	$width = (int)(100 / $params['col'] - 1);
+	if ($params['col'] === 1)
+	{
+		$width = "auto";
+	}
+	else
+	{
+		$width = ((int)(100 / $params['col'] - 1)) . "%";
+	}
 	
 	$c_row = 1;
 	$ret = "";
@@ -116,7 +123,7 @@ function ls2_show_lists($prefix,&$params) {
 
 	foreach ($pages as $page)
 	{
-		if ($c_row === 1) $ret .= '<div style="float:left;width:'.$width.'%"><ul'.$_style.'>';
+		if ($c_row === 1) $ret .= '<div style="float:left;width:'.$width.'"><ul'.$_style.'>';
 		list($page,$child_count) = explode(" ",$page);
 		$ret .= ls2_show_headings($page,$params,FALSE,$prefix,$child_count);
 		if ($c_row === $rows)
