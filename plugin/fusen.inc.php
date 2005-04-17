@@ -1,0 +1,620 @@
+<?php
+/////////////////////////////////////////////////
+// PukiWiki - Yet another WikiWikiWeb clone.
+//
+// fusen.inc.php
+// 付箋プラグイン
+// ohguma@rnc-com.co.jp
+//
+// v 1.0 2005/03/12 初版
+// v 1.1 2005/03/16 FUSEN_SCRIPT_FILEにDATA_HOME追加,
+//                  付箋削除時に線消去,
+//                  付箋中での#fusen削除,
+//                  付箋中にformがある場合の不具合解消.
+// v 1.2 2005/03/16 XSS対策,削除確認追加
+// v 1.3 2005/03/17 XHTML1.1対応?
+//                  背景透明の設定不備修正
+// v 1.4 2005/03/18 検索機能追加,
+//                  付箋更新時に添付元ファイルの最終更新日を更新
+// v 1.5 2005/03/18 検索機能修正(convert_html後の表示内容で検索),
+//                  付箋更新時にRecentChangesを反映,
+//                  XSS対策の修正
+// v 1.6 2005/03/28 新規追加時のID付与の問題修正
+// v 1.7 2005/04/02 HELP修正,入力画面変更
+//                  付箋データ保持方法変更
+// v 1.8 2005/04/03 付箋が0枚になった際のバグ修正
+//                  AJAX対応(auto set, リアルタイム更新対応)
+//
+
+/////////////////////////////////////////////////
+// PukiWikiMod - XOOPS's PukiWiki module.
+//
+// fusen.inc.php for PukiWikiMod by nao-pon
+// http://hypweb.net
+// $Id: fusen.inc.php,v 1.1 2005/04/17 12:56:47 nao-pon Exp $
+// 
+
+// fusen.jsのPATH
+define('FUSEN_SCRIPT_FILE', './skin/fusen.js');
+
+// 付箋データ用添付ファイル名
+define('FUSEN_ATTACH_FILENAME','fusen.dat');
+
+// 付箋枠線スタイル
+// 通常分
+define('FUSEN_STYLE_BORDER_NORMAL', '#000000 1px solid');
+// ロック分
+//define('FUSEN_STYLE_BORDER_LOCK', '#000000 3px double');
+define('FUSEN_STYLE_BORDER_LOCK', '#836FFF 1px solid');
+// 削除分
+define('FUSEN_STYLE_BORDER_DEL', '#333333 1px dotted');
+
+
+function plugin_fusen_convert() {
+	global $script,$vars;
+	global $now_inculde_convert;
+	global $X_uid,$X_admin;
+	
+	static $loaded = false;
+	
+	//読み込みチェック
+	if ($now_inculde_convert)
+	{
+		return "<p>".make_pagelink($vars['page'],strip_bracket($vars['page'])."の付箋を表示")."</p>";
+	}
+	if ($loaded)
+	{
+		return "<p>#fusen は一つしか置けません。</p>";
+	}
+	
+	// 初期化
+	$loaded = true;
+	$refer = $vars['page'];
+	$jsfile = FUSEN_SCRIPT_FILE;
+	$border_normal = FUSEN_STYLE_BORDER_NORMAL;
+	$border_lock = FUSEN_STYLE_BORDER_LOCK;
+	$border_del = FUSEN_STYLE_BORDER_DEL;
+	$fusen_data = plugin_fusen_data($refer);
+	$name = WIKI_NAME_DEF;
+	$jname = plugin_fusen_jsencode($name);
+	
+	// パラメータ
+	$refresh = 0;
+	$height = 0;
+	foreach(func_get_args() as $prm)
+	{
+		if (preg_match("/^r(efresh)?:([\d]+)/",$prm,$arg))
+			$refresh =($arg[2])? max($arg[2],10) * 1000 : 0;
+		if (preg_match("/^h(eight)?:([\d]+)/",$prm,$arg))
+			$height = min($arg[2],1000);
+	}
+	
+	$wiki_helper = fontset_js_tag();
+	
+
+	$refresh_str = '自動更新:<select name="fusen_menu_interval" id="fusen_menu_interval" size="1" onchange="fusen_setInterval(this.value);window.focus();">';
+	$refresh_str .= '<option value="0">なし';
+	foreach(array(10,20,30,60) as $sec)
+	{
+		$selected = (is_null($selected) && $sec <= $refresh)? ' selected="true"' : '';
+		$msec = $sec * 1000;
+		$refresh_str .= '<option value="'.$msec.'"'.$selected.'>'.$sec.'秒';
+	}
+	$refresh_str .= '</select>';
+	
+	$html = plugin_fusen_gethtml($fusen_data);
+	
+	$fusen_url = str_replace(XOOPS_WIKI_PATH,'_XOOPS_WIKI_HOST_'.XOOPS_WIKI_URL,P_CACHE_DIR . "fusen_" .encode($vars['page']) . ".utxt");
+	
+	$X_ucd = WIKI_UCD_DEF;
+	
+	return <<<EOD
+<script type="text/javascript" src="$jsfile" charset="euc-jp"></script>
+<div id="fusen_top_menu" class="fusen_top_menu" style="visibility: hidden;">
+<form action="" onsubmit="return false;">
+  <p>
+    付箋機能
+    [<a href="JavaScript:fusen_new()" title="新しい付箋を作る">新規</a>]
+    [<a href="JavaScript:fusen_dustbox()" title="ごみ箱を表示/非表示">ごみ箱</a>]
+    [<a href="JavaScript:fusen_transparent()" title="付箋をを透明化/非透明化">透明</a>]
+    [<a href="JavaScript:fusen_init(1)" title="最新の状態に更新">更新</a>]
+    [<a href="JavaScript:fusen_show('fusen_help')" title="使い方">ヘルプ</a>]&nbsp;
+    検索：<input type="text" onkeyup="JavaScript:fusen_grep(this.value)" />
+    <small>{$refresh_str}</small>
+  </p>
+</form>
+</div>
+<noscript>
+<p><strong>JavaScript未動作</strong>: 付箋を編集できません。また、付箋の表示位置がずれている場合があります。</p>
+</noscript>
+
+<div id="fusen_help" style="position: absolute; font-size: 11px; left: 90px; top: 80px; padding: 4px; background-color: white; border: black 2px solid; visibility: hidden; z-index: 4; filter:alpha(opacity=90); -moz-opacity:0.9;">
+  [<a href="javascript:fusen_hide('fusen_help')">×</a>]
+  <ul>
+    <li>ダブルクリックで新しい付箋を作成できます。</li>
+    <li>書き込むと、付箋が表示されます。</li>
+    <li>付箋はドラッグして位置を移動できます。</li>
+    <li>付箋をダブルクリックすると、その付箋を編集できます。</li>
+    <li>"lock"を押すと、編集・移動を禁止します。lockした付箋は"unlock"で元に戻せます。</li>
+    <li>"del"を押すと、付箋をゴミ箱へ移動します。ゴミ箱の付箋は"recover"で元に戻せます。<br />
+        ゴミ箱の付箋で"del"を押すと、付箋を完全に削除します。</li>
+  </ul>
+  <dl>
+    <dt>[新規]</dt>
+    <dd>新しい付箋の編集画面を表示します。</dd>
+    <dt>[ゴミ箱]</dt>
+    <dd>ゴミ箱に入れられた付箋を表示します。</dd>
+    <dt>[ヘルプ]</dt>
+    <dd>この説明書きを表示します。</dd>
+    <dt>検索</dt>
+    <dd>入力したキーワードを持つ付箋のみ表示します。</dd>
+  </dl>
+</div>
+<div id="fusen_area" style="height:{$height}px; width:100%;">
+$html
+</div>
+<script type="text/javascript">
+var fusenBorderObj = {"normal":"{$border_normal}", "lock":"{$border_lock}", "del":"{$border_del}"};
+var fusenJsonUrl = "{$fusen_url}";
+var fusenInterval = {$refresh};
+var fusenX_admin = {$X_admin};
+var fusenX_uid = {$X_uid};
+var fusenX_ucd = "{$X_ucd}";
+</script>
+<div id="fusen_editbox" class="fusen_editbox">
+  [<a href="javascript:fusen_editbox_hide()" title="閉じる">×</a>] (ドラッグして移動できます)
+  <form id="edit_frm" method="post" action="" style="padding:0; margin:0" onsubmit="fusen_save(); return false;">
+    <p style="margin:0">
+      文字色：<select id="edit_tc" name="tc" size="1">
+        <option id="tc000000" value="#000000" style="color: #000000" selected>■黒</option>
+        <option id="tc999999" value="#999999" style="color: #999999">■灰</option>
+        <option id="tcff0000" value="#ff0000" style="color: #ff0000">■赤</option>
+        <option id="tc00ff00" value="#00ff00" style="color: #00ff00">■緑</option>
+        <option id="tc0000ff" value="#0000ff" style="color: #0000ff">■青</option>
+      </select>
+      背景色：<select id="edit_bg" name="bg" size="1">
+        <option id="bgffffff" value="#ffffff" style="background-color: #ffffff" selected>白</option>
+        <option id="bgffaaaa" value="#ffaaaa" style="background-color: #ffaaaa">薄赤</option>
+        <option id="bgaaffaa" value="#aaffaa" style="background-color: #aaffaa">薄緑</option>
+        <option id="bgaaaaff" value="#aaaaff" style="background-color: #aaaaff">薄青</option>
+        <option id="bgffffaa" value="#ffffaa" style="background-color: #ffffaa">薄黄</option>
+        <option id="bgransparent" value="transparent">透明</option>
+      </select><br />
+      お名前:<input type="text" name="name" id="edit_name" value="{$name}"/>&nbsp;
+      線接続id：<input type="text" name="ln" id="edit_ln" size="4" /><br />
+      $wiki_helper<br />
+      <textarea name="body" id="edit_body" cols="50" rows="10" style="width:auto;"></textarea><br />
+      <input type="submit" value="書き込み" />
+      <input type="hidden" name="id" id="edit_id"/>
+      <input type="hidden" name="z" id="edit_z" value="1" />
+      <input type="hidden" name="l" id="edit_l" />
+      <input type="hidden" name="t" id="edit_t" />
+      <input type="hidden" name="w" id="edit_w" />
+      <input type="hidden" name="h" id="edit_h" />
+      <input type="hidden" name="fix" id="edit_fix" value="0"/>
+      <input type="hidden" name="bx" id="edit_bx" />
+      <input type="hidden" name="by" id="edit_by" />
+      <input type="hidden" name="pass" id="edit_pass" value="" />
+      <input type="hidden" name="mode" id="edit_mode" value="edit" />
+      <input type="hidden" name="plugin" value="fusen" />
+      <input type="hidden" name="refer" value="{$refer}" />
+      <input type="hidden" name="page" value="{$refer}" />
+    </p>
+  </form>
+</div>
+
+EOD;
+}
+
+
+function plugin_fusen_action() {
+	global $post,$adminpass,$vars;
+	global $X_admin,$X_uid,$X_uname;
+
+	error_reporting(E_ALL);
+	
+	// 初期化
+	//if (PKWK_READONLY) die_message('PKWK_READONLY prohibits editing');
+
+	$refer = $post['page'] = $vars['page'] = $post['refer'];
+	
+	// コンバートしないでファイル読み込み
+	$dat = plugin_fusen_data($refer,false);
+	
+	// 規定外のモード
+	if (!in_array($post['mode'],array('set','del','lock','unlock','recover','edit')))
+	{
+		ob_clean();
+		exit;
+	}
+	
+	$id = preg_replace('/id/', '', $post['id']);
+	
+	$auth = false;
+	
+	if ($id && array_key_exists($id,$dat))
+	{
+		if ($X_admin) $auth = true;
+		else if ($dat[$id]['uid'] && $dat[$id]['uid'] == $X_uid) $auth = true;
+		else if ($dat[$id]['ucd'] && $dat[$id]['ucd'] == PUKIWIKI_UCD) $auth = true;
+	}
+	else
+	{
+		$auth = true;
+	}
+	
+	// ID確定,データ取得
+	switch ($post['mode']) {
+		case 'set':
+		case 'del':
+		case 'lock':
+		case 'unlock':
+		case 'recover';
+			if (!array_key_exists($id,$dat)) die_message('The data is not accumulated just.'."($id)");
+			// ページHTMLキャッシュを削除
+			delete_page_html($refer,"html");
+			//値更新
+			switch ($post['mode']) {
+				case 'set':
+					if (!$dat[$id]['lk']) $auth = true;
+					$dat[$id]['x'] = (preg_match('/^\d+$/', $post['l']) ? $post['l'] : '');
+					$dat[$id]['y'] = (preg_match('/^\d+$/', $post['t']) ? $post['t'] : '');
+					$dat[$id]['bx'] = (preg_match('/^\d+$/', $post['l']) ? $post['bx'] : 0);
+					$dat[$id]['by'] = (preg_match('/^\d+$/', $post['t']) ? $post['by'] : 0);
+					$dat[$id]['w'] = (preg_match('/^\d+$/', $post['w']) ? $post['w'] : 0);
+					$dat[$id]['h'] = (preg_match('/^\d+$/', $post['h']) ? $post['h'] : 0);
+					$dat[$id]['fix'] = (!empty($post['fix'])) ? 1 : 0;
+					$dat[$id]['z'] = (preg_match('/^\d+$/', $post['z']) ? $post['z'] : '');
+					break;
+				case 'lock':
+					$dat[$id]['lk'] = true;
+					break;
+				case 'unlock':
+					$dat[$id]['lk'] = false;
+					break;
+				case 'del':
+					if (empty($dat[$id]['del']))
+					{
+						$dat[$id]['del'] = true;
+						$dat[$id]['lk'] = false;
+						$dat[$id]['ln'] = '';
+					}
+					else
+					{
+						unset($dat[$id]);
+						// plane_text DB を更新
+						need_update_plaindb($refer);
+					}
+					foreach($dat as $k=>$v)
+					{
+						if ($dat[$k]['ln'] == 'id'.$id) $dat[$k]['ln'] = '';
+					}
+					break;
+				case 'recover':
+					$dat[$id]['del'] = false;
+			}
+			break;
+		case 'edit':
+			if ($id == '')
+			{
+				krsort($dat);
+				$id = array_shift(array_keys($dat)) + 1;
+				$mt = date("ymdHis");
+				$uid = $X_uid;
+				$ucd = PUKIWIKI_UCD;
+				$name = $post['name'];
+				// 名前をクッキーに保存
+				setcookie("pukiwiki_un", $name, time()+86400*365);//1年間
+			}
+			else
+			{
+				if (!$dat[$id]['lk']) $auth = true;
+				if (!array_key_exists($id,$dat)) die_message('The data is not accumulated just.'."($id)");
+				$mt = $dat[$id]['mt'];
+				$uid = $dat[$id]['uid'];
+				$ucd = $dat[$id]['ucd'];
+				$name = $dat[$id]['name'];
+			}
+			
+			$txt = str_replace("\r","",$post['body']);
+			$txt = preg_replace('/^#fusen/m', '&#35;fusen', $txt);
+			$txt = user_rules_str(auto_br($txt));
+			$txt = rtrim($txt)."\n";
+			
+			$et = date("ymdHis");
+			$fix = (!empty($post['fix']))? 1 : 0;
+			$w = (preg_match('/^\d+$/', $post['w']))? $post['w'] : 0;
+			$h = (preg_match('/^\d+$/', $post['h']))? $post['h'] : 0;
+			
+			$dat[$id] = array(
+				'ln' => (preg_match('/^(id)?(\d+)$/', $post['ln'], $ma) ? $ma[2] : ''),
+				'x' => (preg_match('/^\d+$/', $post['l']) ? $post['l'] : 100),
+				'y' => (preg_match('/^\d+$/', $post['t']) ? $post['t'] : 100),
+				'bx' => (preg_match('/^\d+$/', $post['bx']) ? $post['bx'] : 0),
+				'by' => (preg_match('/^\d+$/', $post['by']) ? $post['by'] : 0),
+				'z' => 1,
+				'tc' => (preg_match('/^#[\dA-F]{6}$/i', $post['tc']) ? $post['tc'] : '#000000'),
+				'bg' => (preg_match('/^(#[\dA-F]{6}|transparent)$/i', $post['bg']) ? $post['bg'] : '#ffffff'),
+				'lk' => false,
+				'txt' => rtrim($txt),
+				'name' => $name,
+				'mt' => $mt,
+				'et' => $et,
+				'uid' => $uid,
+				'ucd' => $ucd,
+				'fix' => $fix,
+				'w' => $w,
+				'h' => $h,
+			);
+			
+			ksort($dat);
+			
+			// plane_text DB 更新を指示
+			need_update_plaindb($refer);
+			// ページHTMLキャッシュを削除
+			delete_page_html($refer,"html");
+			
+			break;
+		default:
+			die_message('Illegitimate parameter was used.');
+	}
+
+	if ($auth) {
+		//書き込み
+		if (!exist_plugin('attach') or !function_exists('attach_upload'))
+		{
+			exit ('attach.inc.php not found or not correct version.');
+		}
+		if (count($dat) < 1) $dat = array();
+		
+		$fname = UPLOAD_DIR . encode($refer) . '_' . encode(FUSEN_ATTACH_FILENAME);
+		if ($fp = fopen($fname.".tmp", "wb"))
+		{
+			flock($fp, LOCK_EX);
+			fputs($fp, FUSEN_ATTACH_FILENAME . "\n");
+			fputs($fp, serialize($dat));
+			fclose($fp);
+			$GLOBALS['pukiwiki_allow_extensions'] = "";
+			if ($post['mode'] == 'edit')
+			{
+				// 編集時はタイムスタンプを更新する
+				$ret = do_upload($refer, FUSEN_ATTACH_FILENAME, $fname.".tmp");
+			}
+			else
+			{
+				// その他はタイムスタンプを更新しない
+				$ret = do_upload($refer, FUSEN_ATTACH_FILENAME, $fname.".tmp",FALSE,NULL,TRUE);
+			}
+		}
+		// コンバートして再読み込み
+		$dat = plugin_fusen_data($refer);
+		// JSONファイル書き込み
+		plugin_fusen_putjson($dat,$refer);
+	}
+	ob_clean();
+	exit;
+}
+
+//添付ファイル読み込み
+function plugin_fusen_data($page,$convert=true)
+{
+	global $X_uid,$X_admin;
+	global $vars,$post,$get;
+	global $nowikiname,$related_link,$content_id;
+	
+	$fname = encode($page) . '_' . encode(FUSEN_ATTACH_FILENAME);
+	if (!file_exists(UPLOAD_DIR . $fname)) return array();
+	$data = file(UPLOAD_DIR . $fname);
+	if (!$data || trim(array_shift($data)) != FUSEN_ATTACH_FILENAME) return array();
+	
+	$data = unserialize(join('',$data));
+	
+	if (!$convert) return $data;
+	
+	// 一括してコンバートする
+	$str = '';
+	foreach ($data as $k => $dat)
+	{
+		$str .= "###fusen_data_convert###{$k}\n\n".$dat['txt']."\n\n";
+	}
+	
+	fusen_convert_html($str,$page);
+	
+	$str = trim(str_replace("\r","",$str));
+	
+	$str_ary = preg_split("/###fusen_data_convert###/",$str);
+	array_shift($str_ary);
+	foreach ($str_ary as $str)
+	{
+		list($id,$dat) = explode("\n",$str,2);
+		$data[$id]['disp'] = trim($dat);
+	}
+	
+	return $data;
+}
+
+//PHPオブジェクトをJSONへ変換
+function plugin_fusen_getjson($fusen_data) {
+
+	// 付箋・線データ作成
+	$json = '{';
+	foreach ($fusen_data as $k => $dat) {
+		//付箋番号が数字でない場合は飛ばす。
+		if (!preg_match('/\d+/', $k)) continue;
+		$id = 'id' . $k;
+
+		//#fusenプラグインのネスト禁止
+		$dat['txt'] = preg_replace('/^#fusen/m', '&#35;fusen', $dat['txt']);
+
+		// XSS対策(付箋データが直接改ざんされる事態も想定)
+		if (!preg_match('/^\d+$/', $dat['x'])) $dat['x'] = 100 + $k;
+		if (!preg_match('/^\d+$/', $dat['y'])) $dat['y'] = 100 + $k;
+		if (!preg_match('/^\d+$/', $dat['bx'])) $dat['bx'] = 0;
+		if (!preg_match('/^\d+$/', $dat['by'])) $dat['by'] = 0;
+		if (!preg_match('/^\d+$/', $dat['z'])) $dat['z'] = 1;
+		if (!preg_match('/^#[\dA-F]{6}$/i', $dat['tc'])) $dat['tc'] = '#000000';
+		if (!preg_match('/^(#[\dA-F]{6}|transparent)$/i', $dat['bg'])) $dat['bg'] = '#ffffff';
+		if (!preg_match('/^(id)?\d+$/', $dat['ln'])) $dat['ln'] = '';
+		if (!preg_match('/^\d+$/', $dat['mt'])) $dat['mt'] = 0;
+		if (!preg_match('/^\d+$/', $dat['et'])) $dat['et'] = 0;
+
+
+		// JSONの構成
+		if ($json != '{') $json .= ",\n  ";
+		$json .=  $k . ':{';
+		$json .= '"x":' . $dat['x'] . ',';
+		$json .= '"y":' . $dat['y'] . ',';
+		$json .= '"bx":' . $dat['bx'] . ',';
+		$json .= '"by":' . $dat['by'] . ',';
+		$json .= '"z":' . $dat['z'] . ',';
+		$json .= '"tc":"' . $dat['tc'] . '",';
+		$json .= '"bg":"' . $dat['bg'] . '",';
+		$json .= '"disp":"' .plugin_fusen_jsencode($dat['disp']) . '",';
+		$json .= '"txt":"' . plugin_fusen_jsencode(htmlspecialchars($dat['txt'])) . '",';
+		$json .= '"name":"' . plugin_fusen_jsencode(make_link($dat['name'])) . '",';
+		$json .= '"mt":"' . ($dat['mt']? $dat['mt'] : "" ) . '",';
+		$json .= '"et":"' . ($dat['et']? $dat['et'] : "" ) . '",';
+		$json .= '"uid":' . ($dat['uid']? $dat['uid'] : 0 ) . ',';
+		$json .= '"ucd":"' . ($dat['ucd']? $dat['ucd'] : "" ) . '",';
+		$json .= '"fix":' . (empty($dat['fix'])? 0 : 1 ) . ',';
+		$json .= '"w":' . ($dat['w']? $dat['w'] : 0 ) . ',';
+		$json .= '"h":' . ($dat['h']? $dat['h'] : 0 ) . '';
+		if (isset($dat['ln']) && $dat['ln']) $json .= ',"ln":' . preg_replace('/^id/', '', $dat['ln']) ;
+		if (isset($dat['lk']) && $dat['lk']) $json .= ',"lk":' . $dat['lk'];
+		if (isset($dat['del']) && $dat['del']) $json .= ',"del":' . $dat['del'] ;
+		$json .= '}';
+	}
+	$json .= '}';
+	return $json;
+}
+
+//JSON向けエンコード
+function plugin_fusen_jsencode($str) {
+	$str = preg_replace('/(\x22|\x2F|\x5C)/', '\\\$1', $str);
+	$str = preg_replace('/\x08/', '\b', $str);
+	$str = preg_replace('/\x09/', '\t', $str);
+	$str = preg_replace('/\x0A/', '\n', $str);
+	$str = preg_replace('/\x0C/', '\f', $str);
+	$str = preg_replace('/\x0D/', '\r', $str);
+	return $str;
+}
+
+//PHPオブジェクトをHTMLへ変換
+function plugin_fusen_gethtml($fusen_data)
+{
+	global $vars;
+	//JSONファイル書き込み
+	plugin_fusen_putjson($fusen_data,$vars['page']);
+	
+	// 付箋・線データ作成
+	$ret = '';
+	foreach ($fusen_data as $k => $dat) {
+		//付箋番号が数字でない場合は飛ばす。
+		if (!preg_match('/\d+/', $k)) continue;
+		$id = 'id' . $k;
+
+		//#fusenプラグインのネスト禁止
+		$dat['txt'] = preg_replace('/^#fusen/m', '&#35;fusen', $dat['txt']);
+
+		// XSS対策(付箋データが直接改ざんされる事態も想定)
+		if (!preg_match('/^\d+$/', $dat['x'])) $dat['x'] = 100 + $k;
+		if (!preg_match('/^\d+$/', $dat['y'])) $dat['y'] = 100 + $k;
+		if (!preg_match('/^\d+$/', $dat['bx'])) $dat['bx'] = 0;
+		if (!preg_match('/^\d+$/', $dat['by'])) $dat['by'] = 0;
+		if (!preg_match('/^\d+$/', $dat['z'])) $dat['z'] = 1;
+		if (!preg_match('/^#[\dA-F]{6}$/i', $dat['tc'])) $dat['tc'] = '#000000';
+		if (!preg_match('/^(#[\dA-F]{6}|transparent)$/i', $dat['bg'])) $dat['bg'] = '#ffffff';
+		if (!preg_match('/^(id)?\d+$/', $dat['ln'])) $dat['ln'] = '';
+
+		// HTMLの構成
+		
+		if ($dat['lk']) $border = FUSEN_STYLE_BORDER_LOCK;
+		else if (!empty($dat['del'])) $border = FUSEN_STYLE_BORDER_DEL;
+		else $border = FUSEN_STYLE_BORDER_NORMAL;
+		
+		$del = (empty($dat['del']))? "" : " visibility: hidden;";
+		$date = ($dat['et'])? " : ".substr($dat['et'],0,2)."/".substr($dat['et'],2,2)."/".substr($dat['et'],4,2)." ".substr($dat['et'],6,2).":".substr($dat['et'],8,2) : "";
+		
+		// Fix?
+		$fix_style = "";
+		if ($dat['fix'])
+		{
+			$fix_style .= "overflow:hidden;";
+			$fix_style .= "white-space:normal;";
+			$fix_style .= "width:{$dat['w']}px;";
+			$fix_style .= "height:{$dat['h']}px;";
+		}
+
+		
+		$ret .= "<div class=\"fusen_body\" style=\"left:{$dat['x']}px; top:{$dat['y']}px; color:{$dat['tc']}; background-color:{$dat['bg']}; border:{$border};{$del}{$fix_style}\">\n";
+		$ret .= "<div class=\"fusen_menu\">id.{$k}: </div>\n";
+		$ret .= "<div class=\"fusen_info\">".make_link($dat['name']).$date."</div>\n";
+		$ret .= "<div class=\"fusen_contents\">{$dat['disp']}</div>\n";
+		$ret .= "</div>\n";
+	}
+	return $ret;
+}
+
+//JSONキャッシュファイル書き込み
+function plugin_fusen_putjson($dat,$page)
+{
+	$fname = P_CACHE_DIR . "fusen_". encode($page) . ".utxt";
+	$json = plugin_fusen_getjson($dat);
+	$to = "UTF-8";
+	$json = mb_convert_encoding($json, $to, SOURCE_ENCODING);
+	$fp = false;
+	$count = 0;
+	while(!$fp && ++$count < 6)
+	{
+		if($fp = fopen($fname, "wb"))
+		{
+			flock($fp, LOCK_EX);
+			fputs($fp, $json);
+			fclose($fp);
+		}
+		else
+		{
+			sleep(1);
+		}
+	}
+}
+
+function fusen_convert_html(&$str,$page)
+{
+	global $X_uid,$X_admin;
+	global $vars,$post,$get;
+	global $nowikiname,$related_link,$content_id;
+
+	// グローバル変数退避
+	$_page = $vars['page'];
+	$_X_uid = $X_uid;
+	$_X_admin = $X_admin;
+	$_content_id = $content_id;
+	$_related_link = $related_link;
+	$_nowikiname = $nowikiname;
+	
+	$X_admin = $X_uid = 0;	//常にゲスト扱い
+	$vars['page'] = $post['page'] = $get['page'] = $page; // 現ページ名
+	$content_id = 1;	// areaedit リンクなど抑止
+	$nowikiname = 1;	// 未作成WikiNameの?リンク抑止
+	$related_link = 0;	// 関連するページをリストアップしない
+	
+	$pcon = new pukiwiki_converter();
+	$pcon->string = $str;
+	$str = $pcon->convert();
+	//$str = convert_html($str);
+	
+	// グローバル変数戻し
+	$content_id = $_content_id;
+	$related_link = $_related_link;
+	$nowikiname = $_nowikiname;
+	$X_uid = $_X_uid;
+	$X_admin = $_X_admin;
+	$vars['page'] = $post['page'] = $get['page'] = $_page;
+	
+	// 外部リンクの場合 class="ext" を付加
+	$str = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/","$1class=\"ext\" $2",$str);
+	
+	return $str;
+}
+?>
