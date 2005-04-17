@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.32 2005/03/23 14:16:29 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.33 2005/04/17 12:55:31 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -253,10 +253,11 @@ function attach_upload($file,$page,$pass=NULL,$copyright=FALSE)
 	}
 }
 
-function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL)
+function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL,$notouch=FALSE)
 {
 	global $_attach_messages,$X_uid,$X_admin;
 	
+	$_action = "insert";
 	// style.css
 	$pginfo = get_pg_info_db($page);
 	if ($fname == "style.css" && ($X_admin || ($X_uid && $pginfo["uid"] == $X_uid)))
@@ -304,12 +305,12 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL)
 	
 	$obj = &new AttachFile($page,$fname);
 	
-	if ($obj->exist)
-	{
-		return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
-	}
-	
 	if ( is_uploaded_file($tmpname) ) {
+		if ($obj->exist)
+		{
+			return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
+		}
+		
 		if (move_uploaded_file($tmpname,$obj->filename))
 		{
 			chmod($obj->filename,ATTACH_FILE_MODE);
@@ -317,6 +318,11 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL)
 		else
 			return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
 	} else {
+		if (file_exists($obj->filename))
+		{
+			unlink($obj->filename);
+			$_action = "update";
+		}
 		if (rename($tmpname,$obj->filename))
 		{
 			chmod($obj->filename,ATTACH_FILE_MODE);
@@ -325,16 +331,17 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL)
 			return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
 	}
 	
-	if (is_page($page))
+	if (!$notouch && is_page($page))
 	{
-		touch(get_filename($page));
+		touch(get_filename(encode($page)));
+		touch_db($page);
 	}
 	
 	$obj->getstatus();
 	$obj->status['pass'] = ($pass !== TRUE and $pass !== NULL) ? $pass : '';
 	$obj->status['copyright'] = $copyright;
 	$obj->status['owner'] = $X_uid;
-	$obj->action = "insert";
+	$obj->action = $_action;
 	$obj->putstatus();
 
 	return array('result'=>TRUE,'msg'=>$_attach_messages['msg_uploaded']);
@@ -927,7 +934,8 @@ EOD;
 		}
 		if (is_page($this->page))
 		{
-			touch(get_filename($this->page));
+			touch(get_filename(encode($this->page)));
+			touch_db($page);
 		}
 		
 		return array('msg'=>$_attach_messages['msg_deleted'],'redirect'=>$script."?plugin=attach&pcmd=upload&page=".rawurlencode($this->page));
