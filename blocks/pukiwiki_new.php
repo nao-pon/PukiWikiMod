@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.19 2005/03/17 01:59:56 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.20 2005/04/17 12:50:23 nao-pon Exp $
 function b_pukiwiki_new_show($option) {
 
 	//表示する件数
@@ -178,7 +178,7 @@ function xb_get_heading($page)
 	$res = $xoopsDB->query($query);
 	if (!$res) return "";
 	$ret = mysql_fetch_row($res);
-	return $ret[12];
+	return htmlspecialchars($ret[12]);
 }
 
 // ページ名のエンコード
