@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.53 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: html.php,v 1.54 2005/04/17 12:48:55 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -26,16 +26,17 @@ function catbody($title,$page,$body)
 	global $longtaketime;
 	global $foot_explain, $note_hr, $_msg_word, $search_word_color,$use_static_url;
 	
-	global $xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $wiki_allow_newpage;
-	global $X_admin,$X_uname,$noattach,$noheader,$trackback,$xoopsTpl,$pgid,$use_xoops_comments;
+	global $xoopsConfig,$xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $wiki_allow_newpage;
+	global $X_admin,$X_uname,$X_uid,$X_ucd,$noattach,$noheader,$trackback,$xoopsTpl,$pgid,$use_xoops_comments;
 	
 	global $_msg_pagecomment,$_msg_trackback,$_msg_pings;
 	
 	
 	//名前欄置換
 	if (empty($vars['xoops_block']))
-		$body = str_replace(WIKI_NAME_DEF,$X_uname,$body);
-	
+	{
+		$body = str_replace(array(WIKI_NAME_DEF,WIKI_UCD_DEF,'_XOOPS_WIKI_HOST_'),array($X_uname,PUKIWIKI_UCD,XOOPS_WIKI_HOST),$body);
+	}
 	//form置換
 	$body = preg_replace("/(<form[^>]+)(>)/is","$1 onsubmit=\"return pukiwiki_check(this);\"$2",$body);
 	
