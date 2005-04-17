@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.48 2005/03/30 00:27:48 nao-pon Exp $
+// $Id: func.php,v 1.49 2005/04/17 12:47:56 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -998,10 +998,14 @@ function include_page($page,$ret_array=false)
 {
 	global $vars,$post,$get,$comment_no,$article_no,$h_excerpt,$digest;
 	global $_msg_read_more;
+	global $now_inculde_convert;
+	global $nocache_plugin_on_include;
 	
 	static $included = array();
 	static $parents = array();
 	static $count = 1;
+	
+	$now_inculde_convert = true;
 	
 	$page = strip_bracket($page);
 	
@@ -1047,31 +1051,31 @@ function include_page($page,$ret_array=false)
 	$vars["page"] = $post["page"] = $get["page"] = add_bracket($page);
 	
 	$body = join("",get_source($page));
-	if (preg_match("/\n#more(\([^)]*\))?\n/",$body))
+	$pcon = new pukiwiki_converter();
+	if (preg_match("/^#more/m",$body))
 	{
 		$body = preg_replace("/\n#more\(\s*off\s*\).*?(\n#more\(\s*on\s*\)\n|$)/s","\n",$body);
 		if (preg_match("/(.*?)\n#more(\([^)]*\))?\n/s",$body,$match))
 			$body = $match[1];
 		$body .= "\n\nRIGHT:[[$_msg_read_more>$page]]";
 		
-		//$ret = convert_html($body,false,false,false,$ret_array);
-		
-		$pcon = new pukiwiki_converter();
+		$pcon->string = $body;
+		$pcon->ret_array = $ret_array;
+		$ret = $pcon->convert();
+	}
+	else if ($nocache_plugin_on_include && preg_match("/^{$nocache_plugin_on_include}/m",$body))
+	{
 		$pcon->string = $body;
 		$pcon->ret_array = $ret_array;
 		$ret = $pcon->convert();
 	}
 	else
 	{
-		//$ret = convert_html($page,false,true,false,$ret_array);
-		
-		$pcon = new pukiwiki_converter();
 		$pcon->string = $page;
 		$pcon->page_cvt = TRUE;
 		$pcon->ret_array = $ret_array;
 		$ret = $pcon->convert();
 	}
-	
 	unset($pcon);
 	
 	//ÂàÈòÊÑ¿ôÃÍÌá¤·
@@ -1081,6 +1085,8 @@ function include_page($page,$ret_array=false)
 	$digest = $_digest;
 	$article_no = $_article_no;
 	$vars['is_rsstop'] = $_rsstop;
+	
+	$now_inculde_convert = false;
 	
 	return $ret;
 }
