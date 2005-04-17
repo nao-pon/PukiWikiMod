@@ -358,7 +358,10 @@ input.copyButton {
 
 .style_table {
 	width:auto;
-	margin:auto;
+	margin-top: 5px;
+	margin-bottom: auto;
+	margin-left: auto;
+	margin-right: auto;
 	border:0px;
 	border-color:#99CCCC;
 	padding:0px;
@@ -822,8 +825,125 @@ span.area_off
 	padding-left:16px;
 	padding-top:2px;
 	cursor: hand;
-	background-image:url("/xoops/modules/pukiwiki/image/upload.png");
+	background-image:url("../image/upload.png");
 	background-repeat: no-repeat;
 	background-color: #ffffef;
 
+}
+/* gimage.inc.php */
+div.plugin_gimage font
+{
+	font-size:10px;
+}
+
+/* fusen.inc.php */
+div#fusen_area
+{
+	background:white url("../image/fusen_back01.gif");
+	margin 10px;
+	box-sizing : border-box;
+	-moz-box-sizing : border-box;
+}
+
+div#fusen_area *
+{
+	box-sizing : border-box;
+	-moz-box-sizing : border-box;
+}
+
+div.fusen_body
+{
+	background-color: transparent;
+	white-space: nowrap;
+	position: absolute;
+	width: auto;
+	height: auto;
+	margin: 0px;
+	padding: 0px;
+	cursor: auto;
+}
+
+div.fusen_body_trans
+{
+	background-color: transparent;
+	white-space: nowrap;
+	position: absolute;
+	width: auto;
+	height: auto;
+	margin: 0px;
+	padding: 0px;
+	filter:alpha(opacity=60);
+	-moz-opacity:0.6;
+	cursor: auto;
+}
+div.fusen_body table,div.fusen_body_trans table
+{
+	margin:5px;
+	width: auto;
+	height: auto;
+}
+
+div.fusen_menu
+{
+	padding:1px;
+	font-size:80%;
+	white-space: nowrap;
+	color: #000000;
+	background-color: #e9e9e9;
+	border-Bottom: 1px dotted #FFFFFF;
+	width: auto;
+	height: auto;
+}
+div.fusen_info
+{
+	padding:1px;
+	font-size:70%;
+	text-align: right;
+	white-space: nowrap;
+	color: #000000;
+	background-color: #EEE0E5;
+	width: auto;
+	height: auto;
+	cursor: auto;
+}
+
+div.fusen_contents
+{
+	font-size:80%;
+	padding:2px 2px 0px 2px;
+	width: auto;
+	height: auto;
+	cursor: auto;
+}
+
+div.fusen_contents p
+{
+	margin-left:0px;
+	margin-bottom:3px;
+}
+
+img.fusen_footer
+{
+	background-color: transparent;
+	width: 6px;
+	height: 6px;
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	cursor: nw-resize;
+}
+
+div.fusen_editbox
+{
+	position: absolute;
+	left: 100px;
+	top: 100px;
+	border: black 2px solid;
+	color: #000000;
+	background-color: #cccccc;
+	padding: 4px;
+	z-index: 100;
+	visibility: hidden;
 }
