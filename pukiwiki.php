@@ -25,16 +25,17 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.71 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.72 2005/04/17 12:49:31 nao-pon Exp $
 /////////////////////////////////////////////////
+// Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
 /*
-// Protectorのチェックを回避する
 if (
-	(isset($_GET['plugin']) && $_GET['plugin']=='showrss' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
-	(isset($_GET['plugin']) && $_GET['plugin']=='newsclip' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
-	(isset($_GET['plugin']) && $_GET['plugin']=='aws' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
-	(isset($_GET['plugin']) && $_GET['plugin']=='google' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
-	(isset($_GET['plugin']) && $_GET['plugin']=='gimage' && isset($_GET['pmode']) && $_GET['pmode']=='refresh')
+//	(isset($_GET['plugin']) && $_GET['plugin']=='showrss' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
+//	(isset($_GET['plugin']) && $_GET['plugin']=='newsclip' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
+//	(isset($_GET['plugin']) && $_GET['plugin']=='aws' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
+//	(isset($_GET['plugin']) && $_GET['plugin']=='google' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
+//	(isset($_GET['plugin']) && $_GET['plugin']=='gimage' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
+	(isset($_POST['plugin']) && $_POST['plugin']=='fusen' && isset($_POST['mode']) && ($_POST['mode']=='set' || $_POST['mode']=='lock' ||$_POST['mode']=='unlock' || $_POST['mode']=='del' || $_POST['mode']=='recover'))
 	)
 {
 	$_SERVER['REMOTE_ADDR'] = "";
@@ -999,7 +1000,6 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			$page = make_search($get["page"]);
 			$body = tb_get_rdf($vars['page'])."\n";
 			
-			/*
 			//PlainTXT DB 更新の必要がある場合
 			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".udp"))
 			{
@@ -1008,7 +1008,6 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/ud_plain.php?".rawurlencode(strip_bracket($vars["page"]))
 				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
 			}
-			*/
 			
 			//モジュール用キャッシュデータの更新
 			if (!empty($vars['mc_refresh'])
