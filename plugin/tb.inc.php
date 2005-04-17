@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.7 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: tb.inc.php,v 1.8 2005/04/17 12:53:10 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -81,11 +81,37 @@ function tb_save()
 		tb_xml_msg(1,'TrackBack ID is invalid.');
 	}
 	
-	// URL 妥当性チェック (これを入れると処理時間に問題がでる)
-	$result = http_request($url,'HEAD');
-	if ($result['rc'] !== 200)
+	//$tb_check_link_to_me = 1;
+	if (!$tb_check_link_to_me)
 	{
-		tb_xml_msg(1,'URL is fictitious.');
+		// URL 妥当性チェック
+		$result = http_request($url,'HEAD');
+		if ($result['rc'] !== 200)
+		{
+			tb_xml_msg(1,'URL is fictitious.');
+		}
+	}
+	else
+	{
+		// リンク無きトラックバックは無効
+		$result = http_request($url);
+		if ($result['rc'] !== 200)
+		{
+			tb_xml_msg(1,'URL is fictitious.');
+		}
+		else
+		{
+			$myid = array();
+			$myid[] = preg_quote("{$tb_id}.html","#");
+			$myid[] = preg_quote("pgid={$tb_id}","#");
+			$myid[] = preg_quote(rawurlencode($page),"#");
+			$myid = "(index\.php)?[^'\"]*(".join("|",$myid).")";
+			$reg = '#<a[^>]+href\s*=\s*("|\')'.preg_quote(XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/","#").$myid.'#';
+			if (!preg_match($reg,$result['data']))
+			{
+				tb_xml_msg(1,'Couldn\'t be found link to me.');
+			}
+		}
 	}
 	
 	// TRACKBACK_DIR の存在と書き込み可能かの確認
