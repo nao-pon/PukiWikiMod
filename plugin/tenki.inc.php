@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tenki.inc.php,v 1.9 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: tenki.inc.php,v 1.10 2005/04/17 12:55:10 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //	&tenki([pic],[w:width])[{now?}];
@@ -25,9 +25,8 @@ function plugin_tenki_inline()
 		else if ($arg == "now?")
 			continue;
 		else
-			$cid = $arg;
+			if ($arg) $cid = $arg;
 	}
-
 	if ($pic) {
 		//$url = "http://weather.is.kochi-u.ac.jp/FE/00Latest.jpg";
 		$url = "http://www.jwa.or.jp/sat/images/sat-japan.jpg";
