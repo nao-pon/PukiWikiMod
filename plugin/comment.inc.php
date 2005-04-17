@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.16 2004/12/23 14:07:14 nao-pon Exp $
+// $Id: comment.inc.php,v 1.17 2005/04/17 12:54:46 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -182,6 +182,7 @@ function plugin_comment_convert()
 	global $_btn_comment,$_btn_name,$_msg_comment,$vars,$comment_ins;
 	
 	$options = func_get_args();
+	$style = "";
 	
 	// 編集権限が必要？
 	if (in_array('auth',$options) && !check_editable($vars["page"],false,false))
@@ -200,6 +201,12 @@ function plugin_comment_convert()
 	$comment_size = $comment_cols;
 	if (preg_match("/(?: |^)size:([0-9]+)(?: |$)/i",trim($all_option),$arg)){
 		if ($comment_cols > $arg[1] && ($arg[1])) $comment_size = $arg[1];
+		$w_style = "width:auto;";
+	}
+	else
+	{
+		$style = " style=\"width:98%;\"";
+		$w_style = "width:100%;";
 	}
 	//areaedit指定
 	$areaedit = "";
@@ -230,10 +237,10 @@ function plugin_comment_convert()
 		 ."<input type=\"hidden\" name=\"above\" value=\"$above\" />\n"
 		 ."<input type=\"hidden\" name=\"digest\" value=\"".htmlspecialchars($digest)."\" />\n"
 		 ."$areaedit"
-		 ."<table style=\"width:auto;\"><tr><td style=\"vertical-align: bottom;\">$nametags</td>"
-		 ."<td style=\"vertical-align:bottom;white-space:nowrap;\">".fontset_js_tag()."<br />"
-		 ."<input type=\"text\" name=\"msg\" size=\"".htmlspecialchars($comment_size)."\" />\n"
-		 .$button."</td>"
+		 ."<table style=\"{$w_style}\"><tr><td style=\"vertical-align:bottom;white-space:nowrap;\">$nametags</td>"
+		 ."<td style=\"vertical-align:bottom;{$w_style}\">".fontset_js_tag()."<br />"
+		 ."<input type=\"text\" name=\"msg\" size=\"".htmlspecialchars($comment_size)."\"{$style} /></td>\n"
+		 ."<td style=\"vertical-align:bottom;\">".$button."</td>"
 		 ."</tr></table>"
 		 ."</div>\n"
 		 ."</form>";

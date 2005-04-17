@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.23 2005/03/15 02:50:11 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.24 2005/04/17 12:54:57 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -101,7 +101,9 @@ function plugin_pcomment_action() {
 function plugin_pcomment_convert() {
 	global $script,$vars,$BracketName,$WikiName,$digest;
 	global $_pcmt_btn_name, $_pcmt_btn_comment, $_pcmt_msg_comment, $_pcmt_msg_all, $_pcmt_msg_edit, $_pcmt_msg_recent;
-
+	
+	$style = "";
+	
 	//戻り値
 	$ret = '';
 
@@ -117,8 +119,15 @@ function plugin_pcomment_convert() {
 	}
 	//コメントテキストボックスサイズ指定オプション
 	$comment_size = PCMT_COLS_COMMENT;
-	if (preg_match("/(?: |^)size:([0-9]+)(?: |$)/i",trim($all_option),$arg)){
+	if (preg_match("/(?: |^)size:([0-9]+)(?: |$)/i",trim($all_option),$arg))
+	{
 		if (PCMT_COLS_COMMENT > $arg[1] && ($arg[1])) $comment_size = $arg[1];
+		$w_style = "width:auto;";
+	}
+	else
+	{
+		$style = " style=\"width:98%;\"";
+		$w_style = "width:100%;";
 	}
 	//コメントページ名指定オプション
 	$comment_pg_name = PCMT_PAGE;
@@ -175,7 +184,7 @@ function plugin_pcomment_convert() {
 	}
 
 	$radio = $params['reply'] ? '<input type="radio" name="reply" value="0" checked />' : '';
-	$comment = '<input type="text" name="msg" size="'.$comment_size.'" />';
+	$comment = '<input type="text" name="msg" size="'.$comment_size.'"'.$style.' />';
 
 	//XSS脆弱性問題 - 外部から来た変数をエスケープ
 	$f_page = htmlspecialchars($page);
@@ -194,9 +203,11 @@ function plugin_pcomment_convert() {
   <input type="hidden" name="dir" value="$dir" />
   <input type="hidden" name="count" value="$s_count" />
   $areaedit
-  <table style="width:auto;"><tr><td style="vertical-align:bottom;white-space:nowrap;">{$radio}{$title} {$name}</td><td style="vertical-align: bottom;">$fontset_js_tag<br />$comment
-  <input type="submit" value="$btn_text" />
-  </td></tr></table>
+  <table style=\"{$w_style}\"><tr>
+  <td style="vertical-align:bottom;white-space:nowrap;">{$radio}{$title} {$name}</td>
+  <td style="vertical-align:bottom;{$w_style}">$fontset_js_tag<br />$comment</td>
+  <td style="vertical-align:bottom;"><input type="submit" value="$btn_text" /></td>
+  </tr></table>
   </div>
 EOD;
 	$link = $_page;
