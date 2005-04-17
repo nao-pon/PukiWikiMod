@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone
-// $Id: tracker.inc.php,v 1.18 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.19 2005/04/17 12:55:49 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.29 2005/03/02 13:31:05 henoheno Exp $
 
 //
@@ -160,7 +160,7 @@ function plugin_tracker_action()
 	$fields = plugin_tracker_get_fields($page,$refer,$config);
 
 	// Creating an empty page, before attaching files
-	touch(get_filename($page));
+	//touch(get_filename(encode($page)));
 
 	foreach (array_keys($fields) as $key)
 	{
