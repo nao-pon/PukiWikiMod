@@ -27,9 +27,9 @@ if (pukiwiki_adv == "on")
 
 var pukiwiki_helper_img = 
 '<img src="'+pukiwiki_root_url+'image/buttons.gif" width="103" height="16" border="0" usemap="#map_button" tabindex="-1" '+'/'+'>'+
-'&nbsp;'+
+' '+
 pukiwiki_adv_tag +
-'<img src="'+pukiwiki_root_url+'image/colors.gif" width="64" height="16" border="0" usemap="#map_color" tabindex="-1" '+'/'+'>&nbsp;'+
+'<img src="'+pukiwiki_root_url+'image/colors.gif" width="64" height="16" border="0" usemap="#map_color" tabindex="-1" '+'/'+'> '+
 '<span style="cursor:hand;">'+
 '<img src="'+pukiwiki_root_url+'face/smile.gif" width="15" height="15" border="0" title=":)" alt=":)" onClick="javascript:pukiwiki_face(\':)\'); return false;" '+'/'+'>'+
 '<img src="'+pukiwiki_root_url+'face/bigsmile.gif" width="15" height="15" border="0" title=":D" alt=":D" onClick="javascript:pukiwiki_face(\':D\'); return false;" '+'/'+'>'+
