@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.34 2005/03/29 23:54:21 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.35 2005/04/17 12:57:50 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -10,10 +10,7 @@ if (!defined('DATA_DIR')) exit;
 	//-->
 	</script>
 	<script type="text/javascript" src="skin/default.ja.js"></script>
-<table border=0 cellspacing="5" style="width:100%;" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()>
- <tr>
-  <td class="pukiwiki_body">
-
+<div class="pukiwiki_body" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()>
 	<?php if((!$hide_navi && !$noheader) || !$is_read){ // header ?>
 		<center><div class="wiki_page_title"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
@@ -113,12 +110,12 @@ if (!defined('DATA_DIR')) exit;
 		<a href="<?php echo $link_copy ?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="コピー" /></a>
 		<?php } // $wiki_allow_newpage ?>
 		<a href="<?php echo $link_edit ?>"><img src="./image/edit.png" width="20" height="20" border="0" alt="編集" /></a>
-		<a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="ファイル添付" /></a>
 		<a href="<?php echo $link_rename ?>"><img src="./image/rename.png" width="20" height="20" border="0" alt="リネーム" /></a>
 		&nbsp;
 		<?php } // !$_freeze ?>
 		<a href="<?php echo $link_diff ?>"><img src="./image/diff.png" width="20" height="20" border="0" alt="差分" /></a>
 		<a href="<?php echo $link_source ?>"><img src="./image/source.png" width="20" height="20" border="0" alt="ソース" /></a>
+		<a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="ファイル添付" /></a>
 		<a href="<?php echo $link_attachlist ?>"><img src="./image/attach.png" width="20" height="20" border="0" alt="添付ファイル一覧" /></a>
 		&nbsp;
 		<?php } // $is_page ?>
@@ -169,7 +166,5 @@ if (!defined('DATA_DIR')) exit;
 	</address>
 	<?php } ?>
 
-  </td>
- </tr>
-</table>
+</div>
 <!-- /pukiwikimod -->
