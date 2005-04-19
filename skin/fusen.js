@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.1 2005/04/17 12:58:19 nao-pon Exp $
+// $Id: fusen.js,v 1.2 2005/04/19 23:19:45 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -722,6 +722,7 @@ function fusen_hide(id) {
 	document.onmouseup = fusen_onmouseup;
 	document.onmousemove = fusen_onmousemove;
 	fusenDblClick = false;
+	fusenMovingObj = null;
 	getElement("edit_body").blur();
 	getElement("edit_ln").blur();
 	getElement('edit_name').style.visibility = "hidden";
@@ -1298,13 +1299,21 @@ function fusen_onmousedown(e) {
 	if (IE)
 	{
 		if (event.button != 1) return;
+		var tag = String(event.srcElement.tagName);
 	}
 	else
 	{
 		if (e.which != 1) return;
+		var tag = String(e.target.tagName);
 	}
 	
-	if (fusenNowMovingOff) return true;
+	if (!tag.match(/div|img/i))
+	{
+		this.cancelBubble = true;
+		return;
+	}
+	
+	if (fusenNowMovingOff) return;
 	
 	if (fusenTimerID) clearTimeout(fusenTimerID);
 	
@@ -1331,7 +1340,9 @@ function fusen_onmousedown(e) {
 	return false;
 }
 
-function fusen_onmousemove(e) {
+function fusen_onmousemove(e)
+{
+	var nowpos;
 	if(IE)
 	{
 		if (document.compatMode && document.compatMode=='CSS1Compat')
@@ -1344,12 +1355,13 @@ function fusen_onmousemove(e) {
 			mouseX = document.body.scrollLeft + event.clientX;
 			mouseY = document.body.scrollTop + event.clientY;
 		}
+		nowpos = event.clientX + "," + event.clientY;
 	} else {
 		mouseX = e.pageX;
 		mouseY = e.pageY;
+		nowpos = e.pageX + "," +e.pageY;
 	}
-	//window.status = "Y: " + mouseY;
-	if (fusenMovingObj)
+	if (fusenMovingObj && nowpos != fusenClickX + "," + fusenClickY)
 	{
 		var id = fusenMovingObj.id.replace('fusen_id','');
 		if (fusenResizeFlg)
