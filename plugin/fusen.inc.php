@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.1 2005/04/17 12:56:47 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.2 2005/04/19 23:15:56 nao-pon Exp $
 // 
 
 // fusen.js¤ÎPATH
@@ -84,7 +84,7 @@ function plugin_fusen_convert() {
 	foreach(func_get_args() as $prm)
 	{
 		if (preg_match("/^r(efresh)?:([\d]+)/",$prm,$arg))
-			$refresh =($arg[2])? max($arg[2],10) * 1000 : 0;
+			$refresh =($arg[2])? $arg[2] : 0;
 		if (preg_match("/^h(eight)?:([\d]+)/",$prm,$arg))
 			$height = min($arg[2],1000);
 	}
