@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.3 2005/04/20 14:52:00 nao-pon Exp $
+// $Id: fusen.js,v 1.4 2005/04/20 15:22:35 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -644,6 +644,7 @@ function fusen_lock(id)
 	getElement('fusen_id' + id).style.border = fusenBorderObj['lock'];
 	getElement('fusen_id' + id).style.cursor = 'auto';
 	getElement('fusen_id' + id + 'resize').style.visibility = 'hidden';
+	getElement('fusen_id' + id + 'wresize').style.visibility = 'hidden';
 	fusen_show_full(id,'close');
 
 	// サーバーデータ更新
@@ -669,6 +670,7 @@ function fusen_unlock(id)
 	getElement('fusen_id' + id).style.border = fusenBorderObj['normal'];
 	getElement('fusen_id' + id).style.cursor = 'move';
 	getElement('fusen_id' + id + 'resize').style.visibility = 'visible';
+	getElement('fusen_id' + id + 'wresize').style.visibility = 'visible';
 	fusen_show_full(id,'close');
 
 	// サーバーデータ更新
