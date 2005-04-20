@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.2 2005/04/19 23:15:56 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.3 2005/04/20 14:52:00 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -86,21 +86,29 @@ function plugin_fusen_convert() {
 		if (preg_match("/^r(efresh)?:([\d]+)/",$prm,$arg))
 			$refresh =($arg[2])? $arg[2] : 0;
 		if (preg_match("/^h(eight)?:([\d]+)/",$prm,$arg))
-			$height = min($arg[2],1000);
+			$height = min($arg[2],5000);
 	}
+	$background = (!$height)? 'background:transparent none;margin:0px;padding:0px;' : '';
 	
-	$wiki_helper = fontset_js_tag();
+	$wiki_helper = '<div class="wiki_helper">'.fontset_js_tag().'</div>';
 	
-
+	$selected = 0;
 	$refresh_str = '自動更新:<select name="fusen_menu_interval" id="fusen_menu_interval" size="1" onchange="fusen_setInterval(this.value);window.focus();">';
 	$refresh_str .= '<option value="0">なし';
 	foreach(array(10,20,30,60) as $sec)
 	{
-		$selected = (is_null($selected) && $sec <= $refresh)? ' selected="true"' : '';
+		if (!$selected && $sec >= $refresh)
+		{
+			$select = ' selected="true"';
+			$selected = $sec;
+		}
+		else
+			$select = '';
 		$msec = $sec * 1000;
-		$refresh_str .= '<option value="'.$msec.'"'.$selected.'>'.$sec.'秒';
+		$refresh_str .= '<option value="'.$msec.'"'.$select.'>'.$sec.'秒';
 	}
 	$refresh_str .= '</select>';
+	$refresh = $selected * 1000;
 	
 	$html = plugin_fusen_gethtml($fusen_data);
 	
@@ -150,9 +158,7 @@ function plugin_fusen_convert() {
     <dd>入力したキーワードを持つ付箋のみ表示します。</dd>
   </dl>
 </div>
-<div id="fusen_area" style="height:{$height}px; width:100%;">
-$html
-</div>
+<div id="fusen_area" style="height:{$height}px;width:100%;{$background}">$html</div>
 <script type="text/javascript">
 var fusenBorderObj = {"normal":"{$border_normal}", "lock":"{$border_lock}", "del":"{$border_del}"};
 var fusenJsonUrl = "{$fusen_url}";
@@ -162,9 +168,7 @@ var fusenX_uid = {$X_uid};
 var fusenX_ucd = "{$X_ucd}";
 </script>
 <div id="fusen_editbox" class="fusen_editbox">
-  [<a href="javascript:fusen_editbox_hide()" title="閉じる">×</a>] (ドラッグして移動できます)
-  <form id="edit_frm" method="post" action="" style="padding:0; margin:0" onsubmit="fusen_save(); return false;">
-    <p style="margin:0">
+  <form id="edit_frm" method="post" action="" style="padding:0px; margin:0px" onsubmit="fusen_save(); return false;">
       文字色：<select id="edit_tc" name="tc" size="1">
         <option id="tc000000" value="#000000" style="color: #000000" selected>■黒</option>
         <option id="tc999999" value="#999999" style="color: #999999">■灰</option>
@@ -182,9 +186,10 @@ var fusenX_ucd = "{$X_ucd}";
       </select><br />
       お名前:<input type="text" name="name" id="edit_name" value="{$name}"/>&nbsp;
       線接続id：<input type="text" name="ln" id="edit_ln" size="4" /><br />
-      $wiki_helper<br />
+      $wiki_helper
       <textarea name="body" id="edit_body" cols="50" rows="10" style="width:auto;"></textarea><br />
       <input type="submit" value="書き込み" />
+      <input type="button" value="閉じる" onclick="fusen_editbox_hide();" />
       <input type="hidden" name="id" id="edit_id"/>
       <input type="hidden" name="z" id="edit_z" value="1" />
       <input type="hidden" name="l" id="edit_l" />
@@ -199,7 +204,6 @@ var fusenX_ucd = "{$X_ucd}";
       <input type="hidden" name="plugin" value="fusen" />
       <input type="hidden" name="refer" value="{$refer}" />
       <input type="hidden" name="page" value="{$refer}" />
-    </p>
   </form>
 </div>
 
@@ -263,7 +267,7 @@ function plugin_fusen_action() {
 					$dat[$id]['by'] = (preg_match('/^\d+$/', $post['t']) ? $post['by'] : 0);
 					$dat[$id]['w'] = (preg_match('/^\d+$/', $post['w']) ? $post['w'] : 0);
 					$dat[$id]['h'] = (preg_match('/^\d+$/', $post['h']) ? $post['h'] : 0);
-					$dat[$id]['fix'] = (!empty($post['fix'])) ? 1 : 0;
+					$dat[$id]['fix'] = (!empty($post['fix'])) ? (int)$post['fix'] : 0;
 					$dat[$id]['z'] = (preg_match('/^\d+$/', $post['z']) ? $post['z'] : '');
 					break;
 				case 'lock':
@@ -322,7 +326,7 @@ function plugin_fusen_action() {
 			$txt = rtrim($txt)."\n";
 			
 			$et = date("ymdHis");
-			$fix = (!empty($post['fix']))? 1 : 0;
+			$fix = (!empty($post['fix']))? (int)$post['fix'] : 0;
 			$w = (preg_match('/^\d+$/', $post['w']))? $post['w'] : 0;
 			$h = (preg_match('/^\d+$/', $post['h']))? $post['h'] : 0;
 			
@@ -476,7 +480,7 @@ function plugin_fusen_getjson($fusen_data) {
 		$json .= '"et":"' . ($dat['et']? $dat['et'] : "" ) . '",';
 		$json .= '"uid":' . ($dat['uid']? $dat['uid'] : 0 ) . ',';
 		$json .= '"ucd":"' . ($dat['ucd']? $dat['ucd'] : "" ) . '",';
-		$json .= '"fix":' . (empty($dat['fix'])? 0 : 1 ) . ',';
+		$json .= '"fix":' . (empty($dat['fix'])? 0 : (int)$dat['fix'] ) . ',';
 		$json .= '"w":' . ($dat['w']? $dat['w'] : 0 ) . ',';
 		$json .= '"h":' . ($dat['h']? $dat['h'] : 0 ) . '';
 		if (isset($dat['ln']) && $dat['ln']) $json .= ',"ln":' . preg_replace('/^id/', '', $dat['ln']) ;
@@ -502,6 +506,8 @@ function plugin_fusen_jsencode($str) {
 //PHPオブジェクトをHTMLへ変換
 function plugin_fusen_gethtml($fusen_data)
 {
+	if (!$fusen_data) return '';
+	
 	global $vars;
 	//JSONファイル書き込み
 	plugin_fusen_putjson($fusen_data,$vars['page']);
@@ -542,7 +548,7 @@ function plugin_fusen_gethtml($fusen_data)
 			$fix_style .= "overflow:hidden;";
 			$fix_style .= "white-space:normal;";
 			$fix_style .= "width:{$dat['w']}px;";
-			$fix_style .= "height:{$dat['h']}px;";
+			$fix_style .= ($dat['fix'] == 1)? "height:{$dat['h']}px;" : "height:auto;";
 		}
 
 		

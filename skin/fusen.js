@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.2 2005/04/19 23:19:45 nao-pon Exp $
+// $Id: fusen.js,v 1.3 2005/04/20 14:52:00 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -88,6 +88,7 @@ function fusen_setInterval(msec)
 function fusen_set_timer()
 {
 	if (fusenTimerID) clearTimeout(fusenTimerID);
+	//window.status = fusenInterval;
 	if (fusenInterval > 5000)
 	{
 		fusenTimerID = setInterval("fusen_init(0)", fusenInterval);
@@ -126,7 +127,7 @@ function fusen_busy(busy)
 			fusen_set_onmousedown(obj,id);
 		}
 
-		getElement('fusen_id' + id + 'footer').style.cursor = f_cursor;
+		getElement('fusen_id' + id + 'resize').style.cursor = f_cursor;
 		
 	}
 }
@@ -247,7 +248,7 @@ function fusen_getdata(mod)
 	fusen_busy(1);
 	if (fusenTimerID) clearTimeout(fusenTimerID);
 	
-	var w_starus = (fusenInterval)? "通信完了 [自動更新 待機中]" : "通信完了 [自動更新 停止中]";
+	var w_starus = (fusenInterval)? "通信完了 [自動更新(" + (fusenInterval/1000) + "s) 待機中]" : "通信完了 [自動更新 停止中]";
 	window.status = "サーバーに接続中...";
 
 	try
@@ -335,8 +336,8 @@ function fusen_getdata(mod)
 							tag = String(child.tagName);
 							if (tag.match(re))
 							{
-								child.onmouseout = fusen_moving_on;
-								child.onmouseover = fusen_moving_off;
+								//child.onmouseout = fusen_moving_on;
+								//child.onmouseover = fusen_moving_off;
 							}
 						}
 						
@@ -382,6 +383,8 @@ function fusen_getdata(mod)
 				else
 				{
 					fusenInterval = 0;
+					window.status = "通信完了 [自動更新 停止中]";
+					getElement('fusen_menu_interval').selectedIndex = 0;
 				}
 				er = '';
 			}
@@ -482,7 +485,7 @@ function fusen_setpos(id,auto)
 	}
 	else
 	{
-		getElement('edit_fix').value = (fusenObj[id].fix)? 1 : 0;
+		getElement('edit_fix').value = fusenObj[id].fix;
 	}
 	if (fusenObj[id].fix)
 	{
@@ -528,7 +531,7 @@ function fusen_edit(id)
 	getElement('edit_mode').value = 'edit';
 	getElement('edit_w').value = fusenObj[id].w;
 	getElement('edit_h').value = fusenObj[id].h;
-	getElement('edit_fix').value = (fusenObj[id].fix)? 1 : 0;
+	getElement('edit_fix').value = fusenObj[id].fix;
 
 	var tcid = fusenObj[id].tc;
 	if (!tcid) tcid = 'tc000000';
@@ -640,7 +643,7 @@ function fusen_lock(id)
 	fusen_set_menu_html(getElement('fusen_id' + id + 'menu'),id,'lock');
 	getElement('fusen_id' + id).style.border = fusenBorderObj['lock'];
 	getElement('fusen_id' + id).style.cursor = 'auto';
-	getElement('fusen_id' + id + 'footer').style.visibility = 'hidden';
+	getElement('fusen_id' + id + 'resize').style.visibility = 'hidden';
 	fusen_show_full(id,'close');
 
 	// サーバーデータ更新
@@ -665,7 +668,7 @@ function fusen_unlock(id)
 	fusen_set_menu_html(getElement('fusen_id' + id + 'menu'),id,'');
 	getElement('fusen_id' + id).style.border = fusenBorderObj['normal'];
 	getElement('fusen_id' + id).style.cursor = 'move';
-	getElement('fusen_id' + id + 'footer').style.visibility = 'visible';
+	getElement('fusen_id' + id + 'resize').style.visibility = 'visible';
 	fusen_show_full(id,'close');
 
 	// サーバーデータ更新
@@ -831,24 +834,25 @@ function fusen_set_menu_html(tobj,id,mode)
 	return;
 }
 
-function fusen_create_menuobj(id, mode) {
+function fusen_create_menuobj(id, mode, obj) {
 	var cobj = document.createElement("DIV");
 	cobj.className = 'fusen_menu';
 	cobj.id = 'fusen_id' + id + 'menu';
 	fusen_set_menu_html(cobj,id,mode);
+//	cobj.appendChild(fusen_create_wresizeobj(id, obj));
 	return cobj;
 }
 
 function fusen_create_infoobj(id, obj) {
 	var cobj = document.createElement("DIV");
 	var d = (obj.et != "")? " : " + obj.et.substring(0,2) + "/" + obj.et.substring(2,4) + "/" + obj.et.substring(4,6) + " " + obj.et.substring(6,8) + ":" + obj.et.substring(8,10) : "";
-	var md = (obj.mt != "")? " 作成日時: " + obj.mt.substring(0,2) + "/" + obj.mt.substring(2,4) + "/" + obj.mt.substring(4,6) + " " + obj.mt.substring(6,8) + ":" + obj.mt.substring(8,10) : "";
+	var md = (obj.mt != "")? obj.mt.substring(0,2) + "/" + obj.mt.substring(2,4) + "/" + obj.mt.substring(4,6) + " " + obj.mt.substring(6,8) + ":" + obj.mt.substring(8,10) : "";
 	
 
 	
 	cobj.className = 'fusen_info';
 	cobj.id = 'fusen_id' + id + 'info';
-	cobj.innerHTML = '<span title="付箋の作成">' + obj.name + '</span>' + '<span title="最終更新日時' + md + '">' + d + '</span>';
+	cobj.innerHTML = '<span title="付箋作成者 at '+md+'">' + obj.name + '</span>' + '<span title="最終更新日時' + md + '">' + d + '</span>';
 	cobj.onmouseout = fusen_moving_on;
 	cobj.onmouseover = fusen_moving_off;
 	return cobj;
@@ -865,13 +869,27 @@ function fusen_create_contentsobj(id, obj) {
 	return cobj;
 }
 
-function fusen_create_footerobj(id,obj) {
+function fusen_create_resizeobj(id,obj) {
 	var cobj = document.createElement("IMG");
-	cobj.className = 'fusen_footer';
-	cobj.id = 'fusen_id' + id + 'footer';
+	cobj.className = 'fusen_resize';
+	cobj.id = 'fusen_id' + id + 'resize';
 	cobj.src = './image/resize.gif';
 	cobj.title = cobj.alt = 'Resize';
-	cobj.onmousedown = function(){fusenResizeFlg=true;return true;};
+	cobj.onmousedown = function(){fusenResizeFlg=1;return true;};
+	if (obj.lk)
+	{
+		cobj.style.visibility = 'hidden';
+	}
+	return cobj;
+}
+
+function fusen_create_wresizeobj(id,obj) {
+	var cobj = document.createElement("IMG");
+	cobj.className = 'fusen_wresize';
+	cobj.id = 'fusen_id' + id + 'wresize';
+	cobj.src = './image/w_resize.gif';
+	cobj.title = cobj.alt = 'Set Width';
+	cobj.onmousedown = function(){fusenResizeFlg=2;return true;};
 	if (obj.lk)
 	{
 		cobj.style.visibility = 'hidden';
@@ -888,15 +906,15 @@ function fusen_create(id, obj) {
 	var oy = obj.y;
 	
 	if (obj.del) {
-		menuobj =  fusen_create_menuobj(id, 'del');
+		menuobj =  fusen_create_menuobj(id, 'del', obj);
 		border = fusenBorderObj['del'];
 		visible = 'hidden';
 	} else  if (obj.lk) {
-		menuobj =  fusen_create_menuobj(id, 'lock');
+		menuobj =  fusen_create_menuobj(id, 'lock', obj);
 		border = fusenBorderObj['lock'];
 		fusenobj.style.cursor = 'auto';
 	} else {
-		menuobj =  fusen_create_menuobj(id, 'normal');
+		menuobj =  fusen_create_menuobj(id, 'normal', obj);
 		border = fusenBorderObj['normal'];
 		fusenobj.title = "ダブルクリック->編集";
 	}
@@ -907,8 +925,8 @@ function fusen_create(id, obj) {
 		fusenobj.style.overflow = 'hidden';
 		fusenobj.style.whiteSpace = 'normal';
 		fusenobj.style.width = obj.w + 'px';
-		fusenobj.style.height = obj.h + 'px';
-		fusenobj.title = "ダブルクリック->すべて表示";
+		fusenobj.style.height = (obj.fix == 1)? obj.h + 'px' : 'auto';
+		if (obj.fix == 1) fusenobj.title = "ダブルクリック->すべて表示";
 	}
 	
 	// ロック?
@@ -935,7 +953,8 @@ function fusen_create(id, obj) {
 	fusenobj.appendChild(menuobj);
 	fusenobj.appendChild(fusen_create_infoobj(id, obj));
 	fusenobj.appendChild(fusen_create_contentsobj(id, obj));
-	fusenobj.appendChild(fusen_create_footerobj(id, obj));
+	fusenobj.appendChild(fusen_create_wresizeobj(id, obj));
+	fusenobj.appendChild(fusen_create_resizeobj(id, obj));
 	fusenobj.ondblclick = fusen_ondblclick;
 	return fusenobj;
 }
@@ -1307,7 +1326,7 @@ function fusen_onmousedown(e) {
 		var tag = String(e.target.tagName);
 	}
 	
-	if (!tag.match(/div|img/i))
+	if (!tag.match(/div|img|form/i))
 	{
 		this.cancelBubble = true;
 		return;
@@ -1370,17 +1389,26 @@ function fusen_onmousemove(e)
 				var x = Math.max(fusenMinWidth,fusenClickW + (event.clientX - fusenClickX));
 				var y = Math.max(fusenMinHeight,fusenClickH + (event.clientY - fusenClickY));
 				fusenMovingObj.style.width = x + "px";
-				fusenMovingObj.style.height = y + "px";
+				if (fusenResizeFlg == 1) fusenMovingObj.style.height = y + "px";
 			} else {
 				var x = Math.max(fusenMinWidth,fusenClickW + (e.pageX - fusenClickX));
 				var y = Math.max(fusenMinHeight,fusenClickH + (e.pageY - fusenClickY));
 				fusenMovingObj.style.width = x + "px";
-				fusenMovingObj.style.height = y + "px";
+				if (fusenResizeFlg == 1) fusenMovingObj.style.height = y + "px";
 			}
-			getElement('fusen_id' + id).style.overflow = "hidden";
-			getElement('fusen_id' + id).style.whiteSpace = 'normal';
-			fusenObj[id].fix = 1;
-			window.status = "付箋id"+id+"をリサイズ中...[ W:"+x+", H:"+y+" ]";
+			if (fusenResizeFlg == 1)
+			{
+				getElement('fusen_id' + id).style.overflow = "hidden";
+				getElement('fusen_id' + id).style.whiteSpace = 'normal';
+			}
+			else
+			{
+				getElement('fusen_id' + id).style.overflow = "hidden";
+				getElement('fusen_id' + id).style.whiteSpace = 'normal';
+				getElement('fusen_id' + id).style.height = 'auto';
+			}
+			fusenObj[id].fix = fusenResizeFlg;
+			window.status = "付箋 "+id+" をリサイズ中...[ W:"+x+", H:"+y+" ]";
 		}
 		else
 		{
@@ -1395,7 +1423,7 @@ function fusen_onmousemove(e)
 				fusenMovingObj.style.left = x + "px";
 				fusenMovingObj.style.top = y + "px";
 			}
-			window.status = "付箋id"+id+"を移動中...[ X:"+x+", Y:"+y+" ]";
+			window.status = "付箋 "+id+" を移動中...[ X:"+x+", Y:"+y+" ]";
 		}
 		if (!fusenDustboxFlg) fusen_setlines(id);
 		fusenMovingFlg = true;
@@ -1427,7 +1455,7 @@ function fusen_ondblclick(e)
 	
 	if (id)
 	{
-		if (!fusenFullFlg[id]  && fusenObj[id].fix)
+		if (!fusenFullFlg[id]  && fusenObj[id].fix == 1)
 		{
 			fusenDblClick = true;
 			fusen_show_full(id,'open');
@@ -1522,12 +1550,20 @@ function fusen_show_full(id,mode)
 		if (mode == 'open')
 		{
 			fusenFullFlg[id] = true;
-			obj.style.overflow = 'visible';
-			obj.style.whiteSpace = 'nowrap';
-			obj.style.width = 'auto';
 			obj.style.height = 'auto';
 			obj.style.zIndex = 2;
 			obj.title = (fusenObj[id].lk)? '' :"ダブルクリック->編集";
+			if (fusenObj[id].w < 50)
+			{
+				obj.style.overflow = 'visible';
+				obj.style.whiteSpace = 'nowrap';
+				obj.style.width = 'auto';
+			}
+			//else
+			//{
+			//	obj.style.overflow = 'hidden';
+			//	obj.style.whiteSpace = 'normal';
+			//}
 		}
 		else
 		{
@@ -1538,7 +1574,7 @@ function fusen_show_full(id,mode)
 				obj.style.width = fusenObj[id].w + 'px';
 				obj.style.height = fusenObj[id].h + 'px';
 				obj.style.zIndex = 1;
-				obj.title = "ダブルクリック->すべて表示";
+				if (fusenObj[id].fix == 1) obj.title = "ダブルクリック->すべて表示";
 			}
 			fusenFullFlg[id] = false;
 		}

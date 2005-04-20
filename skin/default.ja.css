@@ -841,8 +841,7 @@ div#fusen_area
 {
 	background:white url("../image/fusen_back01.gif");
 	margin 10px;
-	box-sizing : border-box;
-	-moz-box-sizing : border-box;
+	padding: 0px;
 }
 
 div#fusen_area *
@@ -911,6 +910,8 @@ div.fusen_contents
 {
 	font-size:80%;
 	padding:2px 2px 0px 2px;
+	padding:0px;
+	margin:2px;
 	width: auto;
 	height: auto;
 	cursor: auto;
@@ -918,11 +919,10 @@ div.fusen_contents
 
 div.fusen_contents p
 {
-	margin-left:0px;
-	margin-bottom:3px;
+	margin:3px 0px;
 }
 
-img.fusen_footer
+img.fusen_resize
 {
 	background-color: transparent;
 	width: 6px;
@@ -933,6 +933,19 @@ img.fusen_footer
 	right: 0px;
 	bottom: 0px;
 	cursor: nw-resize;
+}
+
+img.fusen_wresize
+{
+	background-color: transparent;
+	width: 3px;
+	height: 17px;
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	cursor: w-resize;
 }
 
 div.fusen_editbox
@@ -946,4 +959,13 @@ div.fusen_editbox
 	padding: 4px;
 	z-index: 100;
 	visibility: hidden;
+	cursor: move;
 }
+
+div.fusen_editbox div.wiki_helper
+{
+	cursor: auto;
+	margin: 0px;
+	padding: 0px;
+}
+
