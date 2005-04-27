@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.23 2005/04/17 12:47:43 nao-pon Exp $
+// $Id: db_func.php,v 1.24 2005/04/27 14:28:11 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -457,6 +457,7 @@ function plain_db_write($page,$action)
 	global $no_plugins;
 	global $pagereading_config_page;
 	global $script,$_symbol_noexists;
+	global $pwm_plugin_flg,$fusen_enable_allpage;
 	
 	if (!$pgid = get_pgid_by_name($page)) return false;
 	
@@ -493,6 +494,16 @@ function plain_db_write($page,$action)
 			)
 		);
 		$data = convert_html($data,false);
+
+		// 付箋
+		if ($fusen_enable_allpage && empty($pwm_plugin_flg['fusen']['convert']))
+		{
+			require_once(PLUGIN_DIR."fusen.inc.php");
+			$fusen_tag = do_plugin_convert("fusen");
+			$fusen_tag = str_replace(array(WIKI_NAME_DEF,WIKI_UCD_DEF,'_XOOPS_WIKI_HOST_'),array("","",XOOPS_WIKI_HOST),$fusen_tag);
+			$data .= $fusen_tag;
+		}
+
 		$data = preg_replace("/".preg_quote("<a href=\"$script?cmd=edit&amp;page=","/")."[^\"]+".preg_quote("\">$_symbol_noexists</a>","/")."/","",$data);
 		$data = str_replace($spc[0],$spc[1],strip_tags($data));
 	}

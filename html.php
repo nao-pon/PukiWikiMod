@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.54 2005/04/17 12:48:55 nao-pon Exp $
+// $Id: html.php,v 1.55 2005/04/27 14:28:11 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -30,6 +30,7 @@ function catbody($title,$page,$body)
 	global $X_admin,$X_uname,$X_uid,$X_ucd,$noattach,$noheader,$trackback,$xoopsTpl,$pgid,$use_xoops_comments;
 	
 	global $_msg_pagecomment,$_msg_trackback,$_msg_pings;
+	global $pwm_plugin_flg,$fusen_enable_allpage;
 	
 	
 	//名前欄置換
@@ -39,6 +40,9 @@ function catbody($title,$page,$body)
 	}
 	//form置換
 	$body = preg_replace("/(<form[^>]+)(>)/is","$1 onsubmit=\"return pukiwiki_check(this);\"$2",$body);
+	
+	// 付箋用基準アンカータグ
+	if ($fusen_enable_allpage) $body = '<div id="fusen_anchor" class="fusen_anchor"><p></p></div>'.$body;
 	
 	// 表示中のページ名
 	$_page = $vars["page"];
@@ -82,8 +86,10 @@ function catbody($title,$page,$body)
 	$link_rename = "$script?plugin=rename&refer=".$_rpage;
 	$link_attach = "$script?plugin=attach&amp;pcmd=upload&amp;page=".$_rpage;
 	$link_attachlist = "$script?plugin=attach&amp;pcmd=list&amp;page=".$_rpage;
-
-
+	
+	// 初期化
+	$fusen_tag = "";
+	
 	if($is_read && empty($vars['xoops_block']))
 	{
 		$fmt = @filemtime(get_filename(encode($_page)));
@@ -126,6 +132,13 @@ function catbody($title,$page,$body)
 	<hr />
 EOT;
 			$tb_tag = " [ <a href=\"#tb_body\">{$tb_count}</a> ]";
+		}
+		// 付箋
+		if ($fusen_enable_allpage && empty($pwm_plugin_flg['fusen']['convert']))
+		{
+			require_once(PLUGIN_DIR."fusen.inc.php");
+			$fusen_tag = do_plugin_convert("fusen");
+			$fusen_tag = str_replace(array(WIKI_NAME_DEF,WIKI_UCD_DEF,'_XOOPS_WIKI_HOST_'),array($X_uname,PUKIWIKI_UCD,XOOPS_WIKI_HOST),$fusen_tag);
 		}
 	}
 	

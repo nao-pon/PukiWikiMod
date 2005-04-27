@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.44 2005/04/17 12:48:14 nao-pon Exp $
+// $Id: init.php,v 1.45 2005/04/27 14:28:11 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -74,6 +74,7 @@ $wiki_head_keywords = array();
 $now_inculde_convert = false;
 $disable_page_cache = false;
 $nocache_plugin_on_include = "(#fusen)";
+$pwm_plugin_flg = array();
 
 // 設定ファイルの読込
 if(!file_exists(INI_FILE)||!is_readable(INI_FILE))

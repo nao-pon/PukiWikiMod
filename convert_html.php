@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.47 2005/04/17 12:47:24 nao-pon Exp $
+// $Id: convert_html.php,v 1.48 2005/04/27 14:28:11 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -20,6 +20,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 {
 	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id,$wiki_strong_words,$wiki_head_keywords;
 	global $X_uname;
+	global $pwm_plugin_flg;
 	
 	static $convert_load = 0;
 	$convert_load++;
@@ -45,6 +46,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 			$foot_explain = explode("\t",$var_data[6]);
 			$wiki_strong_words = $var_data[7];
 			$contents = (isset($var_data[8]))? $var_data[8] : "";
+			$pwm_plugin_flg = (isset($var_data[9]))? $var_data[9] : "";
 			
 			$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 			
@@ -141,6 +143,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		$var_data[6] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain));
 		$var_data[7] = ($convert_load === 1)? $wiki_head_keywords : $wiki_strong_words;
 		$var_data[8] = str_replace(array("\r","\n"),"",$body->contents);
+		$var_data[9] = $pwm_plugin_flg;
 		$html = serialize($var_data)."\n".$str;
 		
 		//キャッシュ書き込み

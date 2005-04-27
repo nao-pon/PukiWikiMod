@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.10 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: admin.php,v 1.11 2005/04/27 14:28:11 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE0", "PukiWikiMod initial setting.");
@@ -81,4 +81,8 @@ define("_AM_WIKI_USE_XOOPS_COMMENTS","A page comment (comment function of XOOPS)
 
 // ver 1.2.1
 define("_AM_WIKI_ERROR02","The conversion of the track back data is necessary, and convert here, please click.");
+
+// ver 1.2.6
+define("_AM_WIKI_FUSEN_ENABLE_ALLPAGE","Enable PostIT tag at all pages.");
+define("_AM_WIKI_TB_CHECK_LINK_TO_ME","Track back is not accepted from site without link to my page.");
 ?>

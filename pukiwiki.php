@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.72 2005/04/17 12:49:31 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.73 2005/04/27 14:28:11 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
 /*
@@ -1177,27 +1177,26 @@ if (empty($vars['xoops_block']))
 		
 		$xoops_mod_add_header = '
 <link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list" />
-<link rel="contents" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?plugin=map" />
 <link rel="alternate" type="application/rss+xml" title="RSS" href="'.$rss_url.'" />
-	';
+';
 		$xoops_mod_add_header .= get_header_link_tag_by_name($vars["page"]);
 	}
 
 	// CSS タグ設定
-	$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">'."\n";
-	if (WIKI_THEME_CSS)
-	{
-		$xoops_mod_add_header .= '<link rel="stylesheet" href="'.WIKI_THEME_CSS.'" type="text/css" media="screen" charset="shift_jis">'."\n";
-	}
-	else
-	{
-		$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">'."\n";
-	}
+	$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">'."\n";	$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+	// 管理画面のCSS
 	if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css"))
 	{
 		$xoops_mod_add_header .= '<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
 	}
-	// ページ用の .css
+	
+	// テーマディレクトリに置いてある pukiwiki.css
+	if (WIKI_THEME_CSS)
+	{
+		$xoops_mod_add_header .= '<link rel="stylesheet" href="'.WIKI_THEME_CSS.'" type="text/css" media="screen" charset="shift_jis">'."\n";
+	}
+	
+	// 各ページ用の .css
 	$xoops_mod_add_header .= get_page_css_tag($vars["page"]);
 	
 	// XOOPSヘッダ
@@ -1209,7 +1208,7 @@ if (empty($vars['xoops_block']))
 	if ($xoopsTpl)
 	{
 		$xoopsTpl->assign("xoops_pagetitle",$xoops_pagetitle);
-		$xoopsTpl->assign("xoops_module_header",$xoops_mod_add_header);
+		$xoopsTpl->assign("xoops_module_header",$xoops_mod_add_header . $xoopsTpl->get_template_vars("xoops_module_header"));
 		//Ads表示済みフラグ
 		$xoopsTpl->assign("ads_shown",$wiki_ads_shown);
 		$wiki_head_keywords = array_unique($wiki_head_keywords);
@@ -1228,7 +1227,6 @@ if (empty($vars['xoops_block']))
 // ** 出力処理 **
 catbody($title,$page,$body);
 unset($title,$page,$body);//一応開放してみる
-
 
 if (empty($vars['xoops_block']))
 {
@@ -1250,7 +1248,6 @@ if (empty($vars['xoops_block']))
 		include_once XOOPS_ROOT_PATH.'/include/comment_view.php';
 	}
 }
-
 
 // XOOPSフッタ
 if (empty($vars['xoops_block'])) include(XOOPS_ROOT_PATH."/footer.php");

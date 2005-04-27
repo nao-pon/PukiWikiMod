@@ -840,14 +840,40 @@ div.plugin_gimage font
 div#fusen_area
 {
 	background:white url("../image/fusen_back01.gif");
-	margin 10px;
+	margin 0px;
 	padding: 0px;
+	height: 0px;
 }
 
-div#fusen_area *
+div#fusen_area div
 {
 	box-sizing : border-box;
 	-moz-box-sizing : border-box;
+}
+
+div.fusen_anchor
+{
+	margin: 0px;
+	padding: 0px;
+	height: 0px;
+}
+
+fieldset.fusen_fieldset *
+{
+	margin: 0px;
+	padding: 0px;
+}
+
+fieldset.fusen_fieldset
+{
+	margin-top: 3px;
+	margin-bottom: 2px;
+}
+
+div.fusen_top_menu
+{
+	margin: 0px;
+	padding: 0px;
 }
 
 div.fusen_body
@@ -957,7 +983,6 @@ div.fusen_editbox
 	color: #000000;
 	background-color: #cccccc;
 	padding: 4px;
-	z-index: 100;
 	visibility: hidden;
 	cursor: move;
 }
@@ -967,5 +992,76 @@ div.fusen_editbox div.wiki_helper
 	cursor: auto;
 	margin: 0px;
 	padding: 0px;
+}
+
+div.fusen_editbox_title
+{
+	color: white;
+	background:blue url("../image/fusen.gif") no-repeat;
+	font-weight: bold;
+	text-align: center;
+	margin-bottom: 5px;
+}
+
+div.fusen_editbox_title a:link, div.fusen_editbox_title a:visited
+{
+	color: white;
+}
+
+div.fusen_editbox_footer
+{
+	background:#EEDFCC;
+	text-align: center;
+	margin-top: 3px;
+}
+
+div.fusen_help
+{
+	position: absolute;
+	font-size: 11px;
+	left: 0px;
+	top: 0px;
+	padding: 4px;
+	background-color: white;
+	border: black 2px solid;
+	visibility: hidden;
+	filter:alpha(opacity=85);
+	-moz-opacity:0.85;
+	cursor: move;
+}
+
+div#fusen_list *
+{
+	list-style-position: inside;
+}
+div.fusen_list
+{
+	position: absolute;
+	font-size: 11px;
+	left: 0px;
+	top: 0px;
+	padding: 4px;
+	background-color: white;
+	border: black 2px solid;
+	visibility: hidden;
+	filter:alpha(opacity=85);
+	-moz-opacity:0.85;
+	cursor: move;
+}
+div.fusen_list a:link
+{
+	color: black;
+}
+div.fusen_list a:visited
+{
+	color: black;
+}
+div.fusen_list a:hover
+{
+	color: blue;
+}
+div.fusen_list a:active
+{
+	color: red;
 }
 

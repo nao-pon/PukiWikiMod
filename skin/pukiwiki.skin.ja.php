@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.35 2005/04/17 12:57:50 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.36 2005/04/27 14:28:10 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -10,7 +10,7 @@ if (!defined('DATA_DIR')) exit;
 	//-->
 	</script>
 	<script type="text/javascript" src="skin/default.ja.js"></script>
-<div class="pukiwiki_body" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()>
+<div class="pukiwiki_body" onmouseup="pukiwiki_pos();return true;" onkeyup="pukiwiki_pos();return true;">
 	<?php if((!$hide_navi && !$noheader) || !$is_read){ // header ?>
 		<center><div class="wiki_page_title"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
@@ -91,6 +91,7 @@ if (!defined('DATA_DIR')) exit;
 	<div class="wiki_content" id="body" style="width:100%;">
 	<?php echo $body ?>
 	</div>
+	<?php if ($is_page && $fusen_tag) { echo $fusen_tag; } ?>
 	<?php echo $hr ?>
 	<?php if($attaches)
 		{

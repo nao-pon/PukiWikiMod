@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.39 2005/04/17 12:49:13 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.40 2005/04/27 14:28:10 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -260,10 +260,6 @@ $notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_
 // カンマ区切りで、#をつけずに記述
 $noplain_plugin = "include,calendar2,calendar_viewer,bugtrack_list,tracker_list,ls2,ls,recent,popular,pcomment,contents,tenki,ref,exrate,xoopsblock,attachref,related,whatday,fortune";
 
-/////////////////////////////////////////////////
-// リンクなきトラックバックは受け付けない？
-$tb_check_link_to_me = 1;
-
 /////////////// ParaEdit //////////////////
 // ParaEdit 改行の代替文字列
 //   <input type=hidden value=XXXXX> で改行(CR,LFなど)の変わりに使用する文字列
@@ -418,7 +414,15 @@ $page_cache_min = 0;
 // ページID.html というような静的ページのようなURLにする
 $use_static_url = 0;
 
+/////////////////////////////////////////////////
+// リンクなきトラックバックは受け付けない？
+$tb_check_link_to_me = 1;
 
+/////////////////////////////////////////////////
+// 全ページで付箋機能を有効にする
+$fusen_enable_allpage = 1;
+
+////////以上の設定はXOOPSの管理画面での設定で上書きされます///////
 
 $_cache_file = "cache/config.php";
 clearstatcache();

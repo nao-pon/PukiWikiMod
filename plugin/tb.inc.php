@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.8 2005/04/17 12:53:10 nao-pon Exp $
+// $Id: tb.inc.php,v 1.9 2005/04/27 14:28:11 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -52,7 +52,7 @@ function plugin_tb_action()
 // TrackBack Ping データ保存(更新)
 function tb_save()
 {
-	global $script,$vars,$trackback;
+	global $script,$vars,$trackback,$tb_check_link_to_me;
 	static $fields = array(/* UTIME, */'url','title','excerpt','blog_name');
 	
 	// 許可していないのに呼ばれた場合の対応
@@ -81,7 +81,6 @@ function tb_save()
 		tb_xml_msg(1,'TrackBack ID is invalid.');
 	}
 	
-	//$tb_check_link_to_me = 1;
 	if (!$tb_check_link_to_me)
 	{
 		// URL 妥当性チェック

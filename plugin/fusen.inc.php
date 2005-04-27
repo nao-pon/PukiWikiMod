@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.3 2005/04/20 14:52:00 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.4 2005/04/27 14:28:11 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -48,12 +48,15 @@ define('FUSEN_STYLE_BORDER_NORMAL', '#000000 1px solid');
 define('FUSEN_STYLE_BORDER_LOCK', '#836FFF 1px solid');
 // 削除分
 define('FUSEN_STYLE_BORDER_DEL', '#333333 1px dotted');
+// 選択分
+define('FUSEN_STYLE_BORDER_SELECT', 'red 1px solid');
 
 
 function plugin_fusen_convert() {
 	global $script,$vars;
 	global $now_inculde_convert;
 	global $X_uid,$X_admin;
+	global $pwm_plugin_flg;
 	
 	static $loaded = false;
 	
@@ -64,8 +67,11 @@ function plugin_fusen_convert() {
 	}
 	if ($loaded)
 	{
-		return "<p>#fusen は一つしか置けません。</p>";
+		return "";
 	}
+	
+	// $pwm_plugin_flg セット
+	$pwm_plugin_flg['fusen']['convert'] = true;
 	
 	// 初期化
 	$loaded = true;
@@ -74,21 +80,30 @@ function plugin_fusen_convert() {
 	$border_normal = FUSEN_STYLE_BORDER_NORMAL;
 	$border_lock = FUSEN_STYLE_BORDER_LOCK;
 	$border_del = FUSEN_STYLE_BORDER_DEL;
+	$border_select = FUSEN_STYLE_BORDER_SELECT;
 	$fusen_data = plugin_fusen_data($refer);
 	$name = WIKI_NAME_DEF;
 	$jname = plugin_fusen_jsencode($name);
 	
 	// パラメータ
 	$refresh = 0;
-	$height = 0;
+	$background = $height = '';
 	foreach(func_get_args() as $prm)
 	{
 		if (preg_match("/^r(efresh)?:([\d]+)/",$prm,$arg))
 			$refresh =($arg[2])? $arg[2] : 0;
 		if (preg_match("/^h(eight)?:([\d]+)/",$prm,$arg))
-			$height = min($arg[2],5000);
+			$height = min($arg[2],10000);
 	}
-	$background = (!$height)? 'background:transparent none;margin:0px;padding:0px;' : '';
+	
+	if ($height)
+	{
+		$height = "height:{$height}px;";
+	}
+	else
+	{
+		$background = 'background:transparent none;';
+	}
 	
 	$wiki_helper = '<div class="wiki_helper">'.fontset_js_tag().'</div>';
 	
@@ -97,7 +112,7 @@ function plugin_fusen_convert() {
 	$refresh_str .= '<option value="0">なし';
 	foreach(array(10,20,30,60) as $sec)
 	{
-		if (!$selected && $sec >= $refresh)
+		if (!$selected && $refresh && $sec >= $refresh)
 		{
 			$select = ' selected="true"';
 			$selected = $sec;
@@ -111,63 +126,48 @@ function plugin_fusen_convert() {
 	$refresh = $selected * 1000;
 	
 	$html = plugin_fusen_gethtml($fusen_data);
+	//if (!$html) $html = '<p></p>';
 	
+	$fusen_post = '_XOOPS_WIKI_HOST_' . XOOPS_WIKI_URL . "/index.php";
 	$fusen_url = str_replace(XOOPS_WIKI_PATH,'_XOOPS_WIKI_HOST_'.XOOPS_WIKI_URL,P_CACHE_DIR . "fusen_" .encode($vars['page']) . ".utxt");
-	
 	$X_ucd = WIKI_UCD_DEF;
+	$js_refer = plugin_fusen_jsencode($refer);
+	$auth = ($X_admin || ($X_uid && get_pg_auther($refer) == $X_uid))? 1 : 0;
 	
 	return <<<EOD
 <script type="text/javascript" src="$jsfile" charset="euc-jp"></script>
+<script type="text/javascript">
+<!--
+var fusenBorderObj = {"normal":"{$border_normal}", "lock":"{$border_lock}", "del":"{$border_del}", "select":"{$border_select}"};
+var fusenJsonUrl = "{$fusen_url}";
+var fusenPostUrl = "{$fusen_post}";
+var fusenInterval = {$refresh};
+var fusenX_admin = {$auth};
+var fusenX_uid = {$X_uid};
+var fusenX_ucd = "{$X_ucd}";
+//-->
+</script>
+<fieldset class="fusen_fieldset">
+<legend>付箋機能(wema) メニュー&nbsp;</legend>
 <div id="fusen_top_menu" class="fusen_top_menu" style="visibility: hidden;">
-<form action="" onsubmit="return false;">
-  <p>
-    付箋機能
-    [<a href="JavaScript:fusen_new()" title="新しい付箋を作る">新規</a>]
-    [<a href="JavaScript:fusen_dustbox()" title="ごみ箱を表示/非表示">ごみ箱</a>]
-    [<a href="JavaScript:fusen_transparent()" title="付箋をを透明化/非透明化">透明</a>]
-    [<a href="JavaScript:fusen_init(1)" title="最新の状態に更新">更新</a>]
-    [<a href="JavaScript:fusen_show('fusen_help')" title="使い方">ヘルプ</a>]&nbsp;
-    検索：<input type="text" onkeyup="JavaScript:fusen_grep(this.value)" />
-    <small>{$refresh_str}</small>
-  </p>
+<form action="" onsubmit="return false;" style="padding:0px;margin:0px;">
+  <img src="./image/fusen.gif" width="20" height="20" alt="付箋機能" title="付箋機能" />
+  [<a href="JavaScript:fusen_new()" title="新しい付箋を貼る">新規</a>]
+  [<a href="JavaScript:fusen_dustbox()" title="ごみ箱を表示/非表示">ごみ箱</a>]
+  [<a href="JavaScript:fusen_transparent()" title="付箋をを透明化/非透明化">透明</a>]
+  [<a href="JavaScript:fusen_init(1)" title="最新の状態に更新">更新</a>]
+  [<a href="JavaScript:fusen_show('fusen_list')" title="このページの付箋リスト">リスト</a>]
+  [<a href="JavaScript:fusen_show('fusen_help')" title="使い方">ヘルプ</a>]&nbsp;
+  付箋検索:<input type="text" onkeyup="JavaScript:fusen_grep(this.value)" />
+  {$refresh_str}
 </form>
 </div>
 <noscript>
-<p><strong>JavaScript未動作</strong>: 付箋を編集できません。また、付箋の表示位置がずれている場合があります。</p>
+<div class="fusen_top_menu"><strong>JavaScript未動作</strong>: 付箋を編集できません。また、付箋の表示位置がずれている場合があります。</div>
 </noscript>
-
-<div id="fusen_help" style="position: absolute; font-size: 11px; left: 90px; top: 80px; padding: 4px; background-color: white; border: black 2px solid; visibility: hidden; z-index: 4; filter:alpha(opacity=90); -moz-opacity:0.9;">
-  [<a href="javascript:fusen_hide('fusen_help')">×</a>]
-  <ul>
-    <li>ダブルクリックで新しい付箋を作成できます。</li>
-    <li>書き込むと、付箋が表示されます。</li>
-    <li>付箋はドラッグして位置を移動できます。</li>
-    <li>付箋をダブルクリックすると、その付箋を編集できます。</li>
-    <li>"lock"を押すと、編集・移動を禁止します。lockした付箋は"unlock"で元に戻せます。</li>
-    <li>"del"を押すと、付箋をゴミ箱へ移動します。ゴミ箱の付箋は"recover"で元に戻せます。<br />
-        ゴミ箱の付箋で"del"を押すと、付箋を完全に削除します。</li>
-  </ul>
-  <dl>
-    <dt>[新規]</dt>
-    <dd>新しい付箋の編集画面を表示します。</dd>
-    <dt>[ゴミ箱]</dt>
-    <dd>ゴミ箱に入れられた付箋を表示します。</dd>
-    <dt>[ヘルプ]</dt>
-    <dd>この説明書きを表示します。</dd>
-    <dt>検索</dt>
-    <dd>入力したキーワードを持つ付箋のみ表示します。</dd>
-  </dl>
-</div>
-<div id="fusen_area" style="height:{$height}px;width:100%;{$background}">$html</div>
-<script type="text/javascript">
-var fusenBorderObj = {"normal":"{$border_normal}", "lock":"{$border_lock}", "del":"{$border_del}"};
-var fusenJsonUrl = "{$fusen_url}";
-var fusenInterval = {$refresh};
-var fusenX_admin = {$X_admin};
-var fusenX_uid = {$X_uid};
-var fusenX_ucd = "{$X_ucd}";
-</script>
+</fieldset>
 <div id="fusen_editbox" class="fusen_editbox">
+  <div class="fusen_editbox_title">付箋の編集</div>
   <form id="edit_frm" method="post" action="" style="padding:0px; margin:0px" onsubmit="fusen_save(); return false;">
       文字色：<select id="edit_tc" name="tc" size="1">
         <option id="tc000000" value="#000000" style="color: #000000" selected>■黒</option>
@@ -194,19 +194,30 @@ var fusenX_ucd = "{$X_ucd}";
       <input type="hidden" name="z" id="edit_z" value="1" />
       <input type="hidden" name="l" id="edit_l" />
       <input type="hidden" name="t" id="edit_t" />
-      <input type="hidden" name="w" id="edit_w" />
-      <input type="hidden" name="h" id="edit_h" />
-      <input type="hidden" name="fix" id="edit_fix" value="0"/>
-      <input type="hidden" name="bx" id="edit_bx" />
-      <input type="hidden" name="by" id="edit_by" />
+      <input type="hidden" name="w" id="edit_w" value="0" />
+      <input type="hidden" name="h" id="edit_h" value="0" />
+      <input type="hidden" name="fix" id="edit_fix" value="0" />
+      <input type="hidden" name="bx" id="edit_bx" value="0" />
+      <input type="hidden" name="by" id="edit_by" value="0" />
       <input type="hidden" name="pass" id="edit_pass" value="" />
       <input type="hidden" name="mode" id="edit_mode" value="edit" />
       <input type="hidden" name="plugin" value="fusen" />
       <input type="hidden" name="refer" value="{$refer}" />
       <input type="hidden" name="page" value="{$refer}" />
   </form>
+  <div class="fusen_editbox_footer">
+  <form action="" onsubmit="return false;" style="width:auto;padding:0px;margin:0px;">
+    [<a href="JavaScript:fusen_dustbox()" title="ごみ箱を表示/非表示">ごみ箱</a>]
+    [<a href="JavaScript:fusen_transparent()" title="付箋をを透明化/非透明化">透明</a>]
+    [<a href="JavaScript:fusen_show('fusen_list')" title="このページの付箋リスト">リスト</a>]
+    [<a href="JavaScript:fusen_show('fusen_help')" title="使い方">ヘルプ</a>]&nbsp;
+    付箋検索:<input type="text" size="20" onkeyup="JavaScript:fusen_grep(this.value)" />
+  </form>
+  </div>
 </div>
-
+<div id="fusen_help" class="fusen_help"></div>
+<div id="fusen_list" class="fusen_list"></div>
+<div id="fusen_area" style="{$height}{$background}">$html</div>
 EOD;
 }
 
@@ -238,7 +249,7 @@ function plugin_fusen_action() {
 	
 	if ($id && array_key_exists($id,$dat))
 	{
-		if ($X_admin) $auth = true;
+		if ($X_admin || ($X_uid && get_pg_auther($refer) == $X_uid)) $auth = true;
 		else if ($dat[$id]['uid'] && $dat[$id]['uid'] == $X_uid) $auth = true;
 		else if ($dat[$id]['ucd'] && $dat[$id]['ucd'] == PUKIWIKI_UCD) $auth = true;
 	}
@@ -312,52 +323,53 @@ function plugin_fusen_action() {
 			}
 			else
 			{
-				if (!$dat[$id]['lk']) $auth = true;
+				//if (!$dat[$id]['lk']) $auth = true;
 				if (!array_key_exists($id,$dat)) die_message('The data is not accumulated just.'."($id)");
 				$mt = $dat[$id]['mt'];
 				$uid = $dat[$id]['uid'];
 				$ucd = $dat[$id]['ucd'];
 				$name = $dat[$id]['name'];
 			}
-			
-			$txt = str_replace("\r","",$post['body']);
-			$txt = preg_replace('/^#fusen/m', '&#35;fusen', $txt);
-			$txt = user_rules_str(auto_br($txt));
-			$txt = rtrim($txt)."\n";
-			
-			$et = date("ymdHis");
-			$fix = (!empty($post['fix']))? (int)$post['fix'] : 0;
-			$w = (preg_match('/^\d+$/', $post['w']))? $post['w'] : 0;
-			$h = (preg_match('/^\d+$/', $post['h']))? $post['h'] : 0;
-			
-			$dat[$id] = array(
-				'ln' => (preg_match('/^(id)?(\d+)$/', $post['ln'], $ma) ? $ma[2] : ''),
-				'x' => (preg_match('/^\d+$/', $post['l']) ? $post['l'] : 100),
-				'y' => (preg_match('/^\d+$/', $post['t']) ? $post['t'] : 100),
-				'bx' => (preg_match('/^\d+$/', $post['bx']) ? $post['bx'] : 0),
-				'by' => (preg_match('/^\d+$/', $post['by']) ? $post['by'] : 0),
-				'z' => 1,
-				'tc' => (preg_match('/^#[\dA-F]{6}$/i', $post['tc']) ? $post['tc'] : '#000000'),
-				'bg' => (preg_match('/^(#[\dA-F]{6}|transparent)$/i', $post['bg']) ? $post['bg'] : '#ffffff'),
-				'lk' => false,
-				'txt' => rtrim($txt),
-				'name' => $name,
-				'mt' => $mt,
-				'et' => $et,
-				'uid' => $uid,
-				'ucd' => $ucd,
-				'fix' => $fix,
-				'w' => $w,
-				'h' => $h,
-			);
-			
-			ksort($dat);
-			
-			// plane_text DB 更新を指示
-			need_update_plaindb($refer);
-			// ページHTMLキャッシュを削除
-			delete_page_html($refer,"html");
-			
+			if ($auth)
+			{
+				$txt = str_replace("\r","",$post['body']);
+				$txt = preg_replace('/^#fusen/m', '&#35;fusen', $txt);
+				$txt = user_rules_str(auto_br($txt));
+				$txt = rtrim($txt)."\n";
+				
+				$et = date("ymdHis");
+				$fix = (!empty($post['fix']))? (int)$post['fix'] : 0;
+				$w = (preg_match('/^\d+$/', $post['w']))? $post['w'] : 0;
+				$h = (preg_match('/^\d+$/', $post['h']))? $post['h'] : 0;
+				
+				$dat[$id] = array(
+					'ln' => (preg_match('/^(id)?(\d+)$/', $post['ln'], $ma) ? $ma[2] : ''),
+					'x' => (preg_match('/^\d+$/', $post['l']) ? $post['l'] : 100),
+					'y' => (preg_match('/^\d+$/', $post['t']) ? $post['t'] : 100),
+					'bx' => (preg_match('/^\d+$/', $post['bx']) ? $post['bx'] : 0),
+					'by' => (preg_match('/^\d+$/', $post['by']) ? $post['by'] : 0),
+					'z' => 1,
+					'tc' => (preg_match('/^#[\dA-F]{6}$/i', $post['tc']) ? $post['tc'] : '#000000'),
+					'bg' => (preg_match('/^(#[\dA-F]{6}|transparent)$/i', $post['bg']) ? $post['bg'] : '#ffffff'),
+					'lk' => false,
+					'txt' => rtrim($txt),
+					'name' => $name,
+					'mt' => $mt,
+					'et' => $et,
+					'uid' => $uid,
+					'ucd' => $ucd,
+					'fix' => $fix,
+					'w' => $w,
+					'h' => $h,
+				);
+				
+				ksort($dat);
+				
+				// plane_text DB 更新を指示
+				need_update_plaindb($refer);
+				// ページHTMLキャッシュを削除
+				delete_page_html($refer,"html");
+			}
 			break;
 		default:
 			die_message('Illegitimate parameter was used.');
@@ -390,6 +402,10 @@ function plugin_fusen_action() {
 				$ret = do_upload($refer, FUSEN_ATTACH_FILENAME, $fname.".tmp",FALSE,NULL,TRUE);
 			}
 		}
+		
+		// キャッシュ破棄
+		@unlink(P_CACHE_DIR.encode($refer).".fusen");
+		
 		// コンバートして再読み込み
 		$dat = plugin_fusen_data($refer);
 		// JSONファイル書き込み
@@ -415,6 +431,10 @@ function plugin_fusen_data($page,$convert=true)
 	
 	if (!$convert) return $data;
 	
+	// キャッシュチェック
+	$cfile = P_CACHE_DIR.encode($page).".fusen";
+	if (file_exists($cfile) && filemtime($cfile) > time() - 1800) return unserialize(join('',file($cfile)));
+	
 	// 一括してコンバートする
 	$str = '';
 	foreach ($data as $k => $dat)
@@ -434,6 +454,13 @@ function plugin_fusen_data($page,$convert=true)
 		$data[$id]['disp'] = trim($dat);
 	}
 	
+	if($fp = fopen($cfile, "wb"))
+	{
+		flock($fp, LOCK_EX);
+		fputs($fp, serialize($data));
+		fclose($fp);
+	}
+
 	return $data;
 }
 
@@ -461,7 +488,9 @@ function plugin_fusen_getjson($fusen_data) {
 		if (!preg_match('/^(id)?\d+$/', $dat['ln'])) $dat['ln'] = '';
 		if (!preg_match('/^\d+$/', $dat['mt'])) $dat['mt'] = 0;
 		if (!preg_match('/^\d+$/', $dat['et'])) $dat['et'] = 0;
-
+		
+		// ~\n -> \n
+		$dat['txt'] = preg_replace("/~$/m","",$dat['txt']);
 
 		// JSONの構成
 		if ($json != '{') $json .= ",\n  ";
@@ -506,11 +535,12 @@ function plugin_fusen_jsencode($str) {
 //PHPオブジェクトをHTMLへ変換
 function plugin_fusen_gethtml($fusen_data)
 {
-	if (!$fusen_data) return '';
-	
 	global $vars;
+	
 	//JSONファイル書き込み
 	plugin_fusen_putjson($fusen_data,$vars['page']);
+	
+	if (!$fusen_data) return '';
 	
 	// 付箋・線データ作成
 	$ret = '';
@@ -568,6 +598,11 @@ function plugin_fusen_putjson($dat,$page)
 	$json = plugin_fusen_getjson($dat);
 	$to = "UTF-8";
 	$json = mb_convert_encoding($json, $to, SOURCE_ENCODING);
+	
+	// 変更チェック
+	$old = @join('',@file($fname));
+	if ($json == $old) return;
+	
 	$fp = false;
 	$count = 0;
 	while(!$fp && ++$count < 6)

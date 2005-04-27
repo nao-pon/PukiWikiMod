@@ -1,9 +1,10 @@
 <?php
-// $Id: modinfo.php,v 1.4 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: modinfo.php,v 1.5 2005/04/27 14:28:11 nao-pon Exp $
 // FIXME: not good at English. :P
 
-define("_MI_PUKIWIKI_RECENT", "Recent");
-define("_MI_PUKIWIKI_LIST", "List");
+define("_MI_PUKIWIKI_RECENT", "Recent View");
+define("_MI_PUKIWIKI_LIST", "View List");
+define("_MI_PUKIWIKI_NEWPAGE", "New Page");
 define("_MI_PUKIWIKI_SITEMAP", "SiteMap");
 define("_MI_PUKIWIKI_RENAME", "Rename");
 define("_MI_PUKIWIKI_YETLIST", "YetList");

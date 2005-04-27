@@ -1,19 +1,16 @@
 <?php 
-// $Id: pukiwiki.skin.en.php,v 1.9 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: pukiwiki.skin.en.php,v 1.10 2005/04/27 14:28:10 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
 <!-- pukiwikimod -->
 	<script type="text/javascript">
 	<!--
-	var pukiwiki_root_url = "";
+	var pukiwiki_root_url = "<?php echo XOOPS_WIKI_HOST.XOOPS_WIKI_URL ?>/";
 	//-->
 	</script>
-	<script type="text/javascript" src="skin/default.js"></script>
-<table border=0 cellspacing="5" style="width:100%;" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()>
- <tr>
-  <td class="pukiwiki_body">
-
+	<script type="text/javascript" src="skin/default.ja.js"></script>
+<div class="pukiwiki_body" onmouseup="pukiwiki_pos();return true;" onkeyup="pukiwiki_pos();return true;">
 	<?php if((!$hide_navi && !$noheader) || !$is_read){ // header ?>
 		<center><div class="wiki_page_title"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
@@ -52,7 +49,7 @@ if (!defined('DATA_DIR')) exit;
 	
 	<?php } ?>
 	[ <a href="<?php echo $link_top ?>">Top</a>
-	| <a href="<?php echo $link_list ?>">List</a>
+	| <a href="<?php echo $link_list ?>">Page List</a>
 	| <a href="<?php echo $link_search ?>">Search</a>
 	<?php if(arg_check("list")) { ?>
 		| <a href="<?php echo $link_filelist ?>">Attach List</a>
@@ -68,7 +65,7 @@ if (!defined('DATA_DIR')) exit;
 	]<br /></center>
 	<?php echo $hr ?>
 	<?php } else { if (!$_freeze) { // header ?>
-		<div style="float:right;width:65px;"><a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="Attach" /></a><a href="<?php echo $link_edit ?>"><img src="./image/edit_button.gif" width="45" height="22" border="0" alt="Edit" /></a></div>
+		<div style="float:right;width:65px;"><a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="Attach" /></a><a href="<?php echo $link_edit ?>"><img src="./image/edit_button.gif" width="45" height="22" border="0" alt="edit" /></a></div>
 	<?php } } ?>
 
 	<?php if($is_read) { ?>
@@ -90,10 +87,11 @@ if (!defined('DATA_DIR')) exit;
 	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev"> <img src="./image/next.png" width="6" height="12" alt="Next"> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
 	
 	<?php } // is_read ?>
-	
+	<div class="wiki_header_img"></div>
 	<div class="wiki_content" id="body" style="width:100%;">
 	<?php echo $body ?>
 	</div>
+	<?php if ($is_page && $fusen_tag) { echo $fusen_tag; } ?>
 	<?php echo $hr ?>
 	<?php if($attaches)
 		{
@@ -110,29 +108,29 @@ if (!defined('DATA_DIR')) exit;
 		<?php if (!$_freeze){ ?>
 		<?php if ($wiki_allow_newpage){ ?>
 		<a href="<?php echo $link_new ?>"><img src="./image/new.png" width="20" height="20" border="0" alt="New" /></a>
-		<a href="<?php echo $link_copy ?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="Copy" /></a>
+		<a href="<?php echo $link_copy ?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="Page Copy" /></a>
 		<?php } // $wiki_allow_newpage ?>
 		<a href="<?php echo $link_edit ?>"><img src="./image/edit.png" width="20" height="20" border="0" alt="Edit" /></a>
-		<a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="Attach" /></a>
 		<a href="<?php echo $link_rename ?>"><img src="./image/rename.png" width="20" height="20" border="0" alt="Rename" /></a>
 		&nbsp;
 		<?php } // !$_freeze ?>
 		<a href="<?php echo $link_diff ?>"><img src="./image/diff.png" width="20" height="20" border="0" alt="Diff" /></a>
 		<a href="<?php echo $link_source ?>"><img src="./image/source.png" width="20" height="20" border="0" alt="Source" /></a>
+		<a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="Attach" /></a>
 		<a href="<?php echo $link_attachlist ?>"><img src="./image/attach.png" width="20" height="20" border="0" alt="Attach List" /></a>
 		&nbsp;
 		<?php } // $is_page ?>
-		<a href="<?php echo $link_top ?>"><img src="./image/top.png" width="20" height="20" border="0" alt="Wiki TOP" /></a>
-		<a href="<?php echo $link_list ?>"><img src="./image/list.png" width="20" height="20" border="0" alt="List" /></a>
-		<a href="<?php echo $link_search ?>"><img src="./image/search.png" width="20" height="20" border="0" alt="Serach" /></a>
-		<a href="<?php echo $link_whatsnew ?>"><img src="./image/recentchanges.png" width="20" height="20" border="0" alt="Recent" /></a>
+		<a href="<?php echo $link_top ?>"><img src="./image/top.png" width="20" height="20" border="0" alt="Wiki Top" /></a>
+		<a href="<?php echo $link_list ?>"><img src="./image/list.png" width="20" height="20" border="0" alt="Page List" /></a>
+		<a href="<?php echo $link_search ?>"><img src="./image/search.png" width="20" height="20" border="0" alt="Search" /></a>
+		<a href="<?php echo $link_whatsnew ?>"><img src="./image/recentchanges.png" width="20" height="20" border="0" alt="Resent Chenges" /></a>
 		<?php if($do_backup) { ?>
 		<a href="<?php echo $link_backup ?>"><img src="./image/backup.png" width="20" height="20" border="0" alt="Backup" /></a>
 		<?php } // $do_backup ?>
 		&nbsp;
 		<a href="<?php echo "$script?".rawurlencode("Help") ?>"><img src="./image/help.png" width="20" height="20" border="0" alt="Help" /></a>
 		&nbsp;
-		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.png" width="36" height="14" border="0" alt="RSS feeds" /></a>
+		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.png" width="36" height="14" border="0" alt="RSS feed" /></a>
 	</div>
 	<?php
 	if ($is_page)
@@ -140,19 +138,22 @@ if (!defined('DATA_DIR')) exit;
 	?>
 	<table style="width:auto;" class="small">
 	<tr>
-	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">Pagename:</td><td style="margin:0px;padding:0px;" colspan="2"><?php echo strip_bracket($vars['page'])." ".$sended_ping_tag ?></td>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">Page name:</td><td style="margin:0px;padding:0px;" colspan="2"><?php echo strip_bracket($vars['page'])." ".$sended_ping_tag ?></td>
 	</tr>
 	<tr>
-	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">Created:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a></td><td style="margin:0px;padding:0px;;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['buildtime']) . "<small>" . get_passage($pginfo['buildtime']); ?></small></td>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">Author:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a></td><td style="margin:0px;padding:0px;;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['buildtime']) . "<small>" . get_passage($pginfo['buildtime']); ?></small></td>
 	</tr>
 	<tr>
-	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">Changed:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo $pginfo['lastediter'] ?>"><?php echo $last_editer ?></a></td><td style="margin:0px;padding:0px;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) . get_pg_passage($vars["page"]); ?></td>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">Last edit:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo $pginfo['lastediter'] ?>"><?php echo $last_editer ?></a></td><td style="margin:0px;padding:0px;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) . get_pg_passage($vars["page"]); ?></td>
+	</tr>
+	<tr>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">Editers:</td><td style="margin:0px;padding:0px;white-space:nowrap;" colspan="2"><?php echo $allow_edit_groups.$allow_editers ?></td>
+	</tr>
 	<?php if($related) { ?>
 		<tr>
-		 <td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">Link pages:<td style="margin:0px;padding:0px;" colspan="2"><?php echo $related ?></td>
+		 <td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">Back Link:<td style="margin:0px;padding:0px;" colspan="2"><?php echo $related ?></td>
 		</tr>
 	<?php } ?>
-	</tr>
 	</table>
 	<?php } ?>
 	<?php if(!$use_xoops_tpl){ ?>
@@ -166,12 +167,5 @@ if (!defined('DATA_DIR')) exit;
 	</address>
 	<?php } ?>
 
-  </td>
- </tr>
-</table>
-<script type="text/javascript">
-<!--
-pukiwiki_initTexts();
-//-->
-</script>
+</div>
 <!-- /pukiwikimod -->

@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.31 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: index.php,v 1.32 2005/04/27 14:28:11 nao-pon Exp $
 
 
 define("UTIME",time());
@@ -123,6 +123,8 @@ function writeConfig(){
 	$fixed_heading_anchor = (int)$fixed_heading_anchor;
 	$f_countup_xoops = (int)$f_countup_xoops;
 	$f_use_xoops_comments = (int)$f_use_xoops_comments;
+	$f_tb_check_link_to_me = (int)$f_tb_check_link_to_me;
+	$f_fusen_enable_allpage = (int)$f_fusen_enable_allpage;
 	
 	if ($f_jp_pagereading == 2)
 	{
@@ -187,6 +189,8 @@ function writeConfig(){
 	\$trackback_encoding = '$trackback_encoding';
 	\$countup_xoops = $f_countup_xoops;
 	\$use_xoops_comments = $f_use_xoops_comments;
+	\$tb_check_link_to_me = $f_tb_check_link_to_me;
+	\$fusen_enable_allpage = $f_fusen_enable_allpage;
 	\$pukiwiki_dirs = array(
 		'wiki' => '".DATA_DIR."',
 	);
@@ -269,7 +273,7 @@ function checkPermit(){
 
 function displayForm(){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
-	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor,$trackback_encoding,$countup_xoops,$use_xoops_comments;
+	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor,$trackback_encoding,$countup_xoops,$use_xoops_comments,$tb_check_link_to_me,$fusen_enable_allpage;
 	
 	// 認証チケット発行
 	$tiket = md5(chr(mt_rand(ord('a'), ord('z'))).UTIME.chr(mt_rand(ord('a'), ord('z'))));
@@ -397,6 +401,18 @@ function displayForm(){
 		$_use_xoops_comments[1] = " checked";
 	else
 		$_use_xoops_comments[0] = " checked";
+	
+	$f_tb_check_link_to_me = array("","");
+	if ($tb_check_link_to_me)
+		$f_tb_check_link_to_me[1] = " checked";
+	else
+		$f_tb_check_link_to_me[0] = " checked";
+
+	$f_fusen_enable_allpage = array("","");
+	if ($fusen_enable_allpage)
+		$f_fusen_enable_allpage[1] = " checked";
+	else
+		$f_fusen_enable_allpage[0] = " checked";
 
 	echo "
 	| "._AM_SYSTEM_ADMENU." | <a href='./myblocksadmin.php'>"._AM_SYSTEM_ADMENU2."</a> |
@@ -459,6 +475,18 @@ function displayForm(){
 	</td><td>
 		<input type='radio' name='f_use_xoops_comments' value='1'".$_use_xoops_comments[1].">"._AM_WIKI_ENABLE."
 		<input type='radio' name='f_use_xoops_comments' value='0'".$_use_xoops_comments[0].">"._AM_WIKI_DISABLE."
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_FUSEN_ENABLE_ALLPAGE."
+	</td><td>
+		<input type='radio' name='f_fusen_enable_allpage' value='1'".$f_fusen_enable_allpage[1].">"._AM_WIKI_ENABLE."
+		<input type='radio' name='f_fusen_enable_allpage' value='0'".$f_fusen_enable_allpage[0].">"._AM_WIKI_DISABLE."
+	</td></tr>
+	<tr><td>
+		"._AM_WIKI_TB_CHECK_LINK_TO_ME."
+	</td><td>
+		<input type='radio' name='f_tb_check_link_to_me' value='1'".$f_tb_check_link_to_me[1].">"._AM_WIKI_ENABLE."
+		<input type='radio' name='f_tb_check_link_to_me' value='0'".$f_tb_check_link_to_me[0].">"._AM_WIKI_DISABLE."
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_FUNCTION_TRACKBACK."

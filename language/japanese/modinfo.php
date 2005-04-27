@@ -1,5 +1,5 @@
 <?php
-// $Id: modinfo.php,v 1.5 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: modinfo.php,v 1.6 2005/04/27 14:28:10 nao-pon Exp $
 
 define("_MI_PUKIWIKI_RECENT", "最新ページ一覧");
 define("_MI_PUKIWIKI_LIST", "ページ一覧");

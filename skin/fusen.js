@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.4 2005/04/20 15:22:35 nao-pon Exp $
+// $Id: fusen.js,v 1.5 2005/04/27 14:28:10 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -41,6 +41,7 @@ var fusenMovingFlg = false;
 var fusenResizeFlg = false;
 var fusenDustboxFlg = false;
 var fusenFullFlg = new Array();
+var fusenShowFlg = new Array();
 var fusenNowMovingOff = false;
 var fusenDblClick = false;
 var fusenBodyStyle = 'fusen_body';
@@ -55,6 +56,8 @@ var fusenClickH = 0;
 var fusenBusyFlg = false;
 var fusenMinWidth = 8;
 var fusenMinHeight = 8;
+var fusenGetRetry = 0;
+var fusenLoaded = false;
 
 var fsen_msg_nowbusy = '只今サーバーと通信中です。';
 
@@ -107,10 +110,12 @@ function fusen_busy(busy)
 	}
 	
 	var set_cursor;
-	var f_cursor;
+	var r_cursor;
+	var w_cursor;
 	var obj;
 	
-	f_cursor = (busy)? 'wait' : 'nw-resize';
+	r_cursor = (busy)? 'wait' : 'nw-resize';
+	w_cursor = (busy)? 'wait' : 'w-resize';
 	
 	for(var id in fusenObj)
 	{
@@ -127,7 +132,8 @@ function fusen_busy(busy)
 			fusen_set_onmousedown(obj,id);
 		}
 
-		getElement('fusen_id' + id + 'resize').style.cursor = f_cursor;
+		getElement('fusen_id' + id + 'resize').style.cursor = r_cursor;
+		getElement('fusen_id' + id + 'wresize').style.cursor = w_cursor;
 		
 	}
 }
@@ -160,10 +166,10 @@ function fusen_postdata(mode) {
 	var re = /input|textarea|select/i;
 	var tag = '';
 	var postdata = '';
-
+	
 	if (fusenTimerID) clearTimeout(fusenTimerID);
 	
-	var w_starus = (fusenInterval)? "通信完了 [自動更新 待機中]" : "通信完了 [自動更新 停止中]";
+	var w_starus = (fusenInterval)? "付箋機能: 通信完了 [自動更新(" + (fusenInterval/1000) + "s) 待機中]" : "付箋機能: 通信完了 [自動更新 停止中]";
 	window.status = "サーバーに接続中...";
 	fusen_busy(1);
 	
@@ -179,13 +185,13 @@ function fusen_postdata(mode) {
 	
 	try {
 		var xmlhttp = fusen_httprequest();
-		var url = location.href;
-		if (url.indexOf('?') > 0) url.substr(0, url.indexOf('?'));
+		//var url = location.href;
+		//if (url.indexOf('?') > 0) url.substr(0, url.indexOf('?'));
 		if (mode)
 		{
 			xmlhttp.onreadystatechange = readyStateChangeHandler;
 		}
-		xmlhttp.open('POST', url, mode);
+		xmlhttp.open('POST', fusenPostUrl, mode);
 		xmlhttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded;');
 		xmlhttp.send(postdata);
 	} catch(e) {
@@ -248,7 +254,7 @@ function fusen_getdata(mod)
 	fusen_busy(1);
 	if (fusenTimerID) clearTimeout(fusenTimerID);
 	
-	var w_starus = (fusenInterval)? "通信完了 [自動更新(" + (fusenInterval/1000) + "s) 待機中]" : "通信完了 [自動更新 停止中]";
+	var w_starus = (fusenInterval)? "付箋機能: 通信完了 [自動更新(" + (fusenInterval/1000) + "s) 待機中]" : "付箋機能: 通信完了 [自動更新 停止中]";
 	window.status = "サーバーに接続中...";
 
 	try
@@ -311,7 +317,7 @@ function fusen_getdata(mod)
 					try
 					{
 						var obj = getElement('fusen_area');
-						var pobj = obj;
+						var pobj = getElement('fusen_anchor');
 						var o_left = 0;
 						var o_top = 0;
 						
@@ -334,27 +340,58 @@ function fusen_getdata(mod)
 						{
 							var child = frm[i];
 							tag = String(child.tagName);
-							if (tag.match(re))
-							{
-								//child.onmouseout = fusen_moving_on;
-								//child.onmouseover = fusen_moving_off;
-							}
 						}
 						
 						eval( 'fusenObj = ' + txt );
 						while (obj.childNodes.length > 0) obj.removeChild(obj.firstChild);
-						for(var id in fusenObj) {
+						var listobj = getElement('fusen_list');
+						var listcount = 0;
+						var areaWidth;
+						listobj.innerHTML = '[<a href="javascript:fusen_hide(\'fusen_list\')">×</a>]<ul>';
+						for(var id in fusenObj)
+						{
+							listcount ++;
 							obj = fusen_create(id, fusenObj[id]);
 							document.getElementById('fusen_area').appendChild(obj);
 							fusen_set_onmousedown(obj,id)
 							obj.onmouseover = fusen_onmouseover;
 							obj.onmouseout = fusen_onmouseout;
 							fusenFullFlg[id] = false;
+							// リスト表示追加
+							addtxt = fusenObj[id].disp.replace(/<[^>]+>/g,'').replace(/[\s]+/g,' ');
+							if (addtxt.length > 30) addtxt = addtxt.substr(0,30) + '...';
+							if (fusenObj[id].del)
+							{
+								addtxt = '(ごみ箱)' + addtxt;
+								dustbox = 1;
+							}
+							else
+							{
+								dustbox = 0;
+							}
+							listobj.innerHTML += '<li><a href="javascript:fusen_select('+id+','+dustbox+')">'+addtxt+'</a></li>';
+							// サイズ再設定
+							if (!fusenObj[id].fix)
+							{
+								fusen_size_init(obj);
+							}
 						}
+						if (!listcount) listobj.innerHTML += '<li>このページに付箋はありません。</li>'
+						listobj.innerHTML += '</ul>';
+						list_left = listobj.style.left;
+						list_visibility = listobj.style.visibility;
+						listobj.style.visibility = 'hidden';
+						listobj.style.left = '0px';
+						listobj.style.width = 'auto';
+						listobj.style.width = listobj.offsetWidth + 'px';
+						listobj.style.left = list_left;
+						listobj.style.visibility = list_visibility;
 						fusen_setlines();
 						document.onmouseup = fusen_onmouseup;
 						document.onmousemove = fusen_onmousemove;
+						getElement("fusen_top_menu").style.visibility = 'visible';
 						fusen_set_timer();
+						fusenLoaded = true;
 					}
 					catch(e)
 					{
@@ -374,20 +411,32 @@ function fusen_getdata(mod)
 			
 			if (er)
 			{
-				fusen_busy(0)
-				if (confirm(er + ' 再試行しますか？ 接続先: ' + url.replace(/^https?:\/\/([^\/]+).*$/,"$1")))
+				if (fusenGetRetry++ >= 60/(fusenInterval/1000)) // 1分間は自動再試行する
 				{
-					if (fusenRetTimerID)  clearTimeout(fusenRetTimerID);
-					fusenRetTimerID = setInterval("fusen_init(0)", 1000);
+					fusenGetRetry = 0;
+					fusen_busy(0)
+					if (confirm(er + ' 再試行しますか？ 接続先: ' + url.replace(/^https?:\/\/([^\/]+).*$/,"$1")))
+					{
+						if (fusenRetTimerID)  clearTimeout(fusenRetTimerID);
+						fusenRetTimerID = setInterval("fusen_init(0)", 1000);
+					}
+					else
+					{
+						fusenInterval = 0;
+						window.status = "付箋機能: 通信完了 [自動更新 停止中]";
+						getElement('fusen_menu_interval').selectedIndex = 0;
+					}
 				}
 				else
 				{
-					fusenInterval = 0;
-					window.status = "通信完了 [自動更新 停止中]";
-					getElement('fusen_menu_interval').selectedIndex = 0;
+					fusen_set_timer();
 				}
-				er = '';
 			}
+			else
+			{
+				fusenGetRetry = 0;
+			}
+			er = '';
 			xmlhttp = null;
 			return;
 		}
@@ -424,7 +473,12 @@ function fusen_grep(pat) {
 }
 
 // editbox control
-function fusen_new() {
+function fusen_new()
+{
+	if (!fusenLoaded) return;
+	
+	if (fusenShowFlg['fusen_editbox']) {fusen_show('fusen_editbox');return;}
+	
 	fusenMovingObj = null;
 	
 	if (fusenTimerID) clearTimeout(fusenTimerID);
@@ -451,7 +505,14 @@ function fusen_editbox_hide() {
 	fusen_set_timer();
 }
 
-function fusen_save() {
+function fusen_save()
+{
+	if (getElement('edit_mode').value == 'edit' && !getElement('edit_body').value)
+	{
+		alert('内容を記入してください。');
+		return;
+	}
+
 	fusen_postdata(false);
 	fusen_init(1);
 	fusen_hide('fusen_editbox');
@@ -482,6 +543,7 @@ function fusen_setpos(id,auto)
 		obj.style.whiteSpace = 'nowrap';
 		obj.style.width = 'auto';
 		obj.style.height = 'auto';
+		fusen_size_init(obj);
 	}
 	else
 	{
@@ -508,7 +570,15 @@ function fusen_setpos(id,auto)
 
 function fusen_edit(id)
 {
+	if (fusenShowFlg['fusen_editbox']) {fusen_show('fusen_editbox');return;}
+
 	if (fusenObj[id].lk) return;
+	
+	var auth = false;
+	if (fusenX_admin) auth = true;
+	else if (fusenX_uid && fusenX_uid == fusenObj[id].uid) auth = true;
+	else if (fusenX_ucd && fusenX_ucd == fusenObj[id].ucd) auth = true;
+	if (!auth) return;
 	
 	fusenMovingObj = null;
 
@@ -679,18 +749,35 @@ function fusen_unlock(id)
 
 function fusen_show(id)
 {
+	fusenShowFlg[id] = true;
 	if (fusenTimerID) clearTimeout(fusenTimerID);
-	
-	var left = Math.max(getWinXOffset() + 5,parseInt(getElement('edit_bx').value));
-	var top = Math.max(getWinYOffset() + 5,(mouseY - 150));
+	window.status = parseInt(getElement('edit_bx').value);
+	//var left = Math.max(getWinXOffset() + 5,parseInt(getElement('edit_bx').value));
+	//var top = Math.max(getWinYOffset() + 5,(mouseY - 150));
+	if (id == 'fusen_editbox')
+	{
+		var top = getElement('edit_t').value;
+		var left = getElement('edit_l').value;
+	}
+	else
+	{
+		var top = mouseY;
+		var left = mouseX;
+	}
+	//window.status = left+":"+top;
 	getElement(id).style.left = left + "px";
 	getElement(id).style.top = top + "px";
 
-	getElement(id).style.zIndex = 2;
+	getElement(id).style.zIndex = 100;
 	getElement(id).style.visibility = "visible";
 	getElement(id).onmousedown = fusen_onmousedown;
 	
-	if (id == 'fusen_editbox')getElement("edit_body").focus();
+	//if (id == 'fusen_editbox') getElement("edit_body").focus();
+	if (id == 'fusen_editbox')
+		setTimeout(function(){getElement("edit_body").focus();window.scrollTo(left,Math.max(0,top - 100));},10);
+	else
+		setTimeout(function(){window.scrollTo(left,Math.max(0,top - 100));},10);
+	//fusen_winScroll(left,top);
 	
 	function getWinXOffset()
 	{
@@ -722,8 +809,16 @@ function fusen_show(id)
 
 }
 
-function fusen_hide(id) {
-	getElement(id).style.visibility = "hidden";
+function fusen_hide(id)
+{
+	if (id == 'fusen_list') fusen_select_clear();
+	fusenShowFlg[id] = false;
+	with(getElement(id).style)
+	{
+		visibility = "hidden";
+		left = "0px";
+		top = "0px";
+	}
 	document.onmouseup = fusen_onmouseup;
 	document.onmousemove = fusen_onmousemove;
 	fusenDblClick = false;
@@ -736,11 +831,13 @@ function fusen_hide(id) {
 
 function fusen_dustbox()
 {
+	/*
 	if (fusenBusyFlg)
 	{
 		alert(fsen_msg_nowbusy);
 		return;
 	}
+	*/
 	
 	fusenMovingObj = null;
 	fusenDustboxFlg = !fusenDustboxFlg;
@@ -791,6 +888,7 @@ function fusen_set_menu_html(tobj,id,mode)
 	else if (fusenX_uid && fusenX_uid == fusenObj[id].uid) auth = true;
 	else if (fusenX_ucd && fusenX_ucd == fusenObj[id].ucd) auth = true;
 	
+	//tobj.innerHTML = '<a name="fusenid' + id + '"></a>id.' + id + ': ';
 	tobj.innerHTML = 'id.' + id + ': ';
 	if (mode == 'del')
 	{
@@ -813,10 +911,10 @@ function fusen_set_menu_html(tobj,id,mode)
 	}
 	else 
 	{
-		tobj.innerHTML +=
-			' <a href="javascript:fusen_edit(' + id + ')" title="編集">edit</a>';
 		if (auth)
 		{
+			tobj.innerHTML +=
+				' <a href="javascript:fusen_edit(' + id + ')" title="編集">edit</a>';
 			tobj.innerHTML +=
 				' <a href="javascript:fusen_lock(' + id + ')" title="ロック">lock</a>';
 		}
@@ -841,7 +939,6 @@ function fusen_create_menuobj(id, mode, obj) {
 	cobj.className = 'fusen_menu';
 	cobj.id = 'fusen_id' + id + 'menu';
 	fusen_set_menu_html(cobj,id,mode);
-//	cobj.appendChild(fusen_create_wresizeobj(id, obj));
 	return cobj;
 }
 
@@ -897,6 +994,12 @@ function fusen_create_wresizeobj(id,obj) {
 		cobj.style.visibility = 'hidden';
 	}
 	return cobj;
+	/*
+	var iobj = document.createElement("A");
+	iobj.name = "fusenid"+id;
+	iobj.appendChild(cobj);
+	return iobj;
+	*/
 }
 
 function fusen_create(id, obj) {
@@ -921,6 +1024,12 @@ function fusen_create(id, obj) {
 		fusenobj.title = "ダブルクリック->編集";
 	}
 	
+	// ロック?
+	if (obj.lk)
+		fusenobj.style.cursor = 'auto';
+	else
+		fusenobj.style.cursor = 'move';
+	
 	// サイズ固定？
 	if (obj.fix)
 	{
@@ -930,12 +1039,6 @@ function fusen_create(id, obj) {
 		fusenobj.style.height = (obj.fix == 1)? obj.h + 'px' : 'auto';
 		if (obj.fix == 1) fusenobj.title = "ダブルクリック->すべて表示";
 	}
-	
-	// ロック?
-	if (obj.lk)
-		fusenobj.style.cursor = 'auto';
-	else
-		fusenobj.style.cursor = 'move';
 	
 	if (obj.bx) ox += parseInt(getElement('edit_bx').value) - obj.bx;
 	if (obj.by) oy += parseInt(getElement('edit_by').value) - obj.by;
@@ -958,6 +1061,7 @@ function fusen_create(id, obj) {
 	fusenobj.appendChild(fusen_create_wresizeobj(id, obj));
 	fusenobj.appendChild(fusen_create_resizeobj(id, obj));
 	fusenobj.ondblclick = fusen_ondblclick;
+	
 	return fusenobj;
 }
 
@@ -1356,7 +1460,7 @@ function fusen_onmousedown(e) {
 	for(var id in fusenObj) {
 		getElement('fusen_id' + id).style.zIndex = 1;
 	}
-	fusenMovingObj.style.zIndex = 2;
+	fusenMovingObj.style.zIndex = 90;
 	fusenMovingFlg = false;
 	return false;
 }
@@ -1509,11 +1613,8 @@ function fusen_onmouseover(e)
 	}
 	else
 	{
-		if (fusenObj[id].fix && (fusenObj[id].w <= fusenMinWidth || fusenObj[id].h <= fusenMinHeight))
+		if (fusenObj[id].fix && (fusenObj[id].w == fusenMinWidth || fusenObj[id].h == fusenMinHeight))
 		{
-			//if (fusenFullTimerID[id]) clearTimeout(fusenFullTimerID[id]);
-			//fusenDblClick = true;
-			//fusen_show_full(id,'open');
 			eval('fusenFullTimerID[' + id + ']=setInterval("fusen_show_full(' + id + ',\'open\')", 500);');
 		}
 	}
@@ -1553,19 +1654,15 @@ function fusen_show_full(id,mode)
 		{
 			fusenFullFlg[id] = true;
 			obj.style.height = 'auto';
-			obj.style.zIndex = 2;
+			obj.style.zIndex = 90;
 			obj.title = (fusenObj[id].lk)? '' :"ダブルクリック->編集";
 			if (fusenObj[id].w < 50)
 			{
-				obj.style.overflow = 'visible';
-				obj.style.whiteSpace = 'nowrap';
-				obj.style.width = 'auto';
+				//obj.style.overflow = 'visible';
+				//obj.style.whiteSpace = 'nowrap';
+				//obj.style.width = 'auto';
+				fusen_size_init(obj);
 			}
-			//else
-			//{
-			//	obj.style.overflow = 'hidden';
-			//	obj.style.whiteSpace = 'normal';
-			//}
 		}
 		else
 		{
@@ -1584,6 +1681,70 @@ function fusen_show_full(id,mode)
 	}
 }
 
+function fusen_select(selectid,dustbox)
+{
+	var top = parseInt(getElement('fusen_id' + selectid).style.top);
+	var left = parseInt(getElement('fusen_id' + selectid).style.left);
+	
+	if (fusenObj[selectid].fix && (fusenObj[selectid].w <= fusenMinWidth || fusenObj[selectid].h <= fusenMinHeight))
+	{
+		fusen_show_full(selectid,'open');
+		eval('fusenFullTimerID[' + selectid + ']=setInterval("fusen_show_full(' + selectid + ',\'close\')", 10000);');
+	}
+
+	fusen_select_clear('on');
+	with(getElement('fusen_id' + selectid))
+	{
+		style.border = fusenBorderObj['select'];
+		className = 'fusen_body';
+		style.zIndex = 90;
+	}
+	//getElement('fusen_list').style.top = (top + getElement('fusen_id' + selectid).offsetHeight + 3) + 'px';
+	//getElement('fusen_list').style.left = left + 'px';
+	getElement('fusen_list').style.top = top + 'px';
+	getElement('fusen_list').style.left = (left + getElement('fusen_id' + selectid).offsetWidth + 1) + 'px';left + 'px';
+	window.scrollTo(left,top);
+	fusenDustboxFlg = !dustbox;
+	fusen_dustbox();
+}
+
+function fusen_select_clear(mode)
+{
+	if (mode == 'on')
+	{
+		fusenBodyStyle = 'fusen_body';
+	}
+	else
+	{
+		fusenBodyStyle = 'fusen_body_trans';
+	}
+	fusen_transparent();
+	
+	for(var id in fusenObj)
+	{
+		if (fusenObj[id].del) {
+			border = fusenBorderObj['del'];
+		} else  if (fusenObj[id].lk) {
+			border = fusenBorderObj['lock'];
+		} else {
+			border = fusenBorderObj['normal'];
+		}
+		with(getElement('fusen_id' + id))
+		{
+			style.border = border;
+			style.zIndex = 1;
+		}
+	}
+}
+
+function fusen_winScroll(x,y)
+{
+	wy+=1;
+	if( wy > y ){return;}
+	window.scrollTo(x,wy);
+	eval('setTimeout("fusen_winScroll(' + x + ',' + y + ')",1);');
+}
+
 // Initialize
 
 function fusen_init(mode)
@@ -1600,13 +1761,69 @@ function fusen_init(mode)
 	}
 }
 
+function fusen_set_elements()
+{
+	var html;
+	html = '[<a href="javascript:fusen_hide(\'fusen_help\')">×</a>]'
++'<ul>'
++'<li>ダブルクリックで新しい付箋を作成できます。</li>'
++'<li>書き込むと、付箋が表示されます。</li>'
++'<li>付箋はドラッグして位置を移動できます。</li>'
++'<li>"edit"を押す、または付箋をダブルクリックすると、その付箋を編集できます。<br />※自分で作成した付箋のみ編集できます。</li>'
++'<li>"lock"を押すと、編集・移動を禁止します。lockした付箋は"unlock"で元に戻せます。<br />※自分で作成した付箋のみlockできます。</li>'
++'<li>"del"を押すと、付箋をゴミ箱へ移動します。ゴミ箱の付箋は"recover"で元に戻せます。<br />'
++'ゴミ箱の付箋で"del"を押すと、付箋を完全に削除します。<br />※自分で作成した付箋のみdelできます。</li>'
++'</ul>'
++'<dl>'
++'<dt>[新規]</dt>'
++'<dd>新しい付箋の編集画面を表示します。</dd>'
++'<dt>[ゴミ箱]</dt>'
++'<dd>ゴミ箱に入れられた付箋を表示します。</dd>'
++'<dt>[透明]</dt>'
++'<dd>すべての付箋を半透明表示にします。</dd>'
++'<dt>[更新]</dt>'
++'<dd>付箋を最新の状態に更新します。</dd>'
++'<dt>[リスト]</dt>'
++'<dd>このページの付箋を一覧表示します。</dd>'
++'<dt>[ヘルプ]</dt>'
++'<dd>この説明書きを表示します。</dd>'
++'<dt>検索</dt>'
++'<dd>入力したキーワードを持つ付箋のみ表示します。</dd>'
++'</dl>';
+	var hobj = getElement('fusen_help');
+	hobj.innerHTML = html;
+	hobj.style.width = 'auto';
+	hobj.style.width = hobj.offsetWidth + 'px';
+	var eobj = getElement('fusen_editbox');
+	eobj.style.width = 'auto';
+	eobj.style.width = eobj.offsetWidth + 'px';
+}
+
+function fusen_size_init(obj)
+{
+	v_tmp = obj.style.visibility;
+	l_tmp = obj.style.left;
+	with(obj.style)
+	{
+		visibility = 'hidden'
+		left = '0px';
+		overflow = 'visible';
+		whiteSpace = 'nowrap';
+		width = 'auto';
+		width = obj.offsetWidth + 'px';
+		whiteSpace = 'normal';
+		left = l_tmp;
+		visibility = v_tmp;
+	}
+}
 
 var __fusen_onload_save = window.onload;
 window.onload = function() {
 	if (__fusen_onload_save) __fusen_onload_save();
+	//getElement('fusen_area').style.width = '1000px;'
+	fusen_set_elements();
 	fusen_init(1);
-	getElement("fusen_top_menu").style.visibility = 'visible';
-	
+
 	if (IE) {
 		var __fusen_ondblclick_save = document.ondblclick;
 		document.ondblclick = function() {
