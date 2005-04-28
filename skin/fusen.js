@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.5 2005/04/27 14:28:10 nao-pon Exp $
+// $Id: fusen.js,v 1.6 2005/04/28 14:18:41 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -317,7 +317,14 @@ function fusen_getdata(mod)
 					try
 					{
 						var obj = getElement('fusen_area');
-						var pobj = getElement('fusen_anchor');
+						if (fusenFromSkin)
+						{
+							var pobj = getElement('fusen_anchor');
+						}
+						else
+						{
+							var pobj = getElement('fusen_area');
+						}
 						var o_left = 0;
 						var o_top = 0;
 						

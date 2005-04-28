@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.55 2005/04/27 14:28:11 nao-pon Exp $
+// $Id: html.php,v 1.56 2005/04/28 14:18:53 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -137,7 +137,7 @@ EOT;
 		if ($fusen_enable_allpage && empty($pwm_plugin_flg['fusen']['convert']))
 		{
 			require_once(PLUGIN_DIR."fusen.inc.php");
-			$fusen_tag = do_plugin_convert("fusen");
+			$fusen_tag = do_plugin_convert('fusen','FROM_SKIN');
 			$fusen_tag = str_replace(array(WIKI_NAME_DEF,WIKI_UCD_DEF,'_XOOPS_WIKI_HOST_'),array($X_uname,PUKIWIKI_UCD,XOOPS_WIKI_HOST),$fusen_tag);
 		}
 	}
