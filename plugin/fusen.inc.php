@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.4 2005/04/27 14:28:11 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.5 2005/04/28 14:19:34 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -67,7 +67,7 @@ function plugin_fusen_convert() {
 	}
 	if ($loaded)
 	{
-		return "";
+		return '';
 	}
 	
 	// $pwm_plugin_flg セット
@@ -86,7 +86,7 @@ function plugin_fusen_convert() {
 	$jname = plugin_fusen_jsencode($name);
 	
 	// パラメータ
-	$refresh = 0;
+	$off = $from_skin = $refresh = 0;
 	$background = $height = '';
 	foreach(func_get_args() as $prm)
 	{
@@ -94,7 +94,13 @@ function plugin_fusen_convert() {
 			$refresh =($arg[2])? $arg[2] : 0;
 		if (preg_match("/^h(eight)?:([\d]+)/",$prm,$arg))
 			$height = min($arg[2],10000);
+		if ($prm == 'FROM_SKIN')
+			$from_skin = 1;
+		if (strtolower($prm) == 'off')
+			$off = 1;
 	}
+	
+	if ($off) return;
 	
 	if ($height)
 	{
@@ -145,6 +151,7 @@ var fusenInterval = {$refresh};
 var fusenX_admin = {$auth};
 var fusenX_uid = {$X_uid};
 var fusenX_ucd = "{$X_ucd}";
+var fusenFromSkin = {$from_skin};
 //-->
 </script>
 <fieldset class="fusen_fieldset">
@@ -491,6 +498,9 @@ function plugin_fusen_getjson($fusen_data) {
 		
 		// ~\n -> \n
 		$dat['txt'] = preg_replace("/~$/m","",$dat['txt']);
+		
+		// 改行文字等除去
+		$dat['disp'] = str_replace(array("\r","\n","\t"),'',$dat['disp']);
 
 		// JSONの構成
 		if ($json != '{') $json .= ",\n  ";
