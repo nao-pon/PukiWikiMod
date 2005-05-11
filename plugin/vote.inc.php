@@ -1,5 +1,5 @@
 <?php
-// $Id: vote.inc.php,v 1.9 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: vote.inc.php,v 1.10 2005/05/11 12:01:36 nao-pon Exp $
 
 function plugin_vote_init()
 {
@@ -298,7 +298,7 @@ function plugin_vote_convert()
 		
 		$string .= "<tr>".$cnt_tag
 			.  "<td align=\"left\" class=\"$cls\" style=\"padding-left:1em;padding-right:1em;\"><input type=\"text\" name=\"vote_newitem\" size=\"$addcnt\"/></td>"
-			.  "<td align=\"right\" class=\"$cls\" nowrap=\"nowrap\">0&nbsp;&nbsp;<input type=\"submit\" name=\"vote_".htmlspecialchars($e_arg)."\" value=\"$_vote_plugin_votes\" class=\"submit\" /></td>"
+			.  "<td align=\"right\" class=\"$cls\" nowrap=\"nowrap\">0&nbsp;&nbsp;<input type=\"submit\" name=\"vote_\" value=\"$_vote_plugin_votes\" class=\"submit\" /></td>"
 			.  "</tr>\n";
 	}
 
