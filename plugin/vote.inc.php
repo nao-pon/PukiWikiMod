@@ -1,5 +1,5 @@
 <?php
-// $Id: vote.inc.php,v 1.10 2005/05/11 12:01:36 nao-pon Exp $
+// $Id: vote.inc.php,v 1.11 2005/05/11 13:49:31 nao-pon Exp $
 
 function plugin_vote_init()
 {
@@ -32,7 +32,8 @@ function plugin_vote_action()
 
 	// エスケープ＆文字実体参照へ)
 	$post['vote_newitem'] = htmlspecialchars($post['vote_newitem']);
-	$post['vote_newitem'] = str_replace(",","&sbquo;",$post['vote_newitem']);
+	$post['vote_newitem'] = str_replace("&amp;","&",$post['vote_newitem']);
+	//$post['vote_newitem'] = str_replace(",","&sbquo;",$post['vote_newitem']);
 	$post['vote_newitem'] = str_replace("|","&#x7c;",$post['vote_newitem']);
 	
 	//表中改行を連結
@@ -60,9 +61,32 @@ function plugin_vote_action()
 					
 					if(($vote_no == $post["vote_no"]) && !$celltag)
 					{
-						$args = explode(",",$arg[2]);
+						$args = $arg[2];
+						// "と"で囲んだパラメータは、,を含む事ができるように
+						// 制御文字へ置換
+						$args = str_replace("\",\"","\x1d\x1c",$args);
+						$args = str_replace(",\"","\x1c",$args);
+						$args = str_replace("\",","\x1d",$args);
+						$args = preg_replace("/^\"/","\x00\x1c",$args);
+						$args = preg_replace("/\"$/","\x1d\x00",$args);
+						// , を \x08 に変換
+						$args = preg_replace("/(\x1c.*\x1d)/e","str_replace(',','\x08','$1')",$args);
+						// 制御文字を戻す
+						$args = str_replace("\x00\x1c","",$args);
+						$args = str_replace("\x1d\x00","",$args);
+						$args = str_replace("\x1d\x1c",",",$args);
+						$args = str_replace("\x1c",",",$args);
+						$args = str_replace("\x1d",",",$args);
+
+						// 配列に格納
+						$args = ($args !== '') ? explode(',',$args) : array();
+
+						// \x08 を , に戻す
+						$args = str_replace("\x08",",",$args);
+						
 						$lefts = empty($arg[3]) ? '' : $arg[3];
 						$lastvote = "";
+						$_add = FALSE;
 						foreach($args as $item)
 						{
 							if(preg_match("/^#lastvote:(.+)$/",$item,$arg))
@@ -105,8 +129,10 @@ function plugin_vote_action()
 								}
 								if (strtolower($item) == "#add" && $post['vote_newitem'] && strtolower($post['vote_newitem']) != "#add")
 								{
-									$votes[] = $post['vote_newitem'].'[1]';
+									$item = $post['vote_newitem'];
+									$cnt = 1;
 									$notimestamp = $nomail = FALSE;
+									$_add = TRUE;
 								}
 								elseif($post["vote_$e_arg"]==$_vote_plugin_votes)
 								{
@@ -118,11 +144,19 @@ function plugin_vote_action()
 									}
 									$cnt++;
 								}
-
-								$votes[] = $item.'['.$cnt.']';
+								$item = $item;
+								if ($cnt) $item .= '['.$cnt.']';
 							}
-							else
-								$votes[] = $item;
+							if (strpos($item,",") !== FALSE)
+							{
+								$item = '"'.$item.'"';
+							}
+							$votes[] = $item;
+							if ($_add)
+							{
+								$votes[] = "#add";
+								$_add = FALSE;
+							}
 						}
 
 						$vote_str = "$arg[1]#vote(" . "#lastvote:" . $thisvote .",". @join(",",$votes) . ")" . $lefts;
