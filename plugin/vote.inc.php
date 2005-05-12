@@ -1,5 +1,5 @@
 <?php
-// $Id: vote.inc.php,v 1.11 2005/05/11 13:49:31 nao-pon Exp $
+// $Id: vote.inc.php,v 1.12 2005/05/12 14:42:51 nao-pon Exp $
 
 function plugin_vote_init()
 {
@@ -133,6 +133,7 @@ function plugin_vote_action()
 									$cnt = 1;
 									$notimestamp = $nomail = FALSE;
 									$_add = TRUE;
+									$thisvote = md5($item.$_SERVER["REMOTE_ADDR"]);
 								}
 								elseif($post["vote_$e_arg"]==$_vote_plugin_votes)
 								{
@@ -144,7 +145,6 @@ function plugin_vote_action()
 									}
 									$cnt++;
 								}
-								$item = $item;
 								if ($cnt) $item .= '['.$cnt.']';
 							}
 							if (strpos($item,",") !== FALSE)
