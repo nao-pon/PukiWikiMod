@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.56 2005/04/28 14:18:53 nao-pon Exp $
+// $Id: html.php,v 1.57 2005/05/13 01:25:18 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -122,17 +122,21 @@ function catbody($title,$page,$body)
 		if ($trackback_body)
 		{
 			$trackback_body = <<<EOT
-	<div class="outer">
-	  <div class="head"><a name="tb_body"></a>{$_msg_trackback}{$tb_tag}</div>
-	  <div class="tburl">{$_msg_trackback} URL: {$tb_url}</div>
-	  <div class="blog">
-	   {$trackback_body}
-	  </div>
-	</div>
-	<hr />
+<div class="blog">
+{$trackback_body}
+</div>
 EOT;
-			$tb_tag = " [ <a href=\"#tb_body\">{$tb_count}</a> ]";
 		}
+		$trackback_body = <<<EOT
+<div class="outer">
+<div class="head"><a name="tb_body"></a>{$_msg_trackback}{$tb_tag}</div>
+<div class="tburl">{$_msg_trackback} URL: {$tb_url}</div>
+{$trackback_body}
+</div>
+<hr />
+EOT;
+		$tb_tag = " [ <a href=\"#tb_body\">{$tb_count}</a> ]";
+		
 		// 付箋
 		if ($fusen_enable_allpage && empty($pwm_plugin_flg['fusen']['convert']))
 		{
