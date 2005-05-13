@@ -1,5 +1,5 @@
 <?php
-// $Id: vote.inc.php,v 1.12 2005/05/12 14:42:51 nao-pon Exp $
+// $Id: vote.inc.php,v 1.13 2005/05/13 00:24:06 nao-pon Exp $
 
 function plugin_vote_init()
 {
@@ -30,9 +30,9 @@ function plugin_vote_action()
 	$notimestamp = FALSE;
 	$nomail = FALSE;
 
-	// エスケープ＆文字実体参照へ)
-	$post['vote_newitem'] = htmlspecialchars($post['vote_newitem']);
-	$post['vote_newitem'] = str_replace("&amp;","&",$post['vote_newitem']);
+	// エスケープ＆文字実体参照へ
+	//$post['vote_newitem'] = htmlspecialchars($post['vote_newitem']);
+	//$post['vote_newitem'] = str_replace("&amp;","&",$post['vote_newitem']);
 	//$post['vote_newitem'] = str_replace(",","&sbquo;",$post['vote_newitem']);
 	$post['vote_newitem'] = str_replace("|","&#x7c;",$post['vote_newitem']);
 	
@@ -70,14 +70,11 @@ function plugin_vote_action()
 						$args = preg_replace("/^\"/","\x00\x1c",$args);
 						$args = preg_replace("/\"$/","\x1d\x00",$args);
 						// , を \x08 に変換
-						$args = preg_replace("/(\x1c.*\x1d)/e","str_replace(',','\x08','$1')",$args);
+						$args = preg_replace("/(\x1c.*?\x1d)/e","str_replace(',','\x08','$1')",$args);
 						// 制御文字を戻す
-						$args = str_replace("\x00\x1c","",$args);
-						$args = str_replace("\x1d\x00","",$args);
-						$args = str_replace("\x1d\x1c",",",$args);
-						$args = str_replace("\x1c",",",$args);
-						$args = str_replace("\x1d",",",$args);
-
+						$args = str_replace(array("\x00\x1c","\x1d\x00"),"",$args);
+						$args = str_replace(array("\x1d\x1c","\x1c","\x1d"),",",$args);
+						
 						// 配列に格納
 						$args = ($args !== '') ? explode(',',$args) : array();
 
