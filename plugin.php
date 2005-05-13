@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: plugin.php,v 1.12 2005/03/07 14:28:29 nao-pon Exp $
+// $Id: plugin.php,v 1.13 2005/05/13 00:23:06 nao-pon Exp $
 //
 
 // プラグイン用に未定義の変数を設定
@@ -130,13 +130,10 @@ function do_plugin_convert($name,$args)
 	$args = preg_replace("/^&quot;/","\x00\x1c",$args);
 	$args = preg_replace("/&quot;$/","\x1d\x00",$args);
 	// , を \x08 に変換
-	$args = preg_replace("/(\x1c.*\x1d)/e","str_replace(',','\x08','$1')",$args);
+	$args = preg_replace("/(\x1c.*?\x1d)/e","str_replace(',','\x08','$1')",$args);
 	// 制御文字を戻す
-	$args = str_replace("\x00\x1c","",$args);
-	$args = str_replace("\x1d\x00","",$args);
-	$args = str_replace("\x1d\x1c",",",$args);
-	$args = str_replace("\x1c",",",$args);
-	$args = str_replace("\x1d",",",$args);
+	$args = str_replace(array("\x00\x1c","\x1d\x00"),"",$args);
+	$args = str_replace(array("\x1d\x1c","\x1c","\x1d"),",",$args);
 
 	// 配列に格納
 	$aryargs = ($args !== '') ? explode(',',$args) : array();
@@ -170,14 +167,11 @@ function do_plugin_inline($name,$args,$body)
 	$args = preg_replace("/^\"/","\x00\x1c",$args);
 	$args = preg_replace("/\"$/","\x1d\x00",$args);
 	// , を \x08 に変換
-	$args = preg_replace("/(\x1c.*\x1d)/e","str_replace(',','\x08','$1')",$args);
+	$args = preg_replace("/(\x1c.*?\x1d)/e","str_replace(',','\x08','$1')",$args);
 	// 制御文字を戻す
-	$args = str_replace("\x00\x1c","",$args);
-	$args = str_replace("\x1d\x00","",$args);
-	$args = str_replace("\x1d\x1c",",",$args);
-	$args = str_replace("\x1c",",",$args);
-	$args = str_replace("\x1d",",",$args);
-
+	$args = str_replace(array("\x00\x1c","\x1d\x00"),"",$args);
+	$args = str_replace(array("\x1d\x1c","\x1c","\x1d"),",",$args);
+	
 	// 配列に格納
 	$aryargs = ($args !== '') ? explode(',',$args) : array();
 
