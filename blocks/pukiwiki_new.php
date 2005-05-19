@@ -1,7 +1,7 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.20 2005/04/17 12:50:23 nao-pon Exp $
-function b_pukiwiki_new_show($option) {
-
+// $Id: pukiwiki_new.php,v 1.21 2005/05/19 23:57:52 nao-pon Exp $
+function b_pukiwiki_new_show($option)
+{
 	//表示する件数
 	$show_num = 10;
 
@@ -65,8 +65,8 @@ function b_pukiwiki_new_show($option) {
 	return $block;
 }
 
-function b_pukiwiki_newtb_show($option) {
-
+function b_pukiwiki_newtb_show($option)
+{
 	global $xoopsUser,$xoopsDB;
 
 	//表示する件数
@@ -99,6 +99,42 @@ function b_pukiwiki_newtb_show($option) {
 	return $block;
 }
 
+function b_pukiwiki_newattach_show($option)
+{
+	error_reporting(E_ALL);
+	global $xoopsUser,$xoopsDB;
+
+	//表示する件数
+	$show_num = 10;
+
+	$query = 'SELECT a.mtime, a.name, i.name FROM `'.$xoopsDB->prefix("pukiwikimod_attach").'` a LEFT JOIN `'.$xoopsDB->prefix("pukiwikimod_pginfo").'` i ON a.pgid = i.id WHERE i.name != "" AND a.name != "fusen.dat" AND a.name NOT LIKE "ISBN%.jpg" AND a.name NOT LIKE "ISBN%.dat" ORDER BY `mtime` DESC LIMIT '.$show_num;
+	$res = $xoopsDB->query($query);
+	$item = $query;
+
+	if ($res)
+	{
+		$date = $items = "";
+		$close = FALSE;
+		while($data = mysql_fetch_row($res))
+		{
+			if(date("Y-n-j",$data[0]) != $date)
+			{
+				if ($close) $items .= "</ul>";
+				$date = date("Y-n-j",$data[0]);
+				$items .= "<strong>".$date."</strong>\n<ul>\n";
+				$close = TRUE;
+			}
+			$link = XOOPS_URL."/modules/pukiwiki/index.php?plugin=attach&pcmd=info&file=".rawurlencode($data[1])."&refer=".rawurlencode(xb_add_bracket($data[2]));
+			$items .="<li><a href=\"$link\">$data[1]</a><br />to: ".xb_make_link($data[2],$data[2])."</li>\n";
+		}
+		if ($close) $items .= "</ul>";
+	}
+
+	$block['title'] = _MI_PUKIWIKI_BTITLE3;
+	$block['content'] = "<div style=\"word-wrap:break-word; word-break:break-all;\">$items</div>";
+
+	return $block;
+}
 
 //ページ名からリンクを作成
 function xb_make_link($page,$alias="#/#")
