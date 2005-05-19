@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.33 2005/04/17 12:55:31 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.34 2005/05/19 23:49:48 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -78,7 +78,9 @@ if (!ATTACH_UPLOAD_ADMIN_ONLY && !ATTACH_UPLOAD_EDITER_ONLY && ATTACH_UPLOAD_EXT
 	$GLOBALS['pukiwiki_allow_extensions'] = explode(",",str_replace(" ","",ATTACH_UPLOAD_EXTENSION));
 }
 else
+{
 	$GLOBALS['pukiwiki_allow_extensions'] = array();
+}
 
 //-------- convert
 function plugin_attach_convert()
@@ -571,7 +573,7 @@ EOD;
 '.$_attach_messages['msg_width'].'<input type=text name=picw value='.$picw.' size=3> x '.$_attach_messages['msg_height'].'<input type=text name=pich value='.$pich.' size=3>
 '.$_attach_messages['msg_max'].'('.WIKI_PAINTER_MAX_WIDTH_UPLOAD.' x '.WIKI_PAINTER_MAX_HEIGHT_UPLOAD.')
 <input type=submit value="'.$_attach_messages['msg_do_paint'].'" />
-<input type=checkbox id="_p_attach_anime_'.$pgid.'_'.$load[$page].'" value="true" name="anime" checked="true" />
+<input type=checkbox id="_p_attach_anime_'.$pgid.'_'.$load[$page].'" value="true" name="anime" />
 <label for="_p_attach_anime_'.$pgid.'_'.$load[$page].'">'.$_attach_messages['msg_save_movie'].'</label><br />
 <br />'.$_attach_messages['msg_adv_setting'].'<br />
 <label for="_p_attach_image_canvas_'.$pgid.'_'.$load[$page].'">'.$_attach_messages['msg_init_image'].'</label>: <input type="text" size="20" id="_p_attach_image_canvas_'.$pgid.'_'.$load[$page].'" name="image_canvas" />
@@ -596,9 +598,11 @@ EOD;
 	}
 	
 	$allow_extensions = '';
+	$antar_tag = "(<label for=\"_p_attach_untar_mode_{$pgid}_{$load[$page]}\">{$_attach_messages['msg_untar']}</label>:<input type=\"checkbox\" id=\"_p_attach_untar_mode_{$pgid}_{$load[$page]}\" name=\"untar_mode\">)";
 	if ($GLOBALS['pukiwiki_allow_extensions'] && !is_editable($page))
 	{
 		$allow_extensions = str_replace('$1',join(", ",$GLOBALS['pukiwiki_allow_extensions']),$_attach_messages['msg_extensions'])."<br />";
+		$antar_tag = "";
 	}
 	
 	$filelist = "<hr />".attach_filelist();
@@ -618,7 +622,7 @@ EOD;
   <label for="_p_attach_attach_fil_{$pgid}_{$load[$page]}">{$_attach_messages['msg_file']}</label>: <input type="file" id="_p_attach_attach_fil_{$pgid}_{$load[$page]}" name="attach_file" />
   $pass
   <input type="submit" class="upload_btn" value="{$_attach_messages['btn_upload']}" />
-  (<label for="_p_attach_untar_mode_{$pgid}_{$load[$page]}">{$_attach_messages['msg_untar']}</label>:<input type="checkbox" id="_p_attach_untar_mode_{$pgid}_{$load[$page]}" name="untar_mode">)<br />
+  $antar_tag<br />
   <input type="checkbox" id="_p_attach_copyright_{$pgid}_{$load[$page]}" name="copyright" value="1" /> <label for="_p_attach_copyright_{$pgid}_{$load[$page]}">{$_attach_messages['msg_copyright']}</label>
 
  </div>
@@ -1002,7 +1006,17 @@ EOD;
 		ini_set('default_charset','');
 		mb_http_output('pass');
 		
-		header('Content-Disposition: inline; filename="'.$filename.'"');
+		// 画像以外はダウンロード扱いにする(XSS対策)
+		$_i_size = getimagesize($this->filename);
+		if ($_i_size[2])
+		{
+			header('Content-Disposition: inline; filename="'.$filename.'"');
+		}
+		else
+		{
+			header('Content-Disposition: attachment; filename="'.$filename.'"');
+		}
+		
 		header('Content-Length: '.$this->size);
 		header('Content-Type: '.$this->type);
 		@readfile($this->filename);
