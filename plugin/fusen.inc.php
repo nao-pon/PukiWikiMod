@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.5 2005/04/28 14:19:34 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.6 2005/05/20 00:13:42 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -60,31 +60,6 @@ function plugin_fusen_convert() {
 	
 	static $loaded = false;
 	
-	//読み込みチェック
-	if ($now_inculde_convert)
-	{
-		return "<p>".make_pagelink($vars['page'],strip_bracket($vars['page'])."の付箋を表示")."</p>";
-	}
-	if ($loaded)
-	{
-		return '';
-	}
-	
-	// $pwm_plugin_flg セット
-	$pwm_plugin_flg['fusen']['convert'] = true;
-	
-	// 初期化
-	$loaded = true;
-	$refer = $vars['page'];
-	$jsfile = FUSEN_SCRIPT_FILE;
-	$border_normal = FUSEN_STYLE_BORDER_NORMAL;
-	$border_lock = FUSEN_STYLE_BORDER_LOCK;
-	$border_del = FUSEN_STYLE_BORDER_DEL;
-	$border_select = FUSEN_STYLE_BORDER_SELECT;
-	$fusen_data = plugin_fusen_data($refer);
-	$name = WIKI_NAME_DEF;
-	$jname = plugin_fusen_jsencode($name);
-	
 	// パラメータ
 	$off = $from_skin = $refresh = 0;
 	$background = $height = '';
@@ -100,7 +75,33 @@ function plugin_fusen_convert() {
 			$off = 1;
 	}
 	
-	if ($off) return;
+	//読み込みチェック
+	if ($now_inculde_convert)
+	{
+		if ($off) return '';
+		return "<p>".make_pagelink($vars['page'],strip_bracket($vars['page'])."の付箋を表示")."</p>";
+	}
+	if ($loaded)
+	{
+		return '';
+	}
+	
+	// $pwm_plugin_flg セット
+	$pwm_plugin_flg['fusen']['convert'] = true;
+	
+	if ($off) return '';
+	
+	// 初期化
+	$loaded = true;
+	$refer = $vars['page'];
+	$jsfile = FUSEN_SCRIPT_FILE;
+	$border_normal = FUSEN_STYLE_BORDER_NORMAL;
+	$border_lock = FUSEN_STYLE_BORDER_LOCK;
+	$border_del = FUSEN_STYLE_BORDER_DEL;
+	$border_select = FUSEN_STYLE_BORDER_SELECT;
+	$fusen_data = plugin_fusen_data($refer);
+	$name = WIKI_NAME_DEF;
+	$jname = plugin_fusen_jsencode($name);
 	
 	if ($height)
 	{
