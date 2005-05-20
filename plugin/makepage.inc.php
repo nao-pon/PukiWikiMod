@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.5 2005/03/16 12:49:47 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.6 2005/05/20 00:10:52 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -101,28 +101,32 @@ function plugin_makepage_action()
 {
 	global $X_uid,$vars,$post,$script,$_btn_edit,$_makepage_messages,$no_name;
 	
-	if ($post['new_page'] == '') {
+	if ($vars['new_page'] == '') {
 		$retvars['msg'] = $_makepage_messages['msg_makepage'];
-		$retvars['body'] = do_plugin_convert('makepage',preg_replace("/\/$/","",$post['prefix']));
+		$retvars['body'] = do_plugin_convert('makepage',preg_replace("/\/$/","",$vars['prefix']));
 		return $retvars;
 	}
 	
-	//$post['new_page'] = str_replace(array(' ','　'),'',$post['new_page']);
-	if (function_exists("mb_convert_kana")) $post['new_page'] = mb_convert_kana($post['new_page'], "KVs");
-	$post['new_page'] = str_replace(' ','',$post['new_page']);
-	$page = add_bracket($post['prefix'].strip_bracket($post['new_page']));
+	if (function_exists("mb_convert_kana")) $vars['new_page'] = mb_convert_kana($vars['new_page'], "KVs");
+	$vars['new_page'] = str_replace(' ','',$vars['new_page']);
+	$page = add_bracket($vars['prefix'].strip_bracket($vars['new_page']));
 	
-	if (!is_pagename($page))
+	if (is_page($page))
 	{
-		//無効なページ名
-		$retvars['msg'] =  str_replace('$1',htmlspecialchars(strip_bracket($page)),$_makepage_messages['err_badname']);
-		$retvars['body'] = str_replace('$1',make_search($page),$_makepage_messages['err_badname']);
-		$vars["page"] = "";
-		return $retvars;
+		if (!empty($vars['auto_make'])) exit();
+		header("Location: ".get_url_by_name($page));
 	}
-	
-	if (!is_page($page))
+	else
 	{
+		if (!is_pagename($page))
+		{
+			//無効なページ名
+			$retvars['msg'] =  str_replace('$1',htmlspecialchars(strip_bracket($page)),$_makepage_messages['err_badname']);
+			$retvars['body'] = str_replace('$1',make_search($page),$_makepage_messages['err_badname']);
+			$vars["page"] = "";
+			return $retvars;
+		}
+		
 		//ページ新規作成
 		$up_freeze_info = get_freezed_uppage($page);
 		//if ($up_freeze_info[0]) $defvalue_freeze = 1;
@@ -134,7 +138,9 @@ function plugin_makepage_action()
 			$vars["page"] = "";
 			return $retvars;
 		}
-		$postdata = auto_template($page);
+		$for_template = (strpos($page,"/") !== FALSE)? $page : add_bracket("default/".strip_bracket($page));
+		$postdata = auto_template($for_template);
+		
 		if (!$postdata)
 		{
 			//テンプレートがない
@@ -187,22 +193,13 @@ function plugin_makepage_action()
 		
 		//ページ保存
 		page_write($page,$postdata,NULL,"","","","","","",array('plugin'=>'makepage','mode'=>'all'));
+		
+		if (!empty($vars['auto_make'])) exit();
+		
+		global $_title_updated;
+		$title = str_replace('$1',htmlspecialchars(strip_bracket($page)),$_title_updated);
+		redirect_header(get_url_by_name($page),1,$title);
+		exit();
 	}
-	
-	/*
-	$r_page = rawurlencode($page);
-	
-	header("Location: $script?$r_page");
-	exit;
-	*/
-	
-	global $_title_updated;
-	
-	$title = str_replace('$1',htmlspecialchars(strip_bracket($page)),$_title_updated);
-	
-	$pg_link_url = get_url_by_name($page);
-	
-	redirect_header($pg_link_url,1,$title);
-	exit();
 }
 ?>
