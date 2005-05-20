@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.23 2005/03/29 23:46:23 nao-pon Exp $
+// $Id: trackback.php,v 1.24 2005/05/20 00:07:01 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -85,17 +85,17 @@ function tb_send($page,$data="")
 		return;
 	}
 	
+	$filename = CACHE_DIR.encode($page).".tbf";
 	
 	if (!$data)
 	{
 		// ファイルに一時保管
-		$filename = CACHE_DIR.encode($page).".tbf";
-		if (!($fp = fopen($filename,'wb')))
-		{
-			return;
-		}
-		fputs($fp,XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']);
-		fclose($fp);
+		touch($filename);
+		//if ($fp = fopen($filename,'wb'))
+		//{
+		//	fputs($fp,XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']);
+		//	fclose($fp);
+		//}
 		
 		// 非同期モードで別スレッド処理 Blokking=0,Retry=5,接続タイムアウト=30,ソケットタイムアウト=0(指定しない)
 		$ret = http_request(
@@ -198,6 +198,8 @@ function tb_send($page,$data="")
 			foreach ($links as $link)
 			{
 				set_time_limit(120); // 処理実行時間を長めに再設定
+				touch($filename); // 判定ファイルをtouch
+				
 				// URL から TrackBack ID を取得する
 				$tb_id = trim(str_replace("&amp;","&",tb_get_url($link)));
 				
@@ -207,11 +209,13 @@ function tb_send($page,$data="")
 				{
 					continue;
 				}
-				$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,60);
+				$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
 				if ($result['rc'] === 200 || strpos($result['data'],"<error>0</error>") !== false)
 				{
 					$sended[] = $tb_id;
 					$sended_count++;
+					// とりあえず送信済みにスタックする
+					tb_sended_save_temp($tb_id,$ping_filename);
 				}
 				// FIXME: エラー処理を行っても、じゃ、どうする？だしなぁ...
 				if ($trackback <= $sended_count) break;
@@ -237,10 +241,11 @@ function tb_send($page,$data="")
 		foreach ($pings as $tb_id)
 		{
 			set_time_limit(120); // 処理実行時間を長めに再設定
-			
+			touch($filename); // 判定ファイルをtouch
+
 			$done = false;
 			// XML RPC Ping を打ってみる
-			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,3,10,60);
+			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,3,10,30);
 			if ($result['rc'] === 200)
 			{
 				// 超手抜きなチェック
@@ -248,8 +253,9 @@ function tb_send($page,$data="")
 					$done = true;
 				else
 				{
+					set_time_limit(120); // 処理実行時間を長めに再設定
 					//Track Back Ping
-					$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,60);
+					$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
 					// 超手抜きなチェック
 					if (strpos($result['data'],"<error>0</error>") !== false)
 						$done = true;
@@ -268,7 +274,11 @@ function tb_send($page,$data="")
 			*/
 			
 			if ($done)
+			{
 				$sended[] = $tb_id;
+				// とりあえず送信済みにスタックする
+				tb_sended_save_temp($tb_id,$ping_filename);
+			}
 		}
 	}
 	
@@ -641,6 +651,16 @@ function tb_debug_output($str)
 	$filename = CACHE_DIR."tb_debug.txt";
 	$fp = fopen($filename,'a+');
 	fputs($fp,$data."\n");
+	fclose($fp);
+}
+
+// Ping送信処理中にとりあえず送信済み相手先を記録する
+function tb_sended_save_temp($dat,$ping_filename)
+{
+	$fp = fopen($ping_filename,'ab');
+	flock($fp,LOCK_EX);
+	fwrite($fp,$dat."\n");
+	flock($fp,LOCK_UN);
 	fclose($fp);
 }
 ?>

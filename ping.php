@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ping.php,v 1.5 2005/03/29 23:37:47 nao-pon Exp $
+// $Id: ping.php,v 1.6 2005/05/20 00:07:01 nao-pon Exp $
 /////////////////////////////////////////////////
 
 //XOOPS設定読み込み
@@ -51,8 +51,8 @@ $filename = CACHE_DIR.encode($page).".tbf";
 
 if (file_exists($filename))
 {
-	unlink($filename);
-	
+	sleep(10); // ページが表示されるまでちょっと待つ
+
 	//常にゲストモード
 	$X_admin = $X_uid = 0;
 	
@@ -62,7 +62,7 @@ if (file_exists($filename))
 	// 実行時間を長めに設定
 	set_time_limit(120);
 	
-	sleep(mt_rand(40,60)); //適当に遅延させる
+	//sleep(mt_rand(40,60)); //適当に遅延させる
 	
 	//キャッシュ作成 (ページ)
 	convert_html($page,false,true);
@@ -70,7 +70,7 @@ if (file_exists($filename))
 	//キャッシュ作成 (RSS)
 	http_request($rss_url);
 	
-	sleep(3);
+	sleep(2);
 	
 	//ソースを取得
 	$data = get_source($page);
@@ -92,6 +92,8 @@ if (file_exists($filename))
 	$data = convert_html($data);
 
 	tb_send($page,$data);
+	
+	unlink($filename); // 判定ファイルを削除
 }
 
 //header("Content-Type: image/gif");

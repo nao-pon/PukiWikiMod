@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.73 2005/04/27 14:28:11 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.74 2005/05/20 00:07:01 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
 /*
@@ -999,13 +999,15 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			$title = htmlspecialchars(strip_bracket($get["page"]));
 			$page = make_search($get["page"]);
 			$body = tb_get_rdf($vars['page'])."\n";
+			$r_page = rawurlencode(strip_bracket($vars["page"]));
+			$e_page = encode(strip_bracket($get["page"]));
 			
 			//PlainTXT DB 更新の必要がある場合
-			if (file_exists(CACHE_DIR.encode(strip_bracket($get["page"])).".udp"))
+			if (file_exists(CACHE_DIR.$e_page.".udp"))
 			{
 				// 非同期でモードでデータ更新
 				http_request(
-				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/ud_plain.php?".rawurlencode(strip_bracket($vars["page"]))
+				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/ud_plain.php?".$r_page
 				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
 			}
 			
@@ -1025,6 +1027,14 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 				,'POST','',array('mc_refresh'=>$vars['mc_refresh'],'tgt_page'=>$vars['page']),HTTP_REQUEST_URL_REDIRECT_MAX,0,3);
 			}
 			
+			// ping送出に失敗している可能性があれば再送 (1件あたりのリミット:120秒)
+			if (file_exists(CACHE_DIR.$e_page.".tbf") && time() - filemtime(CACHE_DIR.$e_page.".tbf") > 120 )
+			{
+				http_request(
+				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/ping.php?p=".$r_page."&t=".$vars['is_rsstop']
+				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
+			}
+
 			$body .= $postdata;
 			header_lastmod($vars["page"]);
 			$show_comments = true;
