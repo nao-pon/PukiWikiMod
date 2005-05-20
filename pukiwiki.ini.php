@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.40 2005/04/27 14:28:10 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.41 2005/05/20 00:02:19 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -149,7 +149,7 @@ $list_index = 1;
 $link_target = "_blank";
 /////////////////////////////////////////////////
 // InterWikiNameのウィンドウ名指定(_top,_blank,etc)
-$interwiki_target = "_top";
+$interwiki_target = "_blank";
 /////////////////////////////////////////////////
 // URLリンク指定時にステータスバーに
 // URLを表示せずに対象文字列を表示する
