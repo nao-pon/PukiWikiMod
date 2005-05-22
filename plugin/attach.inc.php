@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.34 2005/05/19 23:49:48 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.35 2005/05/22 05:27:21 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -121,6 +121,7 @@ function plugin_attach_convert()
 function plugin_attach_action()
 {
 	global $vars,$post,$_attach_messages;
+	global $X_admin;
 	
 	
 	// backward compatible
@@ -156,8 +157,15 @@ function plugin_attach_action()
 	if (array_key_exists('refer',$vars) and is_pagename($vars['refer']))
 	{
 		$read_cmds = array('info','open','list','imglist');
-		$check = (ATTACH_UPLOAD_EDITER_ONLY && !in_array($pcmd,$read_cmds)) ? 
-		check_editable($vars['refer']) : check_readable($vars['refer']);
+		if (ATTACH_UPLOAD_ADMIN_ONLY)
+		{
+			$check = $X_admin;
+		}
+		else
+		{
+			$check = (ATTACH_UPLOAD_EDITER_ONLY && !in_array($pcmd,$read_cmds)) ? 
+			check_editable($vars['refer']) : check_readable($vars['refer']);
+		}
 		if (!$check) return array('result'=>FALSE,'msg'=>$_attach_messages['err_noparm']);
 	}
 	
