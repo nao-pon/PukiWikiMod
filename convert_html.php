@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.48 2005/04/27 14:28:11 nao-pon Exp $
+// $Id: convert_html.php,v 1.49 2005/05/22 05:24:50 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -818,8 +818,8 @@ class convert
 			}
 			$result = array_merge($result,$saved); $saved = array();
 			
-			$this->contents = "<a name=\"ct{$pgid}_$content_id_local\"></a>\n";
-			$this->contents .= join("\n",$result);
+			$this->contents = "<div class=\"contents_list\"><a name=\"ct{$pgid}_$content_id_local\"></a>\n";
+			$this->contents .= join("\n",$result)."</div>";
 			if($strip_link_wall)
 			{
 				$this->contents = preg_replace("/\[\[([^\]:]+):(.+)\]\]/","$1",$this->contents);
