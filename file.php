@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.49 2005/04/17 12:48:45 nao-pon Exp $
+// $Id: file.php,v 1.50 2005/05/22 05:23:13 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -182,7 +182,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		$mail_body .= $add_text;
 		$mail_body .= _MD_PUKIWIKI_MAIL_FOOT."\n";
 		$xoopsMailer =& getMailer();
-		foreach(explode(" ",$pukiwiki_send_mails) as $pukiwiki_sendto_mail)
+		foreach(array_unique(explode(" ",$pukiwiki_send_mails)) as $pukiwiki_sendto_mail)
 		{
 			$xoopsMailer->useMail();
 			$xoopsMailer->setFromEmail($xoopsConfig['adminmail']);
