@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: plugin.php,v 1.13 2005/05/13 00:23:06 nao-pon Exp $
+// $Id: plugin.php,v 1.14 2005/05/23 08:53:29 nao-pon Exp $
 //
 
 // プラグイン用に未定義の変数を設定
@@ -119,7 +119,7 @@ function do_plugin_action($name)
 }
 
 //プラグイン(convert)を実行
-function do_plugin_convert($name,$args)
+function do_plugin_convert($name,$args="")
 {
 	$args = str_replace("\\\"","&quot;",$args);
 	// "と"で囲んだパラメータは、,を含む事ができるように
@@ -157,7 +157,7 @@ function do_plugin_convert($name,$args)
 }
 
 //プラグイン(inline)を実行
-function do_plugin_inline($name,$args,$body)
+function do_plugin_inline($name,$args="",$body="")
 {
 	// "と"で囲んだパラメータは、,を含む事ができるように
 	// 制御文字へ置換

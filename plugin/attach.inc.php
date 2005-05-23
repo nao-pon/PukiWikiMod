@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.35 2005/05/22 05:27:21 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.36 2005/05/23 08:53:29 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -733,7 +733,7 @@ class AttachFile
 	{
 		return ($a->time == $b->time) ? 0 : (($a->time > $b->time) ? -1 : 1);
 	}
-	function toString($showicon,$showinfo,$mode)
+	function toString($showicon,$showinfo,$mode="")
 	{
 		global $script,$date_format,$time_format,$weeklabels;
 		global $_attach_messages;
