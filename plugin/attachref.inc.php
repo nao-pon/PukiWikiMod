@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: attachref.inc.php,v 1.9 2005/03/11 15:00:39 nao-pon Exp $
+// $Id: attachref.inc.php,v 1.10 2005/05/23 09:05:20 nao-pon Exp $
 // ORG: attachref.inc.php,v0.5 2003/07/31 14:15:29 sha Exp $
 //
 
@@ -172,10 +172,16 @@ function plugin_attachref_action()
 	
 	include_once(XOOPS_WIKI_PATH."/plugin/attach.inc.php");
 	
-	$check = (!ATTACH_UPLOAD_EDITER_ONLY) ? 
-	check_readable($vars['refer']) : check_editable($vars['refer']);
+	if (ATTACH_UPLOAD_ADMIN_ONLY)
+	{
+		$check = $X_admin;
+	}
+	else
+	{
+		$check = (!ATTACH_UPLOAD_EDITER_ONLY) ? 
+		check_readable($vars['refer']) : check_editable($vars['refer']);
+	}
 	if (!$check) return array('result'=>FALSE,'msg'=>$_attach_messages['err_noparm']);
-
 
 	//戻り値を初期化
 	$retval['msg'] = $_attachref_messages['msg_title'];
