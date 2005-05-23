@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: attachref.inc.php,v 1.10 2005/05/23 09:05:20 nao-pon Exp $
+// $Id: attachref.inc.php,v 1.11 2005/05/23 09:33:06 nao-pon Exp $
 // ORG: attachref.inc.php,v0.5 2003/07/31 14:15:29 sha Exp $
 //
 
@@ -168,7 +168,7 @@ function plugin_attachref_action()
 {
 	global $script,$vars,$post;
 	global $_attachref_messages,$_attach_messages;
-	global $html_transitional;
+	global $html_transitional,$X_admin;
 	
 	include_once(XOOPS_WIKI_PATH."/plugin/attach.inc.php");
 	
