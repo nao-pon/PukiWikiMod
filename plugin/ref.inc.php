@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.23 2005/04/17 12:56:26 nao-pon Exp $
+// $Id: ref.inc.php,v 1.24 2005/06/23 08:23:37 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -396,7 +396,7 @@ function plugin_ref_body($name,$args,$params){
 		//IE以外は改行文字をスペースに変換
 		if ( !strstr($_SERVER["HTTP_USER_AGENT"], "MSIE")) $title = str_replace("&#13;&#10;"," ",$title);
 		
-		if ($width && $height) {
+		if (!$params['nocache'] && $width && $height) {
 			$s_file = UPLOAD_DIR."s/".encode($page).'_'.encode($zoom."%".$name);
 			if (!file_exists($s_file) && ($zoom < 90) && (!$params['nocache'])) {
 				//サムネイル作成
