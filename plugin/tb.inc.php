@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.9 2005/04/27 14:28:11 nao-pon Exp $
+// $Id: tb.inc.php,v 1.10 2005/06/23 08:22:51 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -214,7 +214,7 @@ EOD;
 	}
 	
 	$title = htmlspecialchars($page);
-	$link = get_url_by_id($tb_id);
+	$link = XOOPS_WIKI_HOST.XOOPS_WIKI_URL.get_url_by_id($tb_id);
 	$vars['page'] = $page;
 	$content = convert_html($page,false,true,true);
 	$excerpt = strip_htmltag($content);
