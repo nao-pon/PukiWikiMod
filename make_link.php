@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.35 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: make_link.php,v 1.36 2005/06/23 08:16:50 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -829,7 +829,7 @@ class Link_eword extends Link
 function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 {
 	global $script,$vars,$show_title,$show_passage,$link_compact,$related;
-	global $_symbol_noexists,$_title_search,$breadcrumbs,$convert_d2s;
+	global $_symbol_noexists,$_title_search,$breadcrumbs,$convert_d2s,$related_link;
 	
 	static $linktag = array();
 
@@ -866,13 +866,15 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	$r_page = rawurlencode($s_page);
 	$r_refer = ($refer == '') ? '' : '&amp;refer='.rawurlencode($refer);
 
-	if (!array_key_exists($page,$related) and $page != $vars['page'] and is_page($page))
+	if ($related_link)
 	{
-		$related[strip_bracket($page)] = get_filetime($page);
-		
+		if (!array_key_exists($page,$related) and $page != $vars['page'] and is_page($page))
+		{
+			$related[strip_bracket($page)] = get_filetime($page);
+		}
 	}
 	
-	if (preg_match("/^#(.*)#$/",$alias,$sep))
+	if ($alias && preg_match("/^#(.*)#$/",$alias,$sep))
 	{
 		// パン屑リスト出力
 		$sep = htmlspecialchars($sep[1]);
@@ -913,6 +915,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 		if ($vars['page'] != $page || strstr($page,$alias) === false || $vars['cmd'] != "read")
 		{ // 表示中のページではない 又は ページ名に表示文字列が含まれない 又は 閲覧モード以外
 			$retval = "<a href=\"".get_url_by_name($page)."{$anchor}\"$title>$s_alias</a>";
+			//$retval = "<a href=\""."{$anchor}\"$title>$s_alias</a>";
 		}
 		else
 		{
@@ -1114,7 +1117,7 @@ function replace_pagename_d2s($str,$compact=0)
 	else
 	{
 		if (preg_match("/^[0-9\-]+$/",$str))
-			$ret[$str] = get_heading($str);
+			$ret[$str] = str_replace(array('&amp;','&lt;','&gt;','&quot;','&#039;'),array('&','<','>','"',"'"),get_heading($str));
 		else
 			$ret[$str] = $str;
 	}
