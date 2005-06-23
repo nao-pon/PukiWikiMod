@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.49 2005/04/17 12:47:56 nao-pon Exp $
+// $Id: func.php,v 1.50 2005/06/23 08:18:54 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -252,7 +252,7 @@ function add_bracket($str)
 }
 
 // ページ一覧の作成
-function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
+function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="", $lword="")
 {
 	global $script,$list_index,$top;
 	global $_msg_symbol,$_msg_other;
@@ -261,6 +261,17 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 	// ソートキーを決定する。 ' ' < '[a-zA-Z]' < 'zz'という前提。
 	$symbol = ' ';
 	$other = 'zz';
+	
+	// ページ数のカウント
+	$page_cnt = count($pages);
+	
+	$single_mode = 0;
+	if ($page_cnt > 500)
+	{
+		// ページ数が多い場合(500ページ超)は各語モード
+		$single_mode = 1;
+		if (!$lword) $lword = " "; // 記号
+	}
 	
 	$retval = '';
 	if ($prefix){
@@ -272,60 +283,64 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 		$readings = get_readings($pages);
 	}
 
-	$list = array();
+	$list = $matches = array();
 	foreach($pages as $file=>$page)
 	{
-		$passage = get_pg_passage($page);
 		$page = strip_bracket($page);
 		
-		if ($cmd == 'read')
+		// WARNING: Japanese code hard-wired
+		if($pagereading_enable)
 		{
-			$chiled = get_child_counts($page);
-			$chiled = ($chiled)? " [<a href='$script?plugin=list&prefix=".rawurlencode(strip_bracket($page))."'>+$chiled</a>]":"";
-			$str = "   <li>".make_pagelink($page,"#compact#")."$passage".$chiled;
-		}
-		else
-		{
-			$r_page = rawurlencode($page);
-			$s_page = htmlspecialchars($page, ENT_QUOTES);
-			$str = "   <li><a href=\"$script?cmd=$cmd&amp;page=$r_page\">$s_page</a>$passage";
-		}
-		
-		
-		if ($withfilename)
-		{
-			$s_file = htmlspecialchars($file);
-			$str .= "\n    <ul><li>$s_file</li></ul>\n   ";
-		}
-		else
-		{
-			//$page_info = get_pg_info_db($page);
-			//$str .= "\n<br />[ ".$page_info['title']." ]\n";
-		}
-		$str .= "</li>";
-		
-		if($pagereading_enable) {
-			$reading = $readings[$page];
+			$reading = (empty($readings[$page]))? mb_convert_kana($page, 'a') : $readings[$page];
 			if ($prefix)
 			{
 				$c_count =count_chars($reading);
 				$reading = ltrim_pagename($reading,$c_count[47]);
 			}
-			//if(mb_ereg('^([A-Za-zァ-ヶ])',$readings[$page],$matches)) {
-			if(mb_ereg('^([A-Za-zァ-ヶ])',$reading,$matches)) {
+			if(mb_ereg('^([0-9A-Za-zァ-ヶ])',$reading,$matches)) {
 				$head = $matches[1];
 			}
 			elseif (mb_ereg('^[ -~]|[^ぁ-ん亜-熙]',$page)) {
-			//elseif (mb_ereg('^[ -~]|[^ぁ-ん亜-熙]',$alias)) {
 				$head = $symbol;
 			}
 			else {
 				$head = $other;
 			}
 		}
-		else {
-			$head = (preg_match('/^([A-Za-z])/',$page,$matches)) ? $matches[1] :
-				(preg_match('/^([ -~])/',$page,$matches) ? $symbol : $other);
+		else
+		{
+			$head = (preg_match('/^([0-9A-Za-z])/', $page, $matches)) ? $matches[1] :
+				(preg_match('/^([ -~])/', $page, $matches) ? $symbol : $other);
+		}
+		
+		if (!$single_mode || $lword == $head)
+		{
+			$passage = get_pg_passage($page);
+			
+			if ($cmd == 'read')
+			{
+				$chiled = get_child_counts($page);
+				$chiled = ($chiled)? " [<a href='$script?plugin=list&prefix=".rawurlencode(strip_bracket($page))."'>+$chiled</a>]":"";
+				$str = "   <li>".make_pagelink($page,"#compact#")."$passage".$chiled;
+			}
+			else
+			{
+				$r_page = rawurlencode($page);
+				$s_page = htmlspecialchars($page, ENT_QUOTES);
+				$str = "   <li><a href=\"$script?cmd=$cmd&amp;page=$r_page\">$s_page</a>$passage";
+			}
+			
+			if ($withfilename)
+			{
+				$s_file = htmlspecialchars($file);
+				$str .= "\n    <ul><li>$s_file</li></ul>\n   ";
+			}
+			
+			$str .= "</li>";
+		}
+		else
+		{
+			$str = htmlspecialchars($page) . ", ";
 		}
 		
 		$list[$head][$page] = $str;
@@ -335,8 +350,18 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 	$cnt = 0;
 	$arr_index = array();
 	//$retval .= "<ul>\n";
+	
+	$add_link = "";
+	if ($single_mode)
+	{
+		$add_link = $script."?cmd=".(($cmd == 'read')? "list" : $cmd);
+		if ($prefix) $add_link .= "&amp;prefix=".$prefix;
+		$add_link .= "&amp;lw=";
+	}
+
 	foreach ($list as $head=>$pages)
 	{
+		$_head = $head;
 		if ($head === $symbol)
 		{
 			$head = $_msg_symbol;
@@ -349,19 +374,17 @@ function page_list($pages, $cmd = 'read', $withfilename=FALSE, $prefix="")
 		if ($list_index)
 		{
 			$cnt++;
-			$arr_index[] = "<a id=\"top_$cnt\" href=\"#head_$cnt\"><strong>$head</strong></a>";
-			$retval .= " <div class=\"page_list_word\"><a id=\"head_$cnt\" href=\"#top_$cnt\"><strong class=\"page_list_word\">$head</strong></a>\n </div>\n";
+			$e_head = encode($_head);
+			$_link = "";
+			if ($single_mode && $lword != $_head) $_link = $add_link.rawurlencode($_head);
+			$arr_index[] = "<a id=\"top_$e_head\" href=\"$_link#head_$e_head\"><strong>$head</strong></a>";
+			$retval .= " <div class=\"page_list_word\"><a id=\"head_$e_head\" href=\"$_link#".(($_link)? "head" : "top")."_$e_head\"><strong class=\"page_list_word\">$head</strong></a>\n </div>\n";
 		}
 		ksort($pages);
 		$retval .= " <ul>\n";
 		$retval .= join("\n",$pages);
 		$retval .= "\n </ul>\n";
-//		if ($list_index)
-//		{
-//			$retval .= "\n  </ul>\n </li>\n";
-//		}
 	}
-	//$retval .= "</ul>\n";
 	if ($list_index and $cnt > 0)
 	{
 		$top = array();

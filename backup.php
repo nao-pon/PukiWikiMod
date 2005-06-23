@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: backup.php,v 1.6 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: backup.php,v 1.7 2005/06/23 08:18:54 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // バックアップデータを作成する
@@ -131,22 +131,28 @@ function get_backup_list($_page="")
 {
 	global $script,$date_format,$time_format,$weeklabels,$cantedit;
 	global $_msg_backuplist,$_msg_diff,$_msg_nowdiff,$_msg_source,$_title_backup_delete;
-	global $X_admin,$X_uid;
+	global $X_admin,$X_uid,$vars;
 
 	$ins_date = date($date_format,$val);
 	$ins_time = date($time_format,$val);
 	$ins_week = "(".$weeklabels[date("w",$val)].")";
 	$ins = "$ins_date $ins_week $ins_time";
+
+	$lword = (array_key_exists('lw',$vars))? $vars['lw'] : "";
+	if ($lword == " ") $lword = "";
+
 	
 	if (!$_page)
 	{
 		global $cantedit;
 		
+		/*
 		if (!$X_uid)
 		{
-			$f_cache = CACHE_DIR."backup_list.tmp";
+			$f_cache = CACHE_DIR.md5($lword).".bklist";
 			if (file_exists($f_cache)) return join('',file($f_cache));
 		}
+		*/
 		
 		$pages = array_intersect(get_existpages(BACKUP_DIR, function_exists(gzopen)? ".gz" : ".txt"),get_existpages_db());
 		$pages = array_diff($pages, $cantedit);
@@ -154,13 +160,15 @@ function get_backup_list($_page="")
 		if (count($pages) == 0)
 			return '';
 		
-		$retvars = page_list($pages,'backup',$withfilename);
+		$retvars = page_list($pages,'backup',$withfilename,"",$lword);
 		
+		/*
 		if (!$X_uid && $fp = @fopen($f_cache,"wb"))
 		{
 			fputs($fp,$retvars);
 			fclose($fp);
 		}
+		*/
 		
 		return $retvars;
 	}
