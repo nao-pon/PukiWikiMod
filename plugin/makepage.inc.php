@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.6 2005/05/20 00:10:52 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.7 2005/06/23 08:24:49 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -111,7 +111,7 @@ function plugin_makepage_action()
 	$vars['new_page'] = str_replace(' ','',$vars['new_page']);
 	$page = add_bracket($vars['prefix'].strip_bracket($vars['new_page']));
 	
-	if (is_page($page))
+	if (is_page($page, true))
 	{
 		if (!empty($vars['auto_make'])) exit();
 		header("Location: ".get_url_by_name($page));
@@ -121,6 +121,7 @@ function plugin_makepage_action()
 		if (!is_pagename($page))
 		{
 			//無効なページ名
+			if (!empty($vars['auto_make'])) exit();
 			$retvars['msg'] =  str_replace('$1',htmlspecialchars(strip_bracket($page)),$_makepage_messages['err_badname']);
 			$retvars['body'] = str_replace('$1',make_search($page),$_makepage_messages['err_badname']);
 			$vars["page"] = "";
@@ -133,6 +134,7 @@ function plugin_makepage_action()
 		if (!check_readable($page,false,false) || $up_freeze_info[4])
 		{
 			//ページを作成する権限がない
+			if (!empty($vars['auto_make'])) exit();
 			$retvars['msg'] =  str_replace('$1',htmlspecialchars(strip_bracket($page)),_MD_PUKIWIKI_NO_AUTH);
 			$retvars['body'] = str_replace('$1',make_search($page),_MD_PUKIWIKI_NO_AUTH);
 			$vars["page"] = "";
@@ -144,6 +146,7 @@ function plugin_makepage_action()
 		if (!$postdata)
 		{
 			//テンプレートがない
+			if (!empty($vars['auto_make'])) exit();
 			$retvars['msg'] =  str_replace('$1',htmlspecialchars(strip_bracket($page)),$_makepage_messages['err_notemplate']);
 			$retvars['body'] = str_replace('$1',make_search($page),$_makepage_messages['err_notemplate']);
 			$vars["page"] = "";
