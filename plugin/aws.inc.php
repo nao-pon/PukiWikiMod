@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.11 2005/03/16 14:32:29 nao-pon Exp $
+// $Id: aws.inc.php,v 1.12 2005/06/23 23:42:50 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -198,10 +198,19 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 			$url .= "&sort=".$s_val[1];
 		}
 		
-		$ret = join('',@file($url));
+		//$ret = join('',@file($url));
+		$ret = http_request($url);
+		if ($ret['rc'] == 200 && $ret['data'])
+		{
+			$ret = $ret['data'];
+		}
+		else
+		{
+			$ret = "";
+		}
 		$ret = mb_convert_encoding($ret, "EUC-JP", "UTF-8");
 		
-		if (strpos(strtolower($ret),"<errormsg>") === FALSE)
+		if ($ret && strpos(strtolower($ret),"<errormsg>") === FALSE)
 		{
 			$ret = str_replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","",$ret);
 			
