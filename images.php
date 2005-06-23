@@ -1,8 +1,8 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: images.php,v 1.5 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: images.php,v 1.6 2005/06/23 08:15:32 nao-pon Exp $
 /////////////////////////////////////////////////
-
+//exit();
 error_reporting(0);
 
 if (!isset($_GET['q'])) exit;
@@ -11,6 +11,10 @@ $file = get_image_filename($_GET['q']);
 
 if (!$file) exit;
 
+header("Location: ".$file);
+exit;
+
+/*
 $img = getimagesize($file);
 
 header('Content-Type: '.$img['mime']);
@@ -18,15 +22,27 @@ header('Content-Type: '.$img['mime']);
 readfile($file);
 
 exit;
+*/
 
 function get_image_filename($q)
 {
+/*
 	$dir = "./cache/p/";
 	$q = str_replace(array("%","+"),array("%25","%2B"),$q);
 	$file = $dir.md5($q).".tig";
-	if (file_exists($file))
-		return $file;
+*/
+	if (preg_match("/^.+(\.[^.\/]+)$/",$q,$arg))
+	{
+		$exp = $arg[1];
+	}
+	$dir = "./cache/p/";
+	$q = str_replace(array("%","+"),array("%25","%2B"),$q);
+	$file = $dir."tig_".md5($q).$exp;
 	
+	if (file_exists($file))
+	{
+		return $file;
+	}
 	$q = "http://images-partners.google.com/images?q=".$q;
 	
 	if ($url = @fopen($q, "rb"))
