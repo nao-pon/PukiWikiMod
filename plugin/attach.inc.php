@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.36 2005/05/23 08:53:29 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.37 2005/06/23 08:24:05 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -689,7 +689,7 @@ class AttachFile
 		$this->size_str = sprintf('%01.1f',round($this->size)/1000,1).'KB';
 		$this->type = attach_mime_content_type($this->filename);
 		$this->owner_str = get_pg_auther_name($this->status['owner'],TRUE);
-		make_user_link(&$this->owner_str);
+		make_user_link($this->owner_str);
 		$this->owner_str = make_link($this->owner_str);
 		
 		return TRUE;
