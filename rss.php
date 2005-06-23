@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.20 2005/03/29 23:50:04 nao-pon Exp $
+// $Id: rss.php,v 1.21 2005/06/23 08:19:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -57,7 +57,8 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 		$linkpage = XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/";
 	}
 	
-	$description = htmlspecialchars(mb_convert_encoding(get_heading($up_page),"UTF-8",SOURCE_ENCODING));
+	//$description = htmlspecialchars(mb_convert_encoding(get_heading($up_page),"UTF-8",SOURCE_ENCODING));
+	$description = mb_convert_encoding(get_heading($up_page),"UTF-8",SOURCE_ENCODING);
 	
 	$page_title_utf8 = $page_title;
 	$page_title_utf8 = mb_convert_encoding($page_title_utf8,"UTF-8",SOURCE_ENCODING);
