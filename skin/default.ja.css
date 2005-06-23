@@ -185,6 +185,8 @@ div.wiki_page_navi
 .pukiwiki_body ul
 {
 	list-style-position: outside;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 .pukiwiki_body p
@@ -946,6 +948,10 @@ div.fusen_contents
 div.fusen_contents p
 {
 	margin:3px 0px;
+}
+
+div.fusen_contents hr
+{
 }
 
 img.fusen_resize
