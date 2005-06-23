@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ping.php,v 1.6 2005/05/20 00:07:01 nao-pon Exp $
+// $Id: ping.php,v 1.7 2005/06/23 08:15:20 nao-pon Exp $
 /////////////////////////////////////////////////
 
 //XOOPSê›íËì«Ç›çûÇ›
@@ -34,7 +34,7 @@ $get["page"] = $post["page"] = $vars["page"];
 
 $is_rsstop = (empty($get['t']))? 0 : 1;
 
-if ($vars['is_rsstop'])
+if ($is_rsstop)
 	$up_page = strip_bracket($vars["page"]);
 else
 {
