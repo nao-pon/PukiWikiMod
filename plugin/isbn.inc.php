@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.18 2005/04/17 12:54:20 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.19 2005/06/23 08:26:39 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -211,7 +211,8 @@ function plugin_isbn_print_isbn_img($isbn, $align, $alt, $title, $h_title, $pric
 </div>
 EOD;
 	} else {					// 通常表示
-		 $img_size = GetImageSize($url);
+		$img_size = @getimagesize($url);
+		
 		if (substr($isbn,0,1) == "B"){
 				$code = "ASIN: ".$isbn;
 		} else {
@@ -319,41 +320,48 @@ function plugin_isbn_cache_image_fetch($target, $dir, $check=true) {
 			$size = ($size == "S")? "THUMB" : $size."ZZZZ";
 		}
 		$url = "http://images-jp.amazon.com/images/P/" . $_target . ".09.{$size}ZZZ.jpg";
-		//echo $url;
 		if (!is_url($url)) return false; // URL 形式チェック
-		$size = @getimagesize($url);
-		if ($size[0] <= 1) {
-			$url = "http://images-jp.amazon.com/images/P/" . $_target . ".01.{$size}ZZZ.jpg";
+		
+		if (ini_get('allow_url_fopen'))
+		{
 			$size = @getimagesize($url);
-			if ($size[0] <= 1) $url = NOIMAGE;
+			if ($size[0] <= 1) {
+				$url = "http://images-jp.amazon.com/images/P/" . $_target . ".01.{$size}ZZZ.jpg";
+				$size = @getimagesize($url);
+				if ($size[0] <= 1) $url = NOIMAGE;
+			}
 		}
 
 		if ($url != NOIMAGE){
-			$file = fopen($url, "rb");
-			// リモートファイルのパケット有効後対策
-			// http://search.net-newbie.com/php/function.fread.html
-			$contents = "";
-			do {
-				$data = fread($file, 8192);
-				if (strlen($data) == 0) {
-					break;
+			$data = http_request($url);
+			if ($data['rc'] == 200 && $data['data'])
+			{
+				$data = $data['data'];
+			}
+			else
+			{
+				if (!ini_get('allow_url_fopen'))
+				{
+					$url = "http://images-jp.amazon.com/images/P/" . $_target . ".01.{$size}ZZZ.jpg";
+					$data = http_request($url);
+					if ($data['rc'] == 200 && $data['data'])
+					{
+						$data = $data['data'];
+					}
+					else
+					{
+						$data = @file(NOIMAGE);
+					}
 				}
-				$contents .= $data;
-			} while(true);
-			
-			fclose ($file);
-			
-			$data = $contents;
-			unset ($contents);
-			$url = $filename;
+				else
+				{
+					$data = @file(NOIMAGE);
+				}
+			}
 		} else {
 			// キャッシュを NOIMAGE のコピーとする
-			$file = fopen($url, "rb");
-			if (! $file) return false;
-			$data = fread($file, 100000); 
-			fclose ($file);
+			$data = @file(NOIMAGE);
 		}
-		//echo $target."<br>";
 		plugin_isbn_cache_image_save($data, $target, UPLOAD_DIR);
 		return str_replace("./",XOOPS_WIKI_URL."/",$filename);
 	} else
