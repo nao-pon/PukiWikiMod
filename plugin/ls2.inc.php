@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.22 2005/04/17 12:56:05 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.23 2005/06/23 08:26:18 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -191,6 +191,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 		$ret .= '<li style="margin-left;">';
 	}
 	
+	$name = htmlspecialchars($name);
 	if ($_name) $name = $_name;
 	
 	if ($params['relatedcount'])
@@ -203,7 +204,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 		$new_mark = do_plugin_inline("new","{$page}/,nolink","");
 	
 	if ($include) { $ret .= 'include '; }
-	$ret .= '<a id="list_'.$params[$page].'" href="'.$href.'" title="'.$title.'">'.htmlspecialchars($name).'</a>'.$child_count.$new_mark;
+	$ret .= '<a id="list_'.$params[$page].'" href="'.$href.'" title="'.$title.'">'.$name.'</a>'.$child_count.$new_mark;
 	if ($params['title'] and $is_done) {
 		$ret .= '<a href="#list_'.$params[$page].'">+</a></li>'."\n";
 		return $ret;
