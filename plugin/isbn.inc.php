@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.19 2005/06/23 08:26:39 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.20 2005/06/23 23:27:28 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -211,7 +211,8 @@ function plugin_isbn_print_isbn_img($isbn, $align, $alt, $title, $h_title, $pric
 </div>
 EOD;
 	} else {					// 通常表示
-		$img_size = @getimagesize($url);
+		$img_size = @getimagesize(str_replace(XOOPS_URL,XOOPS_ROOT_PATH,$url));
+		//echo str_replace(XOOPS_URL,XOOPS_ROOT_PATH,$url);
 		
 		if (substr($isbn,0,1) == "B"){
 				$code = "ASIN: ".$isbn;
@@ -252,7 +253,18 @@ function plugin_isbn_get_isbn_title($isbn,$check=true) {
 		list($title,$category,$price,$author,$artist,$releasedate,$manufacturer,$availability,$listprice,$usedprice) = $title;
 	} else {
 		$nocache = 1;				// キャッシュ見つからず
-		$body = implode('', file($url));		// しかたないので取りにいく
+		
+		//$body = implode('', file($url));		// しかたないので取りにいく
+		$body = http_request($url);
+		if ($body['rc'] == 200 && $body['data'])
+		{
+			$body = $body['data'];
+		}
+		else
+		{
+			$body = "";
+		}
+		
 		$body = mb_convert_encoding($body,SOURCE_ENCODING,"UTF-8");
 		$category = (preg_match("/<Catalog>(.+)<\/Catalog>/",$body,$data))? trim($data[1]) : "";
 		$title = (preg_match("/<ProductName>(.+)<\/ProductName>/",$body,$data))? trim($data[1]) : "";
@@ -363,9 +375,9 @@ function plugin_isbn_cache_image_fetch($target, $dir, $check=true) {
 			$data = @file(NOIMAGE);
 		}
 		plugin_isbn_cache_image_save($data, $target, UPLOAD_DIR);
-		return str_replace("./",XOOPS_WIKI_URL."/",$filename);
+		return str_replace("./",XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/",$filename);
 	} else
-		return str_replace("./",XOOPS_WIKI_URL."/",$filename);
+		return str_replace("./",XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/",$filename);
 }
 
 // キャッシュを保存
