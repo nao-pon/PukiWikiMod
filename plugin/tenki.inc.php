@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tenki.inc.php,v 1.10 2005/04/17 12:55:10 nao-pon Exp $
+// $Id: tenki.inc.php,v 1.11 2005/06/25 06:07:04 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //	&tenki([pic],[w:width])[{now?}];
@@ -46,46 +46,33 @@ function plugin_tenki_inline()
 		$url = str_replace(XOOPS_WIKI_PATH,".",$img_arg[0]);
 		$size = $img_arg[1];
 	} else {
-		$size = @getimagesize($url);
-		if ($size[0] < 1) return false;
+		if (ini_get('allow_url_fopen'))
+		{
+			$size = @getimagesize($url);
+			if ($size[0] < 1) return false;
+		}
 	}
 	
 	$v_width = min(640,$v_width);
-	$v_height = floor(($v_width * $size[1])/ $size[0]);
-	$body = "<a href=\"$url\"><img src=\"$url\" width=\"$v_width\" height=\"$v_height\" alt=\"$alt\" title=\"$alt\" /></a>\n";
+	$v_height = (!empty($size[0]))? ' height="'.floor(($v_width * $size[1])/ $size[0]).'"' : "";
+	$body = "<a href=\"$url\"><img src=\"$url\" width=\"$v_width\"{$v_height} alt=\"$alt\" title=\"$alt\" /></a>\n";
 	return $body;
 }
 // 画像キャッシュがあるか調べる
 function plugin_tenki_cache_image_fetch($target, $dir, $id) {
 	$filename = $dir.$id."_tenki.gif";
-	if (!is_readable($filename)) {
-		$file = fopen($target, "rb"); // たぶん size 取得よりこちらが原始的だからやや速い
-		if (! $file) {
-			fclose($file);
-			$url = NOIMAGE;
-		} else {
-			// リモートファイルのパケット有効後対策
-			// http://search.net-newbie.com/php/function.fread.html
-			$contents = "";
-			do {
-				$data = fread($file, 8192);
-				if (strlen($data) == 0) {
-					break;
-				}
-				$contents .= $data;
-			} while(true);
-			
-			fclose ($file);
-			
-			$data = $contents;
-			unset ($contents);
-			$size = @getimagesize($target); // あったら、size を取得、通常は1が返るが念のため0の場合も(reimy)
-			if ($size[0] <= 1)
-				$url = NOIMAGE;
-			else
-				$url = $filename;
+	if (!is_readable($filename))
+	{
+		$data = http_request($target);
+		if ($data['rc'] == 200 && $data['data'])
+		{
+			$data = $data['data'];
+			plugin_tenki_cache_image_save($data, $filename, CACHE_DIR);
 		}
-		plugin_tenki_cache_image_save($data, $filename, CACHE_DIR);
+		else
+		{
+			$data = "";
+		}
 	}
 	$size = @getimagesize($filename);
 	
