@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.6 2005/05/20 00:13:42 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.7 2005/07/01 12:59:21 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -259,7 +259,7 @@ function plugin_fusen_action() {
 	{
 		if ($X_admin || ($X_uid && get_pg_auther($refer) == $X_uid)) $auth = true;
 		else if ($dat[$id]['uid'] && $dat[$id]['uid'] == $X_uid) $auth = true;
-		else if ($dat[$id]['ucd'] && $dat[$id]['ucd'] == PUKIWIKI_UCD) $auth = true;
+		else if (!$dat[$id]['uid'] && $dat[$id]['ucd'] && $dat[$id]['ucd'] == PUKIWIKI_UCD) $auth = true;
 	}
 	else
 	{
@@ -340,7 +340,7 @@ function plugin_fusen_action() {
 			}
 			if ($auth)
 			{
-				$txt = str_replace("\r","",$post['body']);
+				$txt = str_replace(array("\r\n","\r"),"\n",$post['body']);
 				$txt = preg_replace('/^#fusen/m', '&#35;fusen', $txt);
 				$txt = user_rules_str(auto_br($txt));
 				$txt = rtrim($txt)."\n";
@@ -612,7 +612,7 @@ function plugin_fusen_putjson($dat,$page)
 	
 	// 変更チェック
 	$old = @join('',@file($fname));
-	if ($json == $old) return;
+	//if ($json == $old) return;
 	
 	$fp = false;
 	$count = 0;
