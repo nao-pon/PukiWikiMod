@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.74 2005/05/20 00:07:01 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.75 2005/07/13 15:45:32 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
 /*
@@ -1001,6 +1001,7 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			$body = tb_get_rdf($vars['page'])."\n";
 			$r_page = rawurlencode(strip_bracket($vars["page"]));
 			$e_page = encode(strip_bracket($get["page"]));
+			define('XOOPS_PUKIWIKI_PAGENAME',strip_bracket($vars['page']));
 			
 			//PlainTXT DB 更新の必要がある場合
 			if (file_exists(CACHE_DIR.$e_page.".udp"))
@@ -1020,11 +1021,11 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 				// チェックファイルをtouch
 				touch(P_CACHE_DIR.$pgid.".mcr");
 				// パラメーターセット
-				$vars['mc_refresh'] = join(" ",array_values($vars['mc_refresh']));
+				//$vars['mc_refresh'] = join(" ",array_values($vars['mc_refresh']));
 				// 非同期でモードでデータ更新
 				http_request(
 				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/mc_refrash.php"
-				,'POST','',array('mc_refresh'=>$vars['mc_refresh'],'tgt_page'=>$vars['page']),HTTP_REQUEST_URL_REDIRECT_MAX,0,3);
+				,'POST','',array('mc_refresh'=>join(" ",array_values($vars['mc_refresh'])),'tgt_page'=>$vars['page']),HTTP_REQUEST_URL_REDIRECT_MAX,0,3);
 			}
 			
 			// ping送出に失敗している可能性があれば再送 (1件あたりのリミット:120秒)
