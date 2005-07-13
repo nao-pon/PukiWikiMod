@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.7 2005/07/01 12:59:21 nao-pon Exp $
+// $Id: fusen.js,v 1.8 2005/07/13 15:47:28 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -780,8 +780,8 @@ function fusen_show(id)
 	//window.status = left+":"+top;
 	getElement(id).style.left = left + "px";
 	getElement(id).style.top = top + "px";
-
-	getElement(id).style.zIndex = 100;
+	
+	getElement(id).style.zIndex = (id == 'fusen_help')? 120 : 100;
 	getElement(id).style.visibility = "visible";
 	getElement(id).onmousedown = fusen_onmousedown;
 	
@@ -1833,7 +1833,7 @@ function fusen_list_make()
 {
 	var listobj = getElement('fusen_list');
 	var listcount = 0;
-	listobj.innerHTML = '[<a href="javascript:fusen_hide(\'fusen_list\')">×</a>]<ul>';
+	listobj.innerHTML = '[<a href="javascript:fusen_hide(\'fusen_list\');" title="閉じる">×</a>] [ <a href="javascript:fusen_hide(\'fusen_list\');JavaScript:fusen_new();" title="新しい付箋を貼る">新規</a> ] [ <a href="JavaScript:fusen_show(\'fusen_help\');" title="使い方">ヘルプ</a> ]<ul>';
 	for(var id in fusenObj)
 	{
 		listcount ++;
@@ -1851,7 +1851,11 @@ function fusen_list_make()
 		}
 		listobj.innerHTML += '<li><a href="javascript:fusen_select('+id+','+dustbox+')">'+addtxt+'</a></li>';
 	}
-	if (!listcount) listobj.innerHTML += '<li>このページに付箋はありません。</li>'
+	if (!listcount) listobj.innerHTML += '<li>このページに付箋はありません。</li>';
+	if (getElement('pukiwiki_fusenlist'))
+	{
+		getElement('pukiwiki_fusenlist').innerHTML = '&nbsp;[ <a href="JavaScript:fusen_show(\'fusen_list\')">付箋(' + listcount + ')</a> ]';
+	}
 	listobj.innerHTML += '</ul>';
 	list_left = listobj.style.left;
 	list_visibility = listobj.style.visibility;

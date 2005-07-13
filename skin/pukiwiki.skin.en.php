@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.en.php,v 1.10 2005/04/27 14:28:10 nao-pon Exp $
+// $Id: pukiwiki.skin.en.php,v 1.11 2005/07/13 15:47:28 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -75,7 +75,7 @@ if (!defined('DATA_DIR')) exit;
 	</div>
 	
 	<div style="float:left;text-align:left;width:49%;">
-	<?php echo "<small>".$comments_tag.$tb_tag."</small>" ?>
+	<?php echo "<small>".$comments_tag.$tb_tag."<span id='pukiwiki_fusenlist' name='pukiwiki_fusenlist'></span></small>" ?>
 	</div>	
 	
 	<div style="float:right;text-align:right;width:50%;">
