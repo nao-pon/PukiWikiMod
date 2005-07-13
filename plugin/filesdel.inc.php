@@ -6,7 +6,7 @@ function plugin_filesdel_init()
 		'_filesdel_messages'=>array(
 			'title'  => '添付ファイル・カウンターファイルの削除',
 			'msg_done'      => '以下の添付ファイル・カウンターファイルの削除処理が完了しました。',
-			'msg_err'      => '管理者以外はアクセスできません。',
+			'msg_err'      => '管理者領域です。<br />管理者としてログインしていないか、無効なリンクからのアクセスです。',
 			'msg_usage'     => "",
 		)
 	);
@@ -23,9 +23,9 @@ function plugin_filesdel_action()
 	//echo str_pad('',256);//for IE
 	
 	global $script,$post,$vars,$adminpass,$foot_explain;
-	global $_filesdel_messages,$X_admin;
+	global $_filesdel_messages,$X_admin, $xoopsDB;
 	
-	if (!$X_admin)
+	if (!$X_admin || !pukiwiki_refcheck(1))
 	{
 		return array(
 			'msg'=>strip_bracket(decode($vars['tgt']))." - ".$_filesdel_messages['title'],
@@ -86,6 +86,11 @@ function plugin_filesdel_action()
 			unlink(COUNTER_DIR.$name);
 			$msg .= $name."<br />";
 		}
+		
+		//カウンターDB
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_count")." WHERE `name` = '".get_pgname_by_id($vars['_pgid'])."' LIMIT 1;";
+		$result=$xoopsDB->queryF($query);
+
 		
 		return array(
 			'msg'=>strip_bracket(decode($vars['tgt']))." - ".$_filesdel_messages['title'],
