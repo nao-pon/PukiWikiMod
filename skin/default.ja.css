@@ -422,6 +422,9 @@ input.copyButton {
 	border-width:2pt;
 	border-style:dashed;
 }
+.style_calendar_body div.multi {
+	width: 600px;
+}
 
 .style_td_caltop {
 	background-color: #EEF5FF;
@@ -836,6 +839,7 @@ span.area_off
 div.plugin_gimage font
 {
 	font-size:10px;
+	word-break: break-all;
 }
 
 /* fusen.inc.php */
