@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.51 2005/06/23 08:16:00 nao-pon Exp $
+// $Id: file.php,v 1.52 2005/08/23 23:58:24 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -67,49 +67,52 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	}
 	
 	if ($postdata) $postdata = rtrim($postdata)."\n";
-
-	$page = add_bracket($page);
 	
-	$postdata = user_rules_str($postdata);
-	
-	// 差分ファイルの作成
-	$oldpostdata = is_page($page) ? join('',get_source($page)) : '';
-	$diffdata = do_diff($oldpostdata,$postdata);
-	file_write(DIFF_DIR,$page,$diffdata);
-	
-	// 差分データの作成
-	$mail_add = $mail_del = "";
-	$diffdata_ar = array();
-	$diffdata_ar=split("\n",$diffdata);
-	foreach($diffdata_ar as $diffdata_line){
-		if (ereg("^\+ (.*)",$diffdata_line,$regs)){
-			$mail_add .= $regs[1]."\n";
-		}
-		if (ereg("^\- (.*)",$diffdata_line,$regs)){
-			$mail_del .= $regs[1]."\n";
-		}
-	}
-	
-	// 追加データファイル保存
-	// pcomment 動作時は親ページ
-	$_pgid = (!empty($post['refer']))? get_pgid_by_name($post['refer']) : $pgid;
-	$add_file = DIFF_DIR."add_".$_pgid.".cgi";
-	if ($fp = @fopen($add_file,"wb"))
+	if ($pagereading_config_page != $page)
 	{
-		fputs($fp,convert_html($mail_add));
-		fclose($fp);
+		$page = add_bracket($page);
+		
+		$postdata = user_rules_str($postdata);
+		
+		// 差分ファイルの作成
+		$oldpostdata = is_page($page) ? join('',get_source($page)) : '';
+		$diffdata = do_diff($oldpostdata,$postdata);
+		file_write(DIFF_DIR,$page,$diffdata);
+		
+		// 差分データの作成
+		$mail_add = $mail_del = "";
+		$diffdata_ar = array();
+		$diffdata_ar=split("\n",$diffdata);
+		foreach($diffdata_ar as $diffdata_line){
+			if (ereg("^\+ (.*)",$diffdata_line,$regs)){
+				$mail_add .= $regs[1]."\n";
+			}
+			if (ereg("^\- (.*)",$diffdata_line,$regs)){
+				$mail_del .= $regs[1]."\n";
+			}
+		}
+		
+		// 追加データファイル保存
+		// pcomment 動作時は親ページ
+		$_pgid = (!empty($post['refer']))? get_pgid_by_name($post['refer']) : $pgid;
+		$add_file = DIFF_DIR."add_".$_pgid.".cgi";
+		if ($fp = @fopen($add_file,"wb"))
+		{
+			fputs($fp,convert_html($mail_add));
+			fclose($fp);
+		}
+		
+		// バックアップの作成
+		// 日付はバックアップを作成した日時
+		$oldposttime = time();
+		
+		// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
+		if(!$postdata && $del_backup)
+			backup_delete(BACKUP_DIR.encode($page).".txt");
+		else if($do_backup && is_page($page))
+			make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
 	}
 	
-	// バックアップの作成
-	// 日付はバックアップを作成した日時
-	$oldposttime = time();
-	
-	// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
-	if(!$postdata && $del_backup)
-		backup_delete(BACKUP_DIR.encode($page).".txt");
-	else if($do_backup && is_page($page))
-		make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
-
 	// ファイルの書き込み
 	file_write(DATA_DIR,$page,$postdata,$notimestamp,$aids,$gids,$vaids,$agids,$freeze,$unvisible);
 	
