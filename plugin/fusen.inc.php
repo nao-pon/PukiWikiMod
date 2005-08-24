@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.7 2005/07/01 12:59:21 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.8 2005/08/24 00:00:47 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -372,6 +372,9 @@ function plugin_fusen_action() {
 				);
 				
 				ksort($dat);
+				
+				// NULLバイト削除
+				$dat = input_filter($dat);
 				
 				// plane_text DB 更新を指示
 				need_update_plaindb($refer);
