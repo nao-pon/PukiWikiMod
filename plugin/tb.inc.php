@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.10 2005/06/23 08:22:51 nao-pon Exp $
+// $Id: tb.inc.php,v 1.11 2005/08/24 00:00:19 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -52,7 +52,7 @@ function plugin_tb_action()
 // TrackBack Ping データ保存(更新)
 function tb_save()
 {
-	global $script,$vars,$trackback,$tb_check_link_to_me;
+	global $script,$vars,$trackback,$tb_check_link_to_me,$pkwk_blacklist_tb;
 	static $fields = array(/* UTIME, */'url','title','excerpt','blog_name');
 	
 	// 許可していないのに呼ばれた場合の対応
@@ -73,6 +73,18 @@ function tb_save()
 	
 	$url = $vars['url'];
 	$tb_id = $vars['tb_id'];
+	
+	// 許可しないURLパターンチェック
+	if (!empty($pkwk_blacklist_tb))
+	{
+		$blacklists = preg_split("/\s+/",$pkwk_blacklist_tb);
+		$regptns = array();
+		foreach($blacklists as $blacklist)
+		{
+			$regptns[] = preg_quote($blacklist,"/");
+		}
+		if (preg_match("/".join("|",$regptns)."/i",$url)) tb_xml_msg(1,'URL parameter is not permitted.');
+	}
 	
 	// ページ存在チェック
 	$page = tb_id2page($tb_id);
