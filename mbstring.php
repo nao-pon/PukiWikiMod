@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: mbstring.php,v 1.1 2003/10/31 12:22:59 nao-pon Exp $
+// $Id: mbstring.php,v 1.2 2005/09/11 11:11:27 dashboard Exp $
 // ORG: mbstring.php,v 1.6 2003/08/08 07:29:56 arino Exp $
 //
 
@@ -216,5 +216,10 @@ function mb_substr($str,$start,$length=0,$encoding='')
 {
 	// 注: EUC-JP専用, $encodingを使用しない
 	return jsubstr($str,$start,$length);
+}
+// mb_strcut -- 文字列のカット ( by dashboard )
+function mb_strcut($str,$start,$length=0)
+{
+	return jstrcut($str,$start,$length);
 }
 ?>
