@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.8 2005/07/13 15:47:28 nao-pon Exp $
+// $Id: fusen.js,v 1.9 2005/09/14 15:04:02 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -541,12 +541,12 @@ function fusen_setpos(id,auto)
 		getElement('edit_fix').value = 0;
 		fusenObj[id].fix = 0;
 		fusen_set_menu_html(getElement('fusen_id' + id + 'menu'),id,'');
-		fusen_setlines(id);
 		obj.style.overflow = 'visible';
 		obj.style.whiteSpace = 'nowrap';
 		obj.style.width = 'auto';
 		obj.style.height = 'auto';
 		fusen_size_init(obj);
+		fusen_setlines(id);
 	}
 	else
 	{
@@ -636,7 +636,6 @@ function fusen_link(id) {
 
 function fusen_del(id)
 {
-	
 	fusenMovingObj = null;
 	var ok;
 	var mode;
@@ -662,6 +661,7 @@ function fusen_del(id)
 	{
 		getElement('edit_id').value = id;
 		getElement('edit_mode').value = 'del';
+		//getElement('edit_ln').value = (fusenObj[id].ln) ? 'id' + fusenObj[id].ln : '';
 		
 		// 表示更新
 		getElement('fusen_id' + id).style.visibility = "hidden";
@@ -671,10 +671,10 @@ function fusen_del(id)
 		
 		if (!fusenDustboxFlg)
 		{
-			fusen_dustbox();
+			//fusen_dustbox();
 			fusen_list_make();
-			//fusen_removelines();
-			//fusen_setlines();
+			fusen_removelines(id);
+			fusen_setlines(id);
 		}
 		
 		// サーバーデータ更新
@@ -694,6 +694,7 @@ function fusen_recover(id)
 	fusenMovingObj = null;
 	getElement('edit_id').value = id;
 	getElement('edit_mode').value = 'recover';
+	//getElement('edit_ln').value = (fusenObj[id].ln) ? 'id' + fusenObj[id].ln : '';
 	
 	// 表示更新
 	fusen_set_menu_html(getElement('fusen_id' + id + 'menu'),id,'');
@@ -705,6 +706,34 @@ function fusen_recover(id)
 	
 	// サーバーデータ更新
 	fusen_postdata(true);
+}
+
+function fusen_burn()
+{
+	fusenMovingObj = null;
+	var ok;
+	//var mode = "burn";
+	
+	if (!fusenDustboxFlg) fusen_dustbox();
+	
+	ok = confirm('ゴミ箱を空にしますか？');
+	if (!ok) return;
+	
+	if (fusenBusyFlg)
+	{
+		alert(fsen_msg_nowbusy);
+		return;
+	}
+	
+	getElement('edit_id').value = "0";
+	getElement('edit_mode').value = 'burn';
+
+	// サーバーデータ更新
+	fusen_postdata(false);
+	fusen_init(1);
+	alert ('ゴミ箱を空にしました。');
+	fusen_dustbox();
+
 }
 
 function fusen_lock(id)
@@ -1079,20 +1108,24 @@ function fusen_create(id, obj) {
 
 // Line draw
 
-function fusen_removelines() {
+function fusen_removelines(t_id) {
 	var id, lineid, obj;
 	for(id in fusenObj) {
-		if (fusenObj[id].ln) {
-			lineid = 'line' + id + '_' + fusenObj[id].ln;
-			obj = getElement(lineid);
-			if (obj) obj.parentNode.removeChild(obj);
+		if (fusenObj[id].ln)
+		{
+			if (!t_id || t_id == id || t_id == fusenObj[id].ln)
+			{
+				lineid = 'line' + id + '_' + fusenObj[id].ln;
+				obj = getElement(lineid);
+				if (obj) obj.parentNode.removeChild(obj);
+			}
 		}
 	}
 }
 
 function fusen_setlines(t_id) {
 	for(var id in fusenObj) {
-		if (fusenObj[id].ln && !fusenObj[id].del && !fusenObj[fusenObj[id].ln].del)
+		if (fusenObj[id].ln && !fusenObj[id].del && fusenObj[fusenObj[id].ln] && !fusenObj[fusenObj[id].ln].del)
 		{
 			if (!t_id || t_id == id || t_id == fusenObj[id].ln)
 			//if (fusenX_admin)
@@ -1833,7 +1866,9 @@ function fusen_list_make()
 {
 	var listobj = getElement('fusen_list');
 	var listcount = 0;
-	listobj.innerHTML = '[<a href="javascript:fusen_hide(\'fusen_list\');" title="閉じる">×</a>] [ <a href="javascript:fusen_hide(\'fusen_list\');JavaScript:fusen_new();" title="新しい付箋を貼る">新規</a> ] [ <a href="JavaScript:fusen_show(\'fusen_help\');" title="使い方">ヘルプ</a> ]<ul>';
+	var burn;
+	burn = (fusenX_admin)? " [ <a href=\"JavaScript:fusen_burn()\" title=\"ごみ箱を空にする\">ごみ箱を空にする</a> ]" : "";
+	listobj.innerHTML = '[<a href="javascript:fusen_hide(\'fusen_list\');" title="閉じる">×</a>] [ <a href="javascript:fusen_hide(\'fusen_list\');JavaScript:fusen_new();" title="新しい付箋を貼る">新規</a> ]'+burn+' [ <a href="JavaScript:fusen_show(\'fusen_help\');" title="使い方">ヘルプ</a> ]<ul>';
 	for(var id in fusenObj)
 	{
 		listcount ++;

@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.8 2005/08/24 00:00:47 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.9 2005/09/14 15:04:02 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -141,6 +141,8 @@ function plugin_fusen_convert() {
 	$js_refer = plugin_fusen_jsencode($refer);
 	$auth = ($X_admin || ($X_uid && get_pg_auther($refer) == $X_uid))? 1 : 0;
 	
+	$burn = ($auth)? "(<a href=\"JavaScript:fusen_burn()\" title=\"ごみ箱を空にする\">空に</a>)" : "";
+	
 	return <<<EOD
 <script type="text/javascript" src="$jsfile" charset="euc-jp"></script>
 <script type="text/javascript">
@@ -161,7 +163,7 @@ var fusenFromSkin = {$from_skin};
 <form action="" onsubmit="return false;" style="padding:0px;margin:0px;">
   <img src="./image/fusen.gif" width="20" height="20" alt="付箋機能" title="付箋機能" />
   [<a href="JavaScript:fusen_new()" title="新しい付箋を貼る">新規</a>]
-  [<a href="JavaScript:fusen_dustbox()" title="ごみ箱を表示/非表示">ごみ箱</a>]
+  [<a href="JavaScript:fusen_dustbox()" title="ごみ箱を表示/非表示">ごみ箱</a>{$burn}]
   [<a href="JavaScript:fusen_transparent()" title="付箋をを透明化/非透明化">透明</a>]
   [<a href="JavaScript:fusen_init(1)" title="最新の状態に更新">更新</a>]
   [<a href="JavaScript:fusen_show('fusen_list')" title="このページの付箋リスト">リスト</a>]
@@ -245,7 +247,7 @@ function plugin_fusen_action() {
 	$dat = plugin_fusen_data($refer,false);
 	
 	// 規定外のモード
-	if (!in_array($post['mode'],array('set','del','lock','unlock','recover','edit')))
+	if (!in_array($post['mode'],array('set','del','lock','unlock','recover','edit','burn')))
 	{
 		ob_clean();
 		exit;
@@ -263,7 +265,15 @@ function plugin_fusen_action() {
 	}
 	else
 	{
-		$auth = true;
+		// 一括モード
+		if ($post['mode'] == "burn")
+		{
+			if ($X_admin || ($X_uid && get_pg_auther($refer) == $X_uid)) $auth = true;
+		}
+		else
+		{
+			$auth = true;
+		}
 	}
 	
 	// ID確定,データ取得
@@ -274,6 +284,7 @@ function plugin_fusen_action() {
 		case 'unlock':
 		case 'recover';
 			if (!array_key_exists($id,$dat)) die_message('The data is not accumulated just.'."($id)");
+		case 'burn';
 			// ページHTMLキャッシュを削除
 			delete_page_html($refer,"html");
 			//値更新
@@ -300,7 +311,7 @@ function plugin_fusen_action() {
 					{
 						$dat[$id]['del'] = true;
 						$dat[$id]['lk'] = false;
-						$dat[$id]['ln'] = '';
+						//$dat[$id]['ln'] = '';
 					}
 					else
 					{
@@ -315,6 +326,19 @@ function plugin_fusen_action() {
 					break;
 				case 'recover':
 					$dat[$id]['del'] = false;
+					break;
+				case 'burn':
+					$burned = false;
+					foreach($dat as $k=>$v)
+					{
+						if (!empty($dat[$k]['del']))
+						{
+							unset($dat[$k]);
+							$burned = true;
+						}
+					}
+					if ($burned) need_update_plaindb($refer);
+					break;
 			}
 			break;
 		case 'edit':
