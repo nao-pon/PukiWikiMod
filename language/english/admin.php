@@ -1,10 +1,10 @@
 <?php
-// $Id: admin.php,v 1.11 2005/04/27 14:28:11 nao-pon Exp $
+// $Id: admin.php,v 1.12 2005/10/02 03:29:28 dashboard Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE0", "PukiWikiMod initial setting.");
 define("_AM_WIKI_INFO0", "In order to carry out initial setting, please access the following two link places and perform processing.");
-define("_AM_WIKI_DB_INIT", "DataBace initialization.");
+define("_AM_WIKI_DB_INIT", "DataBase initialization.");
 define("_AM_WIKI_PAGE_INIT", "Page relation initialization.");
 
 define("_AM_WIKI_TITLE1", "Preferences");
