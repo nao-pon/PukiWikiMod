@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.21 2005/06/23 08:19:34 nao-pon Exp $
+// $Id: rss.php,v 1.22 2005/10/09 04:41:39 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -38,7 +38,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 		$catch_file = CACHE_DIR.get_pgid_by_name($page).".rss".$rss.$catch_file;
 	}
 	
-	header("Content-type: application/xml");
+	header("Content-type: application/xml charset=utf-8");
 	
 	if (file_exists($catch_file))
 	{
@@ -212,7 +212,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 	if($rss==1)
 	{
 		$ret = '<?xml version="1.0" encoding="UTF-8"?>
-
+<?xml-stylesheet href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/skin/rdf.css" type="text/css"?>
 
 <!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN"
             "http://my.netscape.com/publish/formats/rss-0.91.dtd">
@@ -232,6 +232,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 	else if($rss==2)
 	{
 		$ret = '<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/skin/rdf.css" type="text/css"?>
 
 <rdf:RDF 
   xmlns:dc="http://purl.org/dc/elements/1.1/"
