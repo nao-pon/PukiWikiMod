@@ -358,6 +358,11 @@ input.copyButton {
 	background-color:#FFFACC;
 }
 
+span.pukiwiki_trip {
+	font-size: 9px;
+	color: green;
+}
+
 .style_table {
 	width:auto;
 	margin-top: 5px;
