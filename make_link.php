@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.37 2005/10/09 04:51:45 nao-pon Exp $
+// $Id: make_link.php,v 1.38 2005/10/09 05:00:05 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -297,12 +297,11 @@ EOD;
 		$note = make_link($body);
 		
 		$foot_explain[$id] = <<<EOD
-<a id="notefoot_$id" href="#notetext_$id" class="note_super">*$id</a>
+<a id="notefoot_$id" href="#notetext_$id"><span class="note_super">*$id</span></a>
 <span class="small">$note</span>
 <br />
 EOD;
-		$name = "<a id=\"notetext_$id\" href=\"#notefoot_$id\" class=\"note_super\" title=\"".strip_tags($note)."\">*$id</a>";
-		
+		$name = "<a id=\"notetext_$id\" href=\"#notefoot_$id\" title=\"".strip_tags($note)."\"><span class=\"note_super\">*$id</span></a>		
 		return parent::setParam($page,$name,$body);
 	}
 	function toString()
