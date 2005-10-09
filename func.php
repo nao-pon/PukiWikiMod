@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.50 2005/06/23 08:18:54 nao-pon Exp $
+// $Id: func.php,v 1.51 2005/10/09 04:47:14 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -762,7 +762,7 @@ function auto_br($msg){
 		$msg = rtrim($msg);
 
 		//余分な~を削除
-		$msg = preg_replace("/~(->)?\n((?:[#\-+*|:>\n]|\/\/|<<<))/","\\1\n\\2",$msg);
+		$msg = preg_replace("/~(->)?\n((?:[#\-+*|:>\n]|\/\/|RIGHT:|CENTER:|LEFT:|<<<))/","\\1\n\\2",$msg);
 		$msg = preg_replace("/((?:^|\n)[^ ][^\n~]*)~((:?->)?\n )/","\\1\\2",$msg);
 		$msg = preg_replace("/((?:^|\n)(?:----|\/\/)(?:.*)?)~((:?->)?\n)/","\\1\\2",$msg);
 		$msg = preg_replace("/(^|\n)->~(\n|$)/","\\1->\\2",$msg);
@@ -883,12 +883,14 @@ function cell_format_tag_del ($td) {
 // ユーザーページへのリンクを作成する
 function make_user_link (&$name)
 {
+	list($_name,$trip) = convert_trip($name);
+	$trip = ($trip)? "&trip(\"$trip\");" : "";
 	if (!WIKI_USER_DIR) 
-		$name = "[[$name]]";
+		$name = "[[$_name]]".$trip;
 	else
 	{
-		$name = sprintf(WIKI_USER_DIR,str_replace(" ","",strip_tags(make_link($name))),$name);
-		$name = add_bracket(strip_bracket($name));
+		$_name = sprintf(WIKI_USER_DIR,str_replace(" ","",strip_tags(make_link($_name))),$_name);
+		$name = add_bracket(strip_bracket($_name)).$trip;
 	}
 	return;
 }
@@ -1019,7 +1021,7 @@ function ltrim_pagename($page,$num)
 // 指定ページをインクルードする
 function include_page($page,$ret_array=false)
 {
-	global $vars,$post,$get,$comment_no,$article_no,$h_excerpt,$digest;
+	global $vars,$post,$get,$comment_no,$article_no,$h_excerpt,$digest,$pgid;
 	global $_msg_read_more;
 	global $now_inculde_convert;
 	global $nocache_plugin_on_include;
@@ -1059,6 +1061,7 @@ function include_page($page,$ret_array=false)
 	
 	//変数値退避
 	$tmppage = $vars["page"];
+	$_pgid = $pgid;
 	$_comment_no = $comment_no;
 	$_h_excerpt = $h_excerpt;
 	$_digest = $digest;
@@ -1072,6 +1075,7 @@ function include_page($page,$ret_array=false)
 	
 	//現ページ名書き換え
 	$vars["page"] = $post["page"] = $get["page"] = add_bracket($page);
+	$pgid = get_pgid_by_name($vars["page"]);
 	
 	$body = join("",get_source($page));
 	$pcon = new pukiwiki_converter();
@@ -1103,6 +1107,7 @@ function include_page($page,$ret_array=false)
 	
 	//退避変数値戻し
 	$vars["page"] = $post["page"] = $get["page"] = $tmppage;
+	$pgid = $_pgid;
 	$comment_no = $_comment_no;
 	$h_excerpt = $_h_excerpt;
 	$digest = $_digest;
@@ -1298,6 +1303,23 @@ function X_get_users($sort=true)
 	return $ret;
 }
 
+// #以降をトリップに変換して # で分割した配列で返す
+function convert_trip($val)
+{
+	if (preg_match('/(.+)#(.+)/', $val, $match))
+	{
+		$name = $match[1];
+		$key = $match[2];
+		$salt = substr(substr($key,1,2).'H.',0,2);
+		$salt = strtr($salt,':;<=>?@[\]^_`','ABCDEFGabcdef');
+		$salt = preg_replace('/[^\dA-Za-z]/', '.', $salt);
+		return array($name,substr(crypt($key,$salt), -10));
+	}
+	else
+	{
+		return array($val,'');
+	}
+}
 
 //// Compat ////
 
