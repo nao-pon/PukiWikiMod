@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.75 2005/07/13 15:45:32 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.76 2005/10/09 04:31:17 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
 /*
@@ -1184,7 +1184,7 @@ if (empty($vars['xoops_block']))
 		}
 		$up_page = ($up_page && is_page($up_page))? "/".get_pgid_by_name($up_page) : "";
 		
-		$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php/rss10/s'.$up_page;
+		$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php/rss10/s'.$up_page.'/index.rdf';
 		
 		$xoops_mod_add_header = '
 <link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list" />
