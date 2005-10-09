@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.46 2005/06/23 08:14:25 nao-pon Exp $
+// $Id: init.php,v 1.47 2005/10/09 04:38:24 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -10,13 +10,16 @@ define('INI_FILE','./pukiwiki.ini.php');
 require('./version.php');
 
 // Copyright.
-define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2004 <a href=\"http://ishii.mydns.jp/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.");
+define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2005 <a href=\"http://ishii.mydns.jp/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.");
 
 //文字エンコード
 define('SOURCE_ENCODING','EUC-JP');
 
 // ini_set
 ini_set('mbstring.substitute_character','');
+ini_set("mbstring.encoding_translation","Off");
+ini_set("mbstring.http_input","pass");
+ini_set("mbstring.http_output","pass");
 ini_set('error_reporting', 5);
 
 // PATH_INFO の 処理
@@ -33,7 +36,7 @@ if (!empty($_SERVER['PATH_INFO']))
 }
 
 define("S_VERSION","1.3.3");
-define("S_COPYRIGHT","Based on \"PukiWiki\" by <a href=\"http://pukiwiki.org/\">PukiWiki Developers Team</a>");
+define("S_COPYRIGHT","Based on \"PukiWiki\" by <a href=\"http://pukiwiki.sourceforge.jp/\">PukiWiki Developers Team</a>");
 define("UTIME",time());
 define("MUTIME",getmicrotime());
 
