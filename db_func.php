@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.24 2005/04/27 14:28:11 nao-pon Exp $
+// $Id: db_func.php,v 1.25 2005/10/09 05:06:28 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -693,6 +693,9 @@ function get_pagecomment_count($pgid,$link="",$str="")
 	*/
 	
 	$count = xoops_comment_count($pukiwiki_mid,$pgid);
+	
+	// 20件以上はスレッド表示に
+	if (empty($_GET['com_mode']) && $count >= 20) $_GET['com_mode'] = 'thread';
 	
 	if ($str)
 		$str = str_replace('$1',$count,$str);
