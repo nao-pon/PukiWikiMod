@@ -1,0 +1,87 @@
+@charset "UTF-8";
+
+/* Original version:
+
+   http://www.w3.org/2000/08/w3c-synd/style.css
+
+   Copyright 1997-2003 W3C (MIT, ERCIM, Keio). All Rights Reserved.
+   The following software licensing rules apply:
+   http://www.w3.org/Consortium/Legal/copyright-software 
+
+   $Id: style.css,v 1.15 2003/04/04 05:31:06 dom Exp $
+
+*/
+
+/* Edited by nao-pon
+    http://hypweb.net/
+*/
+
+rss, channel, item, title, description, link, subject, creator, date {
+	display: block;
+}
+description, link, subject, creator, date {
+	font-size: 80%;
+	line-height: 150%;
+}
+image, language, managingEditor, webMaster, docs, copyright,
+lastBuildDate, pubDate, rating, day, hour,
+skipDays, skipHours, textinput, name, items {
+ 	display: none;
+}
+channel, item {
+	z-index: 1; 
+	border-width: 1px 2px 2px 1px;
+	border-style: solid;
+	border-color: #FFD700;
+	padding: 1em;
+	margin: 0.5em;
+	background-color: #ffffff;
+	width: 95%;
+}
+RDF {
+	max-width: 50em;
+	min-width: 12em;
+	display: block;
+	margin-right: 0;
+	margin-left: 0;
+	padding-right: 2%;
+	padding-left: 2%;
+	background-color: #eeeeee;
+}
+title {
+	font-family: Geneva, Arial, sans-serif;
+	font-weight: bold;
+	color: #666688;
+	margin-bottom: 0.8em;
+}
+channel title {
+	text-align: center;
+	font-size: 1.4em;
+}
+channel description {
+	font-style: italic;
+	font-family: Times, "Times New Roman", serif;
+	font-size: 1.2em;
+}
+item title {
+	text-align: left;
+}
+link {
+	text-decoration: underline;
+	margin-bottom: 3px;
+}
+item subject {
+	margin-top: 1em;
+}
+item date {
+	margin-left: 3em;
+}
+item subject:before {
+	content: "Category(ies): ";
+}
+item creator:before {
+	content: "Posted by ";
+}
+item date:before {
+	content: "at ";
+}
