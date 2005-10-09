@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.76 2005/10/09 04:31:17 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.77 2005/10/09 05:39:39 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
 /*
@@ -218,7 +218,8 @@ else if(arg_check("edit"))
 				. $textareas[2]  . $msg_now . $textareas[4];
 
 			// ヘルプ表示 : リンク書き換え
-			$body = preg_replace("/(cmd=edit&amp;help=true)/", "plugin=paraedit&amp;parnum=$vars[parnum]&$1&amp;refer=" . rawurlencode($vars[page]), $body);
+			//$body = preg_replace("/(cmd=edit&amp;help=true)/", "plugin=paraedit&amp;parnum=$vars[parnum]&$1&amp;refer=" . rawurlencode($vars[page]), $body);
+			$body = preg_replace("/(cmd=edit&amp;help=true)/", "$1&amp;id=".$vars['id'], $body);
 		}
 	}
 }
@@ -352,7 +353,7 @@ else if($post["write"] || ($_SERVER['REQUEST_METHOD'] == "POST" && arg_check("wr
 	$post["msg_before"] = str_replace(_PARAEDIT_SEPARATE_STR, "\n", $post["msg_before"]);
 	$post["msg_after"]  = str_replace(_PARAEDIT_SEPARATE_STR, "\n", $post["msg_after"]);
 	// 連結
-	$post["msg"] = $post["msg_before"].$post["msg"].$post["msg_after"];
+	$post["msg"] = $post["msg_before"].$post["msg"]."\n".$post["msg_after"];
 
 	if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
 		// とりあえず pgid を振る(添付ファイル処理用)
