@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.52 2005/08/23 23:58:24 nao-pon Exp $
+// $Id: file.php,v 1.53 2005/10/14 14:05:42 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -274,12 +274,12 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			$c_pages = array();
 			foreach($wiki_common_dirs as $c_dir)
 			{
-				foreach(get_existpages(false,$c_dir) as $c_page)
+				foreach(get_existpages(false,$c_dir,0,"",false,false,true,true) as $c_page)
 				{
-					$c_pages[] = add_bracket(str_replace($c_dir,"",strip_bracket($c_page)));
+					$c_pages[] = str_replace($c_dir,"",$c_page);
 				}
 			}
-			$c_pages = array_unique(array_merge(get_existpages(),$c_pages,$aliases));
+			$c_pages = array_unique(array_merge(get_existpages(false,"",0,"",false,false,true,true),$c_pages,$aliases));
 			
 			list($pattern, $pattern_a, $forceignorelist) = get_autolink_pattern($c_pages);
 			
@@ -656,11 +656,11 @@ function put_reading($page,$reading)
 }
 
 // 全ページ名を配列に
-function get_existpages($nocheck=false,$page="",$limit=0,$order="",$nolisting=false)
+function get_existpages($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
 {
 	// 通常はDB版へ丸投げ
 	if (!is_string($nocheck) || $nocheck == DATA_DIR)
-		return get_existpages_db($nocheck,$page,$limit,$order,$nolisting);
+		return get_existpages_db($nocheck,$page,$limit,$order,$nolisting,$nochiled,$nodelete,$strip);
 	
 	// PukiWiki 1.4 互換用
 	$dir = $nocheck;

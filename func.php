@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.51 2005/10/09 04:47:14 nao-pon Exp $
+// $Id: func.php,v 1.52 2005/10/14 14:05:42 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -940,10 +940,11 @@ function get_autolink_pattern(& $pages)
 	unset($config);
 	$auto_pages = array_merge($ignorepages, $forceignorepages);
 
-	foreach ($pages as $page) {
+	foreach ($pages as $page)
+	{
 		if (preg_match("/^$WikiName$/", $page) ?
-		    $nowikiname : strlen($page) >= $autolink)
-			$auto_pages[] = strip_bracket($page);
+			$nowikiname : strlen($page) >= $autolink)
+			$auto_pages[] = $page;
 	}
 
 	if (count($auto_pages) == 0) {

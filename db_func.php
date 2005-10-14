@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.25 2005/10/09 05:06:28 nao-pon Exp $
+// $Id: db_func.php,v 1.26 2005/10/14 14:05:42 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -281,7 +281,7 @@ function get_child_counts($page)
 {
 	$page = strip_bracket($page);
 	$page = preg_replace("/\/$/","",$page);
-	return count(get_existpages_db(false,$page."/"));
+	return count(get_existpages_db(false,$page."/",0,"",false,false,true,true));
 }
 
 
