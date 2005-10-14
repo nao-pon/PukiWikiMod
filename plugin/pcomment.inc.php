@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.24 2005/04/17 12:54:57 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.25 2005/10/14 14:10:40 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -165,6 +165,9 @@ function plugin_pcomment_convert() {
 	if ($params['above'] || $params['up']) { $dir = 1; }
 	if ($params['below'] || $params['down']) { $dir = 0; } //両方指定されたら下に (^^;
 	
+	//タイムスタンプ更新？
+	$notimestamp = (!empty($params['notimestamp']))? '<input type="hidden" name="notimestamp" value="1" />' : '';
+	
 	//コメントを取得
 	$data = @file(get_filename(encode($_page)));
 	
@@ -202,6 +205,7 @@ function plugin_pcomment_convert() {
   <input type="hidden" name="nodate" value="$f_nodate" />
   <input type="hidden" name="dir" value="$dir" />
   <input type="hidden" name="count" value="$s_count" />
+  $notimestamp
   $areaedit
   <table style=\"{$w_style}\"><tr>
   <td style="vertical-align:bottom;white-space:nowrap;">{$radio}{$title} {$name}</td>
@@ -343,11 +347,13 @@ function pcmt_insert($page) {
 	}
 
 	//親ページのファイルタイム更新
-	touch(DATA_DIR.encode($post['refer']).".txt");
-	put_lastmodified();
-	//親ページのDB更新
-	pginfo_db_write($post['refer'],"update");
-
+	if (empty($post['notimestamp']))
+	{
+		touch(DATA_DIR.encode($post['refer']).".txt");
+		//親ページのDB更新
+		pginfo_db_write($post['refer'],"update");
+	}
+	
 	if (!is_page($page))
 	{
 		//ページ新規作成
@@ -441,7 +447,7 @@ function pcmt_auto_log($page, $dir, $count, &$postdata)
 
 //オプションを解析する
 function pcmt_check_arg($val, $key, &$params) {
-	$valid_args = array('noname','nodate','below','above','reply','mail','up','down');
+	$valid_args = array('noname','nodate','below','above','reply','mail','up','down','notimestamp');
 	foreach ($valid_args as $valid) {
 		if (strpos($valid, strtolower($val)) === 0) {
 			$params[$valid] = 1;
