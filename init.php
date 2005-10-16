@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.47 2005/10/09 04:38:24 nao-pon Exp $
+// $Id: init.php,v 1.48 2005/10/16 02:29:32 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -104,7 +104,8 @@ if ( $xoopsUser && is_object($xoopsModule))
 		$X_admin = 1;
 	}
 	$X_uid = $xoopsUser->uid();
-	$X_uname = $xoopsUser->uname();
+	$trip = (!empty($_COOKIE["pukiwiki_un"]))? preg_replace("/[^#]+(#.+)?/","$1",$_COOKIE["pukiwiki_un"]) : "";
+	$X_uname = $xoopsUser->uname() . $trip;
 } else {
 	$X_uname = (!empty($_COOKIE["pukiwiki_un"]))? $_COOKIE["pukiwiki_un"] : $no_name;
 }
