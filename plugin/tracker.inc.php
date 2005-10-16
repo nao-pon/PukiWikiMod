@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone
-// $Id: tracker.inc.php,v 1.19 2005/04/17 12:55:49 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.20 2005/10/16 02:32:47 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.29 2005/03/02 13:31:05 henoheno Exp $
 
 //
@@ -346,6 +346,16 @@ class Tracker_field_text extends Tracker_field
 		$s_value = htmlspecialchars($this->default_value);
 		if ($s_value == '$X_uname') $s_value = WIKI_NAME_DEF;
 		return "<input type=\"text\" name=\"$s_name\" size=\"$s_size\" value=\"$s_value\" />";
+	}
+}
+class Tracker_field_uname extends Tracker_field_text
+{
+	var $sort_type = SORT_STRING;
+
+	function format_value($value)
+	{
+		$value = make_user_link($value);
+		return parent::format_value($value);
 	}
 }
 class Tracker_field_page extends Tracker_field_text
