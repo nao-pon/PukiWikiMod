@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.52 2005/10/14 14:05:42 nao-pon Exp $
+// $Id: func.php,v 1.53 2005/10/16 02:31:25 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -883,16 +883,21 @@ function cell_format_tag_del ($td) {
 // ユーザーページへのリンクを作成する
 function make_user_link (&$name)
 {
+	// Trip
 	list($_name,$trip) = convert_trip($name);
 	$trip = ($trip)? "&trip(\"$trip\");" : "";
+	
+	// 使用できない文字
+	$_name = preg_replace('/[\s\]#&<>":]+/',"_",$_name);
+	
 	if (!WIKI_USER_DIR) 
 		$name = "[[$_name]]".$trip;
 	else
 	{
-		$_name = sprintf(WIKI_USER_DIR,str_replace(" ","",strip_tags(make_link($_name))),$_name);
+		$_name = sprintf(WIKI_USER_DIR,strip_tags(make_link($_name)),$_name);
 		$name = add_bracket(strip_bracket($_name)).$trip;
 	}
-	return;
+	return $name;
 }
 
 // ページ名から作成日付を返す(カレンダー用)
@@ -1307,7 +1312,7 @@ function X_get_users($sort=true)
 // #以降をトリップに変換して # で分割した配列で返す
 function convert_trip($val)
 {
-	if (preg_match('/(.+)#(.+)/', $val, $match))
+	if (preg_match('/([^#]+)#(.+)/', $val, $match))
 	{
 		$name = $match[1];
 		$key = $match[2];
