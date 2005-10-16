@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.53 2005/10/16 02:31:25 nao-pon Exp $
+// $Id: func.php,v 1.54 2005/10/16 14:56:17 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -887,16 +887,20 @@ function make_user_link (&$name)
 	list($_name,$trip) = convert_trip($name);
 	$trip = ($trip)? "&trip(\"$trip\");" : "";
 	
-	// 使用できない文字
-	$_name = preg_replace('/[\s\]#&<>":]+/',"_",$_name);
+	// 実ページ名の取り出し
+	$pure_name = strip_tags(make_link($_name));
+	// ページ名に使用できない文字を置換
+	$pure_name = preg_replace('/[\s\]#&<>":]+/',"_",$pure_name);
 	
-	if (!WIKI_USER_DIR) 
-		$name = "[[$_name]]".$trip;
+	if (!WIKI_USER_DIR)
+	{
+		$_name = "[[{$_name}>{$pure_name}]]";
+	}
 	else
 	{
-		$_name = sprintf(WIKI_USER_DIR,strip_tags(make_link($_name)),$_name);
-		$name = add_bracket(strip_bracket($_name)).$trip;
+		$_name = sprintf(WIKI_USER_DIR,$pure_name,$_name);
 	}
+	$name = add_bracket(strip_bracket($_name)).$trip;
 	return $name;
 }
 
