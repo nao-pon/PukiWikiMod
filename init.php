@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.48 2005/10/16 02:29:32 nao-pon Exp $
+// $Id: init.php,v 1.49 2005/11/06 05:35:00 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -16,8 +16,7 @@ define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."
 define('SOURCE_ENCODING','EUC-JP');
 
 // ini_set
-ini_set('mbstring.substitute_character','');
-ini_set("mbstring.encoding_translation","Off");
+ini_set("mbstring.substitute_character"," ");
 ini_set("mbstring.http_input","pass");
 ini_set("mbstring.http_output","pass");
 ini_set('error_reporting', 5);
@@ -79,6 +78,8 @@ $disable_page_cache = false;
 $nocache_plugin_on_include = "(#fusen)";
 $pwm_plugin_flg = array();
 $vars['mc_refresh'] = array();
+$pwm_config = array();
+$wiki_strong_words = array();
 
 // 設定ファイルの読込
 if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
@@ -129,11 +130,7 @@ if ($X_admin || ($wiki_writable === 0) || (($X_uid && ($wiki_writable < 2)))) {
 	$anon_writable = 0;
 }	
 // 新規作成権限セット
-if ($X_admin || ($wiki_allow_new === 0) || (($X_uid && ($wiki_allow_new < 2)))) {
-	define("WIKI_ALLOW_NEWPAGE",TRUE);
-} else {
-	define("WIKI_ALLOW_NEWPAGE",FALSE);
-}	
+define("WIKI_ALLOW_NEWPAGE",make_auth());
 $wiki_allow_newpage = WIKI_ALLOW_NEWPAGE; //Skin用に残す
 
 

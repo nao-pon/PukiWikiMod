@@ -1,13 +1,13 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.26 2005/10/14 14:05:42 nao-pon Exp $
+// $Id: db_func.php,v 1.27 2005/11/06 05:35:00 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
 {
 	static $_aryret = array();
-	if ($_aryret && $nocheck == false && $page == "") return $_aryret;
+	if ($_aryret && !$nocheck && !$page && !$limit && !$order && !$nolisting && !$nochiled && $nodelete && !$strip) return $_aryret;
 
 	$aryret = array();
 
@@ -78,7 +78,7 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 			array_push($aryret,($strip)? $data[1] : add_bracket($data[1]));
 		}
 	}
-	if ($nocheck == false && $page == "") $_aryret = $aryret;
+	if ($_aryret && !$nocheck && !$page && !$limit && !$order && !$nolisting && !$nochiled && $nodelete && !$strip) $_aryret = $aryret;
 	return $aryret;
 }
 
@@ -478,7 +478,7 @@ function plain_db_write($page,$action)
 				'&lt;',
 				'&gt;',
 				'&amp;',
-				'&quote;',
+				'&quot;',
 				'&#039;',
 				'&nbsp;',
 			)

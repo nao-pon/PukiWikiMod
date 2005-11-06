@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ping.php,v 1.7 2005/06/23 08:15:20 nao-pon Exp $
+// $Id: ping.php,v 1.8 2005/11/06 05:35:00 nao-pon Exp $
 /////////////////////////////////////////////////
 
 //XOOPS設定読み込み
@@ -51,7 +51,7 @@ $filename = CACHE_DIR.encode($page).".tbf";
 
 if (file_exists($filename))
 {
-	sleep(10); // ページが表示されるまでちょっと待つ
+	sleep(3); // ページが表示されるまでちょっと待つ
 
 	//常にゲストモード
 	$X_admin = $X_uid = 0;
@@ -95,9 +95,6 @@ if (file_exists($filename))
 	
 	unlink($filename); // 判定ファイルを削除
 }
-
-//header("Content-Type: image/gif");
-//readfile('image/transparent.gif');
 
 exit;
 ?>

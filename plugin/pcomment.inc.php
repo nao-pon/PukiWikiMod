@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.25 2005/10/14 14:10:40 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.26 2005/11/06 05:35:00 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -42,7 +42,7 @@ define('PCMT_COLS_COMMENT',70);
 define('PCMT_INSERT_INS',1);
 //
 //コメントの挿入フォーマット
-define('PCMT_FORMAT_NAME','[[%s]]');
+define('PCMT_FORMAT_NAME','[[%1$s>%2$s]]');
 define('PCMT_FORMAT_MSG','%s');
 define('PCMT_FORMAT_DATE','&new{%s};');
 // \x08は、投稿された文字列中に現れない文字であればなんでもいい。
@@ -69,6 +69,7 @@ function plugin_pcomment_init() {
 			'_pcmt_msg_edit' => '編集',
 			'_pcmt_msg_none' => 'コメントはありません。',
 			'_pcmt_msg_log_title' => '過去ログ',
+			'_pcmt_msg_reply_this' => 'このメッセージに返信',
 			'_title_pcmt_collided' => '$1 で【更新の衝突】が起きました',
 			'_msg_pcmt_collided' => 'あなたがこのページを編集している間に、他の人が同じページを更新してしまったようです。<br />
 			コメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
@@ -84,6 +85,7 @@ function plugin_pcomment_init() {
 			'_pcmt_msg_none' => 'No comments yet',
 			'_pcmt_msg_log_title' => 'Old Log',
 			'_title_pcmt_collided' => 'Conflicts found in $1',
+			'_pcmt_msg_reply_this' => 'Reply to this comment',
 			'_msg_pcmt_collided' => 'Other user has updated the page you are editing.<br />
 			Your comment was added anyway but may be at wrong line.<br />',
 		);
@@ -238,7 +240,7 @@ EOD;
 
 function pcmt_insert($page) {
 	global $post,$vars,$script,$now,$do_backup,$BracketName;
-	global $_title_updated,$no_name,$X_uid;
+	global $_title_updated,$no_name,$X_uid,$X_uname;
 
 	$page = $post['page'];
 	if (!preg_match("/^$BracketName$/",$page))
@@ -259,10 +261,19 @@ function pcmt_insert($page) {
 		setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
 		
 		$name = ($post['name'] == '') ? $no_name : $post['name'];
-		if (WIKI_USER_DIR)
-			make_user_link($name);
+		
+		// 名前をフォーマット
+		make_user_link($name,PCMT_FORMAT_NAME);
+	}
+	
+	$msg = rtrim($msg);
+	//areaedit指定
+	if (PCMT_AREAEDIT_ENABLE || !empty($post['areaedit']))
+	{
+		if ($X_uid)
+			{$msg = "&areaedit(uid:".$X_uid.PCMT_AREAEDIT_OPTION."){".$msg."};";}
 		else
-			$name = sprintf(PCMT_FORMAT_NAME, $name);
+			{$msg = "&areaedit(ucd:".PUKIWIKI_UCD.PCMT_AREAEDIT_OPTION."){".$msg."};";}
 	}
 	
 	$date = ($post['nodate'] == '1') ? '' : sprintf(PCMT_FORMAT_DATE, $now);
@@ -276,19 +287,20 @@ function pcmt_insert($page) {
 		$msg = preg_replace('/^\-+/','',$msg);
 	}
 	
-	$msg = rtrim($msg);
-	//areaedit指定
-	if (PCMT_AREAEDIT_ENABLE || !empty($post['areaedit']))
+	if (!is_page($page))
 	{
-		if ($X_uid)
-			$msg = "&areaedit(uid:".$X_uid.PCMT_AREAEDIT_OPTION."){".$msg."};";
-		else
-			$msg = "&areaedit(ucd:".PUKIWIKI_UCD.PCMT_AREAEDIT_OPTION."){".$msg."};";
-	}
-	
-	if (!is_page($page)) {
 		//$new = PCMT_CATEGORY.' '.htmlspecialchars($post['refer'])."\n\n-$msg\n";
-		$new = '***'.htmlspecialchars($post['refer'])."のコメント一覧\n".PCMT_CATEGORY."\n\n-$msg\n";
+		$_page = htmlspecialchars(strip_bracket($post['refer']));
+		$_page = "[[$_page]]";
+		if (page_exists("[[:config/plugin/pcomment/root]]"))
+		{
+			$new = plugin_pcomment_get_source("[[:config/plugin/pcomment/root]]");
+			$new = str_replace(array("_REFER_PAGE_","_MESSAGE_","_PCMT_CATEGORY_"),array($_page,$msg,PCMT_CATEGORY),$new);
+		}
+		else
+		{
+			$new = '***'.$_page."のコメント一覧\n".PCMT_CATEGORY."\n\n-$msg\n";
+		}
 	} else {
 		//ページを読み出す
 		$postdata = get_source($page);
@@ -352,6 +364,8 @@ function pcmt_insert($page) {
 		touch(DATA_DIR.encode($post['refer']).".txt");
 		//親ページのDB更新
 		pginfo_db_write($post['refer'],"update");
+		//Pingを送信するページ
+		$vars['ping_send_page'] = $post['refer'];
 	}
 	
 	if (!is_page($page))
@@ -457,7 +471,7 @@ function pcmt_check_arg($val, $key, &$params) {
 	$params['arg'][] = $val;
 }
 function pcmt_get_comments($data,$count,$dir,$reply) {
-	global $script,$vars;
+	global $script,$vars,$_pcmt_msg_reply_this;
 	
 	if (!is_array($data)) { return array('',0); }
 
@@ -466,11 +480,20 @@ function pcmt_get_comments($data,$count,$dir,$reply) {
 	$pgid = get_pgid_by_name($vars['page']);
 	
 	//コメントを指定された件数だけ切り取る
-	if ($dir) { $data = array_reverse($data); }
+	if ($dir)
+	{
+		$data = array_reverse($data);
+		//$marker = "end";
+	}
+	else
+	{
+		//$marker = "start";
+	}
 	$num = $cnt = 0;
 	$cmts = array();
 	foreach ($data as $line) {
 		if ($count > 0 and $dir and $cnt == $count) { break; }
+		//if (rtrim(strtolower($line)) == "//{$marker} of comments") { break; }
 		if (preg_match('/^(\-{1,2})(?!\-)(.*)$/', $line, $matches)) {
 			if ($count > 0 and strlen($matches[1]) == 1 and ++$cnt > $count) { break; }
 			if ($reply) {
@@ -502,10 +525,20 @@ function pcmt_get_comments($data,$count,$dir,$reply) {
 
 	//コメントにラジオボタンの印をつける
 	if ($reply) {
-		$comments = preg_replace("/<li>\x01(\d+)\x02/",'<li class="pcmt"><input id="_p_pcomment_reply_$1_'.$pgid.'" class="pcmt" type="radio" name="reply" value="$1" /><label for="_p_pcomment_reply_$1_'.$pgid.'">', $comments);
+		$comments = preg_replace("/<li>\x01(\d+)\x02/",'<li class="pcmt"><input id="_p_pcomment_reply_$1_'.$pgid.'" class="pcmt" type="radio" name="reply" value="$1" title="'.$_pcmt_msg_reply_this.'"/><label for="_p_pcomment_reply_$1_'.$pgid.'" title="'.$_pcmt_msg_reply_this.'">', $comments);
 		$comments =str_replace("\x03","</label>",$comments);
 
 	}
 	return array($comments,$digest);
 }
+function plugin_pcomment_get_source($page)
+{
+	$source = get_source($page);
+	// 見出しの固有ID部を削除
+	$source = preg_replace('/^(\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
+	// ページ情報削除
+	delete_page_info($source);
+	return join('',$source);
+}
+
 ?>

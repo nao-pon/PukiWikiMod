@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.9 2005/09/14 15:04:02 nao-pon Exp $
+// $Id: fusen.js,v 1.10 2005/11/06 05:35:00 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -44,7 +44,7 @@ var fusenFullFlg = new Array();
 var fusenShowFlg = new Array();
 var fusenNowMovingOff = false;
 var fusenDblClick = false;
-var fusenBodyStyle = 'fusen_body';
+var fusenBodyStyle = 'fusen_body_trans';
 var fusenLastModified = '';
 var fusenTimerID;		//Interval Timer ID
 var fusenRetTimerID;	//リトライ用タイマー
@@ -58,6 +58,7 @@ var fusenMinWidth = 8;
 var fusenMinHeight = 8;
 var fusenGetRetry = 0;
 var fusenLoaded = false;
+var fusenLines = new Array();
 
 var fsen_msg_nowbusy = '只今サーバーと通信中です。';
 
@@ -297,9 +298,9 @@ function fusen_getdata(mod)
 				{
 					fusen_busy(0);
 					//alert(xmlhttp.getAllResponseHeaders());
+					var lm = xmlhttp.getResponseHeader("Last-Modified");
 					if (mod == 'HEAD')
 					{
-						var lm = xmlhttp.getResponseHeader("Last-Modified");
 						//window.status = dtNow.getSeconds() + ' : ' + lm;
 						xmlhttp = null;
 						if (fusenLastModified == lm)
@@ -308,11 +309,11 @@ function fusen_getdata(mod)
 						}
 						else
 						{
-							fusenLastModified = lm;
 							fusen_getdata('GET');
 						}
 						return;
 					}
+					fusenLastModified = lm;
 					var txt = xmlhttp.responseText;
 					try
 					{
@@ -349,46 +350,109 @@ function fusen_getdata(mod)
 							tag = String(child.tagName);
 						}
 						
-						eval( 'fusenObj = ' + txt );
-						while (obj.childNodes.length > 0) obj.removeChild(obj.firstChild);
-						var areaWidth;
-						for(var id in fusenObj)
-						{
-							// 編集権限
-							fusenObj[id].auth = false;
-							if (fusenX_admin) fusenObj[id].auth = true;
-							else if (fusenX_uid && fusenX_uid == fusenObj[id].uid) fusenObj[id].auth = true;
-							else if (!fusenObj[id].uid && fusenX_ucd && fusenX_ucd == fusenObj[id].ucd) fusenObj[id].auth = true;
-							
-							obj = fusen_create(id, fusenObj[id]);
-							document.getElementById('fusen_area').appendChild(obj);
-							fusen_set_onmousedown(obj,id)
-							obj.onmouseover = fusen_onmouseover;
-							obj.onmouseout = fusen_onmouseout;
-							fusenFullFlg[id] = false;
-							
-							// サイズ再設定
-							if (!fusenObj[id].fix)
-							{
-								fusen_size_init(obj);
-							}
-						}
-						fusen_list_make();
+						var edit_item = new Array();
+						var change_status = false;
 						
-						if (fusenDustboxFlg)
+						if (fusenObj)
 						{
-							fusenDustboxFlg = false;
-							fusen_dustbox();
+							eval( 'fusenObj_N = ' + txt );
+							
+							// 新規 or 編集された付箋
+							for (var id in fusenObj_N)
+							{
+								if (!fusenObj[id] || fusenObj[id].tt < fusenObj_N[id].tt)
+								{
+									change_status = true;
+									edit_item[id] = true;
+									if (fusenObj[id])
+									{
+										getElement('fusen_id' + id).id = 'fusen_id_remove' + id;
+									}
+									fusenObj[id] = fusenObj_N[id];
+								}
+							}
+							// 削除された付箋
+							for (var id in fusenObj)
+							{
+								if (!fusenObj_N[id])
+								{
+									change_status = true;
+									fusen_removelines(id);
+									obj.removeChild(getElement('fusen_id' + id));
+									delete fusenObj[id];
+								}
+							}
 						}
 						else
 						{
-							fusen_setlines();
+							eval( 'fusenObj = ' + txt );
+							edit_item = fusenObj;
+							while (obj.childNodes.length > 0) obj.removeChild(obj.firstChild);
 						}
-						document.onmouseup = fusen_onmouseup;
-						document.onmousemove = fusen_onmousemove;
-						getElement("fusen_top_menu").style.visibility = 'visible';
+						
+						if (edit_item)
+						{
+							// 接続線情報を破棄
+							fusenLines = new Array();
+							
+							for(var id in edit_item)
+							{
+								// 編集権限
+								fusenObj[id].auth = false;
+								if (fusenX_admin) fusenObj[id].auth = true;
+								else if (fusenX_uid && fusenX_uid == fusenObj[id].uid) fusenObj[id].auth = true;
+								else if (!fusenObj[id].uid && fusenX_ucd && fusenX_ucd == fusenObj[id].ucd) fusenObj[id].auth = true;
+								
+								var cobj = fusen_create(id, fusenObj[id]);
+								document.getElementById('fusen_area').appendChild(cobj);
+								fusen_set_onmousedown(cobj,id)
+								cobj.onmouseover = fusen_onmouseover;
+								cobj.onmouseout = fusen_onmouseout;
+								fusenFullFlg[id] = false;
+								
+								// サイズ再設定
+								if (!fusenObj[id].fix)
+								{
+									fusen_size_init(cobj);
+								}
+								
+								if (change_status && getElement('fusen_id_remove' + id))
+								{
+									obj.removeChild(getElement('fusen_id_remove' + id));
+								}
+								
+								if (change_status) {fusen_setlines(id);}
+							}
+							
+							if (fusenDustboxFlg)
+							{
+								fusenDustboxFlg = false;
+								fusen_dustbox();
+							}
+							else
+							{
+								if (!change_status) {fusen_setlines();}
+							}
+							
+							if (!fusenLoaded)
+							{
+								var jump_id = (!location.hash)? '' : location.hash.replace(/^#fusen([\d]+)$/,"$1");
+								if (!(!jump_id))
+								{
+									fusen_select(jump_id,true);
+									setInterval("fusen_select_clear()", 5000);
+								}
+								document.onmouseup = fusen_onmouseup;
+								document.onmousemove = fusen_onmousemove;
+								
+								getElement("fusen_top_menu").style.visibility = 'visible';
+								fusen_transparent();
+							}
+							change_status = true;
+							fusenLoaded = true;
+						}
+						if (change_status) fusen_list_make();
 						fusen_set_timer();
-						fusenLoaded = true;
 					}
 					catch(e)
 					{
@@ -678,8 +742,15 @@ function fusen_del(id)
 		}
 		
 		// サーバーデータ更新
-		fusen_postdata(mode);
-		if (!mode) 	fusen_init(1);
+		//fusen_postdata(mode);
+		//if (!mode) 	fusen_init(1);
+		fusen_postdata(true);
+		if (!mode) 
+		{
+			getElement('fusen_area').removeChild(getElement('fusen_id' + id));
+			delete fusenObj[id];
+			fusen_list_make();
+		}
 	}
 }
 
@@ -793,7 +864,7 @@ function fusen_show(id)
 {
 	fusenShowFlg[id] = true;
 	if (fusenTimerID) clearTimeout(fusenTimerID);
-	window.status = parseInt(getElement('edit_bx').value);
+	//window.status = parseInt(getElement('edit_bx').value);
 	//var left = Math.max(getWinXOffset() + 5,parseInt(getElement('edit_bx').value));
 	//var top = Math.max(getWinYOffset() + 5,(mouseY - 150));
 	if (id == 'fusen_editbox')
@@ -1123,72 +1194,33 @@ function fusen_removelines(t_id) {
 	}
 }
 
-function fusen_setlines(t_id) {
-	for(var id in fusenObj) {
-		if (fusenObj[id].ln && !fusenObj[id].del && fusenObj[fusenObj[id].ln] && !fusenObj[fusenObj[id].ln].del)
+function fusen_setlines(t_id)
+{
+	if (fusenLines[t_id] instanceof Array)
+	{
+		if (fusenLines[t_id])
 		{
-			if (!t_id || t_id == id || t_id == fusenObj[id].ln)
-			//if (fusenX_admin)
-			fusen_setline2(id, fusenObj[id].ln);
-			//else
-			//fusen_setline(id, fusenObj[id].ln);
+			for (var id in fusenLines[t_id])
+			{
+				fusen_setline2(id, fusenObj[id].ln);
+			}
 		}
 	}
-}
-
-function fusen_setline(fromid, toid){
-	function getCenter(obj){
-		x = parseInt(obj.style.left.replace("px",""));
-		x = x + obj.offsetWidth / 2;
-		return x;
-	}
-	function getVCenter(obj){
-		y = parseInt(obj.style.top.replace("px",""));
-		y = y + obj.offsetHeight / 2;
-		return y;
-	}
-
-	var lineid = 'line' + fromid + '_' + toid;
-	var obj = getElement(lineid);
-	if (obj) obj.parentNode.removeChild(obj);
-	var fobj = getElement('fusen_id' + fromid);
-	var tobj = getElement('fusen_id' + toid);
-	if(!fobj) return;
-	if(!tobj) return;
-	var x1 = getCenter(fobj);
-	var y1 = getVCenter(fobj);
-	var x2 = getCenter(tobj);
-	var y2 = getVCenter(tobj);
-	var obj = fusen_drawLine(x1, y1, x2, y2, '#000000', lineid);
-	document.getElementById('fusen_area').appendChild(obj);
-}
-
-function fusen_drawLine(x1, y1, x2, y2, color, nid){
-	function _drawLine(x1,y1,x2,y2,color){
-		var objLine = document.createElement("div")
-		var strColor = color
-		with(objLine.style){
-			backgroundColor = strColor
-			position  = "absolute"
-			overflow  = "hidden"
-			width     = Math.abs(x2-x1+1) + "px"
-			height    = Math.abs(y2-y1+1) + "px"
-			top  = Math.min(y1,y2) + "px"
-			left = Math.min(x1,x2) + "px"
-			zIndex = "0"
+	else
+	{
+		if (!!t_id) fusenLines[t_id] = new Array();
+		for(var id in fusenObj)
+		{
+			if (fusenObj[id].ln && !fusenObj[id].del && fusenObj[fusenObj[id].ln] && !fusenObj[fusenObj[id].ln].del)
+			{
+				if (!t_id || t_id == id || t_id == fusenObj[id].ln)
+				{
+					fusen_setline2(id, fusenObj[id].ln);
+					if (!!t_id) {fusenLines[t_id][id] = true;}
+				}
+			}
 		}
-		return objLine;
 	}
-
-	var objLines = document.createElement("div")
-	objLines.id = nid;
-	if((x1 == x2) || (y1 == y2)){
-		objLines.appendChild(_drawLine(x1,y1,x2,y2,color));
-	} else{
-		objLines.appendChild(_drawLine(x1,y1,x1,y2,color));
-		objLines.appendChild(_drawLine(x1,y2,x2,y2,color));
-	}
-	return objLines;
 }
 
 function fusen_setline2(fromid, toid)
@@ -1265,14 +1297,12 @@ function fusen_setline2(fromid, toid)
 			lh = tt - ly;
 			if (!IE) lh ++;
 			lw = 0;
-			//border = '0px 0px 0px 1px solid;';
 		}
 		else if (fb > ty)
 		{
 			lx = fr + 2;
 			lh = 0;
 			lw = lw - fw - 2;
-			//border = '0px 0px 1px 0px solid;';
 		}
 	}
 	else if (fx >= tr && fb < ty)
@@ -1323,7 +1353,6 @@ function fusen_setline2(fromid, toid)
 		}
 		else if (ft < ly)
 		{
-			//lw = lw - fw;
 			lw = fl - tr - 1;
 			if (!IE) lw ++;
 			lh = 0;
@@ -1396,15 +1425,10 @@ function fusen_drawLine2(x, y, w, h, color, nid, border){
 			borderStyle = "solid";
 			zIndex = "0";
 		}
-		//if (fusenX_admin)
-		//	objLine.style.borderWidth = "1px";
-		//else
-		//{
 		if (border == 1) {objLine.style.borderTopWidth = "1px"; objLine.style.borderLeftWidth = "1px";}
 		if (border == 2) {objLine.style.borderTopWidth = "1px"; objLine.style.borderRightWidth = "1px";}
 		if (border == 3) {objLine.style.borderBottomWidth = "1px"; objLine.style.borderRightWidth = "1px";}
 		if (border == 4) {objLine.style.borderBottomWidth = "1px"; objLine.style.borderLeftWidth = "1px";}
-		//}
 		return objLine;
 	}
 	
@@ -1416,8 +1440,8 @@ function fusen_drawLine2(x, y, w, h, color, nid, border){
 		obj.style.position  = "absolute";
 		if (IE)
 		{
-			var ox = 2;
-			var oy = 2;
+			var ox = 3;
+			var oy = 3;
 		}
 		else
 		{
@@ -1438,8 +1462,8 @@ function fusen_drawLine2(x, y, w, h, color, nid, border){
 		obj.style.position  = "absolute";
 		if (IE)
 		{
-			var ox = 2;
-			var oy = 2;
+			var ox = 3;
+			var oy = 3;
 		}
 		else
 		{
@@ -1484,6 +1508,7 @@ function fusen_onmousedown(e) {
 	
 	if (fusenNowMovingOff) return;
 	
+	//fusen_select_clear();
 	if (fusenTimerID) clearTimeout(fusenTimerID);
 	
 	fusenMovingObj = this;
@@ -1530,7 +1555,7 @@ function fusen_onmousemove(e)
 		mouseY = e.pageY;
 		nowpos = e.pageX + "," +e.pageY;
 	}
-	if (fusenMovingObj && nowpos != fusenClickX + "," + fusenClickY)
+	if (fusenMovingObj && nowpos != (fusenClickX + "," + fusenClickY))
 	{
 		var id = fusenMovingObj.id.replace('fusen_id','');
 		if (fusenResizeFlg)
@@ -1565,20 +1590,20 @@ function fusen_onmousemove(e)
 			if (IE) {
 				var x = event.clientX + document.body.scrollLeft - offsetX;
 				var y = event.clientY + document.body.scrollTop - offsetY;
-				fusenMovingObj.style.posLeft = x;
-				fusenMovingObj.style.posTop = y;
 			} else {
 				var x = (e.pageX - offsetX);
 				var y = (e.pageY - offsetY);
-				fusenMovingObj.style.left = x + "px";
-				fusenMovingObj.style.top = y + "px";
 			}
+			fusenMovingObj.style.left = x + "px";
+			fusenMovingObj.style.top = y + "px";
+			if (IE && fusenMovingObj.id.indexOf('fusen_id') != -1){fusenMovingObj.focus();} //描画リフレッシュのため(IEのみ)
 			window.status = "付箋 "+id+" を移動中...[ X:"+x+", Y:"+y+" ]";
 		}
-		if (!fusenDustboxFlg) fusen_setlines(id);
+		if (!fusenDustboxFlg) {fusen_setlines(id);}
 		fusenMovingFlg = true;
 		return false;
 	}
+	return false;
 }
 
 function fusen_onmouseup(e) {
@@ -1702,9 +1727,6 @@ function fusen_show_full(id,mode)
 			obj.title = (fusenObj[id].lk)? '' :"ダブルクリック->編集";
 			if (fusenObj[id].w < 50)
 			{
-				//obj.style.overflow = 'visible';
-				//obj.style.whiteSpace = 'nowrap';
-				//obj.style.width = 'auto';
 				fusen_size_init(obj);
 			}
 		}
@@ -1725,10 +1747,14 @@ function fusen_show_full(id,mode)
 	}
 }
 
-function fusen_select(selectid,dustbox)
+function fusen_select(selectid,nolist)
 {
+	if (!fusenObj[selectid]) return;
+	
 	var top = parseInt(getElement('fusen_id' + selectid).style.top);
 	var left = parseInt(getElement('fusen_id' + selectid).style.left);
+	
+	var dustbox = fusenObj[selectid].del;
 	
 	if (fusenObj[selectid].fix && (fusenObj[selectid].w <= fusenMinWidth || fusenObj[selectid].h <= fusenMinHeight))
 	{
@@ -1743,10 +1769,11 @@ function fusen_select(selectid,dustbox)
 		className = 'fusen_body';
 		style.zIndex = 90;
 	}
-	//getElement('fusen_list').style.top = (top + getElement('fusen_id' + selectid).offsetHeight + 3) + 'px';
-	//getElement('fusen_list').style.left = left + 'px';
-	getElement('fusen_list').style.top = top + 'px';
-	getElement('fusen_list').style.left = (left + getElement('fusen_id' + selectid).offsetWidth + 1) + 'px';left + 'px';
+	if (!nolist)
+	{
+		getElement('fusen_list').style.top = top + 'px';
+		getElement('fusen_list').style.left = (left + getElement('fusen_id' + selectid).offsetWidth + 1) + 'px';left + 'px';
+	}
 	window.scrollTo(left,top);
 	
 	fusenDustboxFlg = !dustbox;
@@ -1797,7 +1824,6 @@ function fusen_init(mode)
 	if (fusenRetTimerID) clearTimeout(fusenRetTimerID);
 	if (mode) 
 	{
-		//fusenDustboxFlg = false;
 		fusen_getdata('GET');
 	}
 	else
@@ -1882,9 +1908,9 @@ function fusen_list_make()
 		if (fusenObj[id].del)
 		{
 			addtxt = '(ごみ箱)' + addtxt;
-			dustbox = 1;
+			//dustbox = 1;
 		}
-		listobj.innerHTML += '<li><a href="javascript:fusen_select('+id+','+dustbox+')">'+addtxt+'</a></li>';
+		listobj.innerHTML += '<li><a href="javascript:fusen_select('+id+')">'+addtxt+'</a></li>';
 	}
 	if (!listcount) listobj.innerHTML += '<li>このページに付箋はありません。</li>';
 	if (getElement('pukiwiki_fusenlist'))
@@ -1900,6 +1926,7 @@ function fusen_list_make()
 	listobj.style.width = listobj.offsetWidth + 'px';
 	listobj.style.left = list_left;
 	listobj.style.visibility = list_visibility;
+	listobj.style.zIndex = 100;
 	return;
 }
 

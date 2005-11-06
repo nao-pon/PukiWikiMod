@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.77 2005/10/09 05:39:39 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.78 2005/11/06 05:35:00 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
 /*
@@ -70,6 +70,9 @@ require("init.php");
 
 /////////////////////////////////////////////////
 // メイン処理
+
+// アクセス制限チェック
+check_access_ctl();
 
 // 一覧の表示
 if (arg_check("list")) $vars["plugin"] = "list";
@@ -984,10 +987,11 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 	{
 		if (check_readable($get["page"],false,false))
 		{
-			
-			if (isset($get['com_mode']))
+			$show_comments = true;
+			if (isset($get['com_mode']) || isset($get['com_id']))
 			{
 				$noattach = 1;
+				$pwm_plugin_flg['fusen']['convert'] = true; //付箋を表示しない
 				$page_comment_mode = "*ページコメント表示モード\n\n-ページコメント表示モードのため本文(ページ内容)を表示していません。\n-本文を表示するには、[[こちら>__PAGE__]]へアクセスしてください。";
 				
 				$postdata = convert_html(str_replace("__PAGE__",strip_bracket($vars['page']),$page_comment_mode));
@@ -1034,12 +1038,11 @@ else if((arg_check("read") && $vars["page"] != "") || (!arg_check("read") && $ar
 			{
 				http_request(
 				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/ping.php?p=".$r_page."&t=".$vars['is_rsstop']
-				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
+				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5,30,30);
 			}
 
 			$body .= $postdata;
 			header_lastmod($vars["page"]);
-			$show_comments = true;
 		}
 		else
 		{

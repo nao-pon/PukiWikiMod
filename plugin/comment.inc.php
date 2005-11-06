@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.17 2005/04/17 12:54:46 nao-pon Exp $
+// $Id: comment.inc.php,v 1.18 2005/11/06 05:35:00 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -14,7 +14,7 @@ $name_cols = 15;
 $comment_cols = 70;
 /////////////////////////////////////////////////
 // コメントの挿入フォーマット
-$name_format = '[[$name]]';
+$name_format = '[[%1$s>%2$s]]';
 $msg_format = '$msg';
 $now_format = '&new{$now};';
 /////////////////////////////////////////////////
@@ -82,16 +82,23 @@ function plugin_comment_action()
 				
 				$_name = ($post['name'] == '')? $no_name : $post['name'];
 				
-				if (WIKI_USER_DIR)
-					make_user_link($_name);
-				else
-					$_name = str_replace('$name',$_name,$name_format);
+				// 名前をフォーマット
+				make_user_link($_name,$name_format);
 			}
 			else
-				$_name = "";
-
-			$_now  = ($post['nodate'] == '1') ? '' : str_replace('$now',$now,$now_format);
+				{$_name = "";}
 			
+			$_msg = rtrim($_msg);
+			//areaedit指定
+			if (PUKIWIKI_CMT_AREAEDIT_ENABLE || !empty($post['areaedit']))
+			{
+				if ($X_uid)
+					{$_msg = "&areaedit(uid:".$X_uid.PUKIWIKI_CMT_OPTION."){".$_msg."};";}
+				else
+					{$_msg = "&areaedit(ucd:".PUKIWIKI_UCD.PUKIWIKI_CMT_OPTION."){".$_msg."};";}
+			}
+			
+			$_now  = ($post['nodate'] == '1') ? '' : str_replace('$now',$now,$now_format);
 			$comment = str_replace("\x08MSG\x08", $_msg, $comment_format);
 			$comment = str_replace("\x08NAME\x08",$_name,$comment);
 			$comment = str_replace("\x08NOW\x08", $_now, $comment);
@@ -99,14 +106,14 @@ function plugin_comment_action()
 			//表中でも使用できるようにしたので|をエスケープ nao-pon
 			$comment = str_replace('|','&#124;',$comment);
 			//areaedit指定
-			if (PUKIWIKI_CMT_AREAEDIT_ENABLE || !empty($post['areaedit']))
-			{
-				//$comment = "&areaedit(uid:".$X_uid.PUKIWIKI_CMT_OPTION."){".$comment."};";
-				if ($X_uid)
-					$comment = "&areaedit(uid:".$X_uid.PUKIWIKI_CMT_OPTION."){".$comment."};";
-				else
-					$comment = "&areaedit(ucd:".PUKIWIKI_UCD.PUKIWIKI_CMT_OPTION."){".$comment."};";
-			}
+			//if (PUKIWIKI_CMT_AREAEDIT_ENABLE || !empty($post['areaedit']))
+			//{
+			//	//$comment = "&areaedit(uid:".$X_uid.PUKIWIKI_CMT_OPTION."){".$comment."};";
+			//	if ($X_uid)
+			//		$comment = "&areaedit(uid:".$X_uid.PUKIWIKI_CMT_OPTION."){".$comment."};";
+			//	else
+			//		$comment = "&areaedit(ucd:".PUKIWIKI_UCD.PUKIWIKI_CMT_OPTION."){".$comment."};";
+			//}
 			$comment = $head.$comment;
 		}
 

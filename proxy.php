@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: proxy.php,v 1.13 2005/03/29 23:42:51 nao-pon Exp $
+// $Id: proxy.php,v 1.14 2005/11/06 05:35:00 nao-pon Exp $
 //
 
 /*
@@ -33,168 +33,38 @@ function http_request
 	)
 {
 	global $use_proxy,$proxy_host,$proxy_port;
-	global $need_proxy_auth,$proxy_auth_user,$proxy_auth_pass;
+	global $need_proxy_auth,$proxy_auth_user,$proxy_auth_pass,$no_proxy;
 	
-	$rc = array();
-	$arr = parse_url($url);
-	if (!$retry) $retry = 1;
-	
-	$via_proxy = $use_proxy and via_proxy($arr['host']);
-	
-	// query
-	$arr['query'] = isset($arr['query']) ? '?'.$arr['query'] : '';
-	// port
-	$arr['port'] = isset($arr['port']) ? $arr['port'] : 80;
-	
-	$url_base = $arr['scheme'].'://'.$arr['host'].':'.$arr['port'];
-	$url_path = isset($arr['path']) ? $arr['path'] : '/';
-	$url = ($via_proxy ? $url_base : '').$url_path.$arr['query'];
+	$d = new Hyp_HTTP_Request();
 
+	$d->url = $url;
+	$d->method = $method;
+	$d->headers = $headers;
+	$d->post = $post;
+	$d->redirect_max = $redirect_max;
+	$d->blocking = $blocking;
+	$d->connect_try = $retry;
+	$d->connect_timeout = $c_timeout;
+	$d->read_timeout = $r_timeou;
 	
-	$query = $method.' '.$url." HTTP/1.0\r\n";
-	$query .= "Host: ".$arr['host']."\r\n";
-	$query .= "User-Agent: PukiWikiMod/"._XOOPS_WIKI_VERSION."\r\n";
+	$d->use_proxy = $use_proxy;
+	$d->proxy_host = $proxy_host;
+	$d->proxy_port = $proxy_port;
 	
-	// proxyのBasic認証 
-	if ($need_proxy_auth and isset($proxy_auth_user) and isset($proxy_auth_pass)) 
-	{
-		$query .= 'Proxy-Authorization: Basic '.
-			base64_encode($proxy_auth_user.':'.$proxy_auth_pass)."\r\n";
-	}
-
-	// Basic 認証用
-	if (isset($arr['user']) and isset($arr['pass']))
-	{
-		$query .= 'Authorization: Basic '.
-			base64_encode($arr['user'].':'.$arr['pass'])."\r\n";
-	}
+	$d->need_proxy_auth = $need_proxy_auth;
+	$d->proxy_auth_user = $proxy_auth_user;
+	$d->proxy_auth_pass = $proxy_auth_pass;
 	
-	$query .= $headers;
+	$d->no_proxy = $no_proxy;
 	
-	// POST 時は、urlencode したデータとする
-	if (strtoupper($method) == 'POST')
-	{
-		if (is_array($post))
-		{
-			$_send = array();
-			foreach ($post as $name=>$val)
-			{
-				$_send[] = $name.'='.urlencode($val);
-			}
-			$data = join('&',$_send);
-			$query .= "Content-Type: application/x-www-form-urlencoded\r\n";
-			$query .= 'Content-Length: '.strlen($data)."\r\n";
-			$query .= "\r\n";
-			$query .= $data;
-		}
-		else
-		{
-			$query .= 'Content-Length: '.strlen($post)."\r\n";
-			$query .= "\r\n";
-			$query .= $post;
-		}
-	}
-	else
-	{
-		$query .= "\r\n";
-	}
-	
-	$fp = $retry_count = 0;
-	while( !$fp && $retry_count < $retry )
-	{
-		set_time_limit($c_timeout + 60);
-		$fp = fsockopen(
-			$via_proxy ? $proxy_host : $arr['host'],
-			$via_proxy ? $proxy_port : $arr['port'],
-			$errno,$errstr,$c_timeout);
-		if ($fp) break;
-		$retry_count++;
-		sleep(2); //2秒待つ
-	}
-	if (!$fp)
-	{
-		return array(
-			'query'  => $query, // Query String
-			'rc'     => $errno, // エラー番号
-			'header' => '',     // Header
-			'data'   => $errstr // エラーメッセージ
-		);
-	}
-	
-	fputs($fp, $query);
-	
-	// 非同期モード
-	if (!$blocking)
-	{
-		fclose($fp);
-		return array(
-			'query'  => $query, // Query String
-			'rc'     => 200, // エラー番号
-			'header' => '',     // Header
-			'data'   => 'Blocking mode is FALSE.' // エラーメッセージ
-		);
-	}
-	
-	$response = '';
-	while (!feof($fp))
-	{
-		if ($r_timeout)
-		{
-			set_time_limit($r_timeout + 60);
-			socket_set_timeout($fp, $r_timeout);
-		}
-		$_response = fread($fp,4096);
-		$_status = socket_get_status($fp);
-		if ($_status['timed_out'] === false)
-		{
-			$response .= $_response;
-		}
-		else
-		{
-			fclose($fp);
-			return array(
-				'query'  => $query, // Query String
-				'rc'     => 408,    // エラー番号
-				'header' => '',     // Header
-				'data'   => 'Request Time-out' // エラーメッセージ
-			);
-		}
-	}
-	fclose($fp);
-	
-	$resp = explode("\r\n\r\n",$response,2);
-	$rccd = explode(' ',$resp[0],3); // array('HTTP/1.1','200','OK\r\n...')
-	$rc = (integer)$rccd[1];
-	
-	// Redirect
-	switch ($rc)
-	{
-		case 302: // Moved Temporarily
-		case 301: // Moved Permanently
-			if (preg_match('/^Location: (.+)$/m',$resp[0],$matches)
-				and --$redirect_max > 0)
-			{
-				$url = trim($matches[1]);
-				if (!preg_match('/^https?:\//',$url)) // no scheme
-				{
-					if ($url{0} != '/') // Relative path
-					{
-						// to Absolute path
-						$url = substr($url_path,0,strrpos($url_path,'/')).'/'.$url;
-					}
-					// add sheme,host
-					$url = $url_base.$url;
-				} 
-				return http_request($url,$method,$headers,$post,$redirect_max);
-			}
-	}
+	$d->get();
 	
 	return array(
-		'query'  => $query,   // Query String
-		'rc'     => $rc,      // Response Code
-		'header' => $resp[0], // Header
-		'data'   => $resp[1]  // Data
-	);
+		'query'  => $d->query,      // Query String
+		'rc'     => $d->rc,         // Result code
+		'header' => $d->header,     // Header
+		'data'   => $d->data        // Data or Error Msg
+	);	
 }
 // プロキシを経由する必要があるかどうか判定
 function via_proxy($host)

@@ -630,32 +630,13 @@ span.diff_removed {
 	display:inline-block;
 }
 
-ul.list1,
-li.list1{
-	list-style-type:disc;
-}
+ul.list1 li.list1 {list-style-type:disc;}
+ul.list2 li.list2 {list-style-type:circle;}
+ul.list3 li.list3 {list-style-type:square;}
+ol.list1 li.list1 {list-style-type:decimal;}
+ol.list2 li.list2 {list-style-type:lower-roman;}
+ol.list3 li.list3 {list-style-type:lower-alpha;}
 
-ul.list2,
-li.list2{
-	list-style-type:circle;
-}
-
-ul.list3,
-li.list3{
-	list-style-type:square;
-}
-
-ol.list1{
-	list-style-type:decimal;
-}
-
-ol.list2{
-	list-style-type:lower-roman;
-}
-
-ol.list3{
-	list-style-type:lower-alpha;
-}
 div.p_left{
 	text-align:left;
 }
@@ -1080,3 +1061,8 @@ div.fusen_list a:active
 	color: red;
 }
 
+.fusen_list_box
+{
+	height: 200px;
+	overflow: auto;
+}

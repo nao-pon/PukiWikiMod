@@ -2,12 +2,12 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.42 2005/08/23 23:58:02 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.43 2005/11/06 05:35:00 nao-pon Exp $
 //
 // PukiWiki setting file
 
 // XOOPSの管理画面にない項目を独自に設定している場合に、
-// config.own.php というファイル名でこの pukiwiki.ini.php を
+// config_own.php というファイル名でこの pukiwiki.ini.php を
 // 切り出して保存しておくとその値は、バージョンアップしても
 // 書き換えられないようにすることができます。
 
@@ -263,7 +263,7 @@ $notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_
 /////////////////////////////////////////////////
 // 検索用Plainソース作成時に除外するプラグイン
 // カンマ区切りで、#をつけずに記述
-$noplain_plugin = "include,calendar2,calendar_viewer,bugtrack_list,tracker_list,ls2,ls,recent,popular,pcomment,contents,tenki,ref,exrate,xoopsblock,attachref,related,whatday,fortune";
+$noplain_plugin = "include,calendar2,calendar_viewer,bugtrack_list,tracker_list,ls2,ls,recent,popular,pcomment,contents,tenki,ref,exrate,xoopsblock,attachref,related,whatday,fortune,chat";
 
 /////////////////////////////////////////////////
 // TrackBackを受け付けないURL
@@ -303,6 +303,19 @@ $no_proxy = array(
 //'no-proxy.com', 
 ); 
 
+///////////////////////////////////////////////// 
+// 名前入力欄にトリップ(名前#トリップ生成キー)を適用する
+$pwm_confg['use_trip'] = 0;
+
+///////////////////////////////////////////////// 
+// Cookieに名前が保存されている状態で
+// 名前を変更した時旧の名前を表示する
+$pwm_confg['show_oldname'] = 0;
+
+///////////////////////////////////////////////// 
+// 更新通知Ping の最短通知間隔 単位:分
+$pwm_confg['update_ping_limit'] = 60;
+
 /////////////////////////////////////////////////
 // ユーザ定義ルール
 //
@@ -322,7 +335,6 @@ $str_rules = array(
 /////////////////////////////////////////////////
 // ユーザ定義ルール(コンバート時に置換、直接しない)
 $line_rules = array(
-//"/!([A-Z][a-z]+(?:[A-Z][a-z]+)+)/" => "$1",
 "((氏|死)(ね|ネ)|うんこ|つんぼ|ちんこ|まんこ|ウンコ|ツンボ|(?<!パ)チンコ|マンコ)" => "<span style=\"color:white;background-color:white;\">$0</span>", //禁止ワード
 );
 

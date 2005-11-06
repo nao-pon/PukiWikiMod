@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.9 2005/09/14 15:04:02 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.10 2005/11/06 05:35:00 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -277,18 +277,22 @@ function plugin_fusen_action() {
 	}
 	
 	// ID確定,データ取得
-	switch ($post['mode']) {
+	switch ($post['mode'])
+	{
 		case 'set':
 		case 'del':
 		case 'lock':
 		case 'unlock':
-		case 'recover';
+		case 'recover':
 			if (!array_key_exists($id,$dat)) die_message('The data is not accumulated just.'."($id)");
-		case 'burn';
+		case 'burn':
 			// ページHTMLキャッシュを削除
 			delete_page_html($refer,"html");
+			// touch
+			if ($id) $dat[$id]['tt'] = time();
 			//値更新
-			switch ($post['mode']) {
+			switch ($post['mode'])
+			{
 				case 'set':
 					if (!$dat[$id]['lk']) $auth = true;
 					$dat[$id]['x'] = (preg_match('/^\d+$/', $post['l']) ? $post['l'] : '');
@@ -349,9 +353,10 @@ function plugin_fusen_action() {
 				$mt = date("ymdHis");
 				$uid = $X_uid;
 				$ucd = PUKIWIKI_UCD;
-				$name = $post['name'];
 				// 名前をクッキーに保存
+				$name = $post['name'];
 				setcookie("pukiwiki_un", $name, time()+86400*365);//1年間
+				make_user_link($name);
 			}
 			else
 			{
@@ -367,7 +372,7 @@ function plugin_fusen_action() {
 				$txt = str_replace(array("\r\n","\r"),"\n",$post['body']);
 				$txt = preg_replace('/^#fusen/m', '&#35;fusen', $txt);
 				$txt = user_rules_str(auto_br($txt));
-				$txt = rtrim($txt)."\n";
+				$txt = rtrim($txt);
 				
 				$et = date("ymdHis");
 				$fix = (!empty($post['fix']))? (int)$post['fix'] : 0;
@@ -384,10 +389,11 @@ function plugin_fusen_action() {
 					'tc' => (preg_match('/^#[\dA-F]{6}$/i', $post['tc']) ? $post['tc'] : '#000000'),
 					'bg' => (preg_match('/^(#[\dA-F]{6}|transparent)$/i', $post['bg']) ? $post['bg'] : '#ffffff'),
 					'lk' => false,
-					'txt' => rtrim($txt),
+					'txt' => $txt,
 					'name' => $name,
 					'mt' => $mt,
 					'et' => $et,
+					'tt' => time(),
 					'uid' => $uid,
 					'ucd' => $ucd,
 					'fix' => $fix,
@@ -402,8 +408,13 @@ function plugin_fusen_action() {
 				
 				// plane_text DB 更新を指示
 				need_update_plaindb($refer);
-				// ページHTMLキャッシュを削除
-				delete_page_html($refer,"html");
+				
+				// 追加データファイル保存
+				$_pgid = get_pgid_by_name($refer);
+				push_page_changes($_pgid,"[付箋:$id]\n\n".$txt);
+				
+				// ページHTMLキャッシュとRSSキャッシュを削除
+				delete_page_html($refer);
 			}
 			break;
 		default:
@@ -440,6 +451,7 @@ function plugin_fusen_action() {
 		
 		// キャッシュ破棄
 		@unlink(P_CACHE_DIR.encode($refer).".fusen");
+		clearstatcache();
 		
 		// コンバートして再読み込み
 		$dat = plugin_fusen_data($refer);
@@ -453,10 +465,6 @@ function plugin_fusen_action() {
 //添付ファイル読み込み
 function plugin_fusen_data($page,$convert=true)
 {
-	global $X_uid,$X_admin;
-	global $vars,$post,$get;
-	global $nowikiname,$related_link,$content_id;
-	
 	$fname = encode($page) . '_' . encode(FUSEN_ATTACH_FILENAME);
 	if (!file_exists(UPLOAD_DIR . $fname)) return array();
 	$data = file(UPLOAD_DIR . $fname);
@@ -500,8 +508,14 @@ function plugin_fusen_data($page,$convert=true)
 }
 
 //PHPオブジェクトをJSONへ変換
-function plugin_fusen_getjson($fusen_data) {
-
+function plugin_fusen_getjson($fusen_data)
+{
+	global $X_admin,$X_uid;
+	// ゲストとして処理
+	$_X_uid = $X_uid;
+	$_X_admin = $X_admin;
+	$X_uid = $X_admin = 0;
+	
 	// 付箋・線データ作成
 	$json = '{';
 	foreach ($fusen_data as $k => $dat) {
@@ -545,6 +559,7 @@ function plugin_fusen_getjson($fusen_data) {
 		$json .= '"name":"' . plugin_fusen_jsencode(make_link($dat['name'])) . '",';
 		$json .= '"mt":"' . ($dat['mt']? $dat['mt'] : "" ) . '",';
 		$json .= '"et":"' . ($dat['et']? $dat['et'] : "" ) . '",';
+		$json .= '"tt":' . ($dat['tt']? $dat['tt'] : 0 ) . ',';
 		$json .= '"uid":' . ($dat['uid']? $dat['uid'] : 0 ) . ',';
 		$json .= '"ucd":"' . ($dat['ucd']? $dat['ucd'] : "" ) . '",';
 		$json .= '"fix":' . (empty($dat['fix'])? 0 : (int)$dat['fix'] ) . ',';
@@ -556,17 +571,23 @@ function plugin_fusen_getjson($fusen_data) {
 		$json .= '}';
 	}
 	$json .= '}';
+	
+	//ログイン情報戻し
+	$X_uid = $_X_uid;
+	$X_admin = $_X_admin;
+	
 	return $json;
 }
 
 //JSON向けエンコード
 function plugin_fusen_jsencode($str) {
 	$str = preg_replace('/(\x22|\x2F|\x5C)/', '\\\$1', $str);
-	$str = preg_replace('/\x08/', '\b', $str);
-	$str = preg_replace('/\x09/', '\t', $str);
-	$str = preg_replace('/\x0A/', '\n', $str);
-	$str = preg_replace('/\x0C/', '\f', $str);
-	$str = preg_replace('/\x0D/', '\r', $str);
+	//$str = preg_replace('/\x08/', '\b', $str);
+	//$str = preg_replace('/\x09/', '\t', $str);
+	//$str = preg_replace('/\x0A/', '\n', $str);
+	//$str = preg_replace('/\x0C/', '\f', $str);
+	//$str = preg_replace('/\x0D/', '\r', $str);
+	$str = str_replace(array("\x00","\x08","\x09","\x0A","\x0C","\x0D"), array('','\b','\t','\n','\f','\r'), $str);
 	return $str;
 }
 
@@ -620,7 +641,7 @@ function plugin_fusen_gethtml($fusen_data)
 		}
 
 		
-		$ret .= "<div class=\"fusen_body\" style=\"left:{$dat['x']}px; top:{$dat['y']}px; color:{$dat['tc']}; background-color:{$dat['bg']}; border:{$border};{$del}{$fix_style}\">\n";
+		$ret .= "<div class=\"fusen_body_trans\" style=\"left:{$dat['x']}px; top:{$dat['y']}px; color:{$dat['tc']}; background-color:{$dat['bg']}; border:{$border};{$del}{$fix_style}\">\n";
 		$ret .= "<div class=\"fusen_menu\">id.{$k}: </div>\n";
 		$ret .= "<div class=\"fusen_info\">".make_link($dat['name']).$date."</div>\n";
 		$ret .= "<div class=\"fusen_contents\">{$dat['disp']}</div>\n";
@@ -635,7 +656,7 @@ function plugin_fusen_putjson($dat,$page)
 	$fname = P_CACHE_DIR . "fusen_". encode($page) . ".utxt";
 	$json = plugin_fusen_getjson($dat);
 	$to = "UTF-8";
-	$json = mb_convert_encoding($json, $to, SOURCE_ENCODING);
+	$json = input_filter(mb_convert_encoding($json, $to, SOURCE_ENCODING));
 	
 	// 変更チェック
 	$old = @join('',@file($fname));
@@ -660,23 +681,25 @@ function plugin_fusen_putjson($dat,$page)
 
 function fusen_convert_html(&$str,$page)
 {
-	global $X_uid,$X_admin;
+	global $X_uid,$X_admin,$pgid;
 	global $vars,$post,$get;
-	global $nowikiname,$related_link,$content_id;
+	global $related_link,$content_id;
 
 	// グローバル変数退避
 	$_page = $vars['page'];
+	$_cmd = $vars['cmd'];
 	$_X_uid = $X_uid;
 	$_X_admin = $X_admin;
 	$_content_id = $content_id;
 	$_related_link = $related_link;
-	$_nowikiname = $nowikiname;
+	$_pgid = $pgid;
 	
 	$X_admin = $X_uid = 0;	//常にゲスト扱い
 	$vars['page'] = $post['page'] = $get['page'] = $page; // 現ページ名
 	$content_id = 1;	// areaedit リンクなど抑止
-	$nowikiname = 1;	// 未作成WikiNameの?リンク抑止
 	$related_link = 0;	// 関連するページをリストアップしない
+	$vars['cmd'] = "read"; //閲覧モードでコンバート
+	$pgid = get_pgid_by_name($vars["page"]); //ページID
 	
 	$pcon = new pukiwiki_converter();
 	$pcon->string = $str;
@@ -686,10 +709,11 @@ function fusen_convert_html(&$str,$page)
 	// グローバル変数戻し
 	$content_id = $_content_id;
 	$related_link = $_related_link;
-	$nowikiname = $_nowikiname;
 	$X_uid = $_X_uid;
 	$X_admin = $_X_admin;
 	$vars['page'] = $post['page'] = $get['page'] = $_page;
+	$vars['cmd'] = $_cmd;
+	$pgid = $_pgid;
 	
 	// 外部リンクの場合 class="ext" を付加
 	$str = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/","$1class=\"ext\" $2",$str);

@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.32 2005/04/27 14:28:11 nao-pon Exp $
+// $Id: index.php,v 1.33 2005/11/06 05:35:00 nao-pon Exp $
 
 
 define("UTIME",time());
@@ -101,10 +101,12 @@ function changePermit($_target_dir){
 }
 
 function writeConfig(){
-	global $xoopsConfig, $HTTP_POST_VARS, $xoopsModule;
-
-	foreach($HTTP_POST_VARS as $k => $v)
+	global $xoopsConfig, $_POST, $xoopsModule;
+	
+	$badkeys = array('GLOBALS', '_SESSION', 'HTTP_SESSION_VARS', '_GET', 'HTTP_GET_VARS', '_POST', 'HTTP_POST_VARS', '_COOKIE', 'HTTP_COOKIE_VARS', '_REQUEST', '_SERVER', 'HTTP_SERVER_VARS', '_ENV', 'HTTP_ENV_VARS', '_FILES', 'HTTP_POST_FILES', 'xoopsDB', 'xoopsUser', 'xoopsUserId', 'xoopsUserGroups', 'xoopsUserIsAdmin', 'xoopsConfig', 'xoopsOption', 'xoopsModule', 'xoopsModuleConfig');
+	foreach($_POST as $k => $v)
 	{
+		if (in_array($k, $badkeys)) continue;
 		$$k = str_replace("'","\'",$v);
 	}
 

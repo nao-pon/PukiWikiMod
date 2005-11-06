@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.53 2005/10/14 14:05:42 nao-pon Exp $
+// $Id: file.php,v 1.54 2005/11/06 05:35:00 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -74,43 +74,41 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		
 		$postdata = user_rules_str($postdata);
 		
-		// 差分ファイルの作成
-		$oldpostdata = is_page($page) ? join('',get_source($page)) : '';
-		$diffdata = do_diff($oldpostdata,$postdata);
-		file_write(DIFF_DIR,$page,$diffdata);
-		
-		// 差分データの作成
-		$mail_add = $mail_del = "";
-		$diffdata_ar = array();
-		$diffdata_ar=split("\n",$diffdata);
-		foreach($diffdata_ar as $diffdata_line){
-			if (ereg("^\+ (.*)",$diffdata_line,$regs)){
-				$mail_add .= $regs[1]."\n";
+		if (rtrim($oldpostdata) != rtrim($postdata))
+		{//変更があった場合
+			// 差分ファイルの作成
+			$oldpostdata = is_page($page) ? join('',get_source($page)) : '';
+			$diffdata = do_diff($oldpostdata,$postdata);
+			file_write(DIFF_DIR,$page,$diffdata);
+			
+			// 差分データの作成
+			$mail_add = $mail_del = "";
+			$diffdata_ar = array();
+			$diffdata_ar=split("\n",$diffdata);
+			foreach($diffdata_ar as $diffdata_line){
+				if (ereg("^\+ (.*)",$diffdata_line,$regs)){
+					$mail_add .= $regs[1]."\n";
+				}
+				if (ereg("^\- (.*)",$diffdata_line,$regs)){
+					$mail_del .= $regs[1]."\n";
+				}
 			}
-			if (ereg("^\- (.*)",$diffdata_line,$regs)){
-				$mail_del .= $regs[1]."\n";
-			}
+			
+			// 追加データファイル保存
+			// pcomment 動作時は親ページ
+			$_pgid = (!empty($post['refer']))? get_pgid_by_name($post['refer']) : $pgid;
+			push_page_changes($_pgid,$mail_add);
+			
+			// バックアップの作成
+			// 日付はバックアップを作成した日時
+			$oldposttime = time();
+			
+			// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
+			if(!$postdata && $del_backup)
+				backup_delete(BACKUP_DIR.encode($page).".txt");
+			else if($do_backup && is_page($page))
+				make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
 		}
-		
-		// 追加データファイル保存
-		// pcomment 動作時は親ページ
-		$_pgid = (!empty($post['refer']))? get_pgid_by_name($post['refer']) : $pgid;
-		$add_file = DIFF_DIR."add_".$_pgid.".cgi";
-		if ($fp = @fopen($add_file,"wb"))
-		{
-			fputs($fp,convert_html($mail_add));
-			fclose($fp);
-		}
-		
-		// バックアップの作成
-		// 日付はバックアップを作成した日時
-		$oldposttime = time();
-		
-		// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
-		if(!$postdata && $del_backup)
-			backup_delete(BACKUP_DIR.encode($page).".txt");
-		else if($do_backup && is_page($page))
-			make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
 	}
 	
 	// ファイルの書き込み
@@ -164,8 +162,9 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_WIKI_HOST.get_url_by_name($page)."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.$s_page."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.$X_uname."\n";
-		$mail_body .= "IP:".$_SERVER["REMOTE_ADDR"]."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.preg_replace("/([^#]+).*/","$1",$X_uname)."\n";
+		$mail_body .= "UCD: ".PUKIWIKI_UCD."\n";
+		$mail_body .= "IP: ".$_SERVER["REMOTE_ADDR"]."\n";
 		$mail_body .= $plugin_title;
 		if (in_array("del",$mail_mode))
 		{
@@ -206,7 +205,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="",$agids="",$freeze="",$unvisible="")
 {
 	global $post,$update_exec,$autolink,$wiki_common_dirs,$X_admin,$X_uid;
-	global $pagename_aliases;
+	global $pagename_aliases,$vars;
 	
 	if (is_null($notimestamp)) $notimestamp=$post['notimestamp'];
 	
@@ -274,12 +273,12 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			$c_pages = array();
 			foreach($wiki_common_dirs as $c_dir)
 			{
-				foreach(get_existpages(false,$c_dir,0,"",false,false,true,true) as $c_page)
+				foreach(get_existpages_db(false,$c_dir,0,"",false,false,true,true) as $c_page)
 				{
 					$c_pages[] = str_replace($c_dir,"",$c_page);
 				}
 			}
-			$c_pages = array_unique(array_merge(get_existpages(false,"",0,"",false,false,true,true),$c_pages,$aliases));
+			$c_pages = array_unique(array_merge(get_existpages_db(false,"",0,"",false,false,true,true),$c_pages,$aliases));
 			
 			list($pattern, $pattern_a, $forceignorelist) = get_autolink_pattern($c_pages);
 			
@@ -310,11 +309,16 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		// バックアップリストキャッシュの削除
 		@unlink(CACHE_DIR."backup_list.tmp");
 		
+		// ActionプラグインでPing送信ページ名が指定されている場合
+		if (!empty($vars['ping_send_page']))
+		{
+			$notimestamp = false;
+			$page = $vars['ping_send_page'];
+		}
+		
 		if (!$notimestamp && !$unvisible && $action != "delete")
 		{
 			// TrackBack Ping用ファイル作成
-			// pcomment用：親ページ名をセット
-			$page = ($post['refer'])? $post['refer'] : $page;
 			$s_page = strip_bracket($page);
 			// : で始まるページはPingを打たない
 			if ($s_page[0] !== ":") tb_send($page);
@@ -511,11 +515,11 @@ function get_readings()
 	global $pagereading_kanji2kana_encoding, $pagereading_chasen_path;
 	global $pagereading_kakasi_path, $pagereading_config_page;
 
-	$pages = get_existpages(true);
+	$pages = get_existpages(true,"",0,"",false,false,true,true);
 
 	$readings = array();
 	foreach ($pages as $page) {
-		$page = strip_bracket($page);
+		//$page = strip_bracket($page);
 		$readings[$page] = '';
 	}
 	foreach (get_source($pagereading_config_page) as $line) {
@@ -542,11 +546,12 @@ function get_readings()
 			$fp = fopen($tmpfname, "w")
 				or die_message("cannot write temporary file '$tmpfname'.\n");
 			foreach ($unknownPage as $page) {
-				$s_page = strip_bracket($page);
+				//$s_page = strip_bracket($page);
 				//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 				//if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_page,$f_name))
 				//	$s_page = $f_name[1].get_heading($s_page);
-				$s_page = replace_pagename_d2s($s_page);
+				//$s_page = replace_pagename_d2s($s_page);
+				$s_page = replace_pagename_d2s($page);
 				fputs($fp, mb_convert_encoding($s_page."\n", $pagereading_kanji2kana_encoding, SOURCE_ENCODING));
 			}
 			fclose($fp);
@@ -917,6 +922,13 @@ function get_pg_allow_viewer($page, $uppage=true, $clr=false){
 	
 }
 
+//ページ作成権限があるかチェックする
+function make_auth()
+{
+	global $X_uid,$X_admin,$wiki_allow_new;
+	return ($X_admin || ($wiki_allow_new === 0) || (($X_uid && ($wiki_allow_new < 2)))) ;
+}
+
 //閲覧権限があるかチェックする。
 function read_auth($page, $auth_flag=true, $exit_flag=true){
 	return check_readable($page, $auth_flag, $exit_flag);
@@ -1062,8 +1074,8 @@ function get_heading($page)
 	$res = $xoopsDB->query($query);
 	if (!$res) return "";
 	$_ret = mysql_fetch_row($res);
-	$_ret =  htmlspecialchars($_ret[12]);
-	return $ret[$page] = ($_ret)? $_ret : htmlspecialchars($page);
+	$_ret =  htmlspecialchars($_ret[12],ENT_NOQUOTES);
+	return $ret[$page] = ($_ret)? $_ret : htmlspecialchars($page,ENT_NOQUOTES);
 }
 
 //ページ名から最初の見出しを得る(ファイルから)
@@ -1167,6 +1179,8 @@ function delete_page_html($page,$mode="html+rss")
 			$filename = $base.".rss2s";
 			if (file_exists($filename)) unlink($filename);
 		}
+		//XOOPS側のRSSキャッシュ
+		HypCommonFunc::clear_rss_cache();
 	}
 }
 
@@ -1218,5 +1232,27 @@ function get_pagename_aliases()
 		}
 	}
 	return $_aliases;
+}
+
+// ページ内容追加履歴の書き出し
+function push_page_changes($id,$txt)
+{
+	$add_file = DIFF_DIR."add_".$id.".cgi";
+	$sep = "&#182;<!--ADD_TEXT_SEP-->\n";
+	$limit = 5;
+	
+	$data = @join('',@file($add_file));
+	if ($data)
+	{
+		$adds = preg_split("/".preg_quote($sep,"/")."/",$data);
+		$adds = array_slice($adds,0,$limit-1);
+	}
+	array_unshift($adds,convert_html($txt));
+	
+	if ($fp = @fopen($add_file,"wb"))
+	{
+		fputs($fp,join($sep,$adds));
+		fclose($fp);
+	}
 }
 ?>

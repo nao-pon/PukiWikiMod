@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.25 2005/03/05 02:15:27 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.26 2005/11/06 05:35:00 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -330,7 +330,7 @@ function plugin_calendar_viewer_convert($func_vars_array="")
 		$page = "[[" . $pagelist[$tmp] .	"]]";
 
 		$user_tag = get_pg_auther_name($page);
-		make_user_link($user_tag);
+		make_user_link($user_tag,"",true);
 		$user_tag = make_link($user_tag);
 		$comments_tag = ($use_xoops_comments)? " [ ".make_pagelink($page,$_msg_pagecomment."(".get_pagecomment_count(get_pgid_by_name($page)).")",'#page_comments')." ]" : "";
 		$tb_tag = ($trackback)? " [ ".make_pagelink($page,$_msg_trackback."(".tb_count($page).")",'#tb_body')." ]" : "";

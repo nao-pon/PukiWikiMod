@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.37 2005/07/13 15:47:28 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.38 2005/11/06 05:35:00 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -92,15 +92,19 @@ if (!defined('DATA_DIR')) exit;
 	<?php echo $body ?>
 	</div>
 	<?php if ($is_page && $fusen_tag) { echo $fusen_tag; } ?>
-	<?php echo $hr ?>
 	<?php if($attaches)
 		{
-			print $attaches;
 			print $hr;
+			print $attaches;
 		}
 	?>
 	<?php if ($is_read && $trackback_body){ echo $trackback_body; } ?>
 	
+	<?php if($use_xoops_tpl){
+		ob_start ();
+	} ?>
+	
+	<div>
 	<div style="text-align:right">
 		<?php if($is_page) { ?>
 		<a href="<?php echo $link_page ?>"><img src="./image/reload.png" width="20" height="20" border="0" alt="リロード" /></a>
@@ -156,16 +160,27 @@ if (!defined('DATA_DIR')) exit;
 	<?php } ?>
 	</table>
 	<?php } ?>
-	<?php if(!$use_xoops_tpl){ ?>
-	<br />
-	<address>
-		Modified by <a href="<?php echo $modifierlink ?>"><?php echo $modifier ?></a><br /><br />
-		<?php echo _XOOPS_WIKI_COPYRIGHT ?><br />
-		<?php echo S_COPYRIGHT ?><br />
-		Powered by PHP <?php echo PHP_VERSION ?><br /><br />
-		HTML convert time to <?php echo $taketime ?> sec.
-	</address>
-	<?php } ?>
-
+	</div>
+	
+	<?php if($use_xoops_tpl){
+		$xoopsTpl->assign('page_info', ob_get_contents());
+		ob_end_clean();
+		ob_start ();
+	} ?>
+	
+	<div>
+		<address>
+			Modified by <a href="<?php echo $modifierlink ?>"><?php echo $modifier ?></a><br /><br />
+			<?php echo _XOOPS_WIKI_COPYRIGHT ?><br />
+			<?php echo S_COPYRIGHT ?><br />
+			Powered by PHP <?php echo PHP_VERSION ?><br /><br />
+			HTML convert time to <?php echo $taketime ?> sec.
+		</address>
+	</div>
+	
+	<?php if($use_xoops_tpl){
+		$xoopsTpl->assign('pukiwiki_footer', ob_get_contents());
+		ob_end_clean();
+	} ?>
 </div>
 <!-- /pukiwikimod -->

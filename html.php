@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.57 2005/05/13 01:25:18 nao-pon Exp $
+// $Id: html.php,v 1.58 2005/11/06 05:35:00 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -27,7 +27,7 @@ function catbody($title,$page,$body)
 	global $foot_explain, $note_hr, $_msg_word, $search_word_color,$use_static_url;
 	
 	global $xoopsConfig,$xoopsModule, $xoopsUser, $modifier, $hide_navi, $anon_writable, $wiki_writable, $wiki_allow_newpage;
-	global $X_admin,$X_uname,$X_uid,$X_ucd,$noattach,$noheader,$trackback,$xoopsTpl,$pgid,$use_xoops_comments;
+	global $X_admin,$X_uname,$X_uid,$X_ucd,$noattach,$noheader,$trackback,$xoopsTpl,$pgid,$use_xoops_comments,$show_comments;
 	
 	global $_msg_pagecomment,$_msg_trackback,$_msg_pings;
 	global $pwm_plugin_flg,$fusen_enable_allpage;
@@ -96,7 +96,7 @@ function catbody($title,$page,$body)
 		
 		$tb_url = tb_get_my_tb_url($pid);
 		
-		$comments_tag = ($use_xoops_comments)? " [ ".get_pagecomment_count($pgid,'#page_comments',$_msg_pagecomment.'($1)')." ]" : "";
+		$comments_tag = ($use_xoops_comments && $show_comments)? " [ ".get_pagecomment_count($pgid,'#page_comments',$_msg_pagecomment.'($1)')." ]" : "";
 		$tb_count = $_msg_trackback."(".tb_count($vars['page']).")";
 		$tb_tag = ($trackback)? " [ <a href=\"".$tb_url.$con_str."__mode=view\" name=\"tb_body\">{$tb_count}</a> ]" : "";
 		
@@ -193,10 +193,12 @@ EOT;
 	}
 	
 	//単語検索
-	if ($search_word_color and array_key_exists('word',$vars))
+	if ($search_word_color and !empty($vars['word']))
 	{
 		$search_word = '';
-		$words = array_flip(array_splice(preg_split('/\s+/',$vars['word'],-1,PREG_SPLIT_NO_EMPTY),0,10));
+		$words = preg_split('/\s+/',$vars['word'],-1,PREG_SPLIT_NO_EMPTY);
+		$words = array_splice($words,0,10);
+		$words = array_flip($words);
 		$keys = array();
 		foreach ($words as $word=>$id)
 		{
@@ -231,12 +233,12 @@ EOT;
 	{
 		$use_xoops_tpl = 1;
 		
-		$xoopsTpl->assign('modifierlink',$modifierlink);
-		$xoopsTpl->assign('modifier',$modifier);
-		$xoopsTpl->assign('xoops_wiki_copyright',_XOOPS_WIKI_COPYRIGHT);
-		$xoopsTpl->assign('s_copyright',S_COPYRIGHT);
-		$xoopsTpl->assign('php_version',PHP_VERSION);
-		$xoopsTpl->assign('taketime',$taketime);
+		//$xoopsTpl->assign('modifierlink',$modifierlink);
+		//$xoopsTpl->assign('modifier',$modifier);
+		//$xoopsTpl->assign('xoops_wiki_copyright',_XOOPS_WIKI_COPYRIGHT);
+		//$xoopsTpl->assign('s_copyright',S_COPYRIGHT);
+		//$xoopsTpl->assign('php_version',PHP_VERSION);
+		//$xoopsTpl->assign('taketime',$taketime);
 		
 		$xoopsTpl->assign('is_read', $is_read);
 		

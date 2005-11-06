@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.12 2005/03/11 15:00:39 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.13 2005/11/06 05:35:00 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -137,11 +137,14 @@ function plugin_areaedit_inline()
 {
 	global $script,$vars,$digest, $_areaedit_messages;
 	global $X_uid;
+	global $pwm_plugin_flg;
 	static $numbers = array();
 
 	$page = $vars['page'];
-	if (!array_key_exists($page,$numbers))	$numbers[$page] = 0;
-	$areaedit_no = $numbers[$page]++;
+	
+	if (!array_key_exists($page,$numbers)){$numbers[$page] = 0;}
+	
+	if (empty($pwm_plugin_flg['system']['contents_convert'])){$areaedit_no = $numbers[$page]++;}
 
 	$args = func_get_args();
 	$str = array_pop($args);

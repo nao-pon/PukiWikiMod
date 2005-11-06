@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.37 2005/06/23 08:24:05 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.38 2005/11/06 05:35:00 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -143,7 +143,7 @@ function plugin_attach_action()
 	// リファラチェック
 	if (ATTACH_REFCHECK)
 	{
-		if (($vars['pcmd'] == 'open' || $vars['pcmd'] == 'delete' || $vars['pcmd'] == 'upload' || !$pcmd)
+		if (($vars['pcmd'] == 'open' || $vars['pcmd'] == 'delete' || ($vars['pcmd'] == 'upload' && strtoupper($_SERVER["REQUEST_METHOD"]) == "POST") || !$pcmd)
 		 && !pukiwiki_refcheck(ATTACH_REFCHECK-1))
 		{
 			//redirect_header(XOOPS_WIKI_URL,0,"Access denied!");
@@ -689,7 +689,7 @@ class AttachFile
 		$this->size_str = sprintf('%01.1f',round($this->size)/1000,1).'KB';
 		$this->type = attach_mime_content_type($this->filename);
 		$this->owner_str = get_pg_auther_name($this->status['owner'],TRUE);
-		make_user_link($this->owner_str);
+		make_user_link($this->owner_str,"",true);
 		$this->owner_str = make_link($this->owner_str);
 		
 		return TRUE;

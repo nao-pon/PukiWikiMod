@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.25 2005/03/05 02:15:27 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.26 2005/11/06 05:35:00 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -346,7 +346,7 @@ function plugin_calendar2_convert()
 			{
 				$p_count ++;
 				$user_tag = get_pg_auther_name($_page);
-				make_user_link($user_tag);
+				make_user_link($user_tag,"",true);
 				$user_tag = make_link($user_tag);
 				$show_tag = "by ".$user_tag." at ".get_makedate_byname($_page)." ".make_pagelink($_page,"<img src=\"./image/link.gif\" />");
 				$comments_tag = ($use_xoops_comments)? " [ ".make_pagelink($_page,$_msg_pagecomment."(".get_pagecomment_count(get_pgid_by_name($_page)).")",'#page_comments')." ]" : "";

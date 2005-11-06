@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.39 2005/10/09 05:04:30 nao-pon Exp $
+// $Id: make_link.php,v 1.40 2005/11/06 05:35:00 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -355,9 +355,9 @@ EOD;
 		$this->alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
 		$status_script = ($alias_set_status)? " onMouseOver=\"window.status='".str_replace("'","\'",strip_tags($this->alias))."';return true\" onMouseOut=\"window.status='';return true\"":"";
 		if ($this->separator == ">")
-			return "<a href=\"{$this->name}\"{$status_script}>{$this->alias}</a>";
+			{return "<a href=\"{$this->name}\" title=\"{$this->name}\"{$status_script}>{$this->alias}</a>";}
 		else
-			return "<a href=\"{$this->name}\" target=\"$link_target\"{$status_script}>{$this->alias}</a>";
+			{return "<a href=\"{$this->name}\" title=\"{$this->name}\" target=\"$link_target\"{$status_script}>{$this->alias}</a>";}
 	}
 }
 // url (InterWiki definition type)
@@ -926,12 +926,12 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	}
 	else
 	{
-		if (WIKI_ALLOW_NEWPAGE)
+		if (make_auth())
 			$retval = "$s_alias<a href=\"$script?cmd=edit&amp;page=$r_page$r_refer\">$_symbol_noexists</a>";
 		else
 			$retval = $s_alias;
 
-		if (!$link_compact && WIKI_ALLOW_NEWPAGE)
+		if (!$link_compact && make_auth())
 		{
 			$retval = "<span class=\"noexists\">$retval</span>";
 		}
@@ -1108,7 +1108,7 @@ function replace_pagename_d2s($str,$compact=0)
 		preg_match("#^(.+)/([^/]+)$#",$str,$arg);
 		if (preg_match("/^[0-9\-]+$/",$arg[2]))
 		{
-			$arg[2] = get_heading($str);
+			$arg[2] = str_replace(array('&amp;','&lt;','&gt;'),array('&','<','>'),get_heading($str));
 		}
 		if ($compact) return $arg[2];
 		$ret[$str] = replace_pagename_d2s($arg[1])."/".$arg[2];
@@ -1116,7 +1116,7 @@ function replace_pagename_d2s($str,$compact=0)
 	else
 	{
 		if (preg_match("/^[0-9\-]+$/",$str))
-			$ret[$str] = str_replace(array('&amp;','&lt;','&gt;','&quot;','&#039;'),array('&','<','>','"',"'"),get_heading($str));
+			$ret[$str] = str_replace(array('&amp;','&lt;','&gt;'),array('&','<','>'),get_heading($str));
 		else
 			$ret[$str] = $str;
 	}

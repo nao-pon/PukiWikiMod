@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.24 2005/05/20 00:07:01 nao-pon Exp $
+// $Id: trackback.php,v 1.25 2005/11/06 05:35:00 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -72,7 +72,7 @@ function tb_count($page,$ext='.txt')
 function tb_send($page,$data="")
 {
 	global $script,$trackback,$update_ping_to,$page_title,$interwiki,$notb_plugin,$h_excerpt,$auto_template_name,$update_ping_to,$defaultpage;
-	global $trackback_encoding,$vars;
+	global $trackback_encoding,$vars,$pwm_confg;
 	
 	$page = strip_bracket($page);
 
@@ -86,21 +86,17 @@ function tb_send($page,$data="")
 	}
 	
 	$filename = CACHE_DIR.encode($page).".tbf";
+	if (!$pwm_confg['update_ping_limit']) $pwm_confg['update_ping_limit'] = 60;
 	
 	if (!$data)
 	{
-		// ファイルに一時保管
+		// 処理判定用ファイル
 		touch($filename);
-		//if ($fp = fopen($filename,'wb'))
-		//{
-		//	fputs($fp,XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']);
-		//	fclose($fp);
-		//}
 		
-		// 非同期モードで別スレッド処理 Blokking=0,Retry=5,接続タイムアウト=30,ソケットタイムアウト=0(指定しない)
+		// 非同期モードで別スレッド処理 Blokking=0,Retry=5,接続タイムアウト=30,ソケットタイムアウト=30)
 		$ret = http_request(
 		XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']
-		,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5,30,0);
+		,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5,30,30);
 		
 		return;
 	}
@@ -109,11 +105,13 @@ function tb_send($page,$data="")
 	
 	// 送信済みエントリーを取得
 	$ping_filename = TRACKBACK_DIR.tb_get_id($page).".ping";
-	$to_pukiwiki = $sended = array();
+	$to_pukiwiki = $sended = $sendtime = array();
 	$sended_count = 0;
 	// 改行文字を削除
 	foreach(@file($ping_filename) as $line)
 	{
+		list($line,$time) = array_pad(explode("\t",trim($line)),2,0);
+		
 		//Pukiwikiはスタックされないので送信済みに加えない
 		if (strpos($line,"?plugin=tb&tb_id=") !== false || //PukiWiki
 			strpos($line,"/modules/pukiwiki/") !== false   //PukiWikiMod 全般
@@ -121,6 +119,8 @@ function tb_send($page,$data="")
 			$to_pukiwiki[] = trim($line);
 		else
 			$sended[] = trim($line);
+		
+		$sendtime[md5($line)] = $time;
 		
 		$sended_count++;
 	}
@@ -213,6 +213,7 @@ function tb_send($page,$data="")
 				if ($result['rc'] === 200 || strpos($result['data'],"<error>0</error>") !== false)
 				{
 					$sended[] = $tb_id;
+					$sendtime[md5($tb_id)] = time();
 					$sended_count++;
 					// とりあえず送信済みにスタックする
 					tb_sended_save_temp($tb_id,$ping_filename);
@@ -240,7 +241,12 @@ function tb_send($page,$data="")
 		// Ping 指定先へ送信
 		foreach ($pings as $tb_id)
 		{
-			set_time_limit(120); // 処理実行時間を長めに再設定
+			// 前回送信日時のチェック (limit 10min)
+			if ($sendtime[md5($tb_id)] + $pwm_confg['update_ping_limit'] * 60 > time())
+			{
+				continue;
+			}
+			//set_time_limit(120); // 処理実行時間を長めに再設定
 			touch($filename); // 判定ファイルをtouch
 
 			$done = false;
@@ -253,7 +259,7 @@ function tb_send($page,$data="")
 					$done = true;
 				else
 				{
-					set_time_limit(120); // 処理実行時間を長めに再設定
+					//set_time_limit(120); // 処理実行時間を長めに再設定
 					//Track Back Ping
 					$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
 					// 超手抜きなチェック
@@ -276,6 +282,7 @@ function tb_send($page,$data="")
 			if ($done)
 			{
 				$sended[] = $tb_id;
+				$sendtime[md5($tb_id)] = time();
 				// とりあえず送信済みにスタックする
 				tb_sended_save_temp($tb_id,$ping_filename);
 			}
@@ -289,7 +296,7 @@ function tb_send($page,$data="")
 		flock($fp,LOCK_EX);
 		foreach ($sended as $entry)
 		{
-			fwrite($fp,$entry."\n");
+			fwrite($fp,$entry."\t".$sendtime[md5($entry)]."\n");
 		}
 		flock($fp,LOCK_UN);
 		fclose($fp);
@@ -567,8 +574,8 @@ function get_sended_pings($tb_id)
 		$count = 0;
 		foreach($sended as $entry)
 		{
-			$entry = trim($entry);
-			$tag .= "<li>".$entry."\n";
+			list($entry,$time) = array_pad(explode("\t",trim($entry)),2,0);
+			$tag .= "<li>".$entry.(($time)? " <small>".get_passage($time)."</small>" : "")."\n";
 			if (strpos($entry,"?") === false)
 			{
 				//if (preg_match("/^(.*)\/([^\/]+)/",$entry,$arg))
@@ -659,7 +666,7 @@ function tb_sended_save_temp($dat,$ping_filename)
 {
 	$fp = fopen($ping_filename,'ab');
 	flock($fp,LOCK_EX);
-	fwrite($fp,$dat."\n");
+	fwrite($fp,$dat."\t".time()."\n");
 	flock($fp,LOCK_UN);
 	fclose($fp);
 }

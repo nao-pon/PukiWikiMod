@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.22 2005/10/09 04:41:39 nao-pon Exp $
+// $Id: rss.php,v 1.23 2005/11/06 05:35:00 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -38,7 +38,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 		$catch_file = CACHE_DIR.get_pgid_by_name($page).".rss".$rss.$catch_file;
 	}
 	
-	header("Content-type: application/xml charset=utf-8");
+	header("Content-type: application/xml; charset=utf-8");
 	
 	if (file_exists($catch_file))
 	{
@@ -83,7 +83,6 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 		if (preg_match("/^(.*\/)?[0-9\-]+$/",$title,$reg_title)){
 			$title = $reg_title[1].get_heading($line);
 		}
-		$title = mb_convert_encoding($title,"UTF-8",SOURCE_ENCODING);
 		
 		$url = strip_bracket($line);
 		if ($page) $title = preg_replace("/^".preg_quote($page_utf8,"/")."\//","",$title);
@@ -147,7 +146,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 			{
 				$desc = $addtext;
 			}
-			$desc = mb_convert_encoding(mb_substr($desc,0,250,SOURCE_ENCODING),"UTF-8",SOURCE_ENCODING);
+			$desc = mb_substr($desc,0,250,SOURCE_ENCODING);
 			$desc .= (strlen($desc) > 250)? "..." : "";
 			
 			
@@ -164,7 +163,6 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 				{
 					$content = nl2br(trim(preg_replace("/\s*[\r\n]+/","\n",strip_tags($content))));
 				}
-				$content = mb_convert_encoding($content,"UTF-8",SOURCE_ENCODING);
 				$items.= "<content:encoded>\n<![CDATA[\n";
 				$items.= $content."\n";
 				$items.= "]]>\n</content:encoded>\n";
@@ -173,19 +171,18 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 			if ($trackback)
 			{
 				$dc_identifier = $trackback_ping = '';
-				$dc_identifier = " <dc:identifer>$link_url</dc:identifer>\n";
-				$trackback_ping = " <trackback:ping>".tb_get_my_tb_url($pgid)."</trackback:ping>\n";
+				$dc_identifier = " <dc:identifier>$link_url</dc:identifier>\n";
+				//$trackback_ping = " <trackback:ping>".tb_get_my_tb_url($pgid)."</trackback:ping>\n";
 				$items.= $dc_identifier . $trackback_ping;
 			}
 			
 			//author
 			$pginfo = get_pg_info_db($line);
-			//$user = new XoopsUser();
-			$pg_auther_name= mb_convert_encoding(htmlspecialchars($user->getUnameFromId($pginfo['uid'])),"UTF-8",SOURCE_ENCODING);
-			$last_editer = mb_convert_encoding(htmlspecialchars($user->getUnameFromId($pginfo['lastediter'])),"UTF-8",SOURCE_ENCODING);
+			$pg_auther_name= htmlspecialchars($user->getUnameFromId($pginfo['uid']));
+			$last_editer = htmlspecialchars($user->getUnameFromId($pginfo['lastediter']));
 			if ($pg_auther_name != $last_editer)
 				$pg_auther_name .= ", ".$last_editer;
-			$items.= "<dc:author>$pg_auther_name</dc:author>\n";
+			$items.= "<dc:creator>$pg_auther_name</dc:creator>\n";
 
 			foreach(get_source($line) as $_line)
 			{
@@ -193,7 +190,6 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 					$cats = explode(",",$cat[3]);
 					foreach($cats as $cat_item) {
 						$subject = $cat[2].":".$cat_item;
-						$subject = mb_convert_encoding($subject,"UTF-8",SOURCE_ENCODING);
 						$items .= "<dc:subject>$subject</dc:subject>\n";
 					}
 					break;
@@ -208,12 +204,11 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 		if ($with_content == "s" && strlen($items) > 70000)
 			$size_over = 1;
 	}
+	$items = mb_convert_encoding($items,"UTF-8",SOURCE_ENCODING);
 
 	if($rss==1)
 	{
 		$ret = '<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/skin/rdf.css" type="text/css"?>
-
 <!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN"
             "http://my.netscape.com/publish/formats/rss-0.91.dtd">
 
@@ -231,9 +226,8 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 	}
 	else if($rss==2)
 	{
-		$ret = '<?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/skin/rdf.css" type="text/css"?>
-
+		$ret = '<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" media="screen" href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/skin/rss.xml" ?>
 <rdf:RDF 
   xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns="http://purl.org/rss/1.0/"
@@ -253,6 +247,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
   <title>'.$page_title_utf8.$page_add_utf8.'</title>
   <link>'.$linkpage.'</link>
   <description>'.$description.'</description>
+  <dc:date>'.substr_replace(date("Y-m-d\TH:i:sO"),':',-2,0).'</dc:date>
   <items>
    <rdf:Seq>
 '.$rdf_li.'

@@ -1,8 +1,11 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.54 2005/10/16 14:56:17 nao-pon Exp $
+// $Id: func.php,v 1.55 2005/11/06 05:35:00 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
+
+// class HypCommonFunc
+if(!class_exists('HypCommonFunc')){include("./include/hyp_common_func.php");}
 
 // 文字列がページ名かどうか
 function is_pagename($str)
@@ -881,11 +884,30 @@ function cell_format_tag_del ($td) {
 }
 
 // ユーザーページへのリンクを作成する
-function make_user_link (&$name)
+function make_user_link (&$name,$format="",$convert=false)
 {
-	// Trip
-	list($_name,$trip) = convert_trip($name);
-	$trip = ($trip)? "&trip(\"$trip\");" : "";
+	global $X_uname,$no_name,$pwm_config;
+	
+	$_name = $name;
+	$trip = $b_name = "";
+
+	if (!$convert)
+	{
+		if ($pwm_config['use_trip'])
+		{
+			// Trip
+			list($_name,$trip) = convert_trip($name);
+			$trip = ($trip)? "&trip(\"$trip\");" : "";
+		}
+		
+		if ($pwm_config['show_oldname'])
+		{
+			// 名前を変えた場合
+			$c_name = preg_replace("/([^#]+).*/","$1",$name);
+			$b_name = ($X_uname == $no_name)? $c_name : preg_replace("/([^#]+).*/","$1",$X_uname);
+			$b_name = ($c_name == $b_name)? "" : "&font(80%){(&#171;{$b_name})};";
+		}
+	}
 	
 	// 実ページ名の取り出し
 	$pure_name = strip_tags(make_link($_name));
@@ -894,13 +916,20 @@ function make_user_link (&$name)
 	
 	if (!WIKI_USER_DIR)
 	{
-		$_name = "[[{$_name}>{$pure_name}]]";
+		if ($format)
+		{
+			$_name = sprintf($format, $pure_name, $_name);
+		}
+		else
+		{
+			$_name = "[[{$_name}>{$pure_name}]]";
+		}
 	}
 	else
 	{
 		$_name = sprintf(WIKI_USER_DIR,$pure_name,$_name);
 	}
-	$name = add_bracket(strip_bracket($_name)).$trip;
+	$name = add_bracket(strip_bracket($_name)).$trip.$b_name;
 	return $name;
 }
 
@@ -1077,6 +1106,7 @@ function include_page($page,$ret_array=false)
 	$_digest = $digest;
 	$_article_no = $article_no;
 	$_rsstop = $vars['is_rsstop'];
+	$_show_comments = $show_comments;
 	
 	//初期化
 	$comment_no = 0;
@@ -1123,6 +1153,7 @@ function include_page($page,$ret_array=false)
 	$digest = $_digest;
 	$article_no = $_article_no;
 	$vars['is_rsstop'] = $_rsstop;
+	$show_comments = $_show_comments;
 	
 	$now_inculde_convert = false;
 	
@@ -1257,6 +1288,19 @@ function pukiwiki_refcheck($blank = 0)
 	if (strpos($ref, XOOPS_URL) !== 0 ) return false;
 	
 	return true;
+}
+
+// アクセス制限
+function check_access_ctl()
+{
+	$config = &new Config('access');
+	$config->read();
+	$deny_ips = $config->get('Deny_IP');
+	$deny_ucds = $config->get('Deny_UCD');
+	unset($config);
+	
+	if (!empty($deny_ips) && !empty($_SERVER["REMOTE_ADDR"]) && in_array($_SERVER["REMOTE_ADDR"], $deny_ips)) exit;
+	if (!empty($deny_ucds) && in_array(PUKIWIKI_UCD, $deny_ucds)) exit;
 }
 
 //////////////////////////////////////////////////////
