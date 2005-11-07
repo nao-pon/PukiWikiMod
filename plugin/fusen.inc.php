@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.10 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.11 2005/11/07 06:24:56 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -545,7 +545,7 @@ function plugin_fusen_getjson($fusen_data)
 		$dat['disp'] = str_replace(array("\r","\n","\t"),'',$dat['disp']);
 
 		// JSONの構成
-		if ($json != '{') $json .= ",\n  ";
+		if ($json != '{') $json .= ",\n";
 		$json .=  $k . ':{';
 		$json .= '"x":' . $dat['x'] . ',';
 		$json .= '"y":' . $dat['y'] . ',';
@@ -582,11 +582,6 @@ function plugin_fusen_getjson($fusen_data)
 //JSON向けエンコード
 function plugin_fusen_jsencode($str) {
 	$str = preg_replace('/(\x22|\x2F|\x5C)/', '\\\$1', $str);
-	//$str = preg_replace('/\x08/', '\b', $str);
-	//$str = preg_replace('/\x09/', '\t', $str);
-	//$str = preg_replace('/\x0A/', '\n', $str);
-	//$str = preg_replace('/\x0C/', '\f', $str);
-	//$str = preg_replace('/\x0D/', '\r', $str);
 	$str = str_replace(array("\x00","\x08","\x09","\x0A","\x0C","\x0D"), array('','\b','\t','\n','\f','\r'), $str);
 	return $str;
 }
@@ -656,11 +651,11 @@ function plugin_fusen_putjson($dat,$page)
 	$fname = P_CACHE_DIR . "fusen_". encode($page) . ".utxt";
 	$json = plugin_fusen_getjson($dat);
 	$to = "UTF-8";
-	$json = input_filter(mb_convert_encoding($json, $to, SOURCE_ENCODING));
+	$json = str_replace("\0","",mb_convert_encoding($json, $to, SOURCE_ENCODING));
 	
 	// 変更チェック
 	$old = @join('',@file($fname));
-	//if ($json == $old) return;
+	if ($json == $old) return;
 	
 	$fp = false;
 	$count = 0;

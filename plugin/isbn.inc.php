@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.20 2005/06/23 23:27:28 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.21 2005/11/07 06:24:56 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -94,19 +94,27 @@ function plugin_isbn_convert() {
 	}
 }
 
-function plugin_isbn_inline() {
-	list($isbn,$option) = func_get_args();
+function plugin_isbn_inline()
+{
+	$prms = func_get_args();
+	$body = array_pop($prms); // {}内
+	$body = preg_replace('#</?(a|span)[^>]*>#i','',$body);
+	$body = preg_replace('#(?:alt|title)=("|\').*\1#i','',$body);
+	list($isbn,$option) = array_pad($prms,2,"");
+	$option = htmlspecialchars($option); // for XSS
 	$isbn = htmlspecialchars($isbn); // for XSS
 	$isbn = str_replace("-","",$isbn);
+	
 	$tmpary = array();
 	$tmpary = plugin_isbn_get_isbn_title($isbn);
 	if ($tmpary[2]) $price = "<div style=\"text-align:right;\">$tmpary[2]円</div>";
 	$title = $tmpary[0];
-	$text = htmlspecialchars(preg_replace('#</?(a|span)[^>]*>#i','',$option));
+	//$text = htmlspecialchars(preg_replace('#</?(a|span)[^>]*>#i','',$option));
 	$alt = plugin_isbn_get_caption($tmpary);
 	$amazon_a = '<a href="'.str_replace('_ISBN_',$isbn,ISBN_AMAZON_SHOP).'" target="_blank" title="'.$alt.'">';
-	if (!preg_match("/(s|l|m)?ima?ge?/i",$option,$match)){
-		if ($option) $title = $text;
+	if (!preg_match("/(s|l|m)?ima?ge?/i",$option,$match))
+	{
+		if ($option || $body) $title = $option.$body;
 		return $amazon_a . $title . '</a>';
 	} else {
 		$size = (!empty($match[1]))? $match[1].":" : "";
