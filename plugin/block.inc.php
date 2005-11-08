@@ -1,5 +1,5 @@
 <?php
-// $Id: block.inc.php,v 1.5 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: block.inc.php,v 1.6 2005/11/08 08:27:20 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -22,7 +22,12 @@ function plugin_block_convert()
 	if (!isset($b_tag[$b_count])) $b_tag[$b_count] = 0;
 	
 	$params = array('end'=>false,'clear'=>false,'left'=>false,'center'=>false,'right'=>false,'around'=>false,'tate'=>false,'h'=>'','width'=>"",'w'=>"",'class'=>false,'font-size'=>'','_args'=>array(),'_done'=>FALSE);
-	array_walk(func_get_args(), 'block_check_arg', &$params);	
+	//array_walk(func_get_args(), 'block_check_arg', &$params);
+	//なぜか $args のメンバー数が多い時 array_walk ではPHPが落ちることがある
+	foreach(func_get_args() as $key=>$val)
+	{
+		block_check_arg($val, $key, $params);
+	}
 
 	// end
 	if ($params['end'])

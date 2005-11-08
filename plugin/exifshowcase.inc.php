@@ -4,7 +4,7 @@
 //
 //
 // ref.inc.php,v 1.20をベースに作成
-// $Id: exifshowcase.inc.php,v 1.5 2004/10/05 12:46:47 nao-pon Exp $
+// $Id: exifshowcase.inc.php,v 1.6 2005/11/08 08:27:20 nao-pon Exp $
 // ORG: exifshowcase.inc.php,v 1.20 2004/01/17 12:52:01 m-arai Exp $
 //
 
@@ -133,7 +133,12 @@ function plugin_exifshowcase_body($args,$page)
 	$colmn = 1; // 表示列数
 
 	$pattern = trim(array_shift($args));
-	array_walk($args, 'exifshowcase_check_arg', &$params);
+	//array_walk($args, 'exifshowcase_check_arg', &$params);
+	//なぜか $args のメンバー数が多い時 array_walk ではPHPが落ちることがある
+	foreach($args as $key=>$val)
+	{
+		exifshowcase_check_arg($val, $key, $params);
+	}
 	
 	$colmn = $params['col']; // 表示列数
 	$row = $params['row']; // 表示行数（指定時ランダム表示

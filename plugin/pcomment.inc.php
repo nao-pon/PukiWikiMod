@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.26 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.27 2005/11/08 08:27:20 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -111,7 +111,13 @@ function plugin_pcomment_convert() {
 
 	//パラメータ変換
 	$args = func_get_args();
-	array_walk($args, 'pcmt_check_arg', &$params);
+	
+	//array_walk($args, 'pcmt_check_arg', $params);
+	//なぜか $args のメンバー数が多い時 array_walk ではPHPが落ちることがある
+	foreach($args as $key=>$val)
+	{
+		pcmt_check_arg($val, $key, $params);
+	}
 
 	$all_option = (is_array($args))? implode(" ",$args) : $args;
 	//ボタンテキスト指定オプション
@@ -460,15 +466,22 @@ function pcmt_auto_log($page, $dir, $count, &$postdata)
 }
 
 //オプションを解析する
-function pcmt_check_arg($val, $key, &$params) {
-	$valid_args = array('noname','nodate','below','above','reply','mail','up','down','notimestamp');
-	foreach ($valid_args as $valid) {
-		if (strpos($valid, strtolower($val)) === 0) {
+function pcmt_check_arg($val, $key, &$params)
+{
+	static $valid_args = array('noname','nodate','below','above','reply','mail','up','down','notimestamp');
+	
+	$found = false;
+	foreach ($valid_args as $valid)
+	{
+		if (strpos($valid, strtolower($val)) === 0)
+		{
 			$params[$valid] = 1;
-			return;
+			$found = true;
+			break;
 		}
 	}
-	$params['arg'][] = $val;
+	if (!$found) {$params['arg'][] = $val;}
+	return;
 }
 function pcmt_get_comments($data,$count,$dir,$reply) {
 	global $script,$vars,$_pcmt_msg_reply_this;

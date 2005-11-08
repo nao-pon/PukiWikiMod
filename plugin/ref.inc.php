@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.24 2005/06/23 08:23:37 nao-pon Exp $
+// $Id: ref.inc.php,v 1.25 2005/11/08 08:27:20 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -141,7 +141,12 @@ function plugin_ref_convert() {
 
 	//パラメータ変換
 	$params = array('left'=>FALSE,'center'=>FALSE,'right'=>FALSE,'wrap'=>FALSE,'nowrap'=>FALSE,'around'=>FALSE,'_args'=>array(),'_done'=>FALSE,'nocache'=>FALSE,'_size'=>FALSE,'_w'=>0,'_h'=>0);
-	array_walk($args, 'ref_check_arg', &$params);
+	//array_walk($args, 'ref_check_arg', &$params);
+	//なぜか $args のメンバー数が多い時 array_walk ではPHPが落ちることがある
+	foreach($args as $key=>$val)
+	{
+		ref_check_arg($val, $key, $params);
+	}
 
 	$rets = plugin_ref_body($name,$args,$params);
 	if ($rets['_error']) {

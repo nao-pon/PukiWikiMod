@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.23 2005/06/23 08:26:18 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.24 2005/11/08 08:27:20 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -77,7 +77,13 @@ function plugin_ls2_convert() {
 		$prefix = strip_bracket($vars['page']);
 		
 	$params = array('link'=>FALSE,'title'=>FALSE,'include'=>FALSE,'reverse'=>FALSE,'_args'=>array(),'pagename'=>FALSE,'notemplate'=>FALSE,'relatedcount'=>FALSE,'depth'=>FALSE,'nonew'=>FALSE,'col'=>1,'_done'=>FALSE);
-	array_walk($args, 'ls2_check_arg', &$params);
+	//array_walk($args, 'ls2_check_arg', &$params);
+	//なぜか $args のメンバー数が多い時 array_walk ではPHPが落ちることがある
+	foreach($args as $key=>$val)
+	{
+		ls2_check_arg($val, $key, $params);
+	}
+	
 	$title = (count($params['_args']) > 0) ?
 		join(',', $params['_args']) :
 		str_replace('$1',htmlspecialchars($prefix),$_ls2_messages['msg_title']);
