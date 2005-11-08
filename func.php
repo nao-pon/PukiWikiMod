@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.55 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: func.php,v 1.56 2005/11/08 13:41:48 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -630,6 +630,17 @@ function input_filter($param)
 	} else {
 		$result = str_replace("\0", '', $param);
 		if ($magic_quotes_gpc) $result = stripslashes($result);
+
+		//XOOPS Protector モジュール で 末尾に */ が挿入されているかも
+		if (preg_match("#(.+)\*/$#s",$result,$match))
+		{
+			$_tmp = preg_replace("#/\*.*\*/#s","",$match[1]);
+			if (strpos($_tmp,"/*") !== false)
+			{
+				$result = $match[1];
+			}
+		}
+
 		return $result;
 	}
 }
