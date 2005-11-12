@@ -186,6 +186,149 @@ EOF;
 			setcookie ("HypNeedRefresh", "", time() - 3600);
 		}
 	}
+	
+	// HTML の meta タグから文字エンコーディングを取得する
+	function get_encoding_by_meta($html)
+	{
+		$codesets = array(
+			'shift_jis' => 'Shift_JIS',
+			'x-sjis' => 'Shift_JIS',
+			'euc-jp' => 'EUC-JP',
+			'x-euc-jp' => 'EUC-JP',
+			'iso-2022-jp' => 'JIS',
+			'utf-8' => 'UTF-8',
+		);
+		if (preg_match("/<meta[^>]*content=(?:\"|')[^\"'>]*charset=([^\"'>]+)(?:\"|')[^>]*>/is",$html,$match))
+		{
+			$encode = strtolower($match[1]);
+			if (array_key_exists($encode,$codesets))
+			{
+				return $codesets[$encode];
+			}
+			else
+			{
+				return "EUC-JP,UTF-8,Shift_JIS,JIS";
+			}
+		}
+		else
+		{
+			return "EUC-JP,UTF-8,Shift_JIS,JIS";
+		}
+	}
+
+	// サムネイル画像を作成。
+	// 成功ならサムネイルのファイルのパス、不成功なら元ファイルパスを返す
+	function make_thumb($o_file, $s_file, $max_width, $max_height, $zoom_limit="5,90",$refresh = FALSE)
+	{
+		// すでに作成済み
+		if (!$refresh && file_exists($s_file)) return $s_file;
+		
+		// gd fuction のチェック
+		if (!function_exists("imagecreate")) return $o_file;//gdをサポートしていない
+		
+		// gd のバージョンによる関数名の定義
+		$imagecreate = (function_exists ("imagecreatetruecolor"))? "imagecreatetruecolor" : "imagecreate";
+		$imageresize = (function_exists ("imagecopyresampled"))? "imagecopyresampled" : "imagecopyresized";
+		
+		$size = @getimagesize($o_file);
+		if (!$size) return $o_file;//画像ファイルではない
+		
+		// 元画像のサイズ
+		$org_w = $size[0];
+		$org_h = $size[1];
+		
+		if ($max_width >= $org_w && $max_height >= $org_h) return $o_file;//指定サイズが元サイズより大きい
+		
+		// 縮小率の設定
+		list($zoom_limit_min,$zoom_limit_max) = explode(",",$zoom_limit);
+		$zoom = min(($max_width/$org_w),($max_height/$org_h));
+		if (!$zoom || $zoom < $zoom_limit_min/100 || $zoom > $zoom_limit_max/100) return $o_file;//ZOOM値が範囲外
+		$width = $org_w * $zoom;
+		$height = $org_h * $zoom;
+		
+		switch($size[2])
+		{
+			case "1": //gif形式
+				if (function_exists ("imagecreatefromgif"))
+				{
+					$src_im = imagecreatefromgif($o_file);
+					$colortransparent = imagecolortransparent($src_im);
+					if ($colortransparent > -1)
+					{
+						// 透過色あり
+						$dst_im = imagecreate($width,$height);
+						imagepalettecopy ($dst_im, $src_im);
+						imagefill($dst_im,0,0,$colortransparent);
+						imagecolortransparent($dst_im, $colortransparent);
+						imagecopyresized($dst_im,$src_im,0,0,0,0,$width,$height,$org_w,$org_h);
+					}
+					else
+					{
+						// 透過色なし
+						$dst_im = $imagecreate($width,$height);
+						$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$org_w,$org_h);
+						imagetruecolortopalette ($dst_im,imagecolorstotal ($src_im));
+					}
+					touch($s_file);
+					if (function_exists("imagegif"))
+					{
+						imagegif($dst_im,$s_file);
+					}
+					else
+					{
+						imagepng($dst_im,$s_file);
+					}
+					$o_file = $s_file;
+				}
+				break;
+			case "2": //jpg形式
+				$src_im = imagecreatefromjpeg($o_file);
+				$dst_im = $imagecreate($width,$height);
+				$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$org_w,$org_h);
+				touch($s_file);
+				imagejpeg($dst_im,$s_file);
+				$o_file = $s_file;
+				break;
+			case "3": //png形式
+				$src_im = imagecreatefrompng($o_file);
+				if (imagecolorstotal($src_im))
+				{
+					// PaletteColor
+					$colortransparent = imagecolortransparent($src_im);
+					if ($colortransparent > -1)
+					{
+						// 透過色あり
+						$dst_im = imagecreate($width,$height);
+						imagepalettecopy ($dst_im, $src_im);
+						imagefill($dst_im,0,0,$colortransparent);
+						imagecolortransparent($dst_im, $colortransparent);
+						imagecopyresized($dst_im,$src_im,0,0,0,0,$width,$height,$org_w,$org_h);
+					}
+					else
+					{
+						// 透過色なし
+						$dst_im = $imagecreate($width,$height);
+						$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$org_w,$org_h);
+						imagetruecolortopalette ($dst_im,imagecolorstotal ($src_im));
+					}
+				}
+				else
+				{
+					// TrueColor
+					$dst_im = $imagecreate($width,$height);
+					$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$org_w,$org_h);
+				}
+				touch($s_file);
+				imagepng($dst_im,$s_file);
+				$o_file = $s_file;
+				break;
+			default:
+				break;
+		}
+		@imagedestroy($dst_im);
+		@imagedestroy($src_im);
+		return $o_file;
+	}
 }
 
 /*
@@ -246,6 +389,19 @@ class Hyp_HTTP_Request
 	var $header = '';  // Header
 	var $data = '';    // Data
 	
+	function init()
+	{
+		$this->url='';
+		$this->method='GET';
+		$this->headers='';
+		$this->post=array();
+		
+		// result
+		$this->query = '';   // Query String
+		$this->rc = '';      // Response Code
+		$this->header = '';  // Header
+		$this->data = '';    // Data
+	}
 	function get()
 	{
 		$max_execution_time = ini_get('max_execution_time');

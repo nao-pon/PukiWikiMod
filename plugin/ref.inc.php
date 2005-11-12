@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.25 2005/11/08 08:27:20 nao-pon Exp $
+// $Id: ref.inc.php,v 1.26 2005/11/12 13:12:36 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -236,7 +236,7 @@ function ref_check_arg($val, $_key, &$params) {
 
 // BodyMake
 function plugin_ref_body($name,$args,$params){
-	
+
 // $nameをもとに以下の変数を設定
 // $url : URL
 // $title :タイトル
@@ -332,7 +332,7 @@ function plugin_ref_body($name,$args,$params){
 			$filename = encode($page)."_".encode($name);
 			if (!$params['nocache']){
 				//キャッシュする
-				$size = plugin_ref_cache_image_fetch($filename, &$url, $name);
+				$size = plugin_ref_cache_image_fetch($filename, $url, $name);
 				$l_url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 				$fsize = sprintf('%01.1f',round(filesize($url)/1000,1)).'KB';
 			} else {
@@ -341,8 +341,8 @@ function plugin_ref_body($name,$args,$params){
 				$l_url = $url;
 				$fsize = '?KB';
 			}
-			$org_w = $size[0];
-			$org_h = $size[1];
+			$org_w = (!empty($size[0]))? $size[0] : 0;
+			$org_h = (!empty($size[1]))? $size[1] : 0;
 		}
 		foreach ($params['_args'] as $arg){
 			if (preg_match("/^(m)?w:([0-9]+)$/i",$arg,$m)){
@@ -516,48 +516,24 @@ _HTML_;
 }
 
 // 画像キャッシュがあるか調べる
-function plugin_ref_cache_image_fetch($filename, &$url, $name) {
+function plugin_ref_cache_image_fetch($filename, &$url, $name)
+{
 	$filename = UPLOAD_DIR.$filename;
-	if (!is_readable($filename)) {
-		$file = fopen($url, "rb"); // たぶん size 取得よりこちらが原始的だからやや速い
-		if (! $file) {
-			fclose($file);
-			$url = NOIMAGE;
-			$size = @getimagesize($url);
-		} else {
-			// リモートファイルのパケット有効後対策
-			// http://search.net-newbie.com/php/function.fread.html
-			//$data = fread($file, 2000000); 
-			$contents = "";
-			do {
-				$data = fread($file, 8192);
-				if (strlen($data) == 0) {
-					break;
-				}
-				$contents .= $data;
-			} while(true);
-			
-			fclose ($file);
-			
-			$data = $contents;
-			unset ($contents);
-			
-			$size = @getimagesize($url); // あったら、size を取得、通常は1が返るが念のため0の場合も(reimy)
-			if ($size[0] <= 1){
-				$url = NOIMAGE;
-				$size = @getimagesize($url);
-			}else{
-				$url = $filename;
-			}
+	if (!is_readable($filename))
+	{
+		$dat = http_request($url);
+		if ($dat['rc'] == 200 && $dat['data'])
+		{
+			plugin_ref_cache_image_save($dat['data'], $filename, $name);
+			$url = $filename;
 		}
-		plugin_ref_cache_image_save($data, $filename, $name);
-	} else {
-		$url = $filename;
-		$size = @getimagesize($filename);
 	}
-	
+	else
+	{
+		$url = $filename;
+	}
+	$size = @getimagesize($url);
 	return $size;
-	
 }
 // 画像キャッシュを保存
 function plugin_ref_cache_image_save($data, $filename, $name)
@@ -578,50 +554,8 @@ function plugin_ref_cache_image_save($data, $filename, $name)
 	return $filename;
 }
 // サムネイル画像を作成
-function plugin_ref_make_thumb($url,$s_file,$width,$height,$org_w,$org_h) {
-
-	// GD fuction のチェック
-	if (!function_exists("ImageCreate")) return $url;//GDをサポートしていない
-
-	$gifread = '';
-	if (_WIKI_GD_VERSION == 2) {
-		$imagecreate = "ImageCreateTrueColor";
-		$imageresize = "ImageCopyResampled";
-	}else {
-		$imagecreate = "ImageCreate";
-		$imageresize = "ImageCopyResized";
-	}
-	if (function_exists ("ImageCreateFromGif")) {
-		$gifread = "on";
-	}
-
-	$size = @GetImageSize($url);
-
-	$dst_im = $imagecreate($width,$height);
-	switch($size[2]):
-		case "1": //gif形式
-			if ($gifread == "on"){
-				$src_im = ImageCreateFromGif($url);
-				$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$size[0],$size[1]);
-				ImageJpeg($dst_im,$s_file);
-				$url = $s_file;
-			}
-			break;
-		case "2": //jpg形式
-			$src_im = ImageCreateFromJpeg($url);
-			$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$size[0],$size[1]);
-			ImageJpeg($dst_im,$s_file);
-			$url = $s_file;
-			break;
-		case "3": //png形式
-			$src_im = ImageCreateFromPng($url);
-			$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$size[0],$size[1]);
-			ImageJpeg($dst_im,$s_file);
-			$url = $s_file;
-			break;
-		default:
-			break;
-	endswitch;
-	return $url;
+function plugin_ref_make_thumb($url,$s_file,$width,$height,$org_w,$org_h)
+{
+	return HypCommonFunc::make_thumb($url,$s_file,$width,$height);
 }
 ?>
