@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.49 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: init.php,v 1.50 2005/11/12 13:00:08 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 設定ファイルの場所
@@ -161,9 +161,19 @@ unset($HTTP_GET_VARS, $HTTP_POST_VARS);	//, 'SERVER', 'ENV', 'SESSION', ...
 unset($_REQUEST);	// Considered harmful
 
 // Remove null character etc.
-$_GET    = input_filter($_GET);
-$_POST   = input_filter($_POST);
-$_COOKIE = input_filter($_COOKIE);
+if (!empty($_GET))    {$_GET    = input_filter($_GET);}
+if (!empty($_POST))   {$_POST   = input_filter($_POST);}
+if (!empty($_COOKIE)) {$_COOKIE = input_filter($_COOKIE);}
+
+if (!empty($_POST))
+{
+	//XOOPS Protector モジュール で 挿入された末尾の */ を取り除く
+	foreach(array('msg','msg_before','msg_after','body','areaedit_msg','original','headdata','taildata','question','answer') as $_tmp)
+	{
+		if (isset($_POST[$_tmp])) {remove_protector_chr($_POST[$_tmp]);}
+	}
+	unset($_tmp);
+}
 
 // 文字コード変換 ($_POST)
 // <form> で送信された文字 (ブラウザがエンコードしたデータ) のコードを変換

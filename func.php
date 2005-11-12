@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.56 2005/11/08 13:41:48 nao-pon Exp $
+// $Id: func.php,v 1.57 2005/11/12 13:00:07 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -630,17 +630,6 @@ function input_filter($param)
 	} else {
 		$result = str_replace("\0", '', $param);
 		if ($magic_quotes_gpc) $result = stripslashes($result);
-
-		//XOOPS Protector モジュール で 末尾に */ が挿入されているかも
-		if (preg_match("#(.+)\*/$#s",$result,$match))
-		{
-			$_tmp = preg_replace("#/\*.*\*/#s","",$match[1]);
-			if (strpos($_tmp,"/*") !== false)
-			{
-				$result = $match[1];
-			}
-		}
-
 		return $result;
 	}
 }
@@ -1314,6 +1303,39 @@ function check_access_ctl()
 	if (!empty($deny_ucds) && in_array(PUKIWIKI_UCD, $deny_ucds)) exit;
 }
 
+//整数値のみ許可されるパラメーターをチェック
+function check_int_param(&$arg)
+{
+	foreach(array('v_gids','v_aids','gids','aids','f_author_uid') as $_tmp)
+	{
+		if (isset($arg[$_tmp]))
+		{
+			if (is_array($arg[$_tmp]))
+			{
+				$arg[$_tmp] = array_map('intval',$arg[$_tmp]);
+			}
+			else
+			{
+				$arg[$_tmp] = intval($arg[$_tmp]);
+			}
+		}
+	}
+	return $arg;
+}
+
+//XOOPS Protector モジュール で 挿入された末尾の */ を取り除く
+function remove_protector_chr(&$arg)
+{
+	if (preg_match("#(.+)\*/$#s",$arg,$match))
+	{
+		$_tmp = preg_replace("#/\*.*\*/#s","",$match[1]);
+		if (strpos($_tmp,"/*") !== false)
+		{
+			$arg = $match[1];
+		}
+	}
+	return $arg;
+}
 //////////////////////////////////////////////////////
 //
 // XOOPS用　関数

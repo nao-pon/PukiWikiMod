@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.78 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.79 2005/11/12 13:00:07 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
 /*
@@ -229,6 +229,9 @@ else if(arg_check("edit"))
 // プレビュー
 else if(arg_check("preview") || $post["preview"] || $post["template"])
 {
+	// 整数値しか許可されないパラメータをチェック
+	check_int_param($arg);
+	
 	// 新規作成時にプレビューした時 pgid を振る
 	check_pginfo($vars['page']);
 	
@@ -351,6 +354,9 @@ else if(arg_check("preview") || $post["preview"] || $post["template"])
 // 書き込みもしくは追加もしくはコメントの挿入
 else if($post["write"] || ($_SERVER['REQUEST_METHOD'] == "POST" && arg_check("write")))
 {
+	// 整数値しか許可されないパラメータをチェック
+	check_int_param($arg);
+	
 	// ParaEdit
 	// 改行代替文字列を \n に変換
 	$post["msg_before"] = str_replace(_PARAEDIT_SEPARATE_STR, "\n", $post["msg_before"]);
