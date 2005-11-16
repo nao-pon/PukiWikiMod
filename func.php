@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.57 2005/11/12 13:00:07 nao-pon Exp $
+// $Id: func.php,v 1.58 2005/11/16 23:49:16 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1326,15 +1326,39 @@ function check_int_param(&$arg)
 //XOOPS Protector モジュール で 挿入された末尾の */ を取り除く
 function remove_protector_chr(&$arg)
 {
-	if (preg_match("#(.+)\*/$#s",$arg,$match))
+	
+	if (preg_match("#^(.+)\*/$#s",$arg,$match))
 	{
-		$_tmp = preg_replace("#/\*.*\*/#s","",$match[1]);
+		$_tmp = preg_replace("#/\*.*?\*/#s","",$match[1]);
 		if (strpos($_tmp,"/*") !== false)
 		{
 			$arg = $match[1];
 		}
 	}
+	
 	return $arg;
+}
+
+// XoopsToken Class の利用
+// チケット取得
+function get_token_html()
+{
+	if (!class_exists('XoopsTokenHandler')) {return "";}
+	static $handler;
+	if (!is_object($handler))
+	{
+		$handler = new XoopsMultiTokenHandler();
+	}
+	// 有効期限無期限(セッションが切れるまで)
+	$ticket = &$handler->create('pukiwikimod',0);
+	return $ticket->getHtml();
+}
+// チケットの検査
+function check_token_ticket($onetime=true)
+{
+	if (!class_exists('XoopsTokenHandler')) {return true;}
+	$handler = new XoopsMultiTokenHandler();
+	return $handler->autoValidate('pukiwikimod',$onetime);
 }
 //////////////////////////////////////////////////////
 //

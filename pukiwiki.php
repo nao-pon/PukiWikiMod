@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.79 2005/11/12 13:00:07 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.80 2005/11/16 23:49:16 nao-pon Exp $
 /////////////////////////////////////////////////
 // Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
 /*
@@ -790,11 +790,13 @@ else if(arg_check("search"))
 	if($vars["type"]=="AND" || !$vars["type"]) $and_check = "checked=\"checked\"";
 	else if($vars["type"]=="OR")               $or_check = "checked=\"checked\"";
 
-	$body .= "<form action=\"$script?cmd=search\" method=\"post\">\n"
+	$body .= "<form action=\"$script\" method=\"get\">\n"
 		."<div>\n"
+		."<input type=\"hidden\" name=\"cmd\" value=\"search\" />\n"
 		."<input type=\"text\" name=\"word\" size=\"20\" value=\"".htmlspecialchars($vars["word"])."\" />\n"
 		."<input type=\"radio\" id=\"type_and\" name=\"type\" value=\"AND\" $and_check /><label for=\"type_and\">$_btn_and</label>\n"
 		."<input type=\"radio\" id=\"type_or\" name=\"type\" value=\"OR\" $or_check /><label for=\"type_or\">$_btn_or</label>\n"
+		."<input type=\"hidden\" name=\"encode_hint\" value=\"ぷ\" />\n"
 		."&nbsp;<input type=\"submit\" value=\"$_btn_search\" />\n"
 		."</div>\n"
 		."</form>\n";

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.58 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: html.php,v 1.59 2005/11/16 23:49:16 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -32,17 +32,18 @@ function catbody($title,$page,$body)
 	global $_msg_pagecomment,$_msg_trackback,$_msg_pings;
 	global $pwm_plugin_flg,$fusen_enable_allpage;
 	
-	
-	//名前欄置換
-	if (empty($vars['xoops_block']))
-	{
-		$body = str_replace(array(WIKI_NAME_DEF,WIKI_UCD_DEF,'_XOOPS_WIKI_HOST_'),array($X_uname,PUKIWIKI_UCD,XOOPS_WIKI_HOST),$body);
-	}
 	//form置換
 	$body = preg_replace("/(<form[^>]+)(>)/is","$1 onsubmit=\"return pukiwiki_check(this);\"$2",$body);
 	
 	// 付箋用基準アンカータグ
 	if ($fusen_enable_allpage) $body = '<div id="fusen_anchor" class="fusen_anchor"><p></p></div>'.$body;
+	
+	//名前欄置換
+	if (empty($vars['xoops_block']))
+	{
+		$body = str_replace(array(WIKI_NAME_DEF,WIKI_UCD_DEF,'_XOOPS_WIKI_HOST_'),array($X_uname,PUKIWIKI_UCD,XOOPS_WIKI_HOST),$body);
+		$body = preg_replace("/<!\-\-XOOPS_TOKEN_INSERT\-\->/e","get_token_html()",$body);
+	}
 	
 	// 表示中のページ名
 	$_page = $vars["page"];
@@ -127,7 +128,9 @@ function catbody($title,$page,$body)
 </div>
 EOT;
 		}
-		$trackback_body = <<<EOT
+		if ($trackback)
+		{
+			$trackback_body = <<<EOT
 <div class="outer">
 <div class="head"><a name="tb_body"></a>{$_msg_trackback}{$tb_tag}</div>
 <div class="tburl">{$_msg_trackback} URL: {$tb_url}</div>
@@ -135,6 +138,7 @@ EOT;
 </div>
 <hr />
 EOT;
+		}
 		$tb_tag = " [ <a href=\"#tb_body\">{$tb_count}</a> ]";
 		
 		// 付箋
@@ -143,6 +147,7 @@ EOT;
 			require_once(PLUGIN_DIR."fusen.inc.php");
 			$fusen_tag = do_plugin_convert('fusen','FROM_SKIN');
 			$fusen_tag = str_replace(array(WIKI_NAME_DEF,WIKI_UCD_DEF,'_XOOPS_WIKI_HOST_'),array($X_uname,PUKIWIKI_UCD,XOOPS_WIKI_HOST),$fusen_tag);
+			$fusen_tag = preg_replace("/<!\-\-XOOPS_TOKEN_INSERT\-\->/e","get_token_html()",$fusen_tag);
 		}
 	}
 	
@@ -451,6 +456,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
  </td></tr>
  <tr>
   <td align="left" colspan=2>
+   '.get_token_html().'
    <input type="hidden" name="encode_hint" value="ぷ" />
    <input type="hidden" name="write" value="1" />
    <input type="hidden" name="page" value="'.htmlspecialchars($page).'" />

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: plugin.php,v 1.14 2005/05/23 08:53:29 nao-pon Exp $
+// $Id: plugin.php,v 1.15 2005/11/16 23:49:16 nao-pon Exp $
 //
 
 // プラグイン用に未定義の変数を設定
@@ -114,8 +114,7 @@ function do_plugin_action($name)
 	$retvar = call_user_func('plugin_'.$name.'_action');
 	
 	// 文字エンコーディング検出用 hidden フィールドを挿入する
-	return preg_replace('/(<form[^>]*>)/',"$1\n<div><input type=\"hidden\" name=\"encode_hint\" value=\"ぷ\" /></div>",$retvar);
-
+	return preg_replace('/(<form[^>]*>)(?!<!\-\-CHECK\-\->)/',"$1<!--CHECK-->\n<div><!--XOOPS_TOKEN_INSERT--><input type=\"hidden\" name=\"encode_hint\" value=\"ぷ\" /></div>",$retvar);
 }
 
 //プラグイン(convert)を実行
@@ -153,7 +152,7 @@ function do_plugin_convert($name,$args="")
 	if (is_array($retvar)) $retvar = convert_html($retvar);
 	
 	// 文字エンコーディング検出用 hidden フィールドを挿入する
-	return preg_replace('/(<form[^>]*>)/',"$1\n<div><input type=\"hidden\" name=\"encode_hint\" value=\"ぷ\" /></div>",$retvar);
+	return preg_replace('/(<form[^>]*>)(?!<!\-\-CHECK\-\->)/',"$1<!--CHECK-->\n<div><!--XOOPS_TOKEN_INSERT--><input type=\"hidden\" name=\"encode_hint\" value=\"ぷ\" /></div>",$retvar);
 }
 
 //プラグイン(inline)を実行

@@ -1,7 +1,20 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.50 2005/11/12 13:00:08 nao-pon Exp $
+// $Id: init.php,v 1.51 2005/11/16 23:49:16 nao-pon Exp $
 /////////////////////////////////////////////////
+
+// Tokenチケット確認
+if (strtoupper($_SERVER["REQUEST_METHOD"]) == "POST")
+{
+	// POSTメソッドの時のみチェック
+	// paint, painter プラグインでの投稿は時間が経ってセッションが切れている場合があるので通過させる。
+	if (empty($_POST['plugin']) || ($_POST['plugin'] != "paint" && $_POST['plugin'] != "painter"))
+	{
+		// fusen プラグインでの投稿はAjaxなのでチケットを破棄しないようにする。
+		$onetime = (!empty($_POST['plugin']) && $_POST['plugin']=="fusen")? false : true;
+		if (!check_token_ticket($onetime)) exit('It is an invalid request.');
+	}
+}
 
 // 設定ファイルの場所
 define('INI_FILE','./pukiwiki.ini.php');

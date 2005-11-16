@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.12 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.13 2005/11/16 23:49:16 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -70,13 +70,16 @@ function b_pukiwiki_page_show($options)
 	if (strpos($data,"_gEsTnAmE_") !== FALSE)
 	{
 		global $xoopsUser,$xoopsModule,$xoopsConfig;
-		$uname = ($xoopsUser)? $xoopsUser->uname() : $xoopsConfig['anonymous'];
+		$trip = (!empty($_COOKIE["pukiwiki_un"]))? preg_replace("/[^#]+(#.+)?/","$1",$_COOKIE["pukiwiki_un"]) : "";
+		$uname = ($xoopsUser)? $xoopsUser->uname().$trip : $xoopsConfig['anonymous'];
 		//名前欄置換
 		$data = str_replace("_gEsTnAmE_",$uname,$data);
 	}
+	// Ticket置換
+	$data = preg_replace("/<!\-\-XOOPS_TOKEN_INSERT\-\->/e","b_pukiwiki_get_token_html()",$data);
 	
 	// 外部リンクマーク用 class設定
-	$data = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/","$1class=\"ext\" $2",$data);
+	//$data = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/","$1class=\"ext\" $2",$data);
 	
 	// CSS Link を発行
 	$css_url = (file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'))?
@@ -161,4 +164,17 @@ function b_pukiwiki_page_get_page_css_tag($page,$wiki_url)
 		}
 	}
 	return $ret;
+}
+
+// チケット取得
+function b_pukiwiki_get_token_html()
+{
+	if (!class_exists('XoopsTokenHandler')) {return "";}
+	static $handler;
+	if (!is_object($handler))
+	{
+		$handler = new XoopsMultiTokenHandler();
+	}
+	$ticket = &$handler->create('pukiwikimod',0);
+	return $ticket->getHtml();
 }
