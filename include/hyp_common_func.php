@@ -218,17 +218,24 @@ EOF;
 
 	// サムネイル画像を作成。
 	// 成功ならサムネイルのファイルのパス、不成功なら元ファイルパスを返す
-	function make_thumb($o_file, $s_file, $max_width, $max_height, $zoom_limit="5,90",$refresh = FALSE)
+	function make_thumb($o_file, $s_file, $max_width, $max_height, $zoom_limit="5,90",$refresh=FALSE)
 	{
+		//GD のバージョンを取得
+		static $gd_ver = null;
+		if (is_null($gd_ver))
+		{
+			$gd_ver = HypCommonFunc::gdVersion();
+		}
+		
 		// すでに作成済み
 		if (!$refresh && file_exists($s_file)) return $s_file;
 		
 		// gd fuction のチェック
-		if (!function_exists("imagecreate")) return $o_file;//gdをサポートしていない
+		if ($gd_ver < 1 || !function_exists("imagecreate")) return $o_file;//gdをサポートしていない
 		
 		// gd のバージョンによる関数名の定義
-		$imagecreate = (function_exists ("imagecreatetruecolor"))? "imagecreatetruecolor" : "imagecreate";
-		$imageresize = (function_exists ("imagecopyresampled"))? "imagecopyresampled" : "imagecopyresized";
+		$imagecreate = ($gd_ver >= 2)? "imagecreatetruecolor" : "imagecreate";
+		$imageresize = ($gd_ver >= 2)? "imagecopyresampled" : "imagecopyresized";
 		
 		$size = @getimagesize($o_file);
 		if (!$size) return $o_file;//画像ファイルではない
@@ -246,6 +253,10 @@ EOF;
 		$width = $org_w * $zoom;
 		$height = $org_h * $zoom;
 		
+		// サムネイルのファイルタイプが指定されている？(.jpg)
+		$s_ext = "";
+		$s_ext = preg_replace("/\.([^\.]+)$/","$1",$s_file);
+		
 		switch($size[2])
 		{
 			case "1": //gif形式
@@ -253,7 +264,7 @@ EOF;
 				{
 					$src_im = imagecreatefromgif($o_file);
 					$colortransparent = imagecolortransparent($src_im);
-					if ($colortransparent > -1)
+					if ($s_ext != "jpg" && $colortransparent > -1)
 					{
 						// 透過色あり
 						$dst_im = imagecreate($width,$height);
@@ -270,13 +281,20 @@ EOF;
 						imagetruecolortopalette ($dst_im,imagecolorstotal ($src_im));
 					}
 					touch($s_file);
-					if (function_exists("imagegif"))
+					if ($s_ext == "jpg")
 					{
-						imagegif($dst_im,$s_file);
+						imagejpeg($dst_im,$s_file);
 					}
 					else
 					{
-						imagepng($dst_im,$s_file);
+						if (function_exists("imagegif"))
+						{
+							imagegif($dst_im,$s_file);
+						}
+						else
+						{
+							imagepng($dst_im,$s_file);
+						}
 					}
 					$o_file = $s_file;
 				}
@@ -295,7 +313,7 @@ EOF;
 				{
 					// PaletteColor
 					$colortransparent = imagecolortransparent($src_im);
-					if ($colortransparent > -1)
+					if ($s_ext != "jpg" && $colortransparent > -1)
 					{
 						// 透過色あり
 						$dst_im = imagecreate($width,$height);
@@ -319,7 +337,14 @@ EOF;
 					$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$org_w,$org_h);
 				}
 				touch($s_file);
-				imagepng($dst_im,$s_file);
+				if ($s_ext == "jpg")
+				{
+					imagejpeg($dst_im,$s_file);
+				}
+				else
+				{
+					imagepng($dst_im,$s_file);
+				}
 				$o_file = $s_file;
 				break;
 			default:
@@ -328,6 +353,44 @@ EOF;
 		@imagedestroy($dst_im);
 		@imagedestroy($src_im);
 		return $o_file;
+	}
+	
+	// GD のバージョンを取得
+	// RETURN 0:GDなし, 1:Ver 1, 2:Ver 2
+	function gdVersion($user_ver = 0)
+	{
+		if (! extension_loaded('gd')) { return 0; }
+		static $gd_ver = 0;
+		// Just accept the specified setting if it's 1.
+		if ($user_ver == 1) { $gd_ver = 1; return 1; }
+		// Use the static variable if function was called previously.
+		if ($user_ver !=2 && $gd_ver > 0 ) { return $gd_ver; }
+		// Use the gd_info() function if possible.
+		if (function_exists('gd_info')) {
+			$ver_info = gd_info();
+			preg_match('/\d/', $ver_info['GD Version'], $match);
+			$gd_ver = $match[0];
+			return $match[0];
+		}
+		// If phpinfo() is disabled use a specified / fail-safe choice...
+		if (preg_match('/phpinfo/', ini_get('disable_functions'))) {
+			if ($user_ver == 2) {
+				$gd_ver = 2;
+				return 2;
+			} else {
+				$gd_ver = 1;
+				return 1;
+			}
+		}
+		// ...otherwise use phpinfo().
+		ob_start();
+		phpinfo(8);
+		$info = ob_get_contents();
+		ob_end_clean();
+		$info = stristr($info, 'gd version');
+		preg_match('/\d/', $info, $match);
+		$gd_ver = $match[0];
+		return $match[0];
 	}
 }
 
