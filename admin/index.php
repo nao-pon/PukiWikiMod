@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.34 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: index.php,v 1.35 2005/12/18 14:13:55 nao-pon Exp $
 
 
 define("UTIME",time());
@@ -822,8 +822,8 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 	}
 	unlink($tiket_file);
 	
-	$wiki_admin_mode = (isset($HTTP_POST_VARS['wiki_admin_mode']))? $HTTP_POST_VARS['wiki_admin_mode'] : "";
-	$wiki_permit_change_dir = (isset($HTTP_POST_VARS['wiki_permit_change_dir']))? $HTTP_POST_VARS['wiki_permit_change_dir'] : "";
+	$wiki_admin_mode = (isset($_POST['wiki_admin_mode']))? $_POST['wiki_admin_mode'] : "";
+	$wiki_permit_change_dir = (isset($_POST['wiki_permit_change_dir']))? $_POST['wiki_permit_change_dir'] : "";
 	
 	if($wiki_admin_mode == "change_config")
 	{
