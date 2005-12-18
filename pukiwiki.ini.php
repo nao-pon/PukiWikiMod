@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.43 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.44 2005/12/18 14:10:47 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -86,6 +86,10 @@ ini_set("upload_max_filesize","10M");
 // max file size for upload on script of PukiWiki(default 1MB)
 define("MAX_FILESIZE",10000000);
 
+// アップロードされたファイルを開く時の処理
+// イメージファイル以外はダウンロード扱いにする (TRUE or FALSE)
+// オープンな環境では、TRUE を強く奨励
+define("PWM_FILE_OPEN_ATTACHMENT",TRUE);
 
 /////////////////////////////////////////////////
 // index.php などに変更した場合のスクリプト名の設定
@@ -232,6 +236,10 @@ $splitter = ">>>>>>>>>>";
 /////////////////////////////////////////////////
 // ページの更新時にバックグランドで実行されるコマンド(mknmzなど)
 //$update_exec = '/usr/local/bin/mknmz -O /vhosts/www.factage.com/sng/pukiwiki/nmz -L ja -k -K /vhosts/www.factage.com/sng/pukiwiki/wiki';
+
+/////////////////////////////////////////////////
+// Googleサイトマップを利用する場合の ページ名。 ""(空白)で利用なし
+$google_sitemap_page = "GoogleSitemap";
 
 /////////////////////////////////////////////////
 // 一覧・更新一覧に含めないページ名(正規表現で)

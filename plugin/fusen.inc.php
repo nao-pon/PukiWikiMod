@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.11 2005/11/07 06:24:56 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.12 2005/12/18 14:10:47 nao-pon Exp $
 // 
 
 // fusen.js¤ÎPATH

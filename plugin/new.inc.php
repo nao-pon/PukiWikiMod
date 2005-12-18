@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: new.inc.php,v 1.5 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: new.inc.php,v 1.6 2005/12/18 14:10:47 nao-pon Exp $
 // ORG: new.inc.php,v 1.3 2003/07/28 07:10:29 arino Exp $
 //
 
@@ -49,21 +49,8 @@ function plugin_new_inline()
 		$timestamp = 0;
 		if (substr($page,-1) == '/')
 		{
-			$page = substr($page,0,-1);
-			//foreach (preg_grep('/^'.preg_quote($page,'/').'/',get_existpages()) as $page)
 			list($page) = get_existpages_db(false,$page,1,"ORDER BY `editedtime` DESC");
 			$timestamp = get_filetime($page);
-/*			
-			foreach (get_existpages(false,$page,1,"ORDER BY `editedtime` DESC") as $page)
-			{
-				$_timestamp = get_filetime($page);
-				if ($timestamp < $_timestamp)
-				{
-					$retval = $nolink ? '' : make_pagelink($page); // 最も新しいページを表示
-					$timestamp = $_timestamp;
-				}
-			}
-*/
 		}
 		else if (is_page($page))
 		{

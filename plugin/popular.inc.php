@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.14 2005/03/11 00:00:34 nao-pon Exp $
+// $Id: popular.inc.php,v 1.15 2005/12/18 14:10:47 nao-pon Exp $
 //
 
 /*
@@ -80,13 +80,17 @@ function plugin_popular_convert()
 	if ($except)
 	{
 		$excepts = explode("|",$except);
-		foreach(explode("|",$except) as $_except)
+		foreach($excepts as $_except)
 		{
-			$nopage .= " AND (p.name NOT LIKE '%$_except%')";
+			if (substr($_except,-1) == "/")
+			{
+				$_except .= "%";
+			}
+			$nopage .= " AND (p.name NOT LIKE '$_except')";
 		}
 	}
 	$counters = array();
-
+	
 	global $xoopsDB,$X_admin,$X_uid;
 	
 	if ($X_admin)

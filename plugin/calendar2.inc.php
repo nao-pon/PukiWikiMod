@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.26 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.27 2005/12/18 14:10:47 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -446,15 +446,23 @@ function plugin_calendar2_action()
 		return array('msg'=>'ERROR: There is no page.','body'=>'ERROR: There is no page.');
 	
 	$date = $vars['date'];
+	$off = ",off";
+	
 	if($date=='')
 		$date = date("Ym");
 	
 	if (substr($date,6,2))
+	{
 		$yy = sprintf("%04d.%02d.%02d",substr($date,0,4),substr($date,4,2),substr($date,6,2));
+		$off = "";
+	}
 	else
+	{
 		$yy = sprintf("%04d.%02d",substr($date,0,4),substr($date,4,2));
-		
-	$aryargs = $vars['page'].",".$date;
+	}
+	
+	//$aryargs = $vars['page'].",".$date."off,";
+	$aryargs = $vars['page'].",".$date.$off;
 	
 	if (isset($vars['category']) && ($vars['category']))
 		$aryargs .= ",Category".rawurldecode($vars['category']);

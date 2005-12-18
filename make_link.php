@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.40 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: make_link.php,v 1.41 2005/12/18 14:10:47 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -39,12 +39,10 @@ class InlineConverter
 				'url_interwiki', // URL (interwiki definition)
 				'mailto',        // mailto:
 				'interwikiname', // InterWikiName
-				'autolink',      // AutoLink
+				//'autolink',      // AutoLink
 				'bracketname',   // BracketName
 				'wikiname',      // WikiName
-				'autolink_a',    // AutoLink(アルファベット)
-				//'eword',
-				//'escape',        // escape
+				//'autolink_a',    // AutoLink(アルファベット)
 			);
 		}
 		if ($excludes !== NULL)
@@ -85,6 +83,10 @@ class InlineConverter
 		{
 			$retval .= array_shift($arr).array_shift($this->result);
 		}
+		// オートリンク by nao-pon
+		// InlineConverter による一括処理では、
+		// ページ数増加(正規表現32kb以上)時に正常に処理できない。
+		$retval = $this->auto_link($retval);
 		return $retval;
 	}
 	function replace($arr)
@@ -124,6 +126,63 @@ class InlineConverter
 			}
 		}
 		return NULL;
+	}
+	// 別処理でのオートリンク by nao-pon
+	function auto_link(&$str)
+	{
+		global $autolink;
+		
+		if (!$autolink) return $str;
+		
+		static $auto;
+		static $auto_a;
+		static $forceignorepages;
+		
+		if (!$auto && !$auto_a)
+		{
+			$autofile = (file_exists(CACHE_DIR.'autolink2.dat'))? 'autolink2.dat' : 'autolink.dat';
+			@list($auto,$auto_a,$forceignorepages) = file(CACHE_DIR.$autofile);
+			$auto = trim($auto);
+			$auto_a = trim($auto_a);
+			$forceignorepages = explode("\t",trim($forceignorepages));
+		}
+		
+		$this->forceignorepages = $forceignorepages;
+		
+		// ページ数が多い場合は、セパレータ \t で複数パターンに分割されている
+		foreach(explode("\t",$auto) as $pat)
+		{
+			$pattern = "/(<(?:a|A).*?<\/(?:a|A)>|<[^>]*>|&(?:#[0-9]+|#x[0-9a-f]+|[0-9a-zA-Z]+);)|($pat)/s";
+			$str = preg_replace_callback($pattern,array(&$this,'auto_link_replace'),$str);
+		}
+		
+		return $str;
+	}
+	function auto_link_replace($match)
+	{
+		global $pagename_aliases;
+		
+		if (!empty($match[1])) return $match[1];
+		$alias = $name = $match[2];
+		
+		// 無視リストに含まれているページを捨てる
+		if (in_array($name,$this->forceignorepages)) {return $match[0];}
+		
+		// ページが存在しない場合
+		if (!is_page($name))
+		{
+			// ページ名エイリアスを探す
+			if (array_key_exists($name,$pagename_aliases))
+			{
+				$name = $pagename_aliases[$name];
+			}
+			else
+			{
+				// 共通リンクディレクトリを探す
+				if (!$name = get_real_pagename($name)) return $match[0];
+			}
+		}
+		return make_pagelink($name,$alias,'',$name);
 	}
 }
 //インライン要素集合のベースクラス
@@ -852,7 +911,8 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	if (!$breadcrumbs && $not_where && preg_match("/^#.*#$/",$alias))
 		$alias = "";
 	
-	$s_page = htmlspecialchars(strip_bracket($page));
+	$sb_page = strip_bracket($page);
+	$s_page = htmlspecialchars($sb_page);
 	$s_alias = ($alias == '') ? $s_page : $alias;
 	
 	if ($page == '')
@@ -865,19 +925,16 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	$r_page = rawurlencode($s_page);
 	$r_refer = ($refer == '') ? '' : '&amp;refer='.rawurlencode($refer);
 
-	if ($related_link)
+	if (!isset($related[$sb_page]) and $page != $vars['page'] and is_page($page))
 	{
-		if (!array_key_exists($page,$related) and $page != $vars['page'] and is_page($page))
-		{
-			$related[strip_bracket($page)] = get_filetime($page);
-		}
+		$related[$sb_page] = get_filetime($page);
 	}
 	
 	if ($alias && preg_match("/^#(.*)#$/",$alias,$sep))
 	{
 		// パン屑リスト出力
 		$sep = htmlspecialchars($sep[1]);
-		$prefix = strip_bracket($page);
+		$prefix = $sb_page;
 		$page_names = array();
 		$page_names = explode("/",$prefix);
 		$access_name = "";
@@ -1050,7 +1107,7 @@ function get_interwiki_url($name,$param)
 				$opt = $encode_aliases[$opt];
 			}
 			// 指定された文字コードへエンコードしてURLエンコード
-			$param = rawurlencode(mb_convert_encoding($param,$opt,'auto'));
+			$param = rawurlencode(mb_convert_encoding($param,$opt,SOURCE_ENCODING));
 	}
 	
 	// パラメータを置換

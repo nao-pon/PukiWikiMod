@@ -1,5 +1,5 @@
 <?php
-// $Id: comment_post.php,v 1.1 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: comment_post.php,v 1.2 2005/12/18 14:10:47 nao-pon Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,6 +25,5 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 include '../../mainfile.php';
-$xoopsModuleConfig['com_anonpost'] = 1;
 include XOOPS_ROOT_PATH.'/include/comment_post.php';
 ?>

@@ -22,9 +22,23 @@
  *
  * 避難所       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.21 2005/03/16 14:32:29 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.22 2005/12/18 14:10:47 nao-pon Exp $
  *
  */
+
+function plugin_showrss_init()
+{
+	global $nothanks_rss_url;
+	
+	// 除外するURL(前方一致)の配列
+	$nothanks_rss_url = array();
+	
+	if (file_exists(PLUGIN_DATA_DIR."showrss/config.php"))
+	{
+		//ファイルがあれば読み込み
+		include(PLUGIN_DATA_DIR."showrss/config.php");
+	}
+}
 
 // showrssプラグインが使用可能かどうかを表示
 function plugin_showrss_action()
@@ -168,6 +182,8 @@ class ShowRSS_html
 
 	function ShowRSS_html($rss,$show_description="",$max=10)
 	{
+		global $nothanks_rss_url;
+
 		$count = 1;
 		foreach ($rss as $date=>$items)
 		{
@@ -175,13 +191,31 @@ class ShowRSS_html
 			foreach ($items as $item)
 			{
 				if ($count > $max) break;
+				
+				// 除外するURL
+				if ($nothanks_rss_url)
+				{
+					$flg_nothanks = false;
+					foreach($nothanks_rss_url as $check_url)
+					{
+						//echo $check_url;
+						if (preg_match("/^".preg_quote($check_url,"/")."/",$item['LINK']))
+						{
+							$flg_nothanks = true;
+							break;
+						}
+					}
+					if ($flg_nothanks) continue;
+				}
 				$count ++;
 				
 				$link = $item['LINK'];
-				$title = $item['TITLE'];
+				$title = str_replace(array("&lt;b&gt;","&lt;/b&gt;"),"",$item['TITLE']);
 				$passage = get_passage($item['_TIMESTAMP']);
 				if ($item['AG:SOURCE'])
 					$title .= " [".$item['AG:SOURCE']."]";
+				else if ($item['DC:PUBLISHER'])
+					$title .= " [".$item['DC:PUBLISHER']."]";
 				
 				$link = "<a href=\"$link\" title=\"$title $passage\" target=\"_blank\">$title</a>";
 				if ($show_description)
@@ -255,6 +289,9 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 	
 	$filename = P_CACHE_DIR . md5($target) . '.srs';
 	
+	//global $X_admin;
+	//if ($X_admin) echo $filename;
+	
 	if ($usecache && !$do_refresh)
 	{
 		// キャッシュがあれば取得する
@@ -295,8 +332,8 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 			// &amp; でない & を置換
 			$buf = preg_replace("/&(?!amp;)/","&amp;",$buf);
 			// タグ外の < > をエスケープ
-			$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('\r','\n'),'','$2').'$3'",$buf);
-			$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('<','>'),array('&lt;','&gt;'),'$2').'$3'",$buf);
+			//$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('\r','\n'),'','$2').'$3'",$buf);
+			//$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('<','>'),array('&lt;','&gt;'),'$2').'$3'",$buf);
 			
 			$time = UTIME;
 			// キャッシュを保存
@@ -315,43 +352,12 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 		
 	}
 	
-	// 余分な文字文字を削除
-	//$buf = preg_replace("/[\x01-\x08\x0b\x0c\x0e-\x1f\x7f]+/","",$buf);
-	//$buf = str_replace("\0","",$buf);
-	// &amp; でない & を置換
-	//$buf = preg_replace("/&(?!amp;)/","&amp;",$buf);
-	//$buf = preg_replace("/<([^>]*)</","&lt;$1<",$buf);
-	//$buf = preg_replace("/>([^<]*)>/",">$1&gt;",$buf);
-	//$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('\r','\n'),'','$2').'$3'",$buf);
-	//$buf = preg_replace("#(<[^<>]+>)(.+?)(</[^<>]+>)#e","'$1'.str_replace(array('<','>'),array('&lt;','&gt;'),'$2').'$3'",$buf);
-	
 	// parse
 	$obj = new ShowRSS_XML();
 
 	return array($obj->parse($buf),$time,$refresh);
 }
-// 期限切れのキャッシュをクリア
-function plugin_showrss_cache_expire($usecache)
-{
-	$expire = $usecache * 60 * 60; // Hour
 
-	$dh = dir(P_CACHE_DIR);
-	while (($file = $dh->read()) !== FALSE)
-	{
-		if (substr($file,-4) != '.srs')
-		{
-			continue;
-		}
-		$file = P_CACHE_DIR.$file;
-		$last = time() - filemtime($file);
-
-		if ($last > $expire)
-		{
-			unlink($file);
-		}
-	}
-	$dh->close();
-}
 // rssを取得・配列化
 class ShowRSS_XML
 {
@@ -392,7 +398,7 @@ class ShowRSS_XML
 		$str = str_replace('&amp;','&',$str);
 
 		// 文字コード変換
-		$str = mb_convert_encoding($str, SOURCE_ENCODING, 'auto');
+		$str = mb_convert_encoding($str, SOURCE_ENCODING, 'AUTO');
 
 		return trim($str);
 	}

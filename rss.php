@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.23 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: rss.php,v 1.24 2005/12/18 14:10:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -139,8 +139,8 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 				if ($addtext) $addtext .= "...";
 				$vars["page"] = $post["page"] = $get["page"] = $line;
 				$desc = strip_tags(str_replace(array("\r","\n"),"",$content));
-				$desc = preg_replace("/&$entity_pattern;/",'',$desc);
-				//$desc = $addtext.htmlspecialchars($desc);
+				$desc = $addtext.preg_replace("/&$entity_pattern;/",'',$desc);
+				//$desc = htmlspecialchars($desc);
 			}
 			else
 			{
@@ -186,7 +186,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 
 			foreach(get_source($line) as $_line)
 			{
-				if (preg_match("/#category\((.*),:([^,]*),(.*)\)/i",$_line,$cat)) {
+				if (preg_match("/^#category\((.*),:([^,]*),(.*)\)/i",$_line,$cat)) {
 					$cats = explode(",",$cat[3]);
 					foreach($cats as $cat_item) {
 						$subject = $cat[2].":".$cat_item;

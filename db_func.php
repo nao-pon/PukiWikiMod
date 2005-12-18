@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.27 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: db_func.php,v 1.28 2005/12/18 14:10:47 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -28,12 +28,19 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 	}
 	if ($page)
 	{
-		$page = addslashes(strip_bracket($page));
-		if ($nochiled)
-			$page_where = "name LIKE '$page%' AND name NOT LIKE '$page%/%'";
+		if (substr($page,-1) == '/')
+		{
+			$page = addslashes(substr($page,0,-1));
+			$page_where = "name = '$page' OR name LIKE '$page/%'";
+		}
 		else
-			$page_where = "name LIKE '$page%'";
-			
+		{
+			$page = addslashes(strip_bracket($page));
+			if ($nochiled)
+				$page_where = "name LIKE '$page%' AND name NOT LIKE '$page%/%'";
+			else
+				$page_where = "name LIKE '$page%'";
+		}
 		if ($where)
 			$where = " ($page_where) AND ($where)";
 		else
@@ -284,7 +291,6 @@ function get_child_counts($page)
 	return count(get_existpages_db(false,$page."/",0,"",false,false,true,true));
 }
 
-
 // pginfo DB を更新
 function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$freeze="",$unvisible="",$notimestamp=false)
 {
@@ -458,6 +464,7 @@ function plain_db_write($page,$action)
 	global $pagereading_config_page;
 	global $script,$_symbol_noexists;
 	global $pwm_plugin_flg,$fusen_enable_allpage;
+	global $related;
 	
 	if (!$pgid = get_pgid_by_name($page)) return false;
 	
@@ -466,10 +473,12 @@ function plain_db_write($page,$action)
 	delete_page_info($data);
 	
 	//処理しないプラグインを削除 $no_plugins = GLOBAL
-	$no_plugins = split(',',$noplain_plugin);
+	$no_plugins = explode(',',$noplain_plugin);
+	
+	$s_page = strip_bracket($page);
 	
 	// ページ読みのデータページはコンバート処理しない(過負荷対策)
-	if (strip_bracket($page) != $pagereading_config_page)
+	if ($s_page != $pagereading_config_page)
 	{
 		$spc = array
 		(
@@ -493,7 +502,17 @@ function plain_db_write($page,$action)
 				" ",
 			)
 		);
-		$data = convert_html($data,false);
+		
+		$_X_admin = $_GLOBALS['X_admin'];
+		$_GLOBALS['X_admin'] = 1;
+		
+		$data = convert_html($data);
+		
+		$_GLOBALS['X_admin'] = $_X_admin;
+		
+		// リンク先ページ名
+		$rel_pages = array_keys($related);
+		$rel_pages = array_unique($rel_pages);
 
 		// 付箋
 		if ($fusen_enable_allpage && empty($pwm_plugin_flg['fusen']['convert']))
@@ -515,6 +534,50 @@ function plain_db_write($page,$action)
 		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_plain")." (pgid,plain) VALUES($pgid,'$data');";
 		$result=$xoopsDB->queryF($query);
 		if (!$result) echo $query."<hr>";
+		
+		//リンク先ページ
+		foreach ($rel_pages as $rel_page)
+		{
+			$relid = get_pgid_by_name($rel_page);
+			if ($pgid == $relid || !$relid) {continue;}
+			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_rel")." (pgid,relid) VALUES(".$pgid.",".$relid.");";
+			$result=$xoopsDB->queryF($query);
+			//if (!$result) echo $query."<hr>";
+		}
+		
+		//リンク元ページ
+		global $WikiName,$autolink,$nowikiname,$search_non_list,$wiki_common_dirs;
+		// $s_pageがAutoLinkの対象となり得る場合
+		if ($autolink
+			and (preg_match("/^$WikiName$/",$s_page) ? $nowikiname : strlen($s_page) >= $autolink))
+		{
+			// $s_pageを参照していそうなページに一気に追加
+			$search_non_list = 1;
+			
+			$lookup_page = $s_page;
+			// 検索ページ名の共通リンクディレクトリを省略
+			if (count($wiki_common_dirs))
+			{
+				foreach($wiki_common_dirs as $wiki_common_dir)
+				{
+					if (strpos($lookup_page,$wiki_common_dir) === 0)
+					{
+						$lookup_page = str_replace($wiki_common_dir,"",$lookup_page);
+						break;
+					}
+				}
+			}
+			// 検索実行
+			$pages = do_search($lookup_page,'AND',TRUE);
+			
+			foreach ($pages as $_page)
+			{
+				$refid = get_pgid_by_name($_page);
+				if ($pgid == $refid || !$refid) {continue;}
+				$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_rel")." (pgid,relid) VALUES(".$refid.",".$pgid.");";
+				$result=$xoopsDB->queryF($query);
+			}
+		}
 	}
 	
 	// ページ更新
@@ -524,6 +587,19 @@ function plain_db_write($page,$action)
 		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_plain")." SET $value WHERE pgid = $pgid;";
 		$result=$xoopsDB->queryF($query);
 		if (!$result) echo $query."<hr>";
+		
+		//リンク先ページ
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_rel")." WHERE pgid = ".$pgid.";";
+		$result=$xoopsDB->queryF($query);
+		if (!$result) echo $query."<hr>";
+		foreach ($rel_pages as $rel_page)
+		{
+			$relid = get_pgid_by_name($rel_page);
+			if ($pgid == $relid || !$relid) {continue;}
+			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_rel")." (pgid,relid) VALUES(".$pgid.",".$relid.");";
+			$result=$xoopsDB->queryF($query);
+			if (!$result) echo $query."<hr>";
+		}
 	}
 	
 	// ページ削除
@@ -532,6 +608,10 @@ function plain_db_write($page,$action)
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_plain")." WHERE pgid = $pgid;";
 		$result=$xoopsDB->queryF($query);
 		if (!$result) echo $query."<hr>";
+		
+		//リンクページ
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_rel")." WHERE pgid = ".$pgid." OR relid = ".$pgid.";";
+		$result=$xoopsDB->queryF($query);
 	}
 	else
 		return false;

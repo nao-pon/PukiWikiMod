@@ -1,17 +1,21 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.51 2005/11/16 23:49:16 nao-pon Exp $
+// $Id: init.php,v 1.52 2005/12/18 14:10:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
+// cmd と plugin は同時使用不可
+	if ((isset($_POST['cmd']) && isset($_POST['plugin'])) || (isset($_GET['cmd']) && isset($_GET['plugin'])))
+		{ exit('Using both cmd= and plugin= is not allowed.'); }
+
 // Tokenチケット確認
-if (strtoupper($_SERVER["REQUEST_METHOD"]) == "POST")
+if (!defined('PWM_TICET_NOT_USE') && strtoupper($_SERVER["REQUEST_METHOD"]) == "POST")
 {
 	// POSTメソッドの時のみチェック
 	// paint, painter プラグインでの投稿は時間が経ってセッションが切れている場合があるので通過させる。
 	if (empty($_POST['plugin']) || ($_POST['plugin'] != "paint" && $_POST['plugin'] != "painter"))
 	{
-		// fusen プラグインでの投稿はAjaxなのでチケットを破棄しないようにする。
-		$onetime = (!empty($_POST['plugin']) && $_POST['plugin']=="fusen")? false : true;
+		// fusen プラグインでの投稿はAjaxなのでチケットを破棄しないようにする。pginfo はインラインフレーム処理だから
+		$onetime = (!empty($_POST['plugin']) && ($_POST['plugin']=="fusen" || $_POST['plugin']=="pginfo"))? false : true;
 		if (!check_token_ticket($onetime)) exit('It is an invalid request.');
 	}
 }
@@ -99,6 +103,8 @@ if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
 	die_message(INI_FILE." is not found.");
 require(INI_FILE);
 
+// コメント機能の設定値読み込み
+$use_xoops_comments = (isset($xoopsModuleConfig['com_rule']) && XOOPS_COMMENT_APPROVENONE != $xoopsModuleConfig['com_rule'])? 1 : 0;
 
 // XOOPSデータ読み込み
 // $anon_writable:編集可能(Yes:1 No:0)
@@ -312,39 +318,22 @@ if (isset($vars['pwm_ping']))
 	$vars['tb_id'] = $vars['pwm_ping'];
 }
 
-
-// command 判定
-if (arg_check("preview") || $post["preview"] || $post["template"]) $vars['cmd'] = "preview";
-if (arg_check("write") || $post["write"]) $vars['cmd'] = "write";
-
-// cmd,plugin,pgid が指定されていない場合は、QUERY_STRINGをページ名かInterWikiNameであるとみなす
-if (! isset($vars['cmd']) && ! isset($vars['plugin']) && ! isset($vars['pgid'])) {
-
-	$get['cmd']  = $post['cmd']  = $vars['cmd']  = 'read';
-	
-	// & 以降を除去(SID自動付加環境対策)
-	$arg = preg_replace("/([^&]+)(&.*)?/","$1",$arg);
-	
-	$arg = rawurldecode($arg);
-	$arg = input_filter($arg);
-	
-	// _PGID の場合
-	if (preg_match("/^_([\d]+)$/",$arg,$key))
-		$vars['pgid'] = $key[1];
-	else
-	{
-		if ($arg == '') $arg = $defaultpage;
-		$arg = add_bracket($arg);
-		$get['page'] = $post['page'] = $vars['page'] = $arg;
-	}
+// _PGID の場合(後方互換)
+if (preg_match("/^_([\d]+)$/",$arg,$_key))
+{
+	$vars['pgid'] = $_key[1];
 }
+unset($_key);
 
+// $vars['cmd'], $vars["plugin"] を設定
 // idでのアクセス
 $pgid = 0;
 if (isset($vars['pgid']))
 {
 	$vars['pgid'] = (int)$vars['pgid'];
 	$vars['page'] = get_pgname_by_id($vars['pgid']);
+	$vars["plugin"] = "";
+	
 	if (is_page($vars['page']))
 	{
 		$vars['cmd'] = "read";
@@ -355,6 +344,68 @@ if (isset($vars['pgid']))
 		header("Location: ".XOOPS_WIKI_URL."/");
 		exit;
 	}
+}
+
+// RecentChenges の表示
+else if ($arg === $whatsnew)
+{
+	$vars['cmd']  = '';
+	$vars['page'] = '';
+	$vars["plugin"] = "recentchanges";
+}
+
+// 一覧の表示
+else if (arg_check("list"))
+{
+	$vars['cmd']  = '';
+	$vars['page'] = '';
+	$vars["plugin"] = "list";
+}
+
+// ファイル名一覧の表示
+else if (arg_check("filelist"))
+{
+	$vars['cmd']  = '';
+	$vars['page'] = '';
+	$vars['plugin'] = "attach";
+	$vars['pcmd'] = "list";
+}
+
+// GoogleSitemap の表示
+else if ($google_sitemap_page && strpos($arg, $google_sitemap_page) === 0)
+{
+	$vars['cmd']  = '';
+	$vars['page'] = '';
+	$vars["plugin"] = "google_sitemap";
+	$vars["view"] = intval(str_replace("GoogleSitemap","",$arg));
+}
+
+// command 判定
+else if (arg_check("preview") || $post["preview"] || $post["template"])
+{
+	$vars['cmd'] = "preview";
+}
+else if (arg_check("write") || $post["write"])
+{
+	$vars['cmd'] = "write";
+}
+
+// $vars['cmd'] End
+
+// cmd,plugin,pgid が指定されていない場合は、QUERY_STRINGをページ名かInterWikiNameであるとみなす
+if (! isset($vars['cmd']) && ! isset($vars['plugin']) )
+{
+	$get['cmd']  = $post['cmd']  = $vars['cmd']  = 'read';
+	
+	// & 以降を除去(SID自動付加環境対策)
+	$arg = preg_replace("/([^&]+)(&.*)?/","$1",$arg);
+	
+	$arg = rawurldecode($arg);
+	$arg = input_filter($arg);
+	
+	if ($arg == '') $arg = $defaultpage;
+	$arg = add_bracket($arg);
+	$get['page'] = $post['page'] = $vars['page'] = $arg;
 }
 
 // XOOPS Mudule id

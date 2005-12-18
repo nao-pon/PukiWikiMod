@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.7 2005/06/23 08:24:49 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.8 2005/12/18 14:10:47 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -63,11 +63,12 @@ function plugin_makepage_convert()
 	{
 		$body_message = (!empty($post['body_message']))? htmlspecialchars($post['body_message']) : $_makepage_messages['msg_makepage'];
 		$body_message = str_replace('$1',htmlspecialchars($post['new_page']),$body_message);
-		$post['usebody'] = ($post['usebody'])? "1" : "0";
-		$post['usename'] = ($post['usename'])? "1" : "0";
 		
 		preg_match("/((.+)\/([^\/]+))/",$s_makepage.$post['new_page'],$matches);
 		$temp = auto_template("[[:template_mp/".strip_bracket($makepage)."]]",TRUE,$matches);
+		
+		$post['usebody'] = ($post['usebody'])? "1" : "0";
+		$post['usename'] = ($post['usename'] || preg_match("/___NAME___/",$temp))? "1" : "0";
 		
 		$page_tag  = '<input type="hidden" name="new_page" value="'.htmlspecialchars($post['new_page']).'" />';
 		$page_tag .= '<input type="hidden" name="usebody" value="'.$post['usebody'].'" />';
@@ -108,7 +109,8 @@ function plugin_makepage_action()
 	}
 	
 	if (function_exists("mb_convert_kana")) $vars['new_page'] = mb_convert_kana($vars['new_page'], "KVs");
-	$vars['new_page'] = str_replace(' ','',$vars['new_page']);
+	//$vars['new_page'] = str_replace(' ','',$vars['new_page']);
+	$vars['new_page'] = reform2pagename($vars['new_page']);
 	$page = add_bracket($vars['prefix'].strip_bracket($vars['new_page']));
 	
 	if (is_page($page, true))
@@ -176,13 +178,14 @@ function plugin_makepage_action()
 			}
 			$post['body'] = rtrim(preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post['body']));
 			
-			if (!$post['usename']) $post['body'] .= "\n#clear";
+			//if (!$post['usename']) $post['body'] .= "\n#clear";
 			$postdata = str_replace("___BODY___",$post['body'],$postdata);
 			
 			$_name = (!empty($post['name']))? $post['name'] : $no_name;
 			
 			make_user_link($_name);
 			
+			//$postdata = str_replace("___NAME___",$_name."\n#clear",$postdata);
 			$postdata = str_replace("___NAME___",$_name."\n#clear",$postdata);
 			
 			$postdata = auto_br($postdata);

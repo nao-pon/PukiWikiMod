@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.50 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: convert_html.php,v 1.51 2005/12/18 14:10:47 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -25,7 +25,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 	static $convert_load = 0;
 	$convert_load++;
 	
-	$wiki_strong_words = array();
+	if ($convert_load === 1) $wiki_strong_words = array();
 	
 	if ($page_cvt)
 	{

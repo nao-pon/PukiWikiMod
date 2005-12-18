@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.24 2005/11/08 08:27:20 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.25 2005/12/18 14:10:47 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -217,8 +217,12 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 	}
 	$anchor = LS2_ANCHOR_ORIGIN;
 	$_ret = '';
-	foreach (get_source($page) as $line) {
-		if ($params['title'] and preg_match('/^(\*+)(.*)$/',$line,$matches)) {
+	
+	$source = get_source($page);
+	// 見出しの固有ID部を削除
+	$source = preg_replace('/^(\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
+	foreach ($source as $line) {
+		if ($params['title'] and preg_match('/^(\*+)(.*)()?$/',$line,$matches)) {
 			$special = strip_tags(make_line_rules(inline($matches[2],TRUE)));
 			$left = (strlen($matches[1]) - 1) * 16;
 			$_ret .= '<li style="margin-left:'.$left.'px">'.$special.

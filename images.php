@@ -1,8 +1,8 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: images.php,v 1.6 2005/06/23 08:15:32 nao-pon Exp $
+// $Id: images.php,v 1.7 2005/12/18 14:10:47 nao-pon Exp $
 /////////////////////////////////////////////////
-//exit();
+
 error_reporting(0);
 
 if (!isset($_GET['q'])) exit;
@@ -14,23 +14,8 @@ if (!$file) exit;
 header("Location: ".$file);
 exit;
 
-/*
-$img = getimagesize($file);
-
-header('Content-Type: '.$img['mime']);
-
-readfile($file);
-
-exit;
-*/
-
 function get_image_filename($q)
 {
-/*
-	$dir = "./cache/p/";
-	$q = str_replace(array("%","+"),array("%25","%2B"),$q);
-	$file = $dir.md5($q).".tig";
-*/
 	if (preg_match("/^.+(\.[^.\/]+)$/",$q,$arg))
 	{
 		$exp = $arg[1];
@@ -45,27 +30,15 @@ function get_image_filename($q)
 	}
 	$q = "http://images-partners.google.com/images?q=".$q;
 	
-	if ($url = @fopen($q, "rb"))
+	include_once("include/hyp_common_func.php");
+	include_once("proxy.php");
+	
+	$result =  http_request($q);
+	if ($result['rc'] != 200)
 	{
-		$contents = "";
-		do {
-			$data = fread($url, 8192);
-			if (strlen($data) == 0) {
-				break;
-			}
-			$contents .= $data;
-		} while(true);
-		
-		fclose ($url);
+		return "";
 	}
-	else
-	{
-		include_once("proxy.php");
-		
-		$result =  http_request($q);
-		if ($result['rc'] != 200) return "";
-		$contents = $result['data'];
-	}
+	$contents = $result['data'];
 	
 	// キャッシュ保存
 	if ($contents)
@@ -76,6 +49,5 @@ function get_image_filename($q)
 	}
 	
 	return $file;
-	
 }
 ?>

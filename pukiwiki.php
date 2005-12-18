@@ -25,23 +25,8 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.80 2005/11/16 23:49:16 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.81 2005/12/18 14:10:47 nao-pon Exp $
 /////////////////////////////////////////////////
-// Protectorのチェックを回避する(REMOTE_ADDRを切るとログアウトしてしまうのでダメ)
-/*
-if (
-//	(isset($_GET['plugin']) && $_GET['plugin']=='showrss' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
-//	(isset($_GET['plugin']) && $_GET['plugin']=='newsclip' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
-//	(isset($_GET['plugin']) && $_GET['plugin']=='aws' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
-//	(isset($_GET['plugin']) && $_GET['plugin']=='google' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
-//	(isset($_GET['plugin']) && $_GET['plugin']=='gimage' && isset($_GET['pmode']) && $_GET['pmode']=='refresh') ||
-	(isset($_POST['plugin']) && $_POST['plugin']=='fusen' && isset($_POST['mode']) && ($_POST['mode']=='set' || $_POST['mode']=='lock' ||$_POST['mode']=='unlock' || $_POST['mode']=='del' || $_POST['mode']=='recover'))
-	)
-{
-	$_SERVER['REMOTE_ADDR'] = "";
-}
-*/
-
 //XOOPS設定読み込み
 include("../../mainfile.php");
 global $xoopsUser,$xoopsDB,$xoopsConfig;
@@ -73,23 +58,6 @@ require("init.php");
 
 // アクセス制限チェック
 check_access_ctl();
-
-// 一覧の表示
-if (arg_check("list")) $vars["plugin"] = "list";
-
-// ファイル名一覧の表示
-elseif (arg_check("filelist"))
-{
-	$vars['plugin'] = "attach";
-	$vars['pcmd'] = "list";
-}
-// RecentChenges の表示
-elseif ($arg === $whatsnew)
-{
-	$vars["plugin"] = "recentchanges";
-	$vars['cmd']  = '';
-	$vars['page'] = '';
-}
 
 // Plug-in action
 if(!empty($vars["plugin"]))

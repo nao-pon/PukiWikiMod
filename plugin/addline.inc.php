@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: addline.inc.php,v 1.4 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: addline.inc.php,v 1.5 2005/12/18 14:10:47 nao-pon Exp $
 // ORG: addline.inc.php,v 0.2 2003/07/29 22:47:10 sha Exp $
 //
 /* 
@@ -34,7 +34,9 @@ function plugin_addline_init()
 			'btn_submit'    => 'add',
 			'title_collided' => '$1 で【更新の衝突】が起きました',
 			'msg_collided'  => 'あなたが文字列を追加している間に、他の人が同じページを更新してしまったようです。<br />
-文字列が違う位置に挿入されているかもしれません。<br />'
+文字列が違う位置に挿入されているかもしれません。<br />',
+			'title_noauth'  => '$1 の編集権限がありません',
+			'msg_noauth'  => 'このページに内容を追加する権限がありません。<br />',
 		),
 	);
 	set_plugin_messages($messages);
@@ -57,6 +59,18 @@ function plugin_addline_action()
 	{
 		return "<p>config file '".htmlspecialchars($configname)."' is not exist.";
 	}
+	
+	// 編集権限チェック
+	if (!empty($vars['auth']))
+	{
+		if (is_freeze($post['refer']))
+		{
+			$retvars['msg'] = $_addline_messages['title_noauth'];
+			$retvars['body'] = $_addline_messages['msg_noauth'] . make_pagelink($post['refer']);
+			return $retvars;
+		}
+	}
+	
 	$config->config_name = $configname;
 	$addline = join('', addline_get_source($config->page));
 	$addline = rtrim($addline);
@@ -67,7 +81,7 @@ function plugin_addline_action()
 		{
 			$postdata .= $line;
 		}
-		if (preg_match('/(^|\|)#addline/',$line) and $addline_no++ == $post['addline_no'])
+		if (preg_match('/(^|\|((LEFT|RIGHT|CENTER):)?)#addline/',$line) and $addline_no++ == $post['addline_no'])
 		{
 			//$postdata = rtrim($postdata)."\n$addline\n";
 			$postdata = rtrim($postdata)."\n$addline\n";
@@ -114,18 +128,22 @@ function plugin_addline_convert()
 	$addline_no = $numbers[$vars['page']]++;
 	
 	$above = ADDLINE_INS;
+	$auth = 0;
 	$configname = 'default';
 	$btn_text = $_addline_messages['btn_submit'];
 	if ( func_num_args() ){
 		foreach ( func_get_args() as $opt ){
-			if ( $opt === 'above' || $opt === 'up' ){
+			if ( $opt === 'above' || $opt === 'up' )
+			{
 				$above = 1;
 			}
-			else if (preg_match("/btn(:.+)/i",$opt,$args)){
+			else if (preg_match("/btn(:.+)/i",$opt,$args))
+			{
 				$btn_text = htmlspecialchars($args[1]);
 				if (strtolower(substr($btn_text,-5)) == ":auth")
 				{
 					$btn_text = substr($btn_text,0,strlen($btn_text)-5);
+					$auth = 1;
 					if (is_freeze($vars['page']))
 						$btn_text = ":";
 					else
@@ -133,11 +151,18 @@ function plugin_addline_convert()
 				}
 				$btn_text = substr($btn_text,1);
 			}
-			else if ( $opt === 'below' || $opt === 'down' ){
+			else if ( $opt === 'below' || $opt === 'down' )
+			{
 				$above = 0;
 			}
-			else {
-			    $configname = $opt;
+			else if ( $opt === 'auth' )
+			{
+				$auth = 1;
+				if (is_freeze($vars['page'])) $btn_text = "";
+			}
+			else
+			{
+				$configname = $opt;
 			}
 		}
 	}
@@ -154,6 +179,7 @@ function plugin_addline_convert()
   <input type="hidden" name="plugin" value="addline" />
   <input type="hidden" name="above" value="$above" />
   <input type="hidden" name="digest" value="$digest" />
+  <input type="hidden" name="auth" value="$auth" />
   <input type="hidden" name="configname"  value="$configname" />
   <input type="submit" name="addline" value="$btn_text" />
  </div>

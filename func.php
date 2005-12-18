@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.58 2005/11/16 23:49:16 nao-pon Exp $
+// $Id: func.php,v 1.59 2005/12/18 14:10:47 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -992,51 +992,62 @@ function get_autolink_pattern(& $pages)
 	$auto_pages = array_unique($auto_pages);
 	sort($auto_pages, SORT_STRING);
 
-	$auto_pages_a = array_values(preg_grep('/^[A-Z]+$/i', $auto_pages));
-	$auto_pages   = array_values(array_diff($auto_pages, $auto_pages_a));
-
 	$result   = get_autolink_pattern_sub($auto_pages,   0, count($auto_pages),   0);
-	$result_a = get_autolink_pattern_sub($auto_pages_a, 0, count($auto_pages_a), 0);
-
-	return array($result, $result_a, $forceignorepages);
+	
+	return array($result, '(?!)', $forceignorepages);
 }
 
 function get_autolink_pattern_sub(& $pages, $start, $end, $pos)
 {
+	static $lev = 0;
+	static $limit = 0;
+	static $full = false;
+	static $psize = 0;
+	
 	if ($end == 0) return '(?!)';
-
+	
+	if (!$limit) $limit = 1024 * 30; //マージンを持たせて 30kb で分割
+	
+	$lev ++;
+	
 	$result = '';
 	$count = 0;
+	
 	$x = (mb_strlen($pages[$start]) <= $pos);
-
-	if ($x) {
-		++$start;
-	}
-
+	
+	if ($x) { ++$start; }
+	
 	for ($i = $start; $i < $end; $i = $j) // What is the initial state of $j?
 	{
+		$full = (strlen($result) - $psize > $limit);
 		$char = mb_substr($pages[$i], $pos, 1);
-		for ($j = $i; $j < $end; $j++) {
-			if (mb_substr($pages[$j], $pos, 1) != $char)
-				break;
+		for ($j = $i; $j < $end; $j++)
+		{
+			if (mb_substr($pages[$j], $pos, 1) != $char || $full) { break; }
 		}
-		if ($i != $start) {
-			$result .= '|';
-		}
-		if ($i >= ($j - 1)) {
+		if ($i != $start && $psize != strlen($result)) { $result .= '|'; }
+		if ($i >= ($j - 1))
+		{
 			$result .= str_replace(' ', '\\ ', preg_quote(mb_substr($pages[$i], $pos), '/'));
-		} else {
+		}
+		else
+		{
 			$result .= str_replace(' ', '\\ ', preg_quote($char, '/')) .
 				get_autolink_pattern_sub($pages, $i, $j, $pos + 1);
 		}
+		
+		if ($lev === 1 && $full)
+		{
+			$psize = strlen($result);
+			$result .= ")\t(?:";
+			$j++;
+		}
+		
 		++$count;
 	}
-	if ($x or $count > 1) {
-		$result = '(?:' . $result . ')';
-	}
-	if ($x) {
-		$result .= '?';
-	}
+	if ($x or $count > 1) { $result = '(?:' . $result . ')'; }
+	if ($x) { $result .= '?'; }
+	$lev --;
 	return $result;
 }
 
@@ -1293,14 +1304,35 @@ function pukiwiki_refcheck($blank = 0)
 // アクセス制限
 function check_access_ctl()
 {
+	global $post;
+	
 	$config = &new Config('access');
 	$config->read();
 	$deny_ips = $config->get('Deny_IP');
 	$deny_ucds = $config->get('Deny_UCD');
+	$deny_names = $config->get('Deny_POST_NAME');
+	$deny_exit = $config->get('Deny_POST_EXIT');
 	unset($config);
 	
 	if (!empty($deny_ips) && !empty($_SERVER["REMOTE_ADDR"]) && in_array($_SERVER["REMOTE_ADDR"], $deny_ips)) exit;
 	if (!empty($deny_ucds) && in_array(PUKIWIKI_UCD, $deny_ucds)) exit;
+	if (isset($post['name']) && !empty($deny_names))
+	{
+		function check_access_ctl_quote($str)
+		{
+			return preg_quote($str,"/");
+		}
+		$deny_names = array_map('check_access_ctl_quote',$deny_names);
+		
+		if (preg_match("/(".join('|',$deny_names).")/",$post['name']))
+		{
+			if ($deny_exit)
+			{
+				header("Location: ".$deny_exit[0]);
+			}
+			exit;
+		}
+	}
 }
 
 //整数値のみ許可されるパラメーターをチェック
@@ -1360,6 +1392,17 @@ function check_token_ticket($onetime=true)
 	$handler = new XoopsMultiTokenHandler();
 	return $handler->autoValidate('pukiwikimod',$onetime);
 }
+
+// 与えられた文字列をページ名に矯正する
+function reform2pagename($str)
+{
+	global $pwm_confg;
+	if (empty($pwm_confg['reform_to'])) return $str;
+	$bef = array(" ","#","&","<",">",'"',":");
+	$str = str_replace($bef,$pwm_confg['reform_to'],$str);
+	return $str;
+}
+
 //////////////////////////////////////////////////////
 //
 // XOOPS用　関数

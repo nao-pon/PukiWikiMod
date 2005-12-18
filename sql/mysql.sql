@@ -73,3 +73,11 @@ CREATE TABLE `pukiwikimod_attach` (
  UNIQUE KEY `id` (`id`)
 ) TYPE=MyISAM;
 
+# --------------------------------------------------------
+
+CREATE TABLE `pukiwikimod_rel` (
+  `pgid` int(11) NOT NULL default '0',
+  `relid` int(11) NOT NULL default '0',
+  KEY `pgid` (`pgid`),
+  KEY `relid` (`relid`)
+) TYPE=MyISAM;

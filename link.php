@@ -2,326 +2,75 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: link.php,v 1.10 2005/01/13 13:35:12 nao-pon Exp $
-// ORG: link.php,v 1.6 2003/07/29 09:09:20 arino Exp $
+// $Id: link.php,v 1.11 2005/12/18 14:10:47 nao-pon Exp $
 //
 
-/*
- * データ形式
- * CACHE_DIR/encode(ページ名).ref
- * 参照元ページ名<tab>AutoLinkによるリンクのみのとき1\n
- * 参照元ページ名<tab>AutoLinkによるリンクのみのとき1\n
- * ...
- * 
- * CACHE_DIR/encode(ページ名).rel
- * 参照先ページ名<tab>参照先ページ名<tab>...
- *
- */
-
+// PukiWikiMod 1.4.1 以降でMySQLデータベース利用に変更
 // データベースから関連ページを得る
 function links_get_related_db($page)
 {
-	global $non_list;
-	$page = strip_bracket($page);
-	$links = array();
-	$ref_name = CACHE_DIR.encode($page).'.ref';
-	if (file_exists($ref_name))
+	global $xoopsDB,$X_admin,$X_uid;
+	
+	static $where = NULL;
+	static $links = array();
+	
+	if (isset($links[$page])) {return $links[$page];}
+	$links[$page] = array();
+	
+	if (is_null($where))
 	{
-		foreach (file($ref_name) as $line)
+		// 閲覧権限チェック用 WHERE句
+		if ($X_admin)
+			$where = "";
+		else
 		{
-			list($_page) = explode("\t",rtrim($line));
-			if ($_page && check_readable($_page,false,false))
-				$links[$_page] = get_filetime($_page);
+			$where = "";
+			if ($X_uid) $where .= " (`uid` = $X_uid) OR";
+			$where .= " (`vaids` LIKE '%all%') OR (`vgids` LIKE '%&3&%')";
+			if ($X_uid) $where .= " OR (`vaids` LIKE '%&{$X_uid}&%')";
+			foreach(X_get_groups() as $gid)
+			{
+				$where .= " OR (vgids LIKE '%&{$gid}&%')";
+			}
+			if ($where) $where = " AND (".$where.")";
 		}
 	}
-	return $links;
+	
+	$query = "SELECT p.name, p.editedtime FROM `".$xoopsDB->prefix("pukiwikimod_rel")."` AS r, `".$xoopsDB->prefix("pukiwikimod_pginfo")."` AS p WHERE `relid` = ".get_pgid_by_name($page)." AND p.id = r.pgid".$where.";";
+	$result = $xoopsDB->query($query);
+	
+	if ($result)
+	{
+		while(list($name,$time) = mysql_fetch_row($result))
+		{
+			$links[$page][$name] = $time;
+		}
+	}
+	
+	return $links[$page];
 }
 //ページの関連を更新する
 function links_update($page)
 {
-	global $pagereading_config_page;
-	
-	$page = strip_bracket($page);
-	
-	// ページ読みのデータページは処理しない
-	if ($page == $pagereading_config_page) return;
-	
-	$time = is_page($page,TRUE) ? get_filetime($page) : 0;
-	
-	$rel_old = array();
-	$rel_file = CACHE_DIR.encode($page).'.rel';
-	if ($rel_file_exist = file_exists($rel_file))
-	{
-		$lines = file($rel_file);
-		if (array_key_exists(0,$lines))
-		{
-			$rel_old = explode("\t",rtrim($lines[0]));
-		}
-		//unlink($rel_file);
-	}
-	$rel_new = array(); // 参照先
-	$rel_auto = array(); // オートリンクしている参照先
-	$links = links_get_objects($page,TRUE);
-	foreach ($links as $_obj)
-	{
-		if (!isset($_obj->type) or $_obj->type != 'pagename' or $_obj->name == $page or $_obj->name == '')
-		{
-			continue;
-		}
-		if (is_a($_obj,'Link_autolink')) // 行儀が悪い
-		{
-			if (is_page($_obj->name))
-			{
-				$rel_auto[] = $_obj->name;
-				//echo "Page:".$page." - Auto:".$_obj->name."<br />";
-			}
-		}
-		else
-		{
-			$rel_new[] = $_obj->name;
-			//echo "Page:".$page." - Link:".$_obj->name."<br />";
-		}
-	}
-	$rel_new = array_unique($rel_new);
-	// autolinkしか向いていないページ
-	$rel_auto = array_diff(array_unique($rel_auto),$rel_new);
-	// 全ての参照先ページ
-	$rel_new = array_merge($rel_new,$rel_auto);
-	
-	// .rel:$pageが参照しているページの一覧
-	if ($time) // ページが存在している
-	{
-		@unlink($rel_file);
-		//if (count($rel_new))
-		//{
-			$fp = fopen($rel_file,'wb')
-				or die_message('cannot write '.htmlspecialchars($rel_file));
-			fputs($fp,join("\t",$rel_new));
-			fclose($fp);
-		//}
-	}
-	// .ref:$_pageを参照しているページの一覧
-	links_add($page,array_diff($rel_new,$rel_old),$rel_auto);
-	links_delete($page,array_diff($rel_old,$rel_new));
-	
-	global $WikiName,$autolink,$nowikiname,$search_non_list,$wiki_common_dirs;
-	// $pageが新規作成されたページで、AutoLinkの対象となり得る場合
-	if ($time and !$rel_file_exist and $autolink
-		and (preg_match("/^$WikiName$/",$page) ? $nowikiname : strlen($page) >= $autolink))
-	{
-		// $pageを参照していそうなページを一斉更新する(おい)
-		$search_non_list = 1;
-		
-		$lookup_page = $page;
-		// 検索ページ名の共通リンクディレクトリを省略
-		if (count($wiki_common_dirs))
-		{
-			foreach($wiki_common_dirs as $wiki_common_dir)
-			{
-				if (strpos($lookup_page,$wiki_common_dir) === 0)
-				{
-					$lookup_page = str_replace($wiki_common_dir,"",$lookup_page);
-					break;
-				}
-			}
-		}
-		// 検索実行
-		$pages = do_search($lookup_page,'AND',TRUE);
-		
-		foreach ($pages as $_page)
-		{
-			if ($_page != $page)
-			{
-				links_update($_page);
-			}
-		}
-	}
-	$ref_file = CACHE_DIR.encode($page).'.ref';
-	//$pageが削除されたときに、
-	if (!$time and file_exists($ref_file))
-	{
-		foreach (file($ref_file) as $line)
-		{
-			list($ref_page,$ref_auto) = explode("\t",rtrim($line));
-			//$pageをAutoLinkでしか参照していないページを一斉更新する(おいおい)
-			if ($ref_auto)
-			{
-				links_delete($ref_page,array($page));
-			}
-		}
-		unlink($rel_file);
-	}
+	return;
 }
 //ページの関連を初期化する
 function links_init()
 {
-	global $whatsnew;
-	
-	set_time_limit(0);
-	
-	// データベースの初期化
-	foreach (get_existfiles(CACHE_DIR,'.ref') as $cache)
-	{
-		unlink($cache);
-	}
-	foreach (get_existfiles(CACHE_DIR,'.rel') as $cache)
-	{
-		unlink($cache);
-	}
-	$pages = get_existpages(true);
-	$ref = array(); // 参照元
-	$ref_notauto = array();
-	foreach ($pages as $page)
-	{
-		if ($page == $whatsnew)
-		{
-			continue;
-		}
-		$page = strip_bracket($page);
-		$rel = array(); // 参照先
-		$links = links_get_objects($page);
-		foreach ($links as $_obj)
-		{
-			if (!isset($_obj->type) or $_obj->type != 'pagename' or $_obj->name == $page or $_obj->name == '')
-			{
-				continue;
-			}
-			$rel[] = $_obj->name;
-			if (!is_a($_obj,'Link_autolink'))
-			{
-				$ref_notauto[$_obj->name][$page] = TRUE;
-			}
-			$ref[$_obj->name][] = $page;
-		}
-		$rel = array_unique($rel);
-		if (count($rel))
-		{
-			$fp = fopen(CACHE_DIR.encode($page).'.rel','w')
-				or die_message('cannot write '.htmlspecialchars(CACHE_DIR.encode($page).'.rel'));
-			fputs($fp,join("\t",$rel));
-			fclose($fp);
-		}
-	}
-	
-	foreach ($ref as $page=>$arr)
-	{
-		if (count($arr) == 0)
-		{
-			continue;
-		}
-		$arr = array_unique($arr);
-		$fp = fopen(CACHE_DIR.encode($page).'.ref','wb')
-			or die_message('cannot write '.htmlspecialchars(CACHE_DIR.encode($page).'.ref'));
-		foreach ($arr as $ref_page)
-		{
-			$ref_auto = (array_key_exists($page,$ref_notauto)
-				and array_key_exists($ref_page,$ref_notauto[$page])) ? 0 : 1;
-			fputs($fp,"$ref_page\t$ref_auto\n");
-		}
-		fclose($fp);
-	}
+	return;
+
 }
 function links_add($page,$add,$rel_auto)
 {
-	$page = strip_bracket($page);
-
-	$rel_auto = array_flip($rel_auto);
-	foreach ($add as $_page)
-	{
-		$all_auto = array_key_exists($_page,$rel_auto);
-		$is_page = is_page($_page);
-		$ref = "$page\t".($all_auto ? 1 : 0)."\n";
-		
-		$ref_file = CACHE_DIR.encode($_page).'.ref';
-		if (file_exists($ref_file))
-		{
-			foreach (file($ref_file) as $line)
-			{
-				list($ref_page,$ref_auto) = explode("\t",rtrim($line));
-				if (!$ref_auto)
-				{
-					$all_auto = FALSE;
-				}
-				if ($ref_page && $ref_page != $page)
-				{
-					$ref .= trim($line)."\n";
-				}
-			}
-			unlink($ref_file);
-		}
-		if ($is_page or !$all_auto)
-		{
-			$fp = fopen($ref_file,'wb')
-				 or die_message('cannot write '.htmlspecialchars($ref_file));
-			fputs($fp,$ref);
-			fclose($fp);
-		}
-	}
+	return;
 }
 function links_delete($page,$del)
 {
-	$page = strip_bracket($page);
+	return;
 
-	foreach ($del as $_page)
-	{
-		$all_auto = TRUE;
-		$is_page = is_page($_page);
-		
-		$ref_file = CACHE_DIR.encode($_page).'.ref';
-		if (!file_exists($ref_file))
-		{
-			continue;
-		}
-		$ref = '';
-		foreach (file($ref_file) as $line)
-		{
-			list($ref_page,$ref_auto) = explode("\t",rtrim($line));
-			if ($ref_page != $page)
-			{
-				if (!$ref_auto)
-				{
-					$all_auto = FALSE;
-				}
-				$ref .= $line;
-			}
-		}
-		unlink($ref_file);
-		//if ($is_page and !$all_auto and $ref != '')
-		if ($is_page and $ref != '')
-		{
-			$fp = fopen($ref_file,'wb')
-				or die_message('cannot write '.htmlspecialchars($ref_file));
-			fputs($fp,$ref);
-			fclose($fp);
-		}
-	}
 }
 function &links_get_objects($page,$refresh=FALSE)
 {
-	static $obj;
-	
-	if (!isset($obj) or $refresh)
-	{
-		$obj = &new InlineConverter(NULL,array('note'));
-	}
-	
-	$_line = array();
-	$lines = get_source($page);
-	foreach($lines as $line)
-	{
-		$line = rtrim($line);
-		// #categoryを事前にコンバート
-		if(preg_match("/^\#category\((.*)\)$/",$line,$out)){
-			if(exist_plugin_convert("category"))
-			{
-				$line = do_plugin_convert("category",$out[1]);
-			}
-		}
-		$_line[] = $line."\n";
-	}
-	unlink($lines,$line);
-	
-	return $obj->get_objects(join('',preg_grep('/^(?!\/\/|\s)./',$_line)),$page);
-	//return $obj->get_objects(join('',preg_grep('/^(?!\/\/|\s)./',get_source($page))),$page);
+	return;
 }
 ?>

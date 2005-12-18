@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.56 2005/11/16 23:49:16 nao-pon Exp $
+// $Id: file.php,v 1.57 2005/12/18 14:10:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -208,7 +208,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="",$agids="",$freeze="",$unvisible="")
 {
 	global $post,$update_exec,$autolink,$wiki_common_dirs,$X_admin,$X_uid;
-	global $pagename_aliases,$vars;
+	global $pagename_aliases,$vars,$google_sitemap_page;
 	
 	if (is_null($notimestamp)) $notimestamp=$post['notimestamp'];
 	
@@ -285,6 +285,21 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			
 			list($pattern, $pattern_a, $forceignorelist) = get_autolink_pattern($c_pages);
 			
+			$fp = fopen(CACHE_DIR . 'autolink2.dat', 'wb') or
+				die_message('Cannot write autolink file ' .
+				CACHE_DIR . '/autolink.dat' .
+				'<br />Maybe permission is not writable');
+			set_file_buffer($fp, 0);
+			flock($fp, LOCK_EX);
+			rewind($fp);
+			fputs($fp, $pattern   . "\n");
+			fputs($fp, $pattern_a . "\n");
+			fputs($fp, join("\t", $forceignorelist) . "\n");
+			flock($fp, LOCK_UN);
+			fclose($fp);
+			
+			// modPukiWiki との互換性の為に残す。
+			list($pattern,$tmp) = array_pad(explode("\t",$pattern),2,"");
 			$fp = fopen(CACHE_DIR . 'autolink.dat', 'wb') or
 				die_message('Cannot write autolink file ' .
 				CACHE_DIR . '/autolink.dat' .
@@ -302,9 +317,6 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			$X_admin = $_X_admin;
 			$X_uid = $_X_uid;
 		}
-		
-		// linkデータベースを更新
-		links_update($page);
 		
 		// ページHTMLキャッシュとRSSキャッシュを削除
 		delete_page_html($page);
@@ -326,7 +338,19 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			// : で始まるページはPingを打たない
 			if ($s_page[0] !== ":") tb_send($page);
 		}
-	}	
+		
+		// Googleサイトマップの更新通知
+		if ($google_sitemap_page)
+		{
+			$work = CACHE_DIR."google_sitemap.udp";
+			if (!file_exists($work) || time() - filemtime($work) > 3600) //1時間に1回以内
+			{
+				touch($work);
+				$url = "http://www.google.com/webmasters/sitemaps/ping?sitemap=".rawurlencode(XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/?".$google_sitemap_page);
+				http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,FALSE);
+			}
+		}
+	}
 }
 
 // 削除履歴ページの更新

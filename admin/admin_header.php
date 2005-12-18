@@ -1,5 +1,5 @@
 <?php
-// $Id: admin_header.php,v 1.3 2004/11/24 14:22:06 nao-pon Exp $
+// $Id: admin_header.php,v 1.4 2005/12/18 14:10:47 nao-pon Exp $
 
 include("../../../mainfile.php");
 include_once(XOOPS_ROOT_PATH."/class/xoopsmodule.php");
@@ -20,4 +20,10 @@ if ( file_exists("../language/".$xoopsConfig['language']."/admin.php") ) {
 } else {
 	include("../language/english/admin.php");
 }
+if ( file_exists("../../system/language/".$xoopsConfig['language']."/admin.php") ) {
+	include("../../system/language/".$xoopsConfig['language']."/admin.php");
+} else {
+	include("../../system/language/english/admin.php");
+}
+
 ?>

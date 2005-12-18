@@ -60,61 +60,42 @@ function plugin_recent_convert()
 	}
 	if (!$recent_lines) $recent_lines = 10;
 
-	global $xoopsDB,$X_admin,$X_uid;
-	
-	if ($X_admin)
-		$where = "";
-	else
-	{
-		$where = "";
-		if ($X_uid) $where .= "  (uid = $X_uid) OR";
-		$where .= " (vaids LIKE '%all%') OR (vgids LIKE '%&3&%')";
-		if ($X_uid) $where .= " OR (vaids LIKE '%&{$X_uid}&%')";
-		foreach(X_get_groups() as $gid)
-		{
-			$where .= " OR (vgids LIKE '%&{$gid}&%')";
-		}
-	}
-
 	if ($prefix)
 	{
 		$prefix = strip_bracket($prefix);
-		if ($where)
-			$where = " (name LIKE '$prefix/%') AND ($where)";
-		else
-			$where = " name LIKE '$prefix/%'";
+		$_prefix = $prefix . "/";
 	}
-	if ($where) $where = " AND ($where)";
-	//echo $where;
-
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE (name NOT LIKE ':%')$where ORDER BY editedtime DESC LIMIT $recent_lines;";
-	$res = $xoopsDB->query($query);
-	//echo $query."<br>";
-	if ($res)
+	else
+	{
+		$_prefix = "";
+	}
+	$pages = get_existpages_db(false,$_prefix,$recent_lines," ORDER BY editedtime DESC",true);
+	if ($pages)
 	{
 		$_style = $_list_left_margin + $_list_margin;
 		$_style = " style=\"margin-left:". $_style ."px;padding-left:". $_style ."px;\"";
 
 		$date = $items = "";
 		$cnt = 0;
-		while($data = mysql_fetch_row($res))
+		foreach ($pages as $page)
 		{
-			if(date("Y-n-j",$data[3]) != $date) {
+			$_date = get_filetime($page);
+			if(date("Y-n-j",$_date) != $date) {
 					if($date != "") {
 						$items .= "</ul>";
 					}
-					$date = date("Y-n-j",$data[3]);
+					$date = date("Y-n-j",$_date);
 					$items .= "<div class=\"recent_date\">".$date."</div><ul class=\"recent_list\"{$_style}>";
 			}
 			
 			if ($prefix)
 			{
-				$_p = replace_pagename_d2s($data[1]);
+				$_p = replace_pagename_d2s($page);
 				$prefix = replace_pagename_d2s($prefix);
-				$pg_link = make_pagelink($data[1],preg_replace("/^".preg_quote($prefix,"/")."\//","",$_p));
+				$pg_link = make_pagelink($page,preg_replace("/^".preg_quote($prefix,"/")."\//","",$_p));
 			}
 			else
-				$pg_link = make_pagelink($data[1]);
+				$pg_link = make_pagelink($page);
 			
 			$items .="<li>".$pg_link."</li>\n";
 			$cnt++;

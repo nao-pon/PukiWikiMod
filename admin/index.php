@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.33 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: index.php,v 1.34 2005/12/18 14:10:47 nao-pon Exp $
 
 
 define("UTIME",time());
@@ -15,19 +15,20 @@ define("PUKIWIKI_DIR_NAME", $xoopsModule->dirname());
 define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
 
 // PukiWikiMod ルートURL
-define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/pukiwiki');
+define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/'.PUKIWIKI_DIR_NAME);
 
+// class HypCommonFunc
+if(!class_exists('HypCommonFunc')){include(XOOPS_WIKI_PATH."/include/hyp_common_func.php");}
 
-include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/pukiwiki.ini.php");
-include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/cache/config.php");
-include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/html.php");
-include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/file.php");
-include(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/func.php");
+include(XOOPS_WIKI_PATH."/pukiwiki.ini.php");
+include(XOOPS_WIKI_PATH."/cache/config.php");
+include(XOOPS_WIKI_PATH."/html.php");
+include(XOOPS_WIKI_PATH."/file.php");
+include(XOOPS_WIKI_PATH."/func.php");
 define("_AM_WIKI_CONFIG_FILE", "../cache/config.php");
 define("_AM_WIKI_ADMIN_PASS", "../cache/adminpass.php");
 define("_AM_WIKI_CSS_FILE", XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/cache/css.css");
 define("_WIKI_AM_TEXT_SIZE", "50");
-
 
 function wiki_synchronize_allusers($id="",$type="all users")
 {
@@ -124,7 +125,6 @@ function writeConfig(){
 	$f_jp_pagereading = (int)$f_jp_pagereading;
 	$fixed_heading_anchor = (int)$fixed_heading_anchor;
 	$f_countup_xoops = (int)$f_countup_xoops;
-	$f_use_xoops_comments = (int)$f_use_xoops_comments;
 	$f_tb_check_link_to_me = (int)$f_tb_check_link_to_me;
 	$f_fusen_enable_allpage = (int)$f_fusen_enable_allpage;
 	
@@ -190,7 +190,6 @@ function writeConfig(){
 	\$fixed_heading_anchor = $fixed_heading_anchor;
 	\$trackback_encoding = '$trackback_encoding';
 	\$countup_xoops = $f_countup_xoops;
-	\$use_xoops_comments = $f_use_xoops_comments;
 	\$tb_check_link_to_me = $f_tb_check_link_to_me;
 	\$fusen_enable_allpage = $f_fusen_enable_allpage;
 	\$pukiwiki_dirs = array(
@@ -234,7 +233,8 @@ function checkPermit(){
 		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/plugin_data/painter/tmp/",
 		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/trackback/",
 		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/wiki/");
-
+	
+	/*
 	if ($dir = @opendir(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/wiki/")) {
 		while($file = readdir($dir)) {
 			if($file == ".." || $file == ".") continue;
@@ -242,6 +242,7 @@ function checkPermit(){
 		}
 		closedir($dir);
 	}
+	*/
 
 	foreach($_check_list as $dir){
 		if(!is_writable($dir)){
@@ -250,9 +251,7 @@ function checkPermit(){
 	}
 
 	$_alert_icon = "<img src='../image/alert.gif'>&nbsp;";
-//	$_alert_icon = "<img src='../caution.gif' height='15' width='50'>&nbsp;";
 	foreach($wiki_error as $er_msg){
-//		echo "<img src='$_alert_icon' height='15' width='50'>&nbsp;$er_msg<br />";
 		echo "$_alert_icon$er_msg<br />";
 	}
 	
@@ -287,7 +286,10 @@ function displayForm(){
 	xoops_cp_header();
 	OpenTable();
 	checkPermit();
-	
+
+//	global $xoopsConfig;
+//	echo (nl2br(htmlspecialchars(print_r($xoopsModule,true))));
+
 	$X_admin =0;
 	$X_uid =0;
 	if ( $xoopsUser ) {
@@ -415,15 +417,15 @@ function displayForm(){
 		$f_fusen_enable_allpage[1] = " checked";
 	else
 		$f_fusen_enable_allpage[0] = " checked";
-
+	
+	global $xoopsModule;
 	echo "
-	| "._AM_SYSTEM_ADMENU." | <a href='./myblocksadmin.php'>"._AM_SYSTEM_ADMENU2."</a> |
+	| "._AM_SYSTEM_ADMENU." | <a href='./myblocksadmin.php'>"._AM_SYSTEM_ADMENU2."</a> | <a href='".XOOPS_URL."/modules/system/admin.php?fct=preferences&op=showmod&mod=".$xoopsModule->mid()."'>"._MD_AM_PREF."</a> |
 	<hr />
 	<h2>"._AM_WIKI_TITLE0."</h2>
 	<span style='color:red;font-weight:bold;'>"._AM_WIKI_INFO0."</span>
 	<ul>
 		<li><a href='".XOOPS_URL."/modules/pukiwiki/?plugin=pginfo' target='setting'>"._AM_WIKI_DB_INIT."</a></li>
-		<li><a href='".XOOPS_URL."/modules/pukiwiki/?plugin=links' target='setting'>"._AM_WIKI_PAGE_INIT."</a></li>
 	</ul>
 	<hr />
 	<h2>"._AM_WIKI_TITLE1."</h2>
@@ -471,12 +473,6 @@ function displayForm(){
 	</td><td>
 		<input type='radio' name='f_countup_xoops' value='1'".$_countup_xoops[1].">"._AM_WIKI_ENABLE."
 		<input type='radio' name='f_countup_xoops' value='0'".$_countup_xoops[0].">"._AM_WIKI_DISABLE."
-	</td></tr>
-	<tr><td>
-		"._AM_WIKI_USE_XOOPS_COMMENTS."
-	</td><td>
-		<input type='radio' name='f_use_xoops_comments' value='1'".$_use_xoops_comments[1].">"._AM_WIKI_ENABLE."
-		<input type='radio' name='f_use_xoops_comments' value='0'".$_use_xoops_comments[0].">"._AM_WIKI_DISABLE."
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_FUSEN_ENABLE_ALLPAGE."
@@ -789,6 +785,23 @@ function db_check()
 			echo $query;
 		}
 	}
+	
+	// Ver 1.4.1 ページ間リンク情報DB追加
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_rel")." LIMIT 1;";
+	if(!$result=$xoopsDB->query($query))
+	{
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_rel")."` (
+  `pgid` int(11) NOT NULL default '0',
+  `relid` int(11) NOT NULL default '0',
+  KEY `pgid` (`pgid`),
+  KEY `relid` (`relid`)
+) TYPE=MyISAM;";
+		if(!$result=$xoopsDB->queryF($query)){
+			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo $query;
+		}
+	}
+
 }
 clearstatcache();
 if($_SERVER["REQUEST_METHOD"] == "GET"){

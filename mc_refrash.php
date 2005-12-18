@@ -2,8 +2,11 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: mc_refrash.php,v 1.3 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: mc_refrash.php,v 1.4 2005/12/18 14:10:47 nao-pon Exp $
 /////////////////////////////////////////////////
+
+//チケットシステムを使用しない
+define ('PWM_TICET_NOT_USE', TRUE);
 
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -32,6 +35,28 @@ $debug = "";
 
 // 動作中フラグ ON
 touch(P_CACHE_DIR."mc_refresh_run.flg");
+
+// 古いキャッシュの削除
+$gabegge_cycle = 24; // 24h
+$gabegge_limit = 30; // 30d
+
+if (!file_exists(CACHE_DIR."pcache.gab") || filemtime(CACHE_DIR."pcache.gab") + $gabegge_cycle * 3600 < time())
+{
+	if ($dir = opendir(P_CACHE_DIR))
+	{
+		touch(CACHE_DIR."pcache.gab");
+		while (false !== ($file = readdir($dir)))
+		{
+			if (substr($file,0,1) == ".") { continue; }
+			$file = P_CACHE_DIR.$file;
+			if (filemtime($file) + $gabegge_limit * 86400 < time())
+			{
+				unlink($file);
+			}
+		}
+		closedir($dir); 
+	}
+}
 
 $data = (isset($post['mc_refresh']))? explode(" ",$post['mc_refresh']) : array();
 $page = add_bracket($post['tgt_page']);
