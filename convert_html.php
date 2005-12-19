@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.51 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: convert_html.php,v 1.52 2005/12/19 11:40:43 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -18,7 +18,7 @@ class pukiwiki_converter
 
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$ret_array=false)
 {
-	global $vars,$related_link,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id,$wiki_strong_words,$wiki_head_keywords;
+	global $vars,$related_link,$related,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id,$wiki_strong_words,$wiki_head_keywords;
 	global $X_uname;
 	global $pwm_plugin_flg,$show_comments;
 	
@@ -48,6 +48,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 			$contents = (isset($var_data[8]))? $var_data[8] : "";
 			$pwm_plugin_flg = (isset($var_data[9]))? $var_data[9] : "";
 			$show_comments = (isset($var_data[10]))? $var_data[10] : true;
+			$related = (isset($var_data[11]))? $var_data[11] : array();
 			
 			$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 			
@@ -146,6 +147,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		$var_data[8] = str_replace(array("\r","\n"),"",$body->contents);
 		$var_data[9] = $pwm_plugin_flg;
 		$var_data[10] = $show_comments;
+		$var_data[11] = $related;
 		$html = serialize($var_data)."\n".$str;
 		
 		//キャッシュ書き込み

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.59 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: func.php,v 1.60 2005/12/19 11:40:43 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1071,7 +1071,7 @@ function ltrim_pagename($page,$num)
 // 指定ページをインクルードする
 function include_page($page,$ret_array=false)
 {
-	global $vars,$post,$get,$comment_no,$article_no,$h_excerpt,$digest,$pgid;
+	global $vars,$post,$get,$comment_no,$article_no,$h_excerpt,$digest,$pgid,$related;
 	global $_msg_read_more;
 	global $now_inculde_convert;
 	global $nocache_plugin_on_include;
@@ -1118,11 +1118,13 @@ function include_page($page,$ret_array=false)
 	$_article_no = $article_no;
 	$_rsstop = $vars['is_rsstop'];
 	$_show_comments = $show_comments;
+	$_related = $related;
 	
 	//初期化
 	$comment_no = 0;
 	$article_no = 0;
 	$vars['is_rsstop'] = 0;
+	$related = array();
 	
 	//現ページ名書き換え
 	$vars["page"] = $post["page"] = $get["page"] = add_bracket($page);
@@ -1165,6 +1167,7 @@ function include_page($page,$ret_array=false)
 	$article_no = $_article_no;
 	$vars['is_rsstop'] = $_rsstop;
 	$show_comments = $_show_comments;
+	$related = array_merge($_related,$related);
 	
 	$now_inculde_convert = false;
 	
