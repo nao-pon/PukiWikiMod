@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.25 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.26 2005/12/20 15:27:31 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -240,9 +240,8 @@ function ls2_get_child_pages($prefix,$depth=FALSE) {
 	global $vars;
 	
 	$pages = array();
-	foreach (get_existpages_db(false,$prefix."/") as $_page)
+	foreach (array_diff(get_existpages_db(false,$prefix."/",0,"",false,false,true,true),array($prefix)) as $_page)
 	{
-		$_page = strip_bracket($_page);
 		if ((int)$depth)
 		{
 			$c_count =count_chars(preg_replace("/^".preg_quote($prefix,'/')."\//","",$_page));

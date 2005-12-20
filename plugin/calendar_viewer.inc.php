@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.26 2005/11/06 05:35:00 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.27 2005/12/20 15:27:31 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -170,7 +170,8 @@ function plugin_calendar_viewer_convert($func_vars_array="")
 		$filepattern = $page_YM;
 		$filepattern_len = strlen($filepattern);
 	}else{
-		$pagepattern = strip_bracket($pagename) .'/';
+		$_page = strip_bracket($pagename);
+		$pagepattern = $_page .'/';
 		$pagepattern_len = strlen($pagepattern);
 		$filepattern = $pagepattern.$page_YM;
 		$filepattern_len = strlen($filepattern);
@@ -183,11 +184,10 @@ function plugin_calendar_viewer_convert($func_vars_array="")
 
 	$pagelist = array();
 	$datelength = strlen($date_sep)*2 + 8;
-	foreach(get_existpages_db(false,$filepattern) as $page)
+	foreach(array_diff(get_existpages_db(false,$filepattern,0,"",false,false,true,true),array($_page)) as $page)
 	{
 		//if(substr($page,0,$filepattern_len)!=$filepattern) continue;
 		//$pageがカレンダー形式なのかチェック デフォルトでは、 yyyy-mm-dd-([1-9])?
-		$page = strip_bracket($page);
 		if (plugin_calendar_viewer_isValidDate(substr($page,$pagepattern_len),$date_sep) == false) continue;
 		//本日分は？
 		if ($notoday && strpos($page,$today_prefix) !== false) continue;

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone
-// $Id: tracker.inc.php,v 1.20 2005/10/16 02:32:47 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.21 2005/12/20 15:27:31 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.29 2005/03/02 13:31:05 henoheno Exp $
 
 //
@@ -747,9 +747,8 @@ class Tracker_list
 		$this->rows = array();
 		$pattern = "$page/";
 		$pattern_len = strlen($pattern);
-		foreach (get_existpages_db(false,$page."/",0," ORDER BY `buildtime` ASC ") as $_page)
+		foreach (array_diff(get_existpages_db(false,$page."/",0," ORDER BY `buildtime` ASC ",false,false,true,true),array($page)) as $_page)
 		{
-			$_page = strip_bracket($_page);
 			$name = substr($_page,$pattern_len);
 			if (preg_match(TRACKER_LIST_EXCLUDE_PATTERN,$name))
 			{
