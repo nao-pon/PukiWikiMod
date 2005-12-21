@@ -214,7 +214,7 @@ function plugin_gimage_search($q,$qmode,$do_refresh=FALSE,$col=5,$row=4)
 				),
 				array(
 					"http://bsearch.goo.ne.jp/imgdt.jsp",
-			 		"<img src=\"http://hypweb.net/xoops/modules/pukiwiki/images.php?exp=".$image['exp']."&",
+			 		"<img src=\"./images.php?exp=".$image['exp']."&",
 				),$image['thumb']);
 			
 			$image['info'] = str_replace(
