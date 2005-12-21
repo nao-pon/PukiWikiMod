@@ -1,34 +1,55 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: images.php,v 1.7 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: images.php,v 1.8 2005/12/21 12:12:31 nao-pon Exp $
 /////////////////////////////////////////////////
 
 error_reporting(0);
 
-if (!isset($_GET['q'])) exit;
+$exp = "";
+if (isset($_GET['q']))
+{
+	$type = "google";
+	$q = $_GET['q'];
+	if (preg_match("/^.+(\.[^.\/]+)$/",$q,$arg))
+	{
+		$exp = $arg[1];
+	}
+}
+else
+{
+	if (!isset($_GET['SV'])) exit;
+	if (!isset($_GET['THN_URL'])) exit;
+	$type = "goo";
+	$q = "SV=".$_GET['SV']."&THN_URL=".$_GET['THN_URL'];
+	$exp = (preg_match("/(gif|jpe?g|png|bmp)/i",$_GET['exp']))? ".".$_GET['exp'] : "";
+}
 
-$file = get_image_filename($_GET['q']);
+$file = get_image_filename($q,$type,$exp);
 
 if (!$file) exit;
 
 header("Location: ".$file);
 exit;
 
-function get_image_filename($q)
+function get_image_filename($q,$type,$exp)
 {
-	if (preg_match("/^.+(\.[^.\/]+)$/",$q,$arg))
+	if ($type == "google")
 	{
-		$exp = $arg[1];
+		$q = str_replace(array("%","+"),array("%25","%2B"),$q);
+		$url = "http://images-partners.google.com/images?q=";
+	}
+	else
+	{
+		$url = "http://thumb1.goo.ne.jp/img/relay.php?";
 	}
 	$dir = "./cache/p/";
-	$q = str_replace(array("%","+"),array("%25","%2B"),$q);
 	$file = $dir."tig_".md5($q).$exp;
 	
 	if (file_exists($file))
 	{
 		return $file;
 	}
-	$q = "http://images-partners.google.com/images?q=".$q;
+	$q = $url.$q;
 	
 	include_once("include/hyp_common_func.php");
 	include_once("proxy.php");
@@ -48,6 +69,16 @@ function get_image_filename($q)
 		fclose($fp);
 	}
 	
+	/*
+	if (!$exp)
+	{
+		$exps = array("",".gif",".jpg",".png",".swf",".psd",".bmp");
+		$info = getimagesize($file);
+		$exp = $exps[$info[2]];
+		rename($file,$file.$exp);
+		$file = $file.$exp;
+	}
+	*/
 	return $file;
 }
 ?>
