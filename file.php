@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.57 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: file.php,v 1.58 2005/12/22 15:27:02 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -68,7 +68,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	
 	if ($postdata) $postdata = rtrim($postdata)."\n";
 	
-	if ($pagereading_config_page != $page)
+	if ($pagereading_config_page != $s_page)
 	{
 		$page = add_bracket($page);
 		
@@ -1126,8 +1126,16 @@ function get_heading_init($page)
 		{
 			$first_line = $line;
 		}
-		if (preg_match("/(?:^|\|}?)\*{1,6}([^\|]*)/",$line,$reg))
+		if (preg_match("/(?:^|(\|}?))\*{1,6}([^\|]*)(.*)/",$line,$reg))
 		{
+			if (!$reg[1])
+			{
+				$reg[1] = $reg[2].$reg[3];
+			}
+			else
+			{
+				$reg[1] = $reg[2];
+			}
 			$reg[1] = rtrim($reg[1]);
 			$reg[1] = preg_replace("/\s*\[#([A-Za-z][\w-]+)\]\s*/","",rtrim($reg[1]));
 			$reg[1] = preg_replace("/->$/","",rtrim($reg[1]));
