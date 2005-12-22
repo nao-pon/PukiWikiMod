@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.81 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.82 2005/12/22 12:48:12 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -1208,7 +1208,7 @@ if (empty($vars['xoops_block']))
 			$xoopsTpl->assign("xoops_meta_keywords",implode(',',$wiki_head_keywords).",".$xoopsTpl->get_template_vars("xoops_meta_keywords"));
 		}
 		// desciption
-		$xoopsTpl->assign("xoops_meta_description",mb_strcut(preg_replace("/\s+/","",strip_tags($body)),0,200));
+		$xoopsTpl->assign("xoops_meta_description",mb_strcut(preg_replace("/\s+/","",strip_tags(preg_replace("/<script[^>]>.*?<\/script>/is","",$body))),0,200));
 	}
 	else
 	{
