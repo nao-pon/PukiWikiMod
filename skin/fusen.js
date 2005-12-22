@@ -21,15 +21,15 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.11 2005/11/07 06:24:56 nao-pon Exp $
+// $Id: fusen.js,v 1.12 2005/12/22 11:43:12 nao-pon Exp $
 // 
 
 var offsetX = 0;
 var offsetY = 0;
 
 // browser check
-var GK = document.getElementById;  // Gecko or IE
-var IE = document.all;             // IE
+var GK = document.getElementById;         // Gecko or Opera or IE
+var IE = (document.all && !window.opera); // IE
 
 // mouse position
 var mouseX = '';
@@ -1723,7 +1723,7 @@ function fusen_show_full(id,mode)
 			fusenFullFlg[id] = true;
 			obj.style.height = 'auto';
 			obj.style.zIndex = 90;
-			obj.title = (fusenObj[id].lk)? '' :"ダブルクリック->編集";
+			obj.title = (!fusenObj[id].auth || fusenObj[id].lk)? '' :"ダブルクリック->編集";
 			if (fusenObj[id].w < 50)
 			{
 				fusen_size_init(obj);
@@ -1738,9 +1738,10 @@ function fusen_show_full(id,mode)
 				obj.style.width = fusenObj[id].w + 'px';
 				obj.style.height = fusenObj[id].h + 'px';
 				obj.style.zIndex = 1;
-				if (fusenObj[id].fix == 1) obj.title = "ダブルクリック->すべて表示";
+				obj.title = (fusenObj[id].fix == 1)? "ダブルクリック->すべて表示" : '';
 			}
 			fusenFullFlg[id] = false;
+			fusenDblClick = false;
 		}
 		fusen_setlines();
 	}
@@ -1760,13 +1761,14 @@ function fusen_select(selectid,nolist)
 		fusen_show_full(selectid,'open');
 		eval('fusenFullTimerID[' + selectid + ']=setInterval("fusen_show_full(' + selectid + ',\'close\')", 10000);');
 	}
-
+	
+	fusen_editbox_hide();
 	fusen_select_clear('on');
 	with(getElement('fusen_id' + selectid))
 	{
 		style.border = fusenBorderObj['select'];
 		className = 'fusen_body';
-		style.zIndex = 90;
+		style.zIndex = 150;
 	}
 	if (!nolist)
 	{

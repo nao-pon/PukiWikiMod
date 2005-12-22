@@ -188,14 +188,16 @@ div.wiki_page_navi
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
+.pukiwiki_body li
+{
+	list-style-position: outside;
+	margin-left:0px;
+	padding-left:0px;
+}
 
 .pukiwiki_body p
 {
 	margin-left:10px;
-}
-
-li
-{
 }
 
 .pukiwiki_body h1
@@ -564,7 +566,7 @@ span.pukiwiki_trip {
 	word-break:break-all;
 }
 
-.popular_list{
+.popular_list, .popular_list li{
 	list-style-type:decimal;
 	word-wrap:break-word;
 	word-break:break-all;
@@ -630,12 +632,19 @@ span.diff_removed {
 	display:inline-block;
 }
 
-ul.list1 li.list1 {list-style-type:disc;}
-ul.list2 li.list2 {list-style-type:circle;}
-ul.list3 li.list3 {list-style-type:square;}
-ol.list1 li.list1 {list-style-type:decimal;}
-ol.list2 li.list2 {list-style-type:lower-roman;}
-ol.list3 li.list3 {list-style-type:lower-alpha;}
+ul.list1 li {list-style-type:disc;}
+ul.list2 li {list-style-type:circle;}
+ul.list3 li {list-style-type:square;}
+ol.list1 li {list-style-type:decimal;}
+ol.list2 li {list-style-type:lower-roman;}
+ol.list3 li {list-style-type:lower-alpha;}
+
+ul li.list1 {list-style-type:disc;}
+ul li.list2 {list-style-type:circle;}
+ul li.list3 {list-style-type:square;}
+ol li.list1 {list-style-type:decimal;}
+ol li.list2 {list-style-type:lower-roman;}
+ol li.list3 {list-style-type:lower-alpha;}
 
 div.p_left{
 	text-align:left;
@@ -748,7 +757,7 @@ span.wiki_this_page {
 }
 
 /* pcomment.inc.php */
-li.pcmt
+ul.list1 li.pcmt, ul.list2 li.pcmt, ul.list3 li.pcmt
 {
 	list-style-type: none;
 	border:none;

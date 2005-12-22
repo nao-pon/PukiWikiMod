@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.12 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.13 2005/12/22 11:43:12 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -234,7 +234,7 @@ EOD;
 
 function plugin_fusen_action() {
 	global $post,$adminpass,$vars;
-	global $X_admin,$X_uid,$X_uname;
+	global $X_admin,$X_uid,$X_uname,$no_name;
 
 	error_reporting(E_ALL);
 	
@@ -354,7 +354,8 @@ function plugin_fusen_action() {
 				$uid = $X_uid;
 				$ucd = PUKIWIKI_UCD;
 				// 名前をクッキーに保存
-				$name = $post['name'];
+				if ($post['name']) setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
+				$name = ($post['name'])? $post['name'] : $no_name;
 				setcookie("pukiwiki_un", $name, time()+86400*365);//1年間
 				make_user_link($name);
 			}

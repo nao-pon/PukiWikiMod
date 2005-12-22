@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.29 2005/12/20 15:27:31 nao-pon Exp $
+// $Id: db_func.php,v 1.30 2005/12/22 11:43:12 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -533,7 +533,7 @@ function plain_db_write($page,$action)
 	{
 		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_plain")." (pgid,plain) VALUES($pgid,'$data');";
 		$result=$xoopsDB->queryF($query);
-		if (!$result) echo $query."<hr>";
+		//if (!$result) echo $query."<hr>";
 		
 		//リンク先ページ
 		foreach ($rel_pages as $rel_page)
@@ -586,19 +586,19 @@ function plain_db_write($page,$action)
 		$value = "plain='$data'";
 		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_plain")." SET $value WHERE pgid = $pgid;";
 		$result=$xoopsDB->queryF($query);
-		if (!$result) echo $query."<hr>";
+		//if (!$result) echo $query."<hr>";
 		
 		//リンク先ページ
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_rel")." WHERE pgid = ".$pgid.";";
 		$result=$xoopsDB->queryF($query);
-		if (!$result) echo $query."<hr>";
+		//if (!$result) echo $query."<hr>";
 		foreach ($rel_pages as $rel_page)
 		{
 			$relid = get_pgid_by_name($rel_page);
 			if ($pgid == $relid || !$relid) {continue;}
 			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_rel")." (pgid,relid) VALUES(".$pgid.",".$relid.");";
 			$result=$xoopsDB->queryF($query);
-			if (!$result) echo $query."<hr>";
+			//if (!$result) echo $query."<hr>";
 		}
 	}
 	
@@ -607,7 +607,7 @@ function plain_db_write($page,$action)
 	{
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_plain")." WHERE pgid = $pgid;";
 		$result=$xoopsDB->queryF($query);
-		if (!$result) echo $query."<hr>";
+		//if (!$result) echo $query."<hr>";
 		
 		//リンクページ
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_rel")." WHERE pgid = ".$pgid." OR relid = ".$pgid.";";
@@ -647,7 +647,7 @@ function attach_db_write($data,$action)
 	{
 		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_attach")." (pgid,name,type,mtime,size,mode,count,age,pass,freeze,copyright,owner) VALUES($pgid,'$name','$type',$mtime,$size,'$mode',$count,$age,'$pass',$freeze,$copyright,$owner);";
 		$result=$xoopsDB->queryF($query);
-		if (!$result) echo $query."<hr>";
+		//if (!$result) echo $query."<hr>";
 	}
 	
 	// 更新
@@ -667,7 +667,7 @@ function attach_db_write($data,$action)
 		.",owner=$owner";
 		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_attach")." SET $value WHERE pgid=$pgid AND name='$name' LIMIT 1;";
 		$result=$xoopsDB->queryF($query);
-		if (!$result) echo $query."<hr>";
+		//if (!$result) echo $query."<hr>";
 	}
 	
 	// ファイル削除
@@ -689,7 +689,7 @@ function attach_db_write($data,$action)
 		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_attach")." WHERE pgid = {$pgid}{$q_name};";
 		
 		$result=$xoopsDB->queryF($query);
-		if (!$result) echo $query."<hr>";
+		//if (!$result) echo $query."<hr>";
 	}
 	else
 		return false;
