@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.53 2005/12/24 00:34:47 nao-pon Exp $
+// $Id: init.php,v 1.54 2005/12/24 01:17:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -11,6 +11,14 @@
 if (!defined('PWM_TICET_NOT_USE') && strtoupper($_SERVER["REQUEST_METHOD"]) == "POST")
 {
 	// POSTメソッドの時のみチェック
+	
+	// TB受信?
+	if (!empty($_GET['pwm_ping']))
+	{
+		$_POST['plugin'] = 'tb';
+		$_GET['cmd'] = $_POST['cmd'] = '';
+	}
+	
 	// paint, painter プラグインでの投稿は時間が経ってセッションが切れている場合があるので通過させる。
 	// tb プラグインも通過。
 	if (empty($_POST['plugin']) || !preg_match("/paint(er)?|tb/",$_POST['plugin']))
