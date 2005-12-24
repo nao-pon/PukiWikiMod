@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.52 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: init.php,v 1.53 2005/12/24 00:34:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -12,7 +12,8 @@ if (!defined('PWM_TICET_NOT_USE') && strtoupper($_SERVER["REQUEST_METHOD"]) == "
 {
 	// POSTメソッドの時のみチェック
 	// paint, painter プラグインでの投稿は時間が経ってセッションが切れている場合があるので通過させる。
-	if (empty($_POST['plugin']) || ($_POST['plugin'] != "paint" && $_POST['plugin'] != "painter"))
+	// tb プラグインも通過。
+	if (empty($_POST['plugin']) || !preg_match("/paint(er)?|tb/",$_POST['plugin']))
 	{
 		// fusen プラグインでの投稿はAjaxなのでチケットを破棄しないようにする。pginfo はインラインフレーム処理だから
 		$onetime = (!empty($_POST['plugin']) && ($_POST['plugin']=="fusen" || $_POST['plugin']=="pginfo"))? false : true;
