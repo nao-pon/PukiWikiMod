@@ -4,7 +4,7 @@ function plugin_gimage_init()
 {
 	$data = array('plugin_gimage_dataset'=>array(
 	'cache_time'    => 36,                                  // キャッシュ有効時間(h)
-	'head_msg'      => '<h4>イメージ検索結果(%s): %s <span class="small">from WWW</span></h4><p class="empty"></p>',
+	'head_msg'      => '<h4>イメージ検索結果%s: %s <span class="small">from WWW</span></h4><p class="empty"></p>',
 	'research'      => 'さらに goo で探す',
 	'err_noresult'  => 'Google では見つかりませんでした。',
 	'err_noconnect' => 'Google に接続できませんでした。',
@@ -71,7 +71,7 @@ function plugin_gimage_convert()
 	$array = func_get_args();
 	
 	$query = "";
-	$qmode = 0;
+	$qmode = "0";
 	$col = 5;
 	$row = 4;
 	
@@ -104,11 +104,16 @@ function plugin_gimage_convert()
 	
 	if ($qmode)
 	{
-		$qmode = 1;
-		$_qmode = "OR";
+		$qmode = "1";
+		$_qmode = "(OR)";
 	}
 	else
-		$_qmode = "AND";
+	{
+		$qmode = "0";
+		$_qmode = "(AND)";
+	}
+	
+	if (strpos($query," ") === FALSE) $_qmode = "";
 	
 	list($ret,$refresh) = plugin_gimage_search($query,$qmode,FALSE,$col,$row);
 	
@@ -146,9 +151,8 @@ function plugin_gimage_search($q,$qmode,$do_refresh=FALSE,$col=5,$row=4)
 	
 	if (!$ret)
 	{
-		if ($qmode) $q = str_replace(" "," OR ",$q);
-		//$file = "http://bsearch.goo.ne.jp/image.jsp?CAT=image&DC=20&MT=".rawurlencode($q);
-		$url = "http://bsearch.goo.ne.jp/image.jsp?UI=web&TAB=web&DC=20&MT=".rawurlencode($q);
+		$sm = ($qmode === "1")? "sc" : "mc";
+		$url = "http://bsearch.goo.ne.jp/image.jsp?UI=web&TAB=web&DC=20&SM={$sm}&MT=".rawurlencode($q);
 		$result = http_request($url);
 		if ($result['rc'] != 200)
 			return  $plugin_gimage_dataset['err_noconnect'];
