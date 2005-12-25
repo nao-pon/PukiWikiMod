@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.11 2005/08/24 00:00:19 nao-pon Exp $
+// $Id: tb.inc.php,v 1.12 2005/12/25 23:27:32 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -16,8 +16,8 @@ function plugin_tb_action()
 {
 	global $script,$vars,$trackback,$X_admin;
 	
-	// POST: cmd=delete データ削除
-	if ($X_admin && $vars['cmd']=="delete")
+	// POST: pcmd=delete データ削除
+	if ($X_admin && $vars['pcmd']=="delete")
 	{
 		$i = 0;
 		$del_urls = array();

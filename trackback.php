@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.25 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: trackback.php,v 1.26 2005/12/25 23:27:32 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -640,7 +640,7 @@ EOD;
 <input type="hidden" name="plugin" value="tb" />
 <input type="hidden" name="__mode" value="view" />
 <input type="hidden" name="tb_id" value="$tb_id" />
-<input type="hidden" name="cmd" value="delete" />
+<input type="hidden" name="pcmd" value="delete" />
 <input type="submit" value="チェックしたものを削除" />
 $tb_body
 </form>
