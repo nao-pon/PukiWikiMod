@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.27 2005/11/08 08:27:20 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.28 2006/01/06 02:03:27 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -156,8 +156,15 @@ function plugin_pcomment_convert() {
 	//文字列を取得
 	list($page, $count) = $params['arg'];
 	//if ($page == '') { $page = sprintf(PCMT_PAGE,strip_bracket($vars['page'])); }
-	if ($page == '') { $page = sprintf($comment_pg_name,strip_bracket($vars['page'])); }
-
+	if ($page == '')
+	{
+		$page = sprintf($comment_pg_name,strip_bracket($vars['page']));
+	}
+	else
+	{
+		$page = add_bracket($page);
+	}
+	
 	$_page = get_fullname($page,$vars['page']);
 	if (!preg_match("/^$BracketName$/",$_page))
 		return 'invalid page name: '.htmlspecialchars($_page);
