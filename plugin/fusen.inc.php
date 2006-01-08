@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.13 2005/12/22 11:43:12 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.14 2006/01/08 13:29:24 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -247,7 +247,7 @@ function plugin_fusen_action() {
 	$dat = plugin_fusen_data($refer,false);
 	
 	// 規定外のモード
-	if (!in_array($post['mode'],array('set','del','lock','unlock','recover','edit','burn')))
+	if (!in_array($post['mode'],array('set','del','lock','unlock','recover','edit','burn','del_m')))
 	{
 		ob_clean();
 		exit;
@@ -256,6 +256,13 @@ function plugin_fusen_action() {
 	$id = preg_replace('/id/', '', $post['id']);
 	
 	$auth = false;
+	
+	// 一括ゴミ箱モード
+	if ($post['mode'] == "del_m")
+	{
+		$ids = explode(",",$id);
+		$id = "";
+	}
 	
 	if ($id && array_key_exists($id,$dat))
 	{
@@ -269,6 +276,10 @@ function plugin_fusen_action() {
 		if ($post['mode'] == "burn")
 		{
 			if ($X_admin || ($X_uid && get_pg_auther($refer) == $X_uid)) $auth = true;
+		}
+		else if ($post['mode'] == "del_m")
+		{
+			$auth = false;
 		}
 		else
 		{
@@ -286,6 +297,7 @@ function plugin_fusen_action() {
 		case 'recover':
 			if (!array_key_exists($id,$dat)) die_message('The data is not accumulated just.'."($id)");
 		case 'burn':
+		case 'del_m':
 			// ページHTMLキャッシュを削除
 			delete_page_html($refer,"html");
 			// touch
@@ -342,6 +354,21 @@ function plugin_fusen_action() {
 						}
 					}
 					if ($burned) need_update_plaindb($refer);
+					break;
+				case 'del_m':
+					foreach($ids as $id)
+					{
+						$_auth = false;
+						if ($X_admin || ($X_uid && get_pg_auther($refer) == $X_uid)) $_auth = true;
+						else if ($dat[$id]['uid'] && $dat[$id]['uid'] == $X_uid) $_auth = true;
+						else if (!$dat[$id]['uid'] && $dat[$id]['ucd'] && $dat[$id]['ucd'] == PUKIWIKI_UCD) $_auth = true;
+						if ($_auth)
+						{
+							$dat[$id]['del'] = true;
+							$dat[$id]['lk'] = false;
+						}
+						if ($_auth) $auth = true;
+					}
 					break;
 			}
 			break;

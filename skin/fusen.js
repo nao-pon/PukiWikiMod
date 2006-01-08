@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.12 2005/12/22 11:43:12 nao-pon Exp $
+// $Id: fusen.js,v 1.13 2006/01/08 13:29:43 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -754,6 +754,54 @@ function fusen_del(id)
 	}
 }
 
+function fusen_del_multi()
+{
+	fusenMovingObj = null;
+	var ok;
+	
+	ok = confirm('選択した付箋をゴミ箱へ入れますか？');
+	
+	if (fusenBusyFlg)
+	{
+		alert(fsen_msg_nowbusy);
+		return;
+	}
+	
+	if (ok)
+	{
+		var ids = new Array();
+		var elm;
+		for(var id in fusenObj)
+		{
+			elm = getElement('list_delbox_'+id);
+			if(elm && elm.checked == true)
+			{
+				ids[id] = id;
+			}
+		}
+		getElement('edit_id').value = ids.join(",");
+		getElement('edit_mode').value = 'del_m';
+		for(var id in ids)
+		{
+			// 表示更新
+			getElement('fusen_id' + id).style.visibility = "hidden";
+			fusen_set_menu_html(getElement('fusen_id' + id + 'menu'),id,'del');
+			getElement('fusen_id' + id).style.border = fusenBorderObj['del'];
+			fusenObj[id].del = true;
+			
+			if (!fusenDustboxFlg)
+			{
+				fusen_removelines(id);
+				fusen_setlines(id);
+			}
+		}
+		
+		// サーバーデータ更新
+		fusen_postdata(true);
+		fusen_list_make();
+	}
+}
+
 function fusen_recover(id)
 {
 	if (fusenBusyFlg)
@@ -1059,7 +1107,7 @@ function fusen_create_infoobj(id, obj) {
 	
 	cobj.className = 'fusen_info';
 	cobj.id = 'fusen_id' + id + 'info';
-	cobj.innerHTML = '<span title="付箋作成者 at '+md+'">' + obj.name + '</span>' + '<span title="最終更新日時' + md + '">' + d + '</span>';
+	cobj.innerHTML = '<span title="付箋作成者 at '+md+'">' + obj.name + '</span>' + '<span title="最終更新日時' + d + '">' + md + '</span>';
 	cobj.onmouseout = fusen_moving_on;
 	cobj.onmouseover = fusen_moving_off;
 	return cobj;
@@ -1893,9 +1941,12 @@ function fusen_list_make()
 {
 	var listobj = getElement('fusen_list');
 	var listcount = 0;
-	var burn;
-	burn = (fusenX_admin)? " [ <a href=\"JavaScript:fusen_burn()\" title=\"ごみ箱を空にする\">ごみ箱を空にする</a> ]" : "";
-	listobj.innerHTML = '[<a href="javascript:fusen_hide(\'fusen_list\');" title="閉じる">×</a>] [ <a href="javascript:fusen_hide(\'fusen_list\');JavaScript:fusen_new();" title="新しい付箋を貼る">新規</a> ]'+burn+' [ <a href="JavaScript:fusen_show(\'fusen_help\');" title="使い方">ヘルプ</a> ]<ul>';
+	var burn = "";
+	var delbox;
+	var tmp = "";
+	var flg_delbox = false;
+	
+	tmp = '<ul><form>';
 	for(var id in fusenObj)
 	{
 		listcount ++;
@@ -1906,19 +1957,36 @@ function fusen_list_make()
 		if (!addtxt.replace(/^[\s]+$/,'')) addtxt = "- no text -";
 		
 		dustbox = 0;
+		delbox = '';
 		if (fusenObj[id].del)
 		{
 			addtxt = '(ごみ箱)' + addtxt;
 			//dustbox = 1;
 		}
-		listobj.innerHTML += '<li><a href="javascript:fusen_select('+id+')">'+addtxt+'</a></li>';
+		else
+		{
+			if (fusenObj[id].auth)
+			{
+				delbox = '<input type="checkbox" id="list_delbox_'+id+'" style="cursor:auto;" />';
+				flg_delbox = true;
+			}
+		}
+		tmp += '<li>'+delbox+'<a href="javascript:fusen_select('+id+')">'+addtxt+'</a></li>';
 	}
-	if (!listcount) listobj.innerHTML += '<li>このページに付箋はありません。</li>';
+	
+	if (flg_delbox) burn += " [ <a href=\"JavaScript:fusen_del_multi()\" title=\"チェックした付箋をごみ箱へ捨てる\">チェックをごみ箱へ</a> ]";
+	if (fusenX_admin) burn += " [ <a href=\"JavaScript:fusen_burn()\" title=\"ごみ箱を空にする\">ごみ箱を空にする</a> ]";
+	
+	tmp = '[<a href="javascript:fusen_hide(\'fusen_list\');" title="閉じる">×</a>] [ <a href="javascript:fusen_hide(\'fusen_list\');JavaScript:fusen_new();" title="新しい付箋を貼る">新規</a> ]'+burn+' [ <a href="JavaScript:fusen_show(\'fusen_help\');" title="使い方">ヘルプ</a> ]' + tmp;
+	
+	if (!listcount) tmp += '<li>このページに付箋はありません。</li>';
 	if (getElement('pukiwiki_fusenlist'))
 	{
 		getElement('pukiwiki_fusenlist').innerHTML = '&nbsp;[ <a href="JavaScript:fusen_show(\'fusen_list\')">付箋(' + listcount + ')</a> ]';
 	}
-	listobj.innerHTML += '</ul>';
+	tmp += '</form></ul>';
+	
+	listobj.innerHTML = tmp;
 	list_left = listobj.style.left;
 	list_visibility = listobj.style.visibility;
 	listobj.style.visibility = 'hidden';
