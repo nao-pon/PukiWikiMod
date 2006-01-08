@@ -1,6 +1,7 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.38 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.39 2006/01/08 13:38:05 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
+global $pwm_confg;
 ?>
 
 <!-- pukiwikimod -->
@@ -137,6 +138,11 @@ if (!defined('DATA_DIR')) exit;
 		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.png" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
 	</div>
 	<?php
+	if (isset($pwm_confg['ad_bottom']))
+	{
+		echo $pwm_confg['ad_bottom'];
+	}
+	
 	if ($is_page)
 	{
 	?>
