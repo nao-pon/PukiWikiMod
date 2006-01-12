@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.44 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.45 2006/01/12 01:27:28 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -313,16 +313,16 @@ $no_proxy = array(
 
 ///////////////////////////////////////////////// 
 // 名前入力欄にトリップ(名前#トリップ生成キー)を適用する
-$pwm_confg['use_trip'] = 0;
+$pwm_config['use_trip'] = 0;
 
 ///////////////////////////////////////////////// 
 // Cookieに名前が保存されている状態で
 // 名前を変更した時旧の名前を表示する
-$pwm_confg['show_oldname'] = 0;
+$pwm_config['show_oldname'] = 0;
 
 ///////////////////////////////////////////////// 
 // 更新通知Ping の最短通知間隔 単位:分
-$pwm_confg['update_ping_limit'] = 60;
+$pwm_config['update_ping_limit'] = 60;
 
 /////////////////////////////////////////////////
 // ユーザ定義ルール
