@@ -1,4 +1,0 @@
-RewriteEngine on
-RewriteBase /xoops/modules/pukiwiki
-RewriteRule ^([0-9]*)\.html?(#.*)?$ index.php?pgid=$1$2 [qsappend]
-RewriteRule ^tb/([0-9]+)/?$ index.php?pwm_ping=$1 [qsappend]

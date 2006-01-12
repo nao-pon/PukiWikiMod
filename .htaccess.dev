@@ -1,0 +1,8 @@
+#RewriteEngine on
+
+#静的ページ風URLを有効にした場合は、この行以外の行頭の#を取り除き[XOOPS_ROOT]を環境に合わせて書き換えファイル名を .htaccess にリネームしてください。
+
+#RewriteBase [XOOPS_ROOT]/modules/pukiwiki
+
+#RewriteRule ^([0-9]*)\.html?(#.*)?$ index.php?pgid=$1$2 [qsappend]
+#RewriteRule ^tb/([0-9]+)/?$ index.php?pwm_ping=$1 [qsappend]
