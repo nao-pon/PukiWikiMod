@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.28 2006/01/06 02:03:27 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.29 2006/01/12 01:34:22 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -42,7 +42,7 @@ define('PCMT_COLS_COMMENT',70);
 define('PCMT_INSERT_INS',1);
 //
 //コメントの挿入フォーマット
-define('PCMT_FORMAT_NAME','[[%1$s>%2$s]]');
+define('PCMT_FORMAT_NAME','[[%2$s>%1$s]]');
 define('PCMT_FORMAT_MSG','%s');
 define('PCMT_FORMAT_DATE','&new{%s};');
 // \x08は、投稿された文字列中に現れない文字であればなんでもいい。
