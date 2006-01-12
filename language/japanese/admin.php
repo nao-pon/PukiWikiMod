@@ -1,8 +1,8 @@
 <?php
-// $Id: admin.php,v 1.19 2005/04/27 14:28:10 nao-pon Exp $
+// $Id: admin.php,v 1.20 2006/01/12 01:33:19 nao-pon Exp $
 
 define("_AM_WIKI_TITLE0", "PukiWiki 初期設定");
-define("_AM_WIKI_INFO0", "初期設定を完了するために次の２つのリンク先にアクセスして処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
+define("_AM_WIKI_INFO0", "モジュールを新規インストールした時は次のリンク先にアクセスして必要な処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
 define("_AM_WIKI_DB_INIT", "データベース初期化");
 define("_AM_WIKI_PAGE_INIT", "ページリンク情報初期化");
 
@@ -46,7 +46,7 @@ define("_AM_WIKI_FUNCTION_UNVISIBLE", "ページごとの閲覧制限機能を有効にする");
 define("_AM_WIKI_BACKUP_TIME", "定期バックアップの間隔(時間(hour)で指定[0で更新毎])");
 define("_AM_WIKI_BACKUP_AGE", "バックアップの最大世代数");
 define("_AM_WIKI_PCMT_PAGE", 'pcommentプラグインでの新規作成ページ名のデフォルト (%sに設置ページ名が入る)');
-define("_AM_WIKI_USER_DIR", 'フォームでの名前入力時のフォーマット<br />(%1$sに投稿時のNameが入る)<br />例: <b>[[%1$s>user/%1$s]]</b><br />ここで設定しない場合は各プラグインでの設定が適用されます。');
+define("_AM_WIKI_USER_DIR", 'フォームでの名前入力時のフォーマット<br />(%2$sに投稿時のName値,%2$sにそのプレインテキストが入る)<br />例: <b>[[%2$s>user/%1$s]]</b><br />ここで設定しない場合は各プラグインでの設定が適用されます。');
 define("_AM_WIKI_FUNCTION_JPREADING", "ChaSen, KAKASI による、ページ名の読み取得を有効にする");
 define("_AM_WIKI_KANJI2KANA_ENCODING", "ChaSen/KAKASI との受け渡しに使う漢字コード (UNIX系は EUC-JP、Win系は S-JIS が基本)");
 define("_AM_WIKI_PAGEREADING_CHASEN_PATH", "ChaSen の実行ファイルパス (各自の環境に合わせて設定)");

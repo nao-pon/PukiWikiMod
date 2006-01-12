@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.12 2005/10/02 03:29:28 dashboard Exp $
+// $Id: admin.php,v 1.13 2006/01/12 01:33:19 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE0", "PukiWikiMod initial setting.");
@@ -43,7 +43,7 @@ define("_AM_WIKI_FUNCTION_UNVISIBLE", "Enable perusal authority for every page."
 define("_AM_WIKI_BACKUP_TIME", "The interval of fixed backup.(hour) [every updating at 0]");
 define("_AM_WIKI_BACKUP_AGE", "Maximum generations of backup.");
 define("_AM_WIKI_PCMT_PAGE", 'The default of the new creation page name in pcomment plug-in.(Installation page name is set to %s.)');
-define("_AM_WIKI_USER_DIR", 'The format at the time of the name input in form.<br />(Name at the time of contribution goes into %1$s)<br />ex. <b>[[%1$s>user/%1$s]]</b><br />When not setting up here, a setup with each plug-in is applied.');
+define("_AM_WIKI_USER_DIR", 'The format at the time of the name input in form.<br />(Post name set to %2$s, that plain text set to %2$s)<br />ex. <b>[[%2$s>user/%1$s]]</b><br />When not setting up here, a setup with each plug-in is applied.');
 define("_AM_WIKI_FUNCTION_JPREADING", "Is kana reading acquisition of the page name by ChaSen and KAKASI confirmed?");
 define("_AM_WIKI_KANJI2KANA_ENCODING", "The kanji code used for delivery with ChaSen/KAKASI (UNIX systems EUC-JP and Win systems S-JIS is foundations.)");
 define("_AM_WIKI_PAGEREADING_CHASEN_PATH", "Execution file path of ChaSen (it sets up according to each one of environment)");
