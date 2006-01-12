@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: list.inc.php,v 1.6 2005/12/20 15:27:31 nao-pon Exp $
+// $Id: list.inc.php,v 1.7 2006/01/12 00:07:52 nao-pon Exp $
 //
 // 一覧の表示
 function plugin_list_action()
@@ -50,12 +50,12 @@ function get_list($withfilename,$prefix="",$lword="")
 	
 	if ($prefix)
 	{
-		$pages = array_diff(get_existpages_db(false,$prefix."/",0,"",false,true),array($whatsnew,$prefix));
+		$pages = array_diff(get_existpages_db(false,$prefix."/",0,"",false,true,true,true),array($whatsnew,$prefix));
 		if (!count($pages))
-			$pages = array_diff(get_existpages_db(false,$prefix."/",0,"",false,false),array($whatsnew,$prefix));
+			$pages = array_diff(get_existpages_db(false,$prefix."/",0,"",false,false,true,true),array($whatsnew,$prefix));
 	}
 	else
-		$pages = array_diff(get_existpages_db(false,"",0,"",false,true),array($whatsnew));
+		$pages = array_diff(get_existpages_db(false,"",0,"",false,true,true,true),array($whatsnew));
 	if (!$withfilename)
 	{
 		$pages = array_diff($pages,preg_grep("/$non_list/",$pages));
