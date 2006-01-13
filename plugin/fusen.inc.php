@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.14 2006/01/08 13:29:24 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.15 2006/01/13 11:51:02 nao-pon Exp $
 // 
 
 // fusen.js¤ÎPATH
@@ -105,11 +105,12 @@ function plugin_fusen_convert() {
 	
 	if ($height)
 	{
-		$height = "height:{$height}px;";
+		$board = '<div class="fusen_board" style="height:'.$height.'px;"></div>';
 	}
 	else
 	{
-		$background = 'background:transparent none;';
+		//$background = 'background:transparent none;';
+		$board = '';
 	}
 	
 	$wiki_helper = '<div class="wiki_helper">'.fontset_js_tag().'</div>';
@@ -227,7 +228,8 @@ var fusenFromSkin = {$from_skin};
 </div>
 <div id="fusen_help" class="fusen_help"></div>
 <div id="fusen_list" class="fusen_list"></div>
-<div id="fusen_area" style="{$height}{$background}">$html</div>
+<div id="fusen_area">$html</div>
+{$board}
 EOD;
 }
 
