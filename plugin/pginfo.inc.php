@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pginfo.inc.php,v 1.7 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: pginfo.inc.php,v 1.8 2006/01/13 11:40:30 nao-pon Exp $
 //
 
 // メッセージ設定
@@ -54,7 +54,7 @@ function plugin_pginfo_init()
 
 function plugin_pginfo_action()
 {
-	error_reporting(E_ALL);
+	error_reporting(E_ERROR);
 	
 	global $script,$vars,$post,$adminpass,$foot_explain;
 	global $_links_messages,$X_admin;
@@ -401,7 +401,7 @@ function pginfo_db_init()
 		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET `update` = '0';";
 		$result=$xoopsDB->queryF($query);
 		
-		unlink ($work);
+		@unlink ($work);
 	}
 	$post['init'] = "";
 }
@@ -508,7 +508,7 @@ function count_db_init()
 		echo " ( Done ".$counter." Pages !)<hr />";
 		echo "</div>";
 		
-		unlink ($work);
+		@unlink ($work);
 	}
 	$post['count'] = "";
 }
@@ -603,7 +603,7 @@ function pginfo_db_retitle()
 		echo " ( Done ".$counter." Pages !)<hr />";
 		echo "</div>";
 		
-		unlink ($work);
+		@unlink ($work);
 	}
 	$post['title'] = "";
 }
@@ -643,6 +643,8 @@ function plain_db_init()
 		{
 			$files[] = $file;
 		}
+		
+		$vars['from_pginfo_init'] = true;
 		
 		foreach(array_diff($files,$domix) as $file)
 		{
@@ -719,7 +721,7 @@ function plain_db_init()
 		echo " ( Done ".$counter." Pages !)<hr />";
 		echo "</div>";
 		
-		unlink ($work);
+		@unlink ($work);
 	}
 }
 
@@ -832,7 +834,7 @@ function attach_db_init()
 		echo " ( Done ".$counter." Files !)<hr />";
 		echo "</div>";
 		
-		unlink ($work);
+		@unlink ($work);
 	}
 }
 

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.41 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: make_link.php,v 1.42 2006/01/13 11:40:30 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -182,6 +182,8 @@ class InlineConverter
 				if (!$name = get_real_pagename($name)) return $match[0];
 			}
 		}
+		global $vars;
+		//echo $vars['page']." : ".$name."<br>";
 		return make_pagelink($name,$alias,'',$name);
 	}
 }
@@ -892,8 +894,17 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	static $linktag = array();
 
 	$page = add_bracket($page);
+	$sb_page = strip_bracket($page);
+	$s_page = htmlspecialchars($sb_page);
 	
-	if ($not_where && isset($linktag[$page.$alias])) return $linktag[$page.$alias];
+	if ($not_where && isset($linktag[$page.$alias]))
+	{
+		if (!empty($vars['from_pginfo_init']) && !isset($related[$sb_page]) && $page != $vars['page'] and is_page($page))
+		{
+			$related[$sb_page] = get_filetime($page);
+		}
+		return $linktag[$page.$alias];
+	}
 	
 	$compact = FALSE;
 	$_convert_d2s = $convert_d2s;
@@ -911,8 +922,6 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	if (!$breadcrumbs && $not_where && preg_match("/^#.*#$/",$alias))
 		$alias = "";
 	
-	$sb_page = strip_bracket($page);
-	$s_page = htmlspecialchars($sb_page);
 	$s_alias = ($alias == '') ? $s_page : $alias;
 	
 	if ($page == '')
