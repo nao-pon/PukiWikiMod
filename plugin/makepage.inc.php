@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.8 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.9 2006/01/14 02:27:09 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -26,6 +26,7 @@ function plugin_makepage_init()
 function plugin_makepage_convert()
 {
 	global $script,$vars,$post,$_btn_edit,$_makepage_messages,$BracketName,$WikiName,$X_uname;
+	global $cols,$rows;
 	
 	$makepage = '';
 	if (func_num_args()) {
@@ -75,15 +76,15 @@ function plugin_makepage_convert()
 		$page_tag .= '<input type="hidden" name="usename" value="'.$post['usename'].'" />';
 		$page_tag .= '<input type="hidden" name="body_message" value="'.$body_message.'" />';
 		$body_tag  = convert_html("***".$_makepage_messages['msg_makepage'].": [[".$s_makepage.htmlspecialchars($post['new_page'])."]]");
-		$body_tag .= "<br />".$body_message.'<br />'.fontset_js_tag().'<br /><textarea name="body" rows="15">'.$temp.'</textarea><br />';
+		$body_tag .= "<br />".$body_message.'<br />'.fontset_js_tag().'<br /><textarea name="body" rows="'.$rows.'" cols="'.$cols.'">'.$temp.'</textarea><br />';
 		if ($post['usename'])
 			$body_tag .= $_makepage_messages['msg_name'].' <input type="text" name="name" size="50" value="'.htmlspecialchars($X_uname).'" />';
 		$body_message = "";
 	}
 
 	$ret = <<<EOD
+<div>
 <form action="$script" method="post">
- <div>
   <input type="hidden" name="plugin" value="makepage" />
   <input type="hidden" name="prefix" value="$s_makepage" />
   <input type="hidden" name="body_message" value="$body_message" />
@@ -91,8 +92,8 @@ function plugin_makepage_convert()
   $page_tag
   $body_tag
   <input type="submit" value="{$_makepage_messages['btn']}" />
- </div>
 </form>
+</div>
 EOD;
 	
 	return $ret;
