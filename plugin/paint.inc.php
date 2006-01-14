@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.16 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: paint.inc.php,v 1.17 2006/01/14 15:41:40 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -38,7 +38,6 @@ define('PAINT_APPLET_WIDTH',800);
 define('PAINT_APPLET_HEIGHT',370);
 //
 //コメントの挿入フォーマット
-define('PAINT_FORMAT_NAME','[[%s]]');
 define('PAINT_FORMAT_MSG','%s');
 //define('PAINT_FORMAT_DATE','SIZE(10){%s}');
 define('PAINT_FORMAT_DATE','&new{%s};');
@@ -266,13 +265,6 @@ function paint_insert_ref($filename)
 	$ret['msg'] = $_paint_messages['msg_title'];
 	$ret['body'] = "";
 
-	//$vars['msg'] = mb_convert_encoding($vars['msg'],SOURCE_ENCODING,'auto');
-	//$vars['yourname'] = mb_convert_encoding($vars['yourname'],SOURCE_ENCODING,'auto');
-	//$vars['title'] = mb_convert_encoding($vars['title'],SOURCE_ENCODING,'auto');
-	
-	// 名前をクッキーに保存
-	setcookie("pukiwiki_un", $vars['yourname'], time()+86400*365);//1年間
-	
 	if (empty($vars['yourname'])) $vars['yourname'] = $X_uname;
 	
 	$title = (!empty($vars['title']))? "**** ".rtrim($vars['title'])."\n" : "";
@@ -283,22 +275,10 @@ function paint_insert_ref($filename)
 	
 	$msg = auto_br(sprintf(PAINT_FORMAT_MSG, rtrim($vars['msg'])));
 	
-
+	$name = $vars['yourname'];
+	make_user_link($name);
 	
-	if ($vars['yourname'] != '')
-	{
-		if (WIKI_USER_DIR)
-		{
-			$name = $vars['yourname'];
-			make_user_link($name);
-		}
-		else
-		{
-			$name = sprintf(PAINT_FORMAT_NAME, $vars['yourname']);
-		}
-	}
 	$date = sprintf(PAINT_FORMAT_DATE, $now);
-	
 	
 	$msg = trim($spch.$msg);
 

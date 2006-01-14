@@ -14,7 +14,7 @@
 
  ※$_btn_nameはcommentプラグインで既に設定されている場合があります
 
- $Id: article.inc.php,v 1.13 2005/03/05 02:14:50 nao-pon Exp $
+ $Id: article.inc.php,v 1.14 2006/01/14 15:41:40 nao-pon Exp $
  
  */
 
@@ -57,15 +57,9 @@ function plugin_article_action()
 		$postdata_old  = get_source($post["refer"]);
 		$article_no = 0;
 		
-		// 名前をクッキーに保存
-		setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
-		
-		$name = ($post['name'])? $post['name'] : $no_name;
-		if (WIKI_USER_DIR)
-			make_user_link($name);
-		else
-			$name = str_replace('$name',$name,$name_format);
-		
+		$name = $post['name'];
+		// 名前をフォーマット
+		make_user_link($name,$name_format);
 		
 		if($post['subject'])
 		{

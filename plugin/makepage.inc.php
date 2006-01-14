@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.10 2006/01/14 13:31:53 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.11 2006/01/14 15:41:40 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -78,7 +78,7 @@ function plugin_makepage_convert()
 		$body_tag  = convert_html("***".$_makepage_messages['msg_makepage'].": [[".$s_makepage.htmlspecialchars($post['new_page'])."]]");
 		$body_tag .= "<br />".$body_message.'<br />'.fontset_js_tag().'<br /><textarea name="body" rows="'.$rows.'" cols="'.$cols.'">'.$temp.'</textarea><br />';
 		if ($post['usename'])
-			$body_tag .= $_makepage_messages['msg_name'].' <input type="text" name="name" size="50" value="'.htmlspecialchars($X_uname).'" />';
+			$body_tag .= $_makepage_messages['msg_name'].' <input type="text" name="name" size="50" value="'.WIKI_NAME_DEF.'" />';
 		$body_message = "";
 	}
 

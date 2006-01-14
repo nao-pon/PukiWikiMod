@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone
-// $Id: tracker.inc.php,v 1.21 2005/12/20 15:27:31 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.22 2006/01/14 15:41:40 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.29 2005/03/02 13:31:05 henoheno Exp $
 
 //
@@ -85,9 +85,6 @@ function plugin_tracker_action()
 {
 	global $post, $vars, $now, $X_uid, $X_uname, $_tracker_messages;
 	
-	// 名前をクッキーに保存
-	setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
-			
 	// ゲストは承認必要？
 	$guestauth = (!empty($post['guestauth']))? 1:0;
 

@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.19 2006/01/12 01:34:22 nao-pon Exp $
+// $Id: comment.inc.php,v 1.20 2006/01/14 15:41:40 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -77,11 +77,7 @@ function plugin_comment_action()
 			
 			if (empty($post['noname']))
 			{
-				// 名前をクッキーに保存
-				setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
-				
-				$_name = ($post['name'] == '')? $no_name : $post['name'];
-				
+				$_name = $post['name'];
 				// 名前をフォーマット
 				make_user_link($_name,$name_format);
 			}

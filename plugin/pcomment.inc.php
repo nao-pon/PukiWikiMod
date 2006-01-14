@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.29 2006/01/12 01:34:22 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.30 2006/01/14 15:41:40 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -270,11 +270,7 @@ function pcmt_insert($page) {
 	$name = "";
 	if (!empty($post['name']))
 	{
-		// 名前をクッキーに保存
-		setcookie("pukiwiki_un", $post['name'], time()+86400*365);//1年間
-		
-		$name = ($post['name'] == '') ? $no_name : $post['name'];
-		
+		$name = $post['name'];
 		// 名前をフォーマット
 		make_user_link($name,PCMT_FORMAT_NAME);
 	}
