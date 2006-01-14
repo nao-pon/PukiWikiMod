@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.58 2005/12/22 15:27:02 nao-pon Exp $
+// $Id: file.php,v 1.59 2006/01/14 00:10:32 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -257,7 +257,7 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		pginfo_db_write($page,$action,$aids,$gids,$vaids,$agids,$freeze,$unvisible,$notimestamp);
 		
 		// for autolink
-		if ($autolink && $action != "insert")
+		if ($autolink && $action == "insert")
 		{
 			// ゲストアカウントとしてページ一覧を得る
 			$_X_admin = $X_admin;
