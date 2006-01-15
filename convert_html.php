@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.53 2006/01/15 13:40:23 nao-pon Exp $
+// $Id: convert_html.php,v 1.54 2006/01/15 15:14:42 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -49,7 +49,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 			$pwm_plugin_flg = (isset($var_data[9]))? $var_data[9] : "";
 			$show_comments = (isset($var_data[10]))? $var_data[10] : true;
 			$related = (isset($var_data[11]))? $var_data[11] : array();
-			$vars['author_ucd'] = (isset($var_data[12]))? $var_data[12] : "";
+			$vars['author_ucd'] = (isset($var_data[12]))? $var_data[12] : "\t";
 			
 			$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 			
