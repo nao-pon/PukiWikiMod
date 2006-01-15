@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.12 2004/11/24 13:15:35 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.13 2006/01/15 13:40:23 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -200,13 +200,13 @@ $body
 function plugin_bugtrack_write($base, $pagename, $summary, $name, $priority, $state, $category, $version, $body)
 {
   global $WikiName,$BracketName;
-  global $X_uid;
+  global $X_uid,$X_uname;
   
   $pagename = strip_bracket($pagename);
   
   $postdata = plugin_bugtrack_template($base, $summary, $name, $priority, $state, $category, $version, $body);
   // author:uid の追加
-	$postdata = "// author:".$X_uid."\n".$postdata;
+  $postdata = "// author:".$X_uid."\n"."// author_ucd:".PUKIWIKI_UCD."\t".preg_replace("/#[^#]*$/","",$X_uname)."\n".$postdata;
 	
   $i = 0;
   do {

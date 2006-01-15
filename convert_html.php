@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.52 2005/12/19 11:40:43 nao-pon Exp $
+// $Id: convert_html.php,v 1.53 2006/01/15 13:40:23 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -49,6 +49,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 			$pwm_plugin_flg = (isset($var_data[9]))? $var_data[9] : "";
 			$show_comments = (isset($var_data[10]))? $var_data[10] : true;
 			$related = (isset($var_data[11]))? $var_data[11] : array();
+			$vars['author_ucd'] = (isset($var_data[12]))? $var_data[12] : "";
 			
 			$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 			
@@ -70,6 +71,8 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 	$string = preg_replace("/(^|\n)#newfreeze(\n|$)/","$1",$string);
 	
 	if (is_array($string)) $string = join('',$string);
+	$vars['author_ucd'] = (preg_match("/\n\/\/ author_ucd:([^\n]+)\n/",$string,$arg))? $arg[1] : "\t";
+	
 	$body = new convert();
 	
 	$result_last = $body->to_html($string);
@@ -148,6 +151,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		$var_data[9] = $pwm_plugin_flg;
 		$var_data[10] = $show_comments;
 		$var_data[11] = $related;
+		$var_data[12] = $vars['author_ucd'];
 		$html = serialize($var_data)."\n".$str;
 		
 		//キャッシュ書き込み

@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.39 2006/01/08 13:38:05 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.40 2006/01/15 13:40:23 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 global $pwm_confg;
 ?>
@@ -151,10 +151,10 @@ global $pwm_confg;
 	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">ページ名:</td><td style="margin:0px;padding:0px;" colspan="2"><?php echo strip_bracket($vars['page'])." ".$sended_ping_tag ?></td>
 	</tr>
 	<tr>
-	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">ページ作成:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo get_pg_auther($vars["page"]) ?>"><?php echo $pg_auther_name ?></a></td><td style="margin:0px;padding:0px;;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['buildtime']) . "<small>" . get_passage($pginfo['buildtime']); ?></small></td>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">ページ作成:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><?php echo $pg_auther_name ?></td><td style="margin:0px;padding:0px;;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['buildtime']) . "<small>" . get_passage($pginfo['buildtime']); ?></small></td>
 	</tr>
 	<tr>
-	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">最終更新:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><a href="<?php echo XOOPS_URL ?>/userinfo.php?uid=<?php echo $pginfo['lastediter'] ?>"><?php echo $last_editer ?></a></td><td style="margin:0px;padding:0px;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) . get_pg_passage($vars["page"]); ?></td>
+	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">最終更新:</td><td style="margin:0px;padding:0px;white-space:nowrap;"><?php echo $last_editer ?></td><td style="margin:0px;padding:0px;width:100%;"> - <?php echo date("Y/m/d H:i:s T",$pginfo['editedtime']) . get_pg_passage($vars["page"]); ?></td>
 	</tr>
 	<tr>
 	<td style="text-align:right;margin:0px;padding:0px;white-space:nowrap;">編集可:</td><td style="margin:0px;padding:0px;white-space:nowrap;" colspan="2"><?php echo $allow_edit_groups.$allow_editers ?></td>

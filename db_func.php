@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.30 2005/12/22 11:43:12 nao-pon Exp $
+// $Id: db_func.php,v 1.31 2006/01/15 13:40:23 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -563,6 +563,7 @@ function plain_db_write($page,$action)
 					if (strpos($lookup_page,$wiki_common_dir) === 0)
 					{
 						$lookup_page = str_replace($wiki_common_dir,"",$lookup_page);
+						if ($autolink > strlen($lookup_page)){$lookup_page = $s_page;}
 						break;
 					}
 				}

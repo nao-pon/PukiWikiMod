@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone
-// $Id: tracker.inc.php,v 1.22 2006/01/14 15:41:40 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.23 2006/01/15 13:40:23 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.29 2005/03/02 13:31:05 henoheno Exp $
 
 //
@@ -144,6 +144,7 @@ function plugin_tracker_action()
 	$postdata = plugin_tracker_get_source($source);
 
 	// author:uid の追加
+	array_unshift ($postdata,"// author_ucd:".PUKIWIKI_UCD."\t".preg_replace("/#[^#]*$/","",$X_uname)."\n");
 	array_unshift ($postdata,"// author:".$X_uid."\n");
 
 	// 規定のデータ

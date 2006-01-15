@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.62 2006/01/14 15:41:40 nao-pon Exp $
+// $Id: func.php,v 1.63 2006/01/15 13:40:23 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -898,6 +898,7 @@ function make_user_link (&$name,$format="",$convert=false)
 	}
 	
 	$trip = $b_name = "";
+	$_name = $name;
 
 	if (!$convert)
 	{
@@ -1121,13 +1122,13 @@ function include_page($page,$ret_array=false)
 	
 	
 	//ÊÑ¿ôÃÍÂàÈò
+	$_vars = $vars;
 	$tmppage = $vars["page"];
 	$_pgid = $pgid;
 	$_comment_no = $comment_no;
 	$_h_excerpt = $h_excerpt;
 	$_digest = $digest;
 	$_article_no = $article_no;
-	$_rsstop = $vars['is_rsstop'];
 	$_show_comments = $show_comments;
 	$_related = $related;
 	
@@ -1170,13 +1171,13 @@ function include_page($page,$ret_array=false)
 	unset($pcon);
 	
 	//ÂàÈòÊÑ¿ôÃÍÌá¤·
+	$vars = $_vars;
 	$vars["page"] = $post["page"] = $get["page"] = $tmppage;
 	$pgid = $_pgid;
 	$comment_no = $_comment_no;
 	$h_excerpt = $_h_excerpt;
 	$digest = $_digest;
 	$article_no = $_article_no;
-	$vars['is_rsstop'] = $_rsstop;
 	$show_comments = $_show_comments;
 	$related = array_merge($_related,$related);
 	

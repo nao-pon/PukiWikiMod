@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.82 2005/12/22 12:48:12 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.83 2006/01/15 13:40:23 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -408,6 +408,10 @@ else if($post["write"] || ($_SERVER['REQUEST_METHOD'] == "POST" && arg_check("wr
 	if ($X_admin)
 		$author_uid = $post["f_author_uid"];
 	
+	$author_ucd = '';
+	if (preg_match("/\n(\/\/ author_ucd:[^\n]+)\n/",$checkpostdata,$arg))
+		$author_ucd = $arg[1]."\n";
+	
 	unset($checkpostdata);
 	
 	if (!$body){
@@ -489,10 +493,11 @@ else if($post["write"] || ($_SERVER['REQUEST_METHOD'] == "POST" && arg_check("wr
 			{
 				//ページ情報付加　今のところページ製作者のみ
 				if (is_page($post["page"]))
-					$postdata = "// author:".$author_uid."\n".$postdata;
+					$postdata = "// author:".$author_uid."\n".$author_ucd.$postdata;
 				else
-					$postdata = "// author:".$X_uid."\n".$postdata;
-
+				{
+					$postdata = "// author:".$X_uid."\n"."// author_ucd:".PUKIWIKI_UCD."\t".preg_replace("/#[^#]*$/","",$X_uname)."\n".$postdata;
+				}
 				//閲覧権限
 				if ((!$X_admin && ($X_uid != $author_uid || !$X_uid)) || !$read_auth)
 				{

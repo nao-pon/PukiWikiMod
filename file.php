@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.60 2006/01/14 02:41:33 nao-pon Exp $
+// $Id: file.php,v 1.61 2006/01/15 13:40:23 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -784,7 +784,7 @@ function get_pg_auther($page)
 	$author_uid = 0;
 	if (!is_page($page)) return $author_uid;
 	
-	$string = join('',get_source($page,3));
+	$string = join('',get_source($page,4));
 	$string = preg_replace("/(^|\n)#(freeze|unvisible)([^\n]*)?/","",$string);
 	$string = trim($string);
 	
@@ -1077,7 +1077,7 @@ function check_readable($page, $auth_flag=true, $exit_flag=true){
 // ページ情報を削除する
 function delete_page_info(&$str,$clr_anchor)
 {
-	$str = preg_replace("/(^|\n)(#freeze|#unvisible|\/\/ author:)([^\n]*)?/","",$str);
+	$str = preg_replace("/(^|\n)(#freeze|#unvisible|\/\/ author(_ucd)?:)([^\n]*)?/","",$str);
 
 	if ($clr_anchor)
 		$str = preg_replace("/(^|\n\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)/","$1$2",$str);

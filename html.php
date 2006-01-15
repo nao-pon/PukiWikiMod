@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.59 2005/11/16 23:49:16 nao-pon Exp $
+// $Id: html.php,v 1.60 2006/01/15 13:40:23 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -156,12 +156,32 @@ EOT;
 		global $no_name;
 		global $defvalue_gids,$defvalue_aids;
 		
-		//$pg_auther_name=get_pg_auther_name($_page);
 		$pginfo = get_pg_info_db($_page);
 		$user = new XoopsUser();
-		$pg_auther_name= $user->getUnameFromId($pginfo['uid']);
-		$last_editer = $user->getUnameFromId($pginfo['lastediter']);
-		
+		if ($pginfo['uid'])
+		{
+			$pg_auther_name = '<a href="'.XOOPS_URL.'/userinfo.php?uid='.$pginfo['uid'].'">'.$user->getUnameFromId($pginfo['uid']).'</a>';
+		}
+		else
+		{
+			list($pg_auther_ucd,$pg_auther_name) = explode("\t",$vars['author_ucd']);
+			if (!$pg_auther_name)
+			{
+				$pg_auther_name = $user->getUnameFromId($pginfo['uid']);
+			}
+			if ($pg_auther_ucd)
+			{
+				$pg_auther_name .= " <small>[$pg_auther_ucd]</small>";
+			}
+		}
+		if ($pginfo['lastediter'])
+		{
+			$last_editer = '<a href="'.XOOPS_URL.'/userinfo.php?uid='.$pginfo['lastediter'].'">'.$user->getUnameFromId($pginfo['lastediter']).'</a>';
+		}
+		else
+		{
+			$last_editer = $user->getUnameFromId($pginfo['lastediter']);
+		}
 		//編集者
 		$allows = get_pg_allow_editer($_page);
 		$allow_groups = ($allows['group'])? explode(",",$allows['group']) : explode(",",$defvalue_gids,",");

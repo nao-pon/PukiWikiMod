@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.11 2006/01/14 15:41:40 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.12 2006/01/15 13:40:23 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -101,7 +101,7 @@ EOD;
 
 function plugin_makepage_action()
 {
-	global $X_uid,$vars,$post,$script,$_btn_edit,$_makepage_messages,$no_name;
+	global $X_uid,$vars,$post,$script,$_btn_edit,$_makepage_messages,$no_name,$X_uname;
 	
 	if ($vars['new_page'] == '')
 	{
@@ -147,7 +147,6 @@ function plugin_makepage_action()
 			
 			//ページ新規作成
 			$up_freeze_info = get_freezed_uppage($page);
-			//if ($up_freeze_info[0]) $defvalue_freeze = 1;
 			if (!check_readable($page,false,false) || $up_freeze_info[4])
 			{
 				//ページを作成する権限がない
@@ -195,32 +194,31 @@ function plugin_makepage_action()
 				}
 				$post['body'] = rtrim(preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post['body']));
 				
-				//if (!$post['usename']) $post['body'] .= "\n#clear";
 				$postdata = str_replace("___BODY___",$post['body'],$postdata);
 				
 				$_name = (!empty($post['name']))? $post['name'] : $no_name;
 				
 				make_user_link($_name);
+				$X_uname = $_name;
 				
-				//$postdata = str_replace("___NAME___",$_name."\n#clear",$postdata);
 				$postdata = str_replace("___NAME___",$_name."\n#clear",$postdata);
 				
 				$postdata = auto_br($postdata);
 			}
 			
 			// ページ作成者情報付加
-			$postdata = "// author:".$X_uid."\n".$postdata;
+			$postdata = "// author:".$X_uid."\n"."// author_ucd:".PUKIWIKI_UCD."\t".preg_replace("/#[^#]*$/","",$X_uname)."\n".$postdata;
 			
 			//ページ保存
 			page_write($page,$postdata,NULL,"","","","","","",array('plugin'=>'makepage','mode'=>'all'));
 		}
-		
-		if (!empty($vars['auto_make']) || !empty($vars['multi'])) exit();
-		
-		global $_title_updated;
-		$title = str_replace('$1',htmlspecialchars(strip_bracket($page)),$_title_updated);
-		redirect_header(get_url_by_name($page),1,$title);
-		exit();
 	}
+	
+	if (!empty($vars['auto_make']) || !empty($vars['multi'])) exit();
+	
+	global $_title_updated;
+	$title = str_replace('$1',htmlspecialchars(strip_bracket($page)),$_title_updated);
+	redirect_header(get_url_by_name($page),1,$title);
+	exit();
 }
 ?>
