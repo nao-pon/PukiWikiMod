@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.31 2006/01/17 00:42:33 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.32 2006/01/17 05:46:37 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -202,7 +202,7 @@ function plugin_pcomment_convert() {
 
 	//XSS脆弱性問題 - 外部から来た変数をエスケープ
 	$f_page = htmlspecialchars($page);
-	$f_refer = htmlspecialchars($now_page);
+	$f_refer = htmlspecialchars($vars['page']);
 	$f_nodate = htmlspecialchars($params['nodate']);
 	$s_count = htmlspecialchars($count);
 	
