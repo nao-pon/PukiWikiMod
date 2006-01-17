@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.30 2006/01/14 15:41:40 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.31 2006/01/17 00:42:33 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -186,11 +186,7 @@ function plugin_pcomment_convert() {
 	//コメントを取得
 	$data = @file(get_filename(encode($_page)));
 	
-	//ページ名などの入れ替え
-	$now_page = $vars['page'];
-	$now_digest = $digest;
-	if (is_page($_page)) $vars['page'] = $_page;
-	list($comments, $digest) = pcmt_get_comments($data,$count,$dir,$params['reply']);
+	list($comments, $digest) = pcmt_get_comments($data,$count,$dir,$params['reply'],$_page);
 
 	//フォームを表示
 	if($params['noname']) {
@@ -240,12 +236,7 @@ EOD;
 		if ($count > 0) { $recent = sprintf($_pcmt_msg_recent,$count); }
 		$edit_tag =  (is_freeze($_page,false))? "" : " | <a href=\"$script?cmd=edit&amp;page=".rawurlencode($_page)."\">$_pcmt_msg_edit</a>";
 	}
-	//$link = make_pagelink($link);
 	
-	//退避した変数を戻す
-	$vars['page'] = $now_page;
-	$digest = $now_digest;
-
 	return $dir ?
 		"<div><p>$recent $link$edit_tag</p>\n<form action=\"$script\" method=\"post\">$comments$form</form></div>" :
 		"<div><form action=\"$script\" method=\"post\">$form$comments</form>\n<p>$recent $link</p></div>";
@@ -486,7 +477,8 @@ function pcmt_check_arg($val, $key, &$params)
 	if (!$found) {$params['arg'][] = $val;}
 	return;
 }
-function pcmt_get_comments($data,$count,$dir,$reply) {
+function pcmt_get_comments($data,$count,$dir,$reply,$page)
+{
 	global $script,$vars,$_pcmt_msg_reply_this;
 	
 	if (!is_array($data)) { return array('',0); }
@@ -533,8 +525,13 @@ function pcmt_get_comments($data,$count,$dir,$reply) {
 	$start = md5(rtrim(str_replace("\x03","",preg_replace("/\x01\d+\x02/","",$data[0]))));
 
 	//html変換
-	$comments = convert_html($data);
-
+	$pcon = new pukiwiki_converter();
+	$pcon->safe = TRUE;
+	$pcon->page = $page;
+	$pcon->string = $data;
+	$comments = $pcon->convert();
+	unset($pcon);
+	
 	//areaedit用スタートマーカー付加
 	$comments = str_replace("<a href=\"".$script."?plugin=areaedit","<a href=\"".$script."?plugin=areaedit&amp;start=$start",$comments);
 	unset($data);

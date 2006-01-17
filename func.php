@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.63 2006/01/15 13:40:23 nao-pon Exp $
+// $Id: func.php,v 1.64 2006/01/17 00:42:33 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -989,7 +989,7 @@ function get_autolink_pattern(& $pages)
 
 	foreach ($pages as $page)
 	{
-		if (preg_match("/^$WikiName$/", $page) ?
+		if (preg_match("/^".$WikiName."$/", $page) ?
 			$nowikiname : strlen($page) >= $autolink)
 			$auto_pages[] = $page;
 	}
@@ -1012,13 +1012,8 @@ function get_autolink_pattern(& $pages)
 function get_autolink_pattern_sub(& $pages, $start, $end, $pos)
 {
 	static $lev = 0;
-	static $limit = 0;
-	static $full = false;
-	static $psize = 0;
 	
 	if ($end == 0) return '(?!)';
-	
-	if (!$limit) $limit = 1024 * 30; //マージンを持たせて 30kb で分割
 	
 	$lev ++;
 	
@@ -1031,13 +1026,23 @@ function get_autolink_pattern_sub(& $pages, $start, $end, $pos)
 	
 	for ($i = $start; $i < $end; $i = $j) // What is the initial state of $j?
 	{
-		$full = (strlen($result) - $psize > $limit);
 		$char = mb_substr($pages[$i], $pos, 1);
 		for ($j = $i; $j < $end; $j++)
 		{
-			if (mb_substr($pages[$j], $pos, 1) != $char || $full) { break; }
+			if (mb_substr($pages[$j], $pos, 1) != $char) { break; }
 		}
-		if ($i != $start && $psize != strlen($result)) { $result .= '|'; }
+		if ($i != $start)
+		{
+			if ($lev === 1)
+			{
+				$result .= "\t";
+			}
+			else
+			{
+				$result .= '|';
+			}
+			
+		}
 		if ($i >= ($j - 1))
 		{
 			$result .= str_replace(' ', '\\ ', preg_quote(mb_substr($pages[$i], $pos), '/'));
@@ -1048,17 +1053,32 @@ function get_autolink_pattern_sub(& $pages, $start, $end, $pos)
 				get_autolink_pattern_sub($pages, $i, $j, $pos + 1);
 		}
 		
-		if ($lev === 1 && $full)
-		{
-			$psize = strlen($result);
-			$result .= ")\t(?:";
-			$j++;
-		}
-		
 		++$count;
 	}
-	if ($x or $count > 1) { $result = '(?:' . $result . ')'; }
-	if ($x) { $result .= '?'; }
+	if ($lev === 1)
+	{
+		$limit = 1024 * 30; //マージンを持たせて 30kb で分割
+		$_result = "";
+		$size = 0;
+		foreach(explode("\t",$result) as $key)
+		{
+			if (strlen($_result.$key) - $size > $limit)
+			{
+				$_result .= ")\t(?:".$key;
+				$size = strlen($_result);
+			}
+			else
+			{
+				$_result .= ($_result ? "|" : "").$key;
+			}
+		}
+		$result = '(?:' . $_result . ')';
+	}
+	else
+	{
+		if ($x or $count > 1) { $result = '(?:' . $result . ')'; }
+		if ($x) { $result .= '?'; }
+	}
 	$lev --;
 	return $result;
 }
@@ -1120,30 +1140,11 @@ function include_page($page,$ret_array=false)
 	// 読み込み済みにする
 	$included[$page] = TRUE;
 	
-	
-	//変数値退避
-	$_vars = $vars;
-	$tmppage = $vars["page"];
-	$_pgid = $pgid;
-	$_comment_no = $comment_no;
-	$_h_excerpt = $h_excerpt;
-	$_digest = $digest;
-	$_article_no = $article_no;
-	$_show_comments = $show_comments;
-	$_related = $related;
-	
-	//初期化
-	$comment_no = 0;
-	$article_no = 0;
-	$vars['is_rsstop'] = 0;
-	$related = array();
-	
-	//現ページ名書き換え
-	$vars["page"] = $post["page"] = $get["page"] = add_bracket($page);
-	$pgid = get_pgid_by_name($vars["page"]);
-	
 	$body = join("",get_source($page));
+	
 	$pcon = new pukiwiki_converter();
+	$pcon->safe = TRUE;
+	$pcon->page = add_bracket($page);
 	if (preg_match("/^#more/m",$body))
 	{
 		$body = preg_replace("/\n#more\(\s*off\s*\).*?(\n#more\(\s*on\s*\)\n|$)/s","\n",$body);
@@ -1169,17 +1170,6 @@ function include_page($page,$ret_array=false)
 		$ret = $pcon->convert();
 	}
 	unset($pcon);
-	
-	//退避変数値戻し
-	$vars = $_vars;
-	$vars["page"] = $post["page"] = $get["page"] = $tmppage;
-	$pgid = $_pgid;
-	$comment_no = $_comment_no;
-	$h_excerpt = $_h_excerpt;
-	$digest = $_digest;
-	$article_no = $_article_no;
-	$show_comments = $_show_comments;
-	$related = array_merge($_related,$related);
 	
 	$now_inculde_convert = false;
 	

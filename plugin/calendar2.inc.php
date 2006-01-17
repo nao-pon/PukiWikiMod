@@ -1,5 +1,5 @@
 <?php
-// $Id: calendar2.inc.php,v 1.27 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: calendar2.inc.php,v 1.28 2006/01/17 00:42:33 nao-pon Exp $
 // *引数にoffと書くことで今日の日記を表示しないようにした。
 
 // initialize plug-in
@@ -408,7 +408,12 @@ function plugin_calendar2_convert()
 	$categorys = "";
 	if ($category_view)
 	{
-		$categorys = convert_html("****Categorys\n#ls2($category_view,pagename,notemplate,relatedcount)");
+		$pcon = new pukiwiki_converter();
+		$pcon->safe = TRUE;
+		$pcon->page = $vars['page'];
+		$pcon->string = "****Categorys\n#ls2($category_view,pagename,notemplate,relatedcount)";
+		$categorys = $pcon->convert();
+		unset($pcon);
 	}
 	
 	$_contents = $_body = "";

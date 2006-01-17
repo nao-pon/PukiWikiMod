@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.26 2005/12/20 15:27:31 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.27 2006/01/17 00:42:33 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -150,6 +150,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 	global $_list_left_margin, $_list_margin;
 	
 	static $_auto_template_name = "";
+	static $bef_name = "";
 	
 	if (!$_auto_template_name) $_auto_template_name = preg_quote($auto_template_name,'/');
 	
@@ -167,19 +168,61 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 
 	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 	$_name = "";
-	if (preg_match("/^(.*\/)?[0-9\-]+$/",$name))
+	if (preg_match("/(^|.*\/)[0-9\-]+$/",$name,$arg))
 	{
+		$_name_base = htmlspecialchars($arg[1]);
 		$_name = get_heading($page);
 	}
 
-	if ($params['pagename']){
+	if ($params['pagename'])
+	{
 		//基準ページ名は省く nao-pon
-		if ($name != $prefix) {
+		$_name_base = "";
+		if (strpos($name,"/") !== FALSE && $name != $prefix)
+		{
 			$name = str_replace($prefix."/","",$name);
 			$_is_base = false;
-		} else {
+		}
+		else
+		{
 			$_is_base = true;
 		}
+		
+		//抜けているページ階層のチェック
+		if (!$_is_base && $bef_name)
+		{
+			//前行の親階層
+			$bef_par = preg_replace("/(^|\/)[^\/]+$/","",$bef_name);
+			//今行の親階層
+			$now_par = preg_replace("/(^|\/)[^\/]+$/","",$name);
+			
+			//できるだけ余分な処理をさせないため、まずはこれで判断
+			if ($bef_par != $now_par && $bef_name != $now_par)
+			{
+				//前行の各階層
+				$bef_lev = explode("/",$bef_name);
+				//今行の各階層
+				$now_lev = explode("/",$name);
+				array_pop($now_lev);
+				
+				$now_cnt = count($now_lev);
+				if ($now_cnt > count($bef_lev))
+				{
+					$bef_lev = array_pad($bef_lev,$now_cnt,"");
+				}
+				
+				for($i=0; $i<$now_cnt; $i++)
+				{
+					if ($bef_lev[$i] != $now_lev[$i])
+					{
+						$c_margin = $i * ($_list_margin + $_list_left_margin);
+						$ret .= '<li class="list'.($i+1).'" style="margin-left:'.$c_margin.'px;">'.htmlspecialchars($now_lev[$i]).'</li>';
+					}
+				}
+			}
+		}
+		//前行のページとして記憶
+		$bef_name = $name;
 		
 		//階層でマージン設定
 		$name = str_replace("/","\t",$name);//マルチバイトを考慮してTABに変換
@@ -198,7 +241,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 	}
 	
 	$name = htmlspecialchars($name);
-	if ($_name) $name = $_name;
+	if ($_name) $name = $_name_base.$_name;
 	
 	if ($params['relatedcount'])
 		$name .= " (".links_get_related_count($page).")";
@@ -215,24 +258,27 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 		$ret .= '<a href="#list_'.$params[$page].'">+</a></li>'."\n";
 		return $ret;
 	}
-	$anchor = LS2_ANCHOR_ORIGIN;
-	$_ret = '';
 	
-	$source = get_source($page);
-	// 見出しの固有ID部を削除
-	$source = preg_replace('/^(\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
-	foreach ($source as $line) {
-		if ($params['title'] and preg_match('/^(\*+)(.*)()?$/',$line,$matches)) {
-			$special = strip_tags(make_line_rules(inline($matches[2],TRUE)));
-			$left = (strlen($matches[1]) - 1) * 16;
-			$_ret .= '<li style="margin-left:'.$left.'px">'.$special.
-				'<a href="'.$href.LS2_CONTENT_HEAD.$anchor.'">'.$_ls2_messages['msg_go'].'</a></li>'."\n";
-			$anchor++;
+	if ($params['title'] || $params['include'])
+	{
+		$anchor = LS2_ANCHOR_ORIGIN;
+		$_ret = '';
+		$source = get_source($page);
+		// 見出しの固有ID部を削除
+		$source = preg_replace('/^(\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
+		foreach ($source as $line) {
+			if ($params['title'] and preg_match('/^(\*+)(.*)()?$/',$line,$matches)) {
+				$special = strip_tags(make_line_rules(inline($matches[2],TRUE)));
+				$left = (strlen($matches[1]) - 1) * 16;
+				$_ret .= '<li style="margin-left:'.$left.'px">'.$special.
+					'<a href="'.$href.LS2_CONTENT_HEAD.$anchor.'">'.$_ls2_messages['msg_go'].'</a></li>'."\n";
+				$anchor++;
+			}
+			else if ($params['include'] and preg_match('/^#include\((.+)\)/',$line,$matches) and is_page($matches[1]))
+				$_ret .= ls2_show_headings($matches[1],$params,TRUE);
 		}
-		else if ($params['include'] and preg_match('/^#include\((.+)\)/',$line,$matches) and is_page($matches[1]))
-			$_ret .= ls2_show_headings($matches[1],$params,TRUE);
+		if ($_ret != '') { $ret .= "<ul>$_ret</ul>\n"; }
 	}
-	if ($_ret != '') { $ret .= "<ul>$_ret</ul>\n"; }
 	$ret .= '</li>'."\n";
 	return $ret;
 }

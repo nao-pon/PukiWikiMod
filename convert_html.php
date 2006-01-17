@@ -1,18 +1,59 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.54 2006/01/15 15:14:42 nao-pon Exp $
+// $Id: convert_html.php,v 1.55 2006/01/17 00:42:33 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
 	var $string = "";
+	var $page = "";
 	var $is_intabale = FALSE;
 	var $page_cvt = FALSE;
 	var $cache = FALSE;
 	var $ret_array = FALSE;
+	var $safe = FALSE;
 	
 	function convert()
 	{
-		return convert_html($this->string,$this->is_intable,$this->page_cvt,$this->cache,$this->ret_array);
+		if ($this->safe)
+		{
+			global $vars,$get,$post,$pgid,$comment_no,$h_excerpt,$digest,$article_no,$show_comments,$related;
+			//変数値退避
+			$_vars = $vars;
+			$_pgid = $pgid;
+			$_comment_no = $comment_no;
+			$_h_excerpt = $h_excerpt;
+			$_digest = $digest;
+			$_article_no = $article_no;
+			$_show_comments = $show_comments;
+			$_related = $related;
+			
+			//初期化
+			$comment_no = 0;
+			$article_no = 0;
+			$vars['is_rsstop'] = 0;
+			$related = array();
+			
+			//現ページ名書き換え
+			if ($this->page) $vars["page"] = $post["page"] = $get["page"] = $this->page;
+			$pgid = get_pgid_by_name($vars["page"]);
+		}
+		
+		$ret = convert_html($this->string,$this->is_intable,$this->page_cvt,$this->cache,$this->ret_array);
+		
+		if ($this->safe)
+		{
+			//退避変数値戻し
+			$vars = $_vars;
+			$post["page"] = $get["page"] = $vars["page"];
+			$pgid = $_pgid;
+			$comment_no = $_comment_no;
+			$h_excerpt = $_h_excerpt;
+			$digest = $_digest;
+			$article_no = $_article_no;
+			$show_comments = $_show_comments;
+			$related = array_merge($_related,$related);
+		}
+		return $ret;
 	}
 }
 

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.60 2006/01/15 13:40:23 nao-pon Exp $
+// $Id: html.php,v 1.61 2006/01/17 00:42:33 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -423,7 +423,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 
 	// ページ作成者変更BOX
 	$auther_tag = ($X_admin)?
-		'&nbsp:&nbsp;[ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($author_uid).'" /> ]'
+		'&nbsp;&nbsp;[ '.$_btn_auther_id.'<input type="text" name="f_author_uid" size="3" value="'.htmlspecialchars($author_uid).'" /> ]'
 		:'';
 	
 	// タイムスタンプ
@@ -530,7 +530,7 @@ function make_related($page,$tag='')
 		$passage = get_passage(($lastmod));
 
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得
-		if (preg_match("/^(.*\/)?[0-9\-]+$/",$s_page))
+		if (preg_match("/(^|.*\/)[0-9\-]+$/",$s_page))
 			$alias = get_heading($page);
 		else
 		{

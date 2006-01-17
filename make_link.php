@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.43 2006/01/13 11:42:53 nao-pon Exp $
+// $Id: make_link.php,v 1.44 2006/01/17 00:42:33 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -86,7 +86,7 @@ class InlineConverter
 		// オートリンク by nao-pon
 		// InlineConverter による一括処理では、
 		// ページ数増加(正規表現32kb以上)時に正常に処理できない。
-		$retval = $this->auto_link($retval);
+		$this->auto_link($retval);
 		return $retval;
 	}
 	function replace($arr)
@@ -132,31 +132,29 @@ class InlineConverter
 	{
 		global $autolink;
 		
-		if (!$autolink) return $str;
+		if (!$autolink) return ;
 		
 		static $auto;
-		static $auto_a;
 		static $forceignorepages;
 		
-		if (!$auto && !$auto_a)
+		if (!$auto)
 		{
 			$autofile = (file_exists(CACHE_DIR.'autolink2.dat'))? 'autolink2.dat' : 'autolink.dat';
-			@list($auto,$auto_a,$forceignorepages) = file(CACHE_DIR.$autofile);
-			$auto = trim($auto);
-			$auto_a = trim($auto_a);
+			@list($auto,$dum,$forceignorepages) = file(CACHE_DIR.$autofile);
+			$auto = explode("\t",trim($auto));
 			$forceignorepages = explode("\t",trim($forceignorepages));
 		}
 		
 		$this->forceignorepages = $forceignorepages;
 		
 		// ページ数が多い場合は、セパレータ \t で複数パターンに分割されている
-		foreach(explode("\t",$auto) as $pat)
+		foreach($auto as $pat)
 		{
 			$pattern = "/(<(?:a|A).*?<\/(?:a|A)>|<[^>]*>|&(?:#[0-9]+|#x[0-9a-f]+|[0-9a-zA-Z]+);)|($pat)/s";
 			$str = preg_replace_callback($pattern,array(&$this,'auto_link_replace'),$str);
 		}
 		
-		return $str;
+		return ;
 	}
 	function auto_link_replace($match)
 	{

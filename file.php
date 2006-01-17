@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.61 2006/01/15 13:40:23 nao-pon Exp $
+// $Id: file.php,v 1.62 2006/01/17 00:42:33 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -287,7 +287,7 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			
 			$fp = fopen(CACHE_DIR . 'autolink2.dat', 'wb') or
 				die_message('Cannot write autolink file ' .
-				CACHE_DIR . '/autolink.dat' .
+				CACHE_DIR . '/autolink2.dat' .
 				'<br />Maybe permission is not writable');
 			set_file_buffer($fp, 0);
 			flock($fp, LOCK_EX);

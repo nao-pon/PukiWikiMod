@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.16 2006/01/14 15:41:40 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.17 2006/01/17 00:42:33 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -708,34 +708,27 @@ function fusen_convert_html(&$str,$page)
 	global $related_link,$content_id;
 
 	// グローバル変数退避
-	$_page = $vars['page'];
-	$_cmd = $vars['cmd'];
 	$_X_uid = $X_uid;
 	$_X_admin = $X_admin;
 	$_content_id = $content_id;
 	$_related_link = $related_link;
-	$_pgid = $pgid;
 	
 	$X_admin = $X_uid = 0;	//常にゲスト扱い
-	$vars['page'] = $post['page'] = $get['page'] = $page; // 現ページ名
 	$content_id = 1;	// areaedit リンクなど抑止
 	$related_link = 0;	// 関連するページをリストアップしない
 	$vars['cmd'] = "read"; //閲覧モードでコンバート
-	$pgid = get_pgid_by_name($vars["page"]); //ページID
 	
 	$pcon = new pukiwiki_converter();
+	$pcon->safe = TRUE;
+	$pcon->page = $page;
 	$pcon->string = $str;
 	$str = $pcon->convert();
-	//$str = convert_html($str);
 	
 	// グローバル変数戻し
-	$content_id = $_content_id;
-	$related_link = $_related_link;
 	$X_uid = $_X_uid;
 	$X_admin = $_X_admin;
-	$vars['page'] = $post['page'] = $get['page'] = $_page;
-	$vars['cmd'] = $_cmd;
-	$pgid = $_pgid;
+	$content_id = $_content_id;
+	$related_link = $_related_link;
 	
 	// 外部リンクの場合 class="ext" を付加
 	$str = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/","$1class=\"ext\" $2",$str);
