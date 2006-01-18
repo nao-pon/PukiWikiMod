@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.61 2006/01/17 00:42:33 nao-pon Exp $
+// $Id: html.php,v 1.62 2006/01/18 00:04:53 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -520,7 +520,7 @@ function make_related($page,$tag='')
 	$_links = array();
 	foreach ($links as $page=>$lastmod)
 	{
-		if (preg_match("/$non_list/",$page))
+		if (!$lastmod || preg_match("/$non_list/",$page))
 		//if (preg_match("/$non_list/",$page))
 		{
 			continue;

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.44 2006/01/17 00:42:33 nao-pon Exp $
+// $Id: make_link.php,v 1.45 2006/01/18 00:04:53 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -895,7 +895,8 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	
 	if ($not_where && isset($linktag[$page.$alias]))
 	{
-		if (!empty($vars['from_pginfo_init']) && !isset($related[$sb_page]) && $page != $vars['page'] and is_page($page))
+		//if (!empty($vars['from_pginfo_init']) && !isset($related[$sb_page]) && $page != $vars['page'] and is_page($page))
+		if (!empty($vars['from_pginfo_init']) && !isset($related[$sb_page]) && $page != $vars['page'])
 		{
 			$related[$sb_page] = get_filetime($page);
 		}
@@ -930,7 +931,8 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	$r_page = rawurlencode($s_page);
 	$r_refer = ($refer == '') ? '' : '&amp;refer='.rawurlencode($refer);
 
-	if (!isset($related[$sb_page]) and $page != $vars['page'] and is_page($page))
+	//if (!isset($related[$sb_page]) and $page != $vars['page'] and is_page($page))
+	if (!isset($related[$sb_page]) and $page != $vars['page'])
 	{
 		$related[$sb_page] = get_filetime($page);
 	}

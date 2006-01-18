@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.31 2006/01/15 13:40:23 nao-pon Exp $
+// $Id: db_func.php,v 1.32 2006/01/18 00:04:53 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -524,7 +524,7 @@ function plain_db_write($page,$action)
 		}
 
 		$data = preg_replace("/".preg_quote("<a href=\"$script?cmd=edit&amp;page=","/")."[^\"]+".preg_quote("\">$_symbol_noexists</a>","/")."/","",$data);
-		$data = str_replace($spc[0],$spc[1],strip_tags($data));
+		$data = str_replace($spc[0],$spc[1],strip_tags($data)).join(',',$rel_pages);
 	}
 	$data = addslashes(preg_replace("/[\s]+/","",$data));
 	//echo $data."<hr>";
@@ -577,6 +577,8 @@ function plain_db_write($page,$action)
 				if ($pgid == $refid || !$refid) {continue;}
 				$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_rel")." (pgid,relid) VALUES(".$refid.",".$pgid.");";
 				$result=$xoopsDB->queryF($query);
+				//PlainテキストDB 更新予約を設定
+				need_update_plaindb(add_bracket($_page));
 			}
 		}
 	}
