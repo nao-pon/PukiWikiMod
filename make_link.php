@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.45 2006/01/18 00:04:53 nao-pon Exp $
+// $Id: make_link.php,v 1.46 2006/01/18 01:09:11 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -893,14 +893,16 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	$sb_page = strip_bracket($page);
 	$s_page = htmlspecialchars($sb_page);
 	
-	if ($not_where && isset($linktag[$page.$alias]))
+	$cache_key = $page.$alias;
+	
+	if ($not_where && isset($linktag[$vars['page']][$cache_key]))
 	{
 		//if (!empty($vars['from_pginfo_init']) && !isset($related[$sb_page]) && $page != $vars['page'] and is_page($page))
 		if (!empty($vars['from_pginfo_init']) && !isset($related[$sb_page]) && $page != $vars['page'])
 		{
 			$related[$sb_page] = get_filetime($page);
 		}
-		return $linktag[$page.$alias];
+		return $linktag[$vars['page']][$cache_key];
 	}
 	
 	$compact = FALSE;
@@ -1000,7 +1002,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 			$retval = "<span class=\"noexists\">$retval</span>";
 		}
 	}
-	$linktag[$page.$alias] = $retval;
+	$linktag[$vars['page']][$cache_key] = $retval;
 	$convert_d2s = $_convert_d2s;
 	return $retval;
 }
