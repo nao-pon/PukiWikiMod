@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.62 2006/01/18 00:04:53 nao-pon Exp $
+// $Id: html.php,v 1.63 2006/01/19 01:16:43 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -138,8 +138,12 @@ EOT;
 </div>
 <hr />
 EOT;
+			$tb_tag = " [ <a href=\"#tb_body\">{$tb_count}</a> ]";
 		}
-		$tb_tag = " [ <a href=\"#tb_body\">{$tb_count}</a> ]";
+		else
+		{
+			$tb_tag = "";
+		}
 		
 		// 付箋
 		if ($fusen_enable_allpage && empty($pwm_plugin_flg['fusen']['convert']))
