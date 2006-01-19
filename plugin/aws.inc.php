@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.12 2005/06/23 23:42:50 nao-pon Exp $
+// $Id: aws.inc.php,v 1.13 2006/01/19 00:21:15 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -51,7 +51,7 @@ EOT;
 		}
 	}
 	
-	$data['plugin_aws_dataset'] = $data['plugin_aws_dataset'] + $msg['plugin_aws_dataset'];
+	$data['plugin_aws_dataset'] = array_merge($data['plugin_aws_dataset'], $msg['plugin_aws_dataset']);
 	
 	set_plugin_messages($data);
 }
