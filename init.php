@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.54 2005/12/24 01:17:19 nao-pon Exp $
+// $Id: init.php,v 1.55 2006/01/21 04:22:14 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -397,6 +397,12 @@ else if (arg_check("preview") || $post["preview"] || $post["template"])
 else if (arg_check("write") || $post["write"])
 {
 	$vars['cmd'] = "write";
+}
+
+// cmd を plugin に書き換え
+else if (isset($vars['cmd']) && !in_array($vars['cmd'],array("read","edit","preview","add","backup","help","freeze","unfreeze","diff","list","filelist","backup","search","backup_diff","backup_nowdiff","backup_source","rss","rss10")))
+{
+	$vars["plugin"] = $vars['cmd'];
 }
 
 // $vars['cmd'] End

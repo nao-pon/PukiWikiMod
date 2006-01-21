@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.62 2006/01/17 00:42:33 nao-pon Exp $
+// $Id: file.php,v 1.63 2006/01/21 04:22:14 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -340,7 +340,7 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		}
 		
 		// Googleサイトマップの更新通知
-		if ($google_sitemap_page)
+		if ($google_sitemap_page && $action != "delete")
 		{
 			$work = CACHE_DIR."google_sitemap.udp";
 			if (!file_exists($work) || time() - filemtime($work) > 3600) //1時間に1回以内
@@ -408,6 +408,7 @@ function is_page($page,$reload=FALSE)
 {
 	static $ret = array();
 	if ($reload) clearstatcache();
+	if (!$page) return FALSE;
 	
 	if ($reload || !isset($ret[$page]))
 		$ret[$page] = file_exists(get_filename(encode(add_bracket($page))));
@@ -710,7 +711,14 @@ function get_existpages($nocheck=false,$page="",$limit=0,$order="",$nolisting=fa
 	{
 		if (preg_match("/$pattern/",$file,$matches))
 		{
-			$aryret[$file] = add_bracket(decode($matches[1]));
+			if ($limit)
+			{
+				$aryret[$file] = strip_bracket(decode($matches[1]));
+			}
+			else
+			{
+				$aryret[$file] = decode($matches[1]);
+			}
 		}
 	}
 	closedir($dp);
