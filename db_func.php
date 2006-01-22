@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.32 2006/01/18 00:04:53 nao-pon Exp $
+// $Id: db_func.php,v 1.33 2006/01/22 00:47:08 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -31,7 +31,10 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 		if (substr($page,-1) == '/')
 		{
 			$page = addslashes(substr($page,0,-1));
-			$page_where = "name = '$page' OR name LIKE '$page/%'";
+			if ($nochiled)
+				$page_where = "name = '$page' OR ( name LIKE '$page/%' AND name NOT LIKE '$page/%/%' )";
+			else
+				$page_where = "name = '$page' OR name LIKE '$page/%'";
 		}
 		else
 		{
