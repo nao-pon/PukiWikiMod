@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.17 2006/01/17 00:42:33 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.18 2006/01/28 01:57:14 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -237,12 +237,12 @@ EOD;
 function plugin_fusen_action() {
 	global $post,$adminpass,$vars;
 	global $X_admin,$X_uid,$X_uname,$no_name;
-
-	error_reporting(E_ALL);
 	
-	// 初期化
-	//if (PKWK_READONLY) die_message('PKWK_READONLY prohibits editing');
-
+	// ゲストユーザーの投稿制限(SPAM対策)
+	$plugin_fusen_setting['max_chr'] = 500; // 最大文字数
+	$plugin_fusen_setting['max_link'] = 3;  // http:// の最大個数
+	$plugin_fusen_setting['max_a_tag'] = 0; // <a>タグの最大個数
+	
 	$refer = $post['page'] = $vars['page'] = $post['refer'];
 	
 	// コンバートしないでファイル読み込み
@@ -397,6 +397,24 @@ function plugin_fusen_action() {
 			if ($auth)
 			{
 				$txt = str_replace(array("\r\n","\r"),"\n",$post['body']);
+				
+				// SPAM判定(ゲストのみ)
+				if (!$X_uid)
+				{
+					// 最大文字数(1000文字以上)
+					if (strlen($txt) > $plugin_fusen_setting['max_chr']) exit();
+					// <a>タグ検出
+					if (preg_match_all("#<a[^>]*>#i",$txt,$match,PREG_PATTERN_ORDER))
+					{
+						if (count($match[0]) > $plugin_fusen_setting['max_a_tag']) exit();
+					}
+					// http:// の個数(5個以上)
+					if (preg_match_all("#https?://#i",$txt,$match,PREG_PATTERN_ORDER))
+					{
+						if (count($match[0]) > $plugin_fusen_setting['max_link']) exit();
+					}
+				}
+				
 				$txt = preg_replace('/^#fusen/m', '&#35;fusen', $txt);
 				$txt = user_rules_str(auto_br($txt));
 				$txt = rtrim($txt);
