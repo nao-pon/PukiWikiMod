@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.35 2005/12/18 14:13:55 nao-pon Exp $
+// $Id: index.php,v 1.36 2006/02/22 12:52:09 nao-pon Exp $
 
 
 define("UTIME",time());
@@ -111,8 +111,7 @@ function writeConfig(){
 		$$k = str_replace("'","\'",$v);
 	}
 
-	$filename = _AM_WIKI_CONFIG_FILE;
-	$file = fopen($filename, "wb");
+	$file = fopen(_AM_WIKI_CONFIG_FILE, "wb");
 	
 	$gids = implode(",",$gids);
 	$aids = implode(",",$aids);
@@ -203,17 +202,23 @@ function writeConfig(){
 
 	if($wiki_adminpass != ""){
 		$wiki_adminpass = md5($wiki_adminpass);
-		$filename = _AM_WIKI_ADMIN_PASS;
-		$file = fopen($filename, "wb");
+		$file = fopen(_AM_WIKI_ADMIN_PASS, "wb");
 		$content = "<?php\n\$adminpass = '$wiki_adminpass';\n?>";
 		fwrite($file, $content);
 		fclose($file);
 	}
-
-	$filename = _AM_WIKI_CSS_FILE;
-	$file = fopen($filename, "wb");
-	fwrite($file, $wiki_css);
-	fclose($file);
+	
+	$wiki_css = trim($wiki_css);
+	if ($wiki_css)
+	{
+		$file = fopen(_AM_WIKI_CSS_FILE, "wb");
+		fwrite($file, $wiki_css);
+		fclose($file);
+	}
+	else
+	{
+		@unlink(_AM_WIKI_CSS_FILE);
+	}
 
 	redirect_header("./index.php",1,_AM_DBUPDATED);
 	exit();
@@ -664,7 +669,7 @@ function db_check()
 	{
 		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_pginfo")."` (
   `id` int(10) NOT NULL auto_increment,
-  `name` varchar(255) NOT NULL default '',
+  `name` varchar(255) binary NOT NULL default '',
   `buildtime` int(10) NOT NULL default '0',
   `editedtime` int(10) NOT NULL default '0',
   `aids` text NOT NULL,
@@ -801,7 +806,13 @@ function db_check()
 			echo $query;
 		}
 	}
-
+	
+	// ページ名を BINARY に
+	$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod_pginfo")."` CHANGE `name` `name` VARCHAR( 255 ) BINARY NOT NULL";
+	$xoopsDB->queryF($query);
+	$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod_count")."` CHANGE `name` `name` VARCHAR( 255 ) BINARY NOT NULL";
+	$xoopsDB->queryF($query);
+	
 }
 clearstatcache();
 if($_SERVER["REQUEST_METHOD"] == "GET"){

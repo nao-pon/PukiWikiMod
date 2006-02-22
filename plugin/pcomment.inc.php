@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.32 2006/01/17 05:46:37 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.33 2006/02/22 12:52:09 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -70,6 +70,7 @@ function plugin_pcomment_init() {
 			'_pcmt_msg_none' => 'コメントはありません。',
 			'_pcmt_msg_log_title' => '過去ログ',
 			'_pcmt_msg_reply_this' => 'このメッセージに返信',
+			'_pcmt_msg_warning' => '',
 			'_title_pcmt_collided' => '$1 で【更新の衝突】が起きました',
 			'_msg_pcmt_collided' => 'あなたがこのページを編集している間に、他の人が同じページを更新してしまったようです。<br />
 			コメントを追加しましたが、違う位置に挿入されているかもしれません。<br />',
@@ -90,7 +91,13 @@ function plugin_pcomment_init() {
 			Your comment was added anyway but may be at wrong line.<br />',
 		);
 	}
-  set_plugin_messages($_plugin_pcmt_messages);
+	// 独自設定読み込み
+	$config = PLUGIN_DATA_DIR."pcomment/config.php";
+	if (file_exists($config))
+	{
+		include_once($config);
+	}
+	set_plugin_messages($_plugin_pcmt_messages);
 }
 function plugin_pcomment_action() {
 	global $post;
@@ -102,7 +109,7 @@ function plugin_pcomment_action() {
 
 function plugin_pcomment_convert() {
 	global $script,$vars,$BracketName,$WikiName,$digest;
-	global $_pcmt_btn_name, $_pcmt_btn_comment, $_pcmt_msg_comment, $_pcmt_msg_all, $_pcmt_msg_edit, $_pcmt_msg_recent;
+	global $_pcmt_btn_name, $_pcmt_btn_comment, $_pcmt_msg_comment, $_pcmt_msg_all, $_pcmt_msg_edit, $_pcmt_msg_recent, $_pcmt_msg_warning;
 	
 	$style = "";
 	
@@ -207,6 +214,9 @@ function plugin_pcomment_convert() {
 	$s_count = htmlspecialchars($count);
 	
 	$fontset_js_tag = fontset_js_tag();
+	
+	$warning_tag = ($_pcmt_msg_warning)? '<tr><td colspan="3">'.$_pcmt_msg_warning.'</td></tr>' : '';
+	
 	$form = <<<EOD
   <div>
   <input type="hidden" name="digest" value="$digest" />
@@ -222,7 +232,9 @@ function plugin_pcomment_convert() {
   <td style="vertical-align:bottom;white-space:nowrap;">{$radio}{$title} {$name}</td>
   <td style="vertical-align:bottom;{$w_style}">$fontset_js_tag<br />$comment</td>
   <td style="vertical-align:bottom;"><input type="submit" value="$btn_text" /></td>
-  </tr></table>
+  </tr>
+  $warning_tag
+  </table>
   </div>
 EOD;
 	$link = $_page;

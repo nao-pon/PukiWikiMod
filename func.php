@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.65 2006/01/17 23:55:50 nao-pon Exp $
+// $Id: func.php,v 1.66 2006/02/22 12:52:09 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1311,18 +1311,18 @@ function pukiwiki_refcheck($blank = 0)
 // アクセス制限
 function check_access_ctl()
 {
-	global $post;
+	global $post,$pwm_config;
 	
 	$config = &new Config('access');
 	$config->read();
 	$deny_ips = $config->get('Deny_IP');
-	$deny_ucds = $config->get('Deny_UCD');
+	$pwm_config['deny_ucds'] = $config->get('Deny_UCD');
 	$deny_names = $config->get('Deny_POST_NAME');
 	$deny_exit = $config->get('Deny_POST_EXIT');
 	unset($config);
 	
 	if (!empty($deny_ips) && !empty($_SERVER["REMOTE_ADDR"]) && in_array($_SERVER["REMOTE_ADDR"], $deny_ips)) exit;
-	if (!empty($deny_ucds) && in_array(PUKIWIKI_UCD, $deny_ucds)) exit;
+	if (!empty($pwm_config['deny_ucds']) && in_array(PUKIWIKI_UCD, $pwm_config['deny_ucds'])) exit;
 	if (isset($post['name']) && !empty($deny_names))
 	{
 		function check_access_ctl_quote($str)
@@ -1415,13 +1415,12 @@ function reform2pagename($str)
 // XOOPS用　関数
 //
 //////////////////////////////////////////////////////
-
 // ユーザーが所属するグループIDを得る
 function X_get_groups(){
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
-		global $X_uid,$xoopsDB;
-		$X_M = new XoopsMemberHandler($xoopsDB);
+		global $X_uid;
+		$X_M = xoops_gethandler('member');
 		return $X_M->getGroupsByUser($X_uid);
 	} else {
 		// XOOPS 1
@@ -1434,8 +1433,7 @@ function X_get_group_list()
 {
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
-		global $xoopsDB;
-		$X_M = new XoopsMemberHandler($xoopsDB);
+		$X_M = xoops_gethandler('member');
 		return $X_M->getGroupList();
 	} else {
 		// XOOPS 1
@@ -1452,8 +1450,7 @@ function X_get_users($sort=true)
 	
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
-		global $xoopsDB;
-		$X_M = new XoopsMemberHandler($xoopsDB);
+		$X_M = xoops_gethandler('member');
 		$ret = $X_M->getUserList();
 	} else {
 		// XOOPS 1

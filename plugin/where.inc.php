@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: where.inc.php,v 1.8 2004/09/23 14:27:57 nao-pon Exp $
+// $Id: where.inc.php,v 1.9 2006/02/22 12:52:09 nao-pon Exp $
 //
 // 指定ページへの階層をリンク付で表示するプラグイン
 //
@@ -58,6 +58,13 @@ function plugin_where_make($prefix) {
 	$ret = "<a href=\"".XOOPS_WIKI_URL."/\" title=\"$title\">$_where_msg_top</a>";
 	
 	$ret .= " &gt; ".make_pagelink($prefix,"# > #","","",FALSE);
+	
+	if ($vars['page'] && $vars['is_rsstop'])
+	{
+		$spage = htmlspecialchars(strip_bracket($vars['page']));
+		$epage = "&amp;page=".rawurlencode($vars['page']);
+		$ret .= " <a href=\"$script?cmd=rss10{$epage}\"><img src=\"".XOOPS_WIKI_URL."/image/rss.png\" alt=\"RSS[{$spage}]\" /></a>";
+	}
 	
 	return $ret;
 }

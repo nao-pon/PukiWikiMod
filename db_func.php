@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.33 2006/01/22 00:47:08 nao-pon Exp $
+// $Id: db_func.php,v 1.34 2006/02/22 12:52:09 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -238,11 +238,7 @@ function get_prevpage_link_by_name($page)
 	
 	if (!$data['prev'][0]) return "";
 	
-	$link = make_pagelink($data['prev'][1],"#".chr(0)."#");
-	$links = explode(chr(0),$link);
-	$link = $links[count($links)-1];
-	return $link;
-	//return ($data['prev'][1])? make_link("[[".preg_replace("/.+\//","",$data['prev'][1]).">".$data['prev'][1]."]]"):"";
+	return make_pagelink($data['prev'][1],"#compact#");
 }
 
 //ページ名から後ろページへのリンクを得る
@@ -252,12 +248,9 @@ function get_nextpage_link_by_name($page)
 	
 	if (!$data['next'][0]) return "";
 	
-	$link = make_pagelink($data['next'][1],"#".chr(0)."#");
-	$links = explode(chr(0),$link);
-	$link = $links[count($links)-1];
-	return $link;
-
+	return make_pagelink($data['next'][1],"#compact#");
 }
+
 //ページ名から前後のページへの<link>タグを得る
 function get_header_link_tag_by_name($page)
 {

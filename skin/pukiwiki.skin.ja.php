@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.40 2006/01/15 13:40:23 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.41 2006/02/22 12:52:09 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 global $pwm_confg;
 ?>
@@ -77,7 +77,7 @@ global $pwm_confg;
 	
 	<div style="float:left;text-align:left;width:49%;">
 	<?php echo "<small>".$comments_tag.$tb_tag."<span id='pukiwiki_fusenlist' name='pukiwiki_fusenlist'></span></small>" ?>
-	</div>	
+	</div>
 	
 	<div style="float:right;text-align:right;width:50%;">
 	<?php echo $counter ?>
@@ -88,6 +88,14 @@ global $pwm_confg;
 	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev"> <img src="./image/next.png" width="6" height="12" alt="Next"> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
 	
 	<?php } // is_read ?>
+
+	<?php
+	if (isset($pwm_confg['ad_top']))
+	{
+		echo $pwm_confg['ad_top'];
+	}
+	?>
+	
 	<div class="wiki_header_img"></div>
 	<div class="wiki_content" id="body" style="width:100%;">
 	<?php echo $body ?>

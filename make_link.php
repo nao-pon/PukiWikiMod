@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.46 2006/01/18 01:09:11 nao-pon Exp $
+// $Id: make_link.php,v 1.47 2006/02/22 12:52:09 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -897,7 +897,6 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 	
 	if ($not_where && isset($linktag[$vars['page']][$cache_key]))
 	{
-		//if (!empty($vars['from_pginfo_init']) && !isset($related[$sb_page]) && $page != $vars['page'] and is_page($page))
 		if (!empty($vars['from_pginfo_init']) && !isset($related[$sb_page]) && $page != $vars['page'])
 		{
 			$related[$sb_page] = get_filetime($page);
@@ -929,11 +928,9 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 		return "<a href=\"$anchor\">$s_alias</a>";
 	}
 	
-	//$r_page = rawurlencode($page);
 	$r_page = rawurlencode($s_page);
 	$r_refer = ($refer == '') ? '' : '&amp;refer='.rawurlencode($refer);
 
-	//if (!isset($related[$sb_page]) and $page != $vars['page'] and is_page($page))
 	if (!isset($related[$sb_page]) and $page != $vars['page'])
 	{
 		$related[$sb_page] = get_filetime($page);
@@ -953,9 +950,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 			$name = substr($access_name,0,strlen($access_name)-1);
 			if ($not_where && preg_match("/^[0-9\-]+$/",$page_name))
 			{
-				//$heading = get_heading($page);
-				//if ($heading) $page_name = $heading;
-				$page_name = replace_pagename_d2s($page,TRUE);
+				$page_name = htmlspecialchars(replace_pagename_d2s($page,TRUE));
 				// 無限ループ防止　姑息だけど
 				$page_name = preg_replace("/^(#.*#)$/"," $1",$page_name);
 			}
@@ -980,7 +975,6 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 		if ($vars['page'] != $page || strstr($page,$alias) === false || $vars['cmd'] != "read")
 		{ // 表示中のページではない 又は ページ名に表示文字列が含まれない 又は 閲覧モード以外
 			$retval = "<a href=\"".get_url_by_name($page)."{$anchor}\"$title>$s_alias</a>";
-			//$retval = "<a href=\""."{$anchor}\"$title>$s_alias</a>";
 		}
 		else
 		{

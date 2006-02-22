@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.12 2006/01/15 13:40:23 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.13 2006/02/22 12:52:09 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -196,10 +196,16 @@ function plugin_makepage_action()
 				
 				$postdata = str_replace("___BODY___",$post['body'],$postdata);
 				
-				$_name = (!empty($post['name']))? $post['name'] : $no_name;
-				
+				if (!empty($post['name']))
+				{
+					$_name = $post['name'];
+					$X_uname = $_name;
+				}
+				else
+				{
+					$_name = $no_name;
+				}
 				make_user_link($_name);
-				$X_uname = $_name;
 				
 				$postdata = str_replace("___NAME___",$_name."\n#clear",$postdata);
 				

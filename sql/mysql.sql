@@ -1,7 +1,7 @@
 # --------------------------------------------------------
 
 CREATE TABLE pukiwikimod_count (
-  `name` varchar(255) NOT NULL default '',
+  `name` varchar(255) binary NOT NULL default '',
   `count` int(10) NOT NULL default '0',
   `today` varchar(10) NOT NULL default '',
   `today_count` int(10) NOT NULL default '0',
