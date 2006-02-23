@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.64 2006/01/22 01:11:53 nao-pon Exp $
+// $Id: file.php,v 1.65 2006/02/23 11:40:28 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -844,7 +844,8 @@ function get_pg_auther_name($str,$is_id=FALSE)
 	$uid = (!$is_id)? get_pg_auther($str) : $str;
 	if (!$uid) return "$no_name";
 	
-	$user = new XoopsUser($uid);
+	$member_handler =& xoops_gethandler('member');
+	$user =& $member_handler->getUser($uid);
 	return $user->getVar("uname");
 }
 
@@ -864,7 +865,8 @@ function get_pg_auther_mail($page)
 	$uid = get_pg_auther($page);
 	if (!$uid) return "";
 	
-	$user = new XoopsUser($uid);
+	$member_handler =& xoops_gethandler('member');
+	$user =& $member_handler->getUser($uid);
 	//strip_tags:XOOPS 1.3 系対策
 	return strip_tags($user->getVar("email"));
 }

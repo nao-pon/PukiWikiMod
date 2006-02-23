@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.14 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.15 2006/02/23 11:40:28 nao-pon Exp $
 
 function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	global $xoopsDB,$xoopsUser;
@@ -106,7 +106,7 @@ function pukiwikimod_X_get_groups(){
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
 		global $X_uid;
-		$X_M = xoops_gethandler('member');
+		$X_M =& xoops_gethandler('member');
 		return $X_M->getGroupsByUser($X_uid);
 	} else {
 		// XOOPS 1

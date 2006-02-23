@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.66 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: func.php,v 1.67 2006/02/23 11:40:28 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1420,7 +1420,7 @@ function X_get_groups(){
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
 		global $X_uid;
-		$X_M = xoops_gethandler('member');
+		$X_M =& xoops_gethandler('member');
 		return $X_M->getGroupsByUser($X_uid);
 	} else {
 		// XOOPS 1
@@ -1433,7 +1433,7 @@ function X_get_group_list()
 {
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
-		$X_M = xoops_gethandler('member');
+		$X_M =& xoops_gethandler('member');
 		return $X_M->getGroupList();
 	} else {
 		// XOOPS 1

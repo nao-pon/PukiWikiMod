@@ -392,6 +392,36 @@ EOF;
 		$gd_ver = $match[0];
 		return $match[0];
 	}
+	
+	// 2ch BBQ あらしお断りシステム にリスティングされているかチェック
+	function IsBBQListed($safe_reg = '/^$/', $msg = false, $ip = NULL)
+	{
+		if (is_null($ip)) $ip = $_SERVER['REMOTE_ADDR'];
+		if(! preg_match($safe_reg, $ip))
+		{
+			if (!$msg) $msg = '公開プロキシ経由での投稿はできません。';
+			
+			$host = array_reverse(explode('.', $ip));
+			$addr = sprintf("%d.%d.%d.%d.niku.2ch.net",
+				$host[0],$host[1],$host[2],$host[3]);
+			$addr = gethostbyname($addr);
+			if(preg_match("/^127\.0\.0/",$addr)) return $msg;
+		}
+		return false;
+	}
+	
+	// 2ch BBQ チェック用汎用関数
+	function BBQ_Check($safe_reg = "/^(127\.0\.0\.1)/", $msg = false, $ip = NULL)
+	{
+		if ($_SERVER['REQUEST_METHOD'] == 'POST')
+		{
+			if ($_msg = HypCommonFunc::IsBBQListed($safe_reg, $msg, $ip))
+			{
+				exit ($_msg);
+			}
+		}
+		return;
+	}
 }
 
 /*

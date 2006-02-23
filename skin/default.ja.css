@@ -421,7 +421,7 @@ span.pukiwiki_trip {
 	margin-right:10px;
 	margin-bottom:5px;
 	margin-left:50px;
-	padding-top:0px
+	padding-top:0px;
 	padding-right:30px;
 	padding-bottom:0px;
 	padding-left:10px;
@@ -840,7 +840,7 @@ div.plugin_gimage font
 /* fusen.inc.php */
 div#fusen_area
 {
-	margin 0px;
+	margin: 0px;
 	padding: 0px;
 	height: 0px;
 	background:transparent none;
@@ -941,7 +941,6 @@ div.fusen_info
 div.fusen_contents
 {
 	font-size:80%;
-	padding:2px 2px 0px 2px;
 	padding:0px;
 	margin:2px;
 	width: auto;
@@ -952,6 +951,7 @@ div.fusen_contents
 div.fusen_contents p
 {
 	margin:3px 0px;
+	padding:0px;
 }
 
 div.fusen_contents hr
@@ -1050,7 +1050,8 @@ div.fusen_list
 	font-size: 11px;
 	left: 0px;
 	top: 0px;
-	padding: 4px;
+	padding:2px;
+	margin:2px;
 	background-color: white;
 	border: black 2px solid;
 	visibility: hidden;
@@ -1074,7 +1075,12 @@ div.fusen_list a:active
 {
 	color: red;
 }
-
+div.fusen_list ul,
+div.fusen_list li
+{
+	margin:3px 0px;
+	padding:0px;
+}
 .fusen_list_box
 {
 	height: 200px;
