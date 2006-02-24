@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.37 2006/02/24 00:10:58 nao-pon Exp $
+// $Id: index.php,v 1.38 2006/02/24 00:15:27 nao-pon Exp $
 
 
 define("UTIME",time());
@@ -19,10 +19,10 @@ define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/'.PUKIWIKI_DIR_NAME);
 if(!class_exists('HypCommonFunc')){include(XOOPS_WIKI_PATH."/include/hyp_common_func.php");}
 
 // config.php がない場合(初期導入時)
-if (file_exists(XOOPS_WIKI_PATH."/cache/config.php")) { touch(XOOPS_WIKI_PATH."/cache/config.php"); }
+if (file_exists(XOOPS_WIKI_PATH."/cache/config.php")) { @touch(XOOPS_WIKI_PATH."/cache/config.php"); }
 
 include(XOOPS_WIKI_PATH."/pukiwiki.ini.php");
-include(XOOPS_WIKI_PATH."/cache/config.php");
+@include(XOOPS_WIKI_PATH."/cache/config.php");
 include(XOOPS_WIKI_PATH."/html.php");
 include(XOOPS_WIKI_PATH."/file.php");
 include(XOOPS_WIKI_PATH."/func.php");
