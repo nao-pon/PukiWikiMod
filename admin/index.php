@@ -1,12 +1,10 @@
 <?php
-// $Id: index.php,v 1.36 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: index.php,v 1.37 2006/02/24 00:10:58 nao-pon Exp $
 
 
 define("UTIME",time());
 include("admin_header.php");
 include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
-
-error_reporting(E_ALL);
 
 // PukiWikiMod ディレクトリ名
 define("PUKIWIKI_DIR_NAME", $xoopsModule->dirname());
@@ -19,6 +17,9 @@ define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/'.PUKIWIKI_DIR_NAME);
 
 // class HypCommonFunc
 if(!class_exists('HypCommonFunc')){include(XOOPS_WIKI_PATH."/include/hyp_common_func.php");}
+
+// config.php がない場合(初期導入時)
+if (file_exists(XOOPS_WIKI_PATH."/cache/config.php")) { touch(XOOPS_WIKI_PATH."/cache/config.php"); }
 
 include(XOOPS_WIKI_PATH."/pukiwiki.ini.php");
 include(XOOPS_WIKI_PATH."/cache/config.php");

@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.13 2005/11/16 23:49:16 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.14 2006/02/24 00:10:58 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -70,8 +70,15 @@ function b_pukiwiki_page_show($options)
 	if (strpos($data,"_gEsTnAmE_") !== FALSE)
 	{
 		global $xoopsUser,$xoopsModule,$xoopsConfig;
-		$trip = (!empty($_COOKIE["pukiwiki_un"]))? preg_replace("/[^#]+(#.+)?/","$1",$_COOKIE["pukiwiki_un"]) : "";
-		$uname = ($xoopsUser)? $xoopsUser->uname().$trip : $xoopsConfig['anonymous'];
+		if ($xoopsUser)
+		{
+			$trip = (!empty($_COOKIE["pukiwiki_un"]))? preg_replace("/[^#]+(#.+)?/","$1",$_COOKIE["pukiwiki_un"]) : "";
+			$uname = $xoopsUser->uname().$trip;
+		}
+		else
+		{
+			$uname = (!empty($_COOKIE["pukiwiki_un"]))? $_COOKIE["pukiwiki_un"] : $xoopsConfig['anonymous'];
+		}
 		//名前欄置換
 		$data = str_replace("_gEsTnAmE_",$uname,$data);
 	}

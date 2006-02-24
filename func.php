@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.67 2006/02/23 11:40:28 nao-pon Exp $
+// $Id: func.php,v 1.68 2006/02/24 00:10:58 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -894,7 +894,7 @@ function make_user_link (&$name,$format="",$convert=false)
 	if (!$convert && $name != $no_name)
 	{
 		// 名前をクッキーに保存
-		setcookie("pukiwiki_un", $name, time()+86400*365);//1年間
+		setcookie("pukiwiki_un", $name, time()+86400*365,str_replace("modules/".PUKIWIKI_DIR_NAME,"",XOOPS_WIKI_URL));//1年間
 	}
 	
 	$trip = $b_name = "";
