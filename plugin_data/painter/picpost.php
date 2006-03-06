@@ -164,7 +164,7 @@ if($sendheader){
     list($name,$value) = explode("=", $query_s);
     if($name == 'usercode') $userdata .= "\t$value"; // usercodeをセット
     elseif($name == 'refer') $userdata .= "\t$value"; // ページ名をセット
-
+	elseif($name == 'uid') $userdata .= "\t$value"; // UserIDをセット
   }
 }
 $userdata .= "\n";
