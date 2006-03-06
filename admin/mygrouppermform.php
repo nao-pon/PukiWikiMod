@@ -1,5 +1,5 @@
 <?php
-// $Id: mygrouppermform.php,v 1.2 2004/12/23 14:49:17 nao-pon Exp $
+// $Id: mygrouppermform.php,v 1.3 2006/03/06 07:30:11 nao-pon Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000-2003 XOOPS.org                           //
@@ -28,6 +28,8 @@
 // URL: http://www.myweb.ne.jp/, http://www.xoops.org/, http://jp.xoops.org/ //
 // Project: The XOOPS Project                                                //
 // ------------------------------------------------------------------------- //
+
+if( ! defined( 'XOOPS_ROOT_PATH' ) ) exit ;
 
 require_once XOOPS_ROOT_PATH.'/class/xoopsform/formelement.php';
 require_once XOOPS_ROOT_PATH.'/class/xoopsform/formhidden.php';
@@ -152,7 +154,7 @@ class MyXoopsGroupPermForm extends XoopsForm
 		}
 		$gperm_handler =& xoops_gethandler('groupperm');
 		$member_handler =& xoops_gethandler('member');
-		$glist =& $member_handler->getGroupList();
+		$glist = $member_handler->getGroupList();
 		foreach (array_keys($glist) as $i) {
 			// get selected item id(s) for each group
 			$selected = $gperm_handler->getItemIds($this->_permName, $i, $this->_modid);
@@ -199,7 +201,7 @@ class MyXoopsGroupPermForm extends XoopsForm
 				$ret .= $elements[$i]->render();
 			}
 		}
-		$ret .= "</table>".$xoopsGTicket->getTicketHtml(__LINE__)."</form>";
+		$ret .= "</table>".$xoopsGTicket->getTicketHtml(__LINE__ , 1800 , 'myblocksadmin' )."</form>";
 		return $ret;
 	}
 }
