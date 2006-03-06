@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.9 2005/02/23 14:57:53 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.10 2006/03/06 06:20:30 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -11,6 +11,26 @@ function plugin_moblog_action()
 	//error_reporting(E_ALL);
 	//設定ファイル読み込み
 	require('./plugin_data/moblog/moblog.ini.php');
+	$refresh_min = (int)$refresh_min;
+	$host = (string)$host;
+	$mail = (string)$mail;
+	$user = (string)$user;
+	$pass = (string)$pass;
+	$adr2page = (array)$adr2page;
+	$ref_option = (string)$ref_option;
+	$maxbyte = (int)$maxbyte;
+	$body_limit = (int)$body_limit;
+	$refresh_min = (int)$refresh_min;
+	$nosubject = (string)$nosubject;
+	$deny = (array)$deny;
+	$deny_mailer = (string)$deny_mailer ;
+	$deny_title = (string)$deny_title;
+	$deny_lang = (string)$deny_lang;
+	$subtype = (string)$subtype;
+	$viri = (string)$viri;
+	$del_ereg = (string)$del_ereg;
+	$word = (array)$word;
+	$imgonly = (int)$imgonly;
 
 	$chk_file = CACHE_DIR."moblog.chk";
 	if (!file_exists($chk_file))
@@ -25,6 +45,8 @@ function plugin_moblog_action()
 
 
 	// 接続開始
+	$err = "";
+	$num = $size = $errno = 0;
 	$sock = fsockopen($host, 110, $err, $errno, 10) or plugin_moblog_error_output("サーバーに接続できません。");
 	$buf = fgets($sock, 512);
 	if(substr($buf, 0, 3) != '+OK')
@@ -59,6 +81,7 @@ function plugin_moblog_action()
 		$subject = $from = $text = $atta = $part = $attach = $filename = "";
 		list($head, $body) = plugin_moblog_mime_split($dat[$j]);
 		// To:ヘッダ確認
+		$treg = array();
 		if (preg_match("/(?:^|\n|\r)To:[ \t]*([^\r\n]+)/i", $head, $treg)){
 			$toreg = "/".quotemeta($mail)."/";
 			if (!preg_match($toreg,$treg[1])) $write = false; //投稿アドレス以外
@@ -67,6 +90,7 @@ function plugin_moblog_action()
 			$write = false;
 		}
 		// メーラーのチェック
+		$mreg = array();
 		if ($write && (eregi("(X-Mailer|X-Mail-Agent):[ \t]*([^\r\n]+)", $head, $mreg))) {
 			if ($deny_mailer){
 				if (preg_match($deny_mailer,$mreg[2])) $write = false;
@@ -79,19 +103,22 @@ function plugin_moblog_action()
 			}
 		}
 		// 日付の抽出
+		$datereg = array();
 		eregi("Date:[ \t]*([^\r\n]+)", $head, $datereg);
 		$now = strtotime($datereg[1]);
 		if ($now == -1) $now = time();
 		// サブジェクトの抽出
+		$subreg = array();
 		if (preg_match("/\nSubject:[ \t]*(.+?)(\n[\w-_]+:|$)/is", $head, $subreg)) {
 			// 改行文字削除
 			$subject = str_replace(array("\r","\n"),"",$subreg[1]);
 			// エンコード文字間の空白を削除
 			$subject = preg_replace("/\?=[\s]+?=\?/","?==?",$subject);
-			
+			$regs = array();
 			while (eregi("(.*)=\?iso-[^\?]+\?B\?([^\?]+)\?=(.*)",$subject,$regs)) {//MIME B
 				$subject = $regs[1].base64_decode($regs[2]).$regs[3];
 			}
+			$regs = array();
 			while (eregi("(.*)=\?iso-[^\?]+\?Q\?([^\?]+)\?=(.*)",$subject,$regs)) {//MIME Q
 				$subject = $regs[1].quoted_printable_decode($regs[2]).$regs[3];
 			}
@@ -102,6 +129,7 @@ function plugin_moblog_action()
 			}
 		}
 		// 送信者アドレスの抽出
+		$freg = array();
 		if (eregi("From:[ \t]*([^\r\n]+)", $head, $freg)) {
 			$from = plugin_moblog_addr_search($freg[1]);
 		} elseif (eregi("Reply-To:[ \t]*([^\r\n]+)", $head, $freg)) {
@@ -132,9 +160,11 @@ function plugin_moblog_action()
 
 		// マルチパートならばバウンダリに分割
 		if (eregi("\nContent-type:.*multipart/",$head)) {
+			$boureg = array();
 			eregi('boundary="([^"]+)"', $head, $boureg);
 			$body = str_replace($boureg[1], urlencode($boureg[1]), $body);
 			$part = split("\r\n--".urlencode($boureg[1])."-?-?",$body);
+			$boureg2 = array();
 			if (eregi('boundary="([^"]+)"', $body, $boureg2)) {//multipart/altanative
 				$body = str_replace($boureg2[1], urlencode($boureg2[1]), $body);
 				$body = eregi_replace("\r\n--".urlencode($boureg[1])."-?-?\r\n","",$body);
@@ -154,6 +184,7 @@ function plugin_moblog_action()
 					if (preg_match($deny_lang,$mreg[1])) $write = false;
 				}
 			}
+			$type = array();
 			if (!eregi("Content-type: *([^;\n]+)", $m_head, $type)) continue;
 			list($main, $sub) = explode("/", $type[1]);
 			// 本文をデコード
@@ -187,6 +218,7 @@ function plugin_moblog_action()
 			}
 			if ($write) {
 				// ファイル名を抽出
+				$filereg = array();
 				if (eregi("name=\"?([^\"\n]+)\"?",$m_head, $filereg)) {
 					$filename = trim($filereg[1]);
 					// エンコード文字間の空白を削除
@@ -357,6 +389,7 @@ function plugin_moblog_mime_split($data) {
 }
 /* メールアドレスを抽出する */
 function plugin_moblog_addr_search($addr) {
+	$fromreg = array();
 	if (eregi("[-!#$%&\'*+\\./0-9A-Z^_`a-z{|}~]+@[-!#$%&\'*+\\/0-9=?A-Z^_`a-z{|}~]+\.[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+", $addr, $fromreg)) {
 		return $fromreg[0];
 	} else {

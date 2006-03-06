@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.25 2006/01/17 00:42:33 nao-pon Exp $
+// $Id: rss.php,v 1.26 2006/03/06 06:20:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -80,6 +80,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 	foreach($lines as $line)
 	{
 		$title = strip_bracket($line);
+		$reg_title = array();
 		if (preg_match("/(^|.*\/)[0-9\-]+$/",$title,$reg_title)){
 			$title = $reg_title[1].get_heading($line);
 		}
@@ -186,6 +187,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 
 			foreach(get_source($line) as $_line)
 			{
+				$cat = array();
 				if (preg_match("/^#category\((.*),:([^,]*),(.*)\)/i",$_line,$cat)) {
 					$cats = explode(",",$cat[3]);
 					foreach($cats as $cat_item) {

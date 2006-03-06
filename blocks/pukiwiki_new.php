@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_new.php,v 1.21 2005/05/19 23:57:52 nao-pon Exp $
+// $Id: pukiwiki_new.php,v 1.22 2006/03/06 06:20:30 nao-pon Exp $
 function b_pukiwiki_new_show($option)
 {
 	//表示する件数
@@ -140,6 +140,7 @@ function b_pukiwiki_newattach_show($option)
 function xb_make_link($page,$alias="#/#")
 {
 	include (XOOPS_ROOT_PATH."/modules/pukiwiki/cache/config.php");
+	$use_static_url = (string)$use_static_url;
 	static $linktag = array();
 
 	$pukiwiki_path = XOOPS_URL."/modules/pukiwiki/index.php";
@@ -150,6 +151,7 @@ function xb_make_link($page,$alias="#/#")
 	if (isset($linktag[$page.$alias])) return $linktag[$page.$alias];
 	
 	$url = rawurlencode($name);
+	$sep = array();
 	if (preg_match("/^#(.*)#$/",$alias,$sep))
 	{
 		// パン屑リスト出力
@@ -181,6 +183,7 @@ function xb_make_link($page,$alias="#/#")
 	{
 		if ($alias) $_name = $alias;
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
+		$f_name = array();
 		if (preg_match("/^(.*\/)?[0-9\-]+$/",$name,$f_name)){
 			$heading = xb_get_heading($page);
 			if ($heading) $_name = $heading;
@@ -234,6 +237,7 @@ function xb_encode($key)
 // [[ ]] を取り除く
 function xb_strip_bracket($str)
 {
+	$match = array();
 	if(preg_match("/^\[\[(.*)\]\]$/",$str,$match)) {
 		$str = $match[1];
 	}

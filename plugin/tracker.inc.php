@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone
-// $Id: tracker.inc.php,v 1.23 2006/01/15 13:40:23 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.24 2006/03/06 06:20:30 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.29 2005/03/02 13:31:05 henoheno Exp $
 
 //
@@ -766,6 +766,7 @@ class Tracker_list
 		}
 
 		$source = plugin_tracker_get_source($page);
+		$matches = array();
 		if (preg_match('/move\sto\s(.+)/',$source[0],$matches))
 		{
 			$page = strip_bracket(trim($matches[1]));

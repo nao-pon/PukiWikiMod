@@ -1,5 +1,5 @@
 <?php
-// $Id: ls2.inc.php,v 1.27 2006/01/17 00:42:33 nao-pon Exp $
+// $Id: ls2.inc.php,v 1.28 2006/03/06 06:20:30 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.8
 
@@ -168,6 +168,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 
 	//ページ名が「数字と-」だけの場合は、*(**)行を取得してみる
 	$_name = "";
+	$arg = array();
 	if (preg_match("/(^|.*\/)[0-9\-]+$/",$name,$arg))
 	{
 		$_name_base = htmlspecialchars($arg[1]);
@@ -267,6 +268,7 @@ function ls2_show_headings($page,&$params,$include = FALSE,$prefix="",$child_cou
 		// 見出しの固有ID部を削除
 		$source = preg_replace('/^(\*{1,6}.*)\[#[A-Za-z][\w-]+\](.*)$/m','$1$2',$source);
 		foreach ($source as $line) {
+			$matches = array();
 			if ($params['title'] and preg_match('/^(\*+)(.*)()?$/',$line,$matches)) {
 				$special = strip_tags(make_line_rules(inline($matches[2],TRUE)));
 				$left = (strlen($matches[1]) - 1) * 16;

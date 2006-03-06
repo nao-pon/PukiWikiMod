@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: font.inc.php,v 1.3 2004/03/20 07:21:18 nao-pon Exp $
+// $Id: font.inc.php,v 1.4 2006/03/06 06:20:30 nao-pon Exp $
 //
 
 function plugin_font_inline()
@@ -23,6 +23,7 @@ function plugin_font_inline()
 	$decoration = array();
 	foreach ($prms as $prm)
 	{
+		$size = $color = array();
 		if ($prm == "")
 			$color_type = false;
 		elseif (preg_match("/^i(talic)?$/i",$prm))

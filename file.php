@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.65 2006/02/23 11:40:28 nao-pon Exp $
+// $Id: file.php,v 1.66 2006/03/06 06:20:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -75,10 +75,10 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		
 		$postdata = user_rules_str($postdata);
 		
+		$oldpostdata = is_page($page) ? join('',get_source($page)) : '';
 		if (rtrim($oldpostdata) != rtrim($postdata))
 		{//変更があった場合
 			// 差分ファイルの作成
-			$oldpostdata = is_page($page) ? join('',get_source($page)) : '';
 			$diffdata = do_diff($oldpostdata,$postdata);
 			file_write(DIFF_DIR,$page,$diffdata);
 			
@@ -86,6 +86,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			$mail_add = $mail_del = "";
 			$diffdata_ar = array();
 			$diffdata_ar=split("\n",$diffdata);
+			$regs = array();
 			foreach($diffdata_ar as $diffdata_line){
 				if (ereg("^\+ (.*)",$diffdata_line,$regs)){
 					$mail_add .= $regs[1]."\n";
@@ -365,6 +366,7 @@ function put_recentdeleted($page)
 	}
 	// update RecentDeleted
 	$lines = array();
+	$matches = array();
 	foreach (get_source($whatsdeleted) as $line)
 	{
 		if (preg_match('/^-(.+) - (\[\[.+\]\])$/',$line,$matches))
@@ -455,7 +457,8 @@ function is_freeze($page)
 	if (!check_readable($page,false,false)) return ($ret[$page]=true);
 	
 	$lines = get_source($page,1);
-
+	
+	$arg = array();
 	if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$lines[0],$arg)){
 		$gids = $aids = array();
 		if ($arg[2]) $aids = explode(",",$arg[2].",");
@@ -549,6 +552,7 @@ function get_readings()
 		//$page = strip_bracket($page);
 		$readings[$page] = '';
 	}
+	$matches = array();
 	foreach (get_source($pagereading_config_page) as $line) {
 		$line = preg_replace('/[\s\r\n]+$/', '', $line);
 		if(preg_match('/^-\[\[([^]]+)\]\]\s(.+)$/', $line, $matches)
@@ -681,6 +685,7 @@ function get_reading($page)
 	$page = strip_bracket($page);
 	$ret = "";
 	$readings = join('',get_source($pagereading_config_page));
+	$match = array();
 	if (preg_match("/\-\[\[".preg_quote($page,"/")."\]\] (.+)\n/",$readings,$match))
 		$ret = $match[1];
 	return $ret;
@@ -692,7 +697,7 @@ function put_reading($page,$reading)
 	global $pagereading_config_page;
 	if (!is_page($page)) return;
 	
-	$readings = array();
+	$matches = $readings = array();
 	foreach (get_source($pagereading_config_page) as $line) {
 		$line = preg_replace('/[\s\r\n]+$/', '', $line);
 		if(preg_match('/^-\[\[([^]]+)\]\]\s(.+)$/', $line, $matches))
@@ -738,6 +743,8 @@ function get_existpages($nocheck=false,$page="",$limit=0,$order="",$nolisting=fa
 	}
 	$dp = @opendir($dir)
 		or die_message($dir. ' is not found or not readable.');
+	
+	$matches = array();
 	while ($file = readdir($dp))
 	{
 		if (preg_match("/$pattern/",$file,$matches))
@@ -827,6 +834,7 @@ function get_pg_auther($page)
 	$string = preg_replace("/(^|\n)#(freeze|unvisible)([^\n]*)?/","",$string);
 	$string = trim($string);
 	
+	$arg = array();
 	if (preg_match("/^\/\/ author:([0-9]+)($|\n)/",$string,$arg))
 		$author_uid = $arg[1];
 		
@@ -879,6 +887,7 @@ function get_freezed_uppage($page)
 	$ret = array("",0,null,null,0);
 	$page = strip_bracket($page);
 	// 上位ページ名を得る
+	$arg = array();
 	if (preg_match("/^(.*)\/[^\/]*$/",$page,$arg))
 		$uppage_name = $arg[1];
 	else
@@ -911,6 +920,7 @@ function get_pg_allow_editer($page){
 	$lines = get_source($page,2);
 
 	$allows['group'] = $allows['user']= $allows['uid'] ="";
+	$arg = array();
 	foreach($lines as $line)
 	{
 		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$line,$arg)){
@@ -941,6 +951,7 @@ function get_pg_allow_viewer($page, $uppage=true, $clr=false){
 	}
 	
 	// pcoment のコメントページ調整
+	$arg = array();
 	if (preg_match("/^\[\[(.*\/)%s\]\]/",PCMT_PAGE,$arg))
 	{
 		$page = str_replace($arg[1],"",$page);
@@ -1167,6 +1178,7 @@ function get_heading_init($page)
 		{
 			$first_line = $line;
 		}
+		$reg = array();
 		if (preg_match("/(?:^|(\|}?))\*{1,6}([^\|]*)(.*)/",$line,$reg))
 		{
 			if (!$reg[1])
@@ -1187,9 +1199,8 @@ function get_heading_init($page)
 
 			if ($ret)
 			{
-				$nowikiname = $_nowikiname;
+				list($nowikiname,$breadcrumbs,$convert_d2s) = $_save;
 				return $ret;
-				break;
 			}
 		}
 	}
@@ -1218,6 +1229,7 @@ function delete_page_html($page,$mode="html+rss")
 	$rss[] = '';//PukiWikiトップ
 	$_page = strip_bracket($page);
 	
+	$match = array();
 	while(preg_match("/(.+)\/[^\/]+/",$_page,$match))
 	{
 		//上階層のページ
@@ -1301,7 +1313,7 @@ function get_pagename_aliases()
 	$_aliases = array();
 	foreach(get_source(':config/aliases') as $_line)
 	{
-		//if (preg_match("/\[(.+):([^:]+)\]/",$_line,$_match) && is_page($_match[2]))
+		$_match = array();
 		if (preg_match("/\[(.+) ([^ ]+)\]/",$_line,$_match) && is_page($_match[2]))
 		{
 			$_aliases[$_match[1]] = $_match[2];

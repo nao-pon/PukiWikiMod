@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: addline.inc.php,v 1.5 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: addline.inc.php,v 1.6 2006/03/06 06:20:30 nao-pon Exp $
 // ORG: addline.inc.php,v 0.2 2003/07/29 22:47:10 sha Exp $
 //
 /* 
@@ -133,6 +133,7 @@ function plugin_addline_convert()
 	$btn_text = $_addline_messages['btn_submit'];
 	if ( func_num_args() ){
 		foreach ( func_get_args() as $opt ){
+			$args = array();
 			if ( $opt === 'above' || $opt === 'up' )
 			{
 				$above = 1;

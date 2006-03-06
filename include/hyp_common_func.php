@@ -124,7 +124,9 @@ EOF;
 				{
 					$add_port = ":$port";
 				}
-
+				
+				$errNo = 0;
+				$errStr = "";
 				$files = @fsockopen($host, $port , $errNo , $errStr, 10);
 
 				@fputs($files, "POST /$uri HTTP/1.0\r\n" );
@@ -157,6 +159,7 @@ EOF;
 		$ret = "";
 		$q_word = str_replace(" ","|",preg_quote(join(' ',$words),"/"));
 		
+		$match = array();
 		if (preg_match("/$q_word/i",$text,$match))
 		{
 			$ret = ltrim(preg_replace('/\s+/', ' ', $text));
@@ -198,6 +201,7 @@ EOF;
 			'iso-2022-jp' => 'JIS',
 			'utf-8' => 'UTF-8',
 		);
+		$match = array();
 		if (preg_match("/<meta[^>]*content=(?:\"|')[^\"'>]*charset=([^\"'>]+)(?:\"|')[^>]*>/is",$html,$match))
 		{
 			$encode = strtolower($match[1]);
@@ -368,6 +372,7 @@ EOF;
 		// Use the gd_info() function if possible.
 		if (function_exists('gd_info')) {
 			$ver_info = gd_info();
+			$match = array();
 			preg_match('/\d/', $ver_info['GD Version'], $match);
 			$gd_ver = $match[0];
 			return $match[0];
@@ -569,6 +574,8 @@ class Hyp_HTTP_Request
 		while( !$fp && $connect_try_count < $this->connect_try )
 		{
 			@set_time_limit($this->connect_timeout + $max_execution_time);
+			$errno = 0;
+			$errstr = "";
 			$fp = fsockopen(
 				$via_proxy ? $this->proxy_host : $arr['host'],
 				$via_proxy ? $this->proxy_port : $arr['port'],
@@ -634,6 +641,7 @@ class Hyp_HTTP_Request
 		{
 			case 302: // Moved Temporarily
 			case 301: // Moved Permanently
+				$matches = array();
 				if (preg_match('/^Location: (.+)$/m',$resp[0],$matches)
 					and --$this->redirect_max > 0)
 				{
@@ -673,6 +681,7 @@ class Hyp_HTTP_Request
 		
 		foreach ($this->no_proxy as $network)
 		{
+			$matches = array();
 			if ($valid and preg_match($ip_pattern,$network,$matches))
 			{
 				$l_net = ip2long($matches[1]);

@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.18 2006/01/28 01:57:14 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.19 2006/03/06 06:20:30 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -65,6 +65,7 @@ function plugin_fusen_convert() {
 	$background = $height = '';
 	foreach(func_get_args() as $prm)
 	{
+		$arg = array();
 		if (preg_match("/^r(efresh)?:([\d]+)/",$prm,$arg))
 			$refresh =($arg[2])? $arg[2] : 0;
 		if (preg_match("/^h(eight)?:([\d]+)/",$prm,$arg))
@@ -401,6 +402,7 @@ function plugin_fusen_action() {
 				// SPAM判定(ゲストのみ)
 				if (!$X_uid)
 				{
+					$match = array();
 					// 最大文字数(1000文字以上)
 					if (strlen($txt) > $plugin_fusen_setting['max_chr']) exit();
 					// <a>タグ検出
@@ -424,6 +426,7 @@ function plugin_fusen_action() {
 				$w = (preg_match('/^\d+$/', $post['w']))? $post['w'] : 0;
 				$h = (preg_match('/^\d+$/', $post['h']))? $post['h'] : 0;
 				
+				$ma = array();
 				$dat[$id] = array(
 					'ln' => (preg_match('/^(id)?(\d+)$/', $post['ln'], $ma) ? $ma[2] : ''),
 					'x' => (preg_match('/^\d+$/', $post['l']) ? $post['l'] : 100),

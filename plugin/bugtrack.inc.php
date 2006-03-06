@@ -8,7 +8,7 @@
  * 変更履歴:
  *  2002.06.17: 作り始め
  *
- * $Id: bugtrack.inc.php,v 1.13 2006/01/15 13:40:23 nao-pon Exp $
+ * $Id: bugtrack.inc.php,v 1.14 2006/03/06 06:20:30 nao-pon Exp $
  */
 
 function plugin_bugtrack_init()
@@ -63,8 +63,8 @@ function plugin_bugtrack_init()
 
 function plugin_bugtrack_action()
 {
-  global $command,$vars,$_bugtrack_plugin_default_category,$script,$post,$no_name;
-
+	global $command,$vars,$_bugtrack_plugin_default_category,$script,$post,$no_name;
+	global $_bugtrack_plugin_title_submitted,$_bugtrack_plugin_title;
 	//改行コード統一 by nao-pon
 	$post['body'] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$post['body']);
 
@@ -262,6 +262,7 @@ function plugin_bugtrack_pageinfo($page) {
 	$source = get_source($page);
 	$source = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$source);
 	
+	$match = array();
 	if(preg_match("/move\s*to\s*($WikiName|$InterWikiName|$BracketName)/",$source[0],$match)) {
 		return(plugin_bugtrack_pageinfo($match[1]));
 	}
@@ -273,7 +274,7 @@ function plugin_bugtrack_pageinfo($page) {
 		$itemname = '_bugtrack_plugin_'.$item;
 		global $$itemname;
 		$itemname = $$itemname;
-		//if(preg_match("/-\s*$itemname\s*:\s*(.*)\s*/",$body,$matches)) {
+		$matches = array();
 		if(preg_match("/-[ \t\r\f]*".$itemname."[ \t]*:[ \t]*(.*)[ \t]*/",$body,$matches)) {
 			if($item == "summary")
 			{

@@ -1,7 +1,7 @@
 <?php
 	error_reporting(E_ALL);
 /**
- * $Id: deldel.inc.php,v 1.1 2006/01/21 05:07:20 nao-pon Exp $
+ * $Id: deldel.inc.php,v 1.2 2006/03/06 06:20:30 nao-pon Exp $
  * ORG: deldel.inc.php 161 2005-06-28 12:58:13Z okkez $
  *
  * 色んなものを一括削除するプラグイン
@@ -535,6 +535,7 @@ function make_body($cmd, $dir, $retry=false, $pages=array())
 				or die_message($dir. ' is not found or not readable.');
 			while ($file = readdir($dp))
 			{
+				$matches = array();
 				if (preg_match("/^([\d]+)\.ping$/",$file,$matches))
 				{
 					$aryret[$file] = get_pgname_by_id($matches[1]);
@@ -617,7 +618,6 @@ function make_confirm($cmd, $dir, $pages, $is_cascade=false)
 		break;
 	  default :
 		return array('msg' => ${$mes}['title_delete_error'],'body'=>${$mes}['msg_fatal_error']);
-		break;
 	}
 	$body .= "</ul>\n<div>";
 	$body .= '<input type="hidden" name="mode" value="exec"/><input type="hidden" name="dir" value="'.$dir.'"/>'."\n";
@@ -762,16 +762,12 @@ function get_filename2($dir,$page)
 	switch($dir){
 	  case 'backup' :
 		return BACKUP_DIR . $page . ((function_exists(gzfile))? ".gz" : ".txt") ;
-		break;
 	  case 'counter' :
 		return COUNTER_DIR . $page . '.count' ;
-		break;
 	  case 'diff' :
 		return DIFF_DIR . $page . '.txt' ;
-		break;
 	  case 'referer' :
 		return TRACKBACK_DIR . $pgid . '.ping';
-		break;
 	}
 }
 

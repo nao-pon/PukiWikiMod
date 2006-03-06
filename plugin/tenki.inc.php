@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tenki.inc.php,v 1.11 2005/06/25 06:07:04 nao-pon Exp $
+// $Id: tenki.inc.php,v 1.12 2006/03/06 06:20:30 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //	&tenki([pic],[w:width])[{now?}];
@@ -18,6 +18,7 @@ function plugin_tenki_inline()
 	
 	foreach($args as $arg)
 	{
+		$match = array();
 		if (preg_match("/w:(\d+)(px)?/i",$arg,$match))
 			$v_width = $match[1];
 		else if (strtolower($arg) == "pic")

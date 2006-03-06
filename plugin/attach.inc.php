@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.38 2005/11/06 05:35:00 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.39 2006/03/06 06:20:30 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -505,6 +505,7 @@ function attach_mime_content_type($filename)
 		}
 	}
 	
+	$matches = array();
 	if (!preg_match('/_((?:[0-9A-F]{2})+)(?:\.\d+)?$/',$filename,$matches))
 	{
 		return $type;
@@ -947,7 +948,7 @@ EOD;
 		if (is_page($this->page))
 		{
 			touch(get_filename(encode($this->page)));
-			touch_db($page);
+			touch_db($this->page);
 		}
 		
 		return array('msg'=>$_attach_messages['msg_deleted'],'redirect'=>$script."?plugin=attach&pcmd=upload&page=".rawurlencode($this->page));
@@ -1388,7 +1389,7 @@ function untar( $tname, $odir)
 		return;
 	}
 
-	unset($files);
+	$files = array();
 	$cnt = 0;
 	while ( strlen($buff=fread( $fp,TAR_HDR_LEN)) == TAR_HDR_LEN ) {
 		for ( $i=TAR_HDR_NAME_OFFSET,$name="";

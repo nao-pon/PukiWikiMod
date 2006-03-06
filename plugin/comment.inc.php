@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.20 2006/01/14 15:41:40 nao-pon Exp $
+// $Id: comment.inc.php,v 1.21 2006/03/06 06:20:30 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -46,10 +46,7 @@ function plugin_comment_action()
 	$_comment_format = $comment_format;
 
 	if($post['msg']=="") {
-		$retvars['msg'] = $name;
-		$post['page'] = $post['refer'];
-		$vars['page'] = $post['refer'];
-		$retvars['body'] = convert_html(join('',get_source($post["refer"])));
+		$retvars['redirect'] = get_url_by_name($post["refer"]);
 		return $retvars;
 	}
 	if($post['msg'])
@@ -67,6 +64,7 @@ function plugin_comment_action()
 		
 		if($post["msg"])
 		{
+			$match = array();
 			if(preg_match("/^(-{1,2})(.*)/",$post["msg"],$match))
 			{
 				$head = $match[1];
@@ -116,7 +114,7 @@ function plugin_comment_action()
 		foreach($postdata_old as $line)
 		{
 			if (!preg_match("/\n$/",$line)) $line .= "\n";
-			//if(preg_match("/^(\|.*)?#comment(\((?:up|down|above|below|nodate|noname)\))?((\||->).*)?/i",$line,$reg)) {
+			$reg = array();
 			if(preg_match("/^(\|(.*)?)?#comment(.*?)?(\||->)?$/",rtrim($line),$reg)) {
 				$celltag = $arg[1];
 				if ($celltag) $celltag = cell_format_tag_del($celltag);
@@ -197,6 +195,7 @@ function plugin_comment_convert()
 	//ボタンテキスト指定オプション
 	$btn_text = $_btn_comment;
 	$all_option = (is_array($options))? implode(" ",$options) : $options;
+	$arg = array();
 	if (preg_match("/(?: |^)btn:([^ ]+)(?: |$)/i",trim($all_option),$arg)){
 		$btn_text = $arg[1];
 	}

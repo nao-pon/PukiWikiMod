@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.63 2006/01/19 01:16:43 nao-pon Exp $
+// $Id: html.php,v 1.64 2006/03/06 06:20:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -318,7 +318,7 @@ function edit_form($postdata,$page,$add=0,$allow_groups=NULL,$allow_users=NULL,$
 		
 		$digest = md5(@join("",get_source($page)));
 		
-		unset ($create_uid);
+		$arg = array();
 		if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$postdata,$arg))
 		{
 			$create_uid = $arg[1];
@@ -534,6 +534,7 @@ function make_related($page,$tag='')
 		$passage = get_passage(($lastmod));
 
 		//ページ名が「数字と-」だけの場合は、*(**)行を取得
+		$match = array();
 		if (preg_match("/(^|.*\/)[0-9\-]+$/",$s_page))
 			$alias = get_heading($page);
 		else
@@ -598,6 +599,7 @@ function user_rules_str($str)
 		// 見出しに固有IDを付与する
 		if ($fixed_heading_anchor and !$pre)
 		{
+			$matches = array();
 			preg_match('/^(\|)?(.*?)(\|h?|->)?$/', $str, $matches);
 			$matches[1] = (!empty($matches[1]))? $matches[1] : "";
 			$matches[3] = (!empty($matches[3]))? $matches[3] : "";
@@ -607,6 +609,7 @@ function user_rules_str($str)
 				$_str_a = array();
 				foreach(explode("|",$matches[2]) as $_str)
 				{
+					$_arg = array();
 					if (preg_match('/^('.$table_reg.'\*{1,6}(.(?!\[#[A-Za-z][\w-]+\]))+?)(->)?$/i', $_str, $_arg))
 					{
 						// 固有IDを生成する
@@ -685,6 +688,7 @@ function make_heading(&$str,$strip=TRUE)
 	
 	// 見出しの固有ID部を削除
 	$id = '';
+	$matches = array();
 	if (preg_match('/^(\*{0,3})(.*?)\[#([A-Za-z][\w-]+)\](.*?)$/m',$str,$matches))
 	{
 		$str = $matches[2].$matches[4];
@@ -710,6 +714,7 @@ function table_inc_add ($arytable)
 	$lines_tmp = array();
 	$td_tmp = "";
 	foreach($arytable as $td){
+		$reg = array();
 		if (preg_match("/^\}([^|]*)$/",$td,$reg)) {
 			$td_level += 1;
 			if ($td_level == 1) $td = $reg[1];

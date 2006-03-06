@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: attachref.inc.php,v 1.12 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: attachref.inc.php,v 1.13 2006/03/06 06:20:30 nao-pon Exp $
 // ORG: attachref.inc.php,v0.5 2003/07/31 14:15:29 sha Exp $
 //
 
@@ -97,6 +97,7 @@ function plugin_attachref_inline()
 	    $button = 1;
 	    array_pop($args);
 	}
+	$tmp = array();
 	if ( preg_match("/^btn(:.+)/",$args[count($args)-1],$tmp))
 	{
 	    $btn_text = htmlspecialchars($tmp[1]);
@@ -316,6 +317,7 @@ function attachref_insert_ref($filename)
 			$postdata .= $line;
 			continue;
 		}
+		$out = array();
 		$ct = preg_match_all('/&attachref(\(((?:(?!\)[;{]).)*)\))?;/',$line, $out);
 		if ( $ct ){
 			for($i=0; $i < $ct; $i++){
@@ -393,6 +395,7 @@ function attachref_form($page)
 	
 	$s_args_fix = $s_args = htmlspecialchars($vars['attachref_opt']);
 	$comment = "";
+	$m_args = array();
 	if (preg_match("/t:([^,]*)/i",$s_args,$m_args)){
 		$comment = $m_args[1];
 		$comment = str_replace("\x08",",",$comment);

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: proxy.php,v 1.14 2005/11/06 05:35:00 nao-pon Exp $
+// $Id: proxy.php,v 1.15 2006/03/06 06:20:30 nao-pon Exp $
 //
 
 /*
@@ -45,7 +45,7 @@ function http_request
 	$d->blocking = $blocking;
 	$d->connect_try = $retry;
 	$d->connect_timeout = $c_timeout;
-	$d->read_timeout = $r_timeou;
+	$d->read_timeout = $r_timeout;
 	
 	$d->use_proxy = $use_proxy;
 	$d->proxy_host = $proxy_host;
@@ -82,6 +82,7 @@ function via_proxy($host)
 	
 	foreach ($no_proxy as $network)
 	{
+		$matches = array();
 		if ($valid and preg_match($ip_pattern,$network,$matches))
 		{
 			$l_net = ip2long($matches[1]);

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.55 2006/01/17 00:42:33 nao-pon Exp $
+// $Id: convert_html.php,v 1.56 2006/03/06 06:20:30 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -112,6 +112,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 	$string = preg_replace("/(^|\n)#newfreeze(\n|$)/","$1",$string);
 	
 	if (is_array($string)) $string = join('',$string);
+	$arg = array();
 	$vars['author_ucd'] = (preg_match("/\n\/\/ author_ucd:([^\n]+)\n/",$string,$arg))? $arg[1] : "\t";
 	
 	$body = new convert();
@@ -208,7 +209,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 	$contents = $body->contents;
 	
 	//アンセット メモリー開放 $body は必須。
-	unset ($body,$cnts_plain,$arykeep,$result_last,$html);
+	unset ($body,$result_last,$html);
 	
 	if (!$ret_array)
 		return $str;
@@ -301,6 +302,7 @@ class convert
 		$colors_reg = "aqua|navy|black|olive|blue|purple|fuchsia|red|gray|silver|green|teal|lime|white|maroon|yellow|transparent";
 
 		$table = 0;
+		$table_around = "";
 		
 		$pre_id = $c_pre_line = 0;
 		
@@ -310,12 +312,14 @@ class convert
 		foreach ($lines as $line)
 		{
 			// #categoryを事前にコンバート
+			$out = array();
 			if(!$_pre && preg_match("/^\#category\((.*)\)$/",$line,$out))
 			{
 				if(exist_plugin_convert("category"))
 					$line = do_plugin_convert("category",$out[1]);
 			}
 			
+			$comment_out = array();
 			if(!$_pre && !preg_match("/^\/\/(.*)/",$line,$comment_out) && $table != 0)
 			{
 				if(!preg_match("/^\|(.+)\|(c|h)?$/",$line,$out) or
@@ -327,7 +331,7 @@ class convert
 					$table_sheet = "";
 					$sell_sheet = "";
 					$td_fcolor = $td_color = $td_width = $td_align = array();
-					array_push($result, "</table></div>".$table_around."");
+					array_push($result, "</table></div>".$table_around);
 				}
 			}
 			if($line == "<<<")
@@ -398,6 +402,7 @@ class convert
 					$str = $out[2];
 					
 					$_fh_id = "";
+					$_match = array();
 					if (preg_match("/(.*)\[#([A-Za-z][\w-]+)\](.*)/",$str,$_match))
 					{
 						$str = $_match[1].$_match[3];
@@ -517,6 +522,7 @@ class convert
 						// 回り込み指定
 						if (preg_match("/AROUND/i",$out[1])) $table_around = "";
 						// ボーダー指定
+						$reg = array();
 						if (preg_match("/B:([0-9]+),?([0-9]*)(one|two|boko|deko|in|out|dash|dott)?/i",$out[1],$reg)) {
 							if (preg_match("/one/i",$reg[3])) $border_type = "solid";
 							else if (preg_match("/two/i",$reg[3])) $border_type = "double";
@@ -593,6 +599,7 @@ class convert
 							$i++;
 							//echo "DEB:($i)$td<br />";
 							// セル規定文字色指定
+							$tmp = array();
 							if (preg_match("/FC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i",$td,$tmp)) {
 								if ($tmp[1]==="0") $tmp[1]="transparent";
 								$td_fcolor[$i] = "color:".$tmp[1].";";
@@ -647,6 +654,7 @@ class convert
 								$_colspan = $_colspan + 1;
 							} else {
 								// セル文字色指定
+								$tmp = array();
 								if (preg_match("/FC:(#?[0-9abcdef]{6}?|$colors_reg|0)/i",$td,$tmp)) {
 									if ($tmp[1]==="0") $tmp[1]="transparent";
 									$sell_sheet .= "color:".$tmp[1].";";
@@ -789,6 +797,7 @@ class convert
 						}
 					}
 					
+					$tmp = array();
 					if (preg_match("/^(LEFT|CENTER|RIGHT):(.*)$/",$line,$tmp)) {
 						if ($_p)
 							array_push($result,"</p>");

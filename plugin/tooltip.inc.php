@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tooltip.inc.php,v 1.2 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: tooltip.inc.php,v 1.3 2006/03/06 06:20:30 nao-pon Exp $
 // ORG: tooltip.inc.php,v 0.5 2003/11/03 16:20:10 sha Exp $
 //
 /* 
@@ -72,6 +72,7 @@ function plugin_tooltip_get_page_title($term)
 	$ct = 0;
 	foreach ( $src as $line ) {
 		if ( $ct ++ > 99 ) break;
+		$match = array();
 		if ( preg_match('/^\*{1,3}(.*)\[#[A-Za-z][\w\-]+\].*$/', $line, $match) ){
 			return trim($match[1]);
 		}
@@ -97,6 +98,7 @@ function plugin_tooltip_get_glossary($term,$g_page)
 			$aglossary[$t] = $d;
 		}
 		foreach ( $src as $line ){
+			$match = array();
 			if ( preg_match('/^[:|]([^|:]+)[:|]([^|]+)\|?$/', $line, $match) ){
 				$dt = trim($match[1]);
 				$dd = trim($match[2]);

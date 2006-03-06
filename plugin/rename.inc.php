@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rename.inc.php,v 1.7 2005/03/11 15:00:39 nao-pon Exp $
+// $Id: rename.inc.php,v 1.8 2006/03/06 06:20:30 nao-pon Exp $
 //
 
 /*
@@ -38,7 +38,7 @@ function plugin_rename_init() {
 	'msg_oldname' => '現在の名前',
 	'msg_newname' => '新しい名前',
 	'msg_adminpass' => '管理者パスワード',
-	'msg_arrow' => '<span style="color:red;font-weight:bold;">→</span>',
+	'msg_arrow' => '&font(red,b){→};',
 	'msg_exist_none' => 'そのページを処理しない',
 	'msg_exist_overwrite' => 'そのファイルを上書きする',
 	'msg_confirm' => '以下のファイルをリネームします。',
@@ -55,7 +55,7 @@ function plugin_rename_action()
 	global $adminpass,$whatsnew,$WikiName,$BracketName;
 	global $_rename_messages;
 	
-	set_time_limit(60);
+	@set_time_limit(60);
 	
 	$method = rename_getvar('method');
 	if ($method == 'regex')
@@ -86,7 +86,7 @@ function plugin_rename_action()
 		$refer = rename_getvar('refer');
 		if ($refer == '')
 		{
-			return rename_phase1($s_vars);
+			return rename_phase1('not set pagename',$refer);
 		}
 		if (!is_page($refer))
 		{
@@ -409,6 +409,7 @@ function rename_get_files($pages)
 			foreach ($pages as $from=>$to)
 			{
 				$pattern = '/^'.str_replace('/','\/',$from).'([._].+)$/';
+				$matches = array();
 				if (!preg_match($pattern,$file,$matches))
 				{
 					continue; 
@@ -433,11 +434,11 @@ function rename_proceed($pages,$files,$exists)
 		}
 	}
 	
-	set_time_limit(0);
 	foreach ($files as $page=>$arr)
 	{
 		foreach ($arr as $old=>$new)
 		{
+			@set_time_limit(60);
 			if ($exists[$page][$old])
 			{
 				unlink($new);
@@ -577,6 +578,5 @@ function rename_getselecttag($page)
  $list
 </select>
 EOD;
-	return $ret;
 }
 ?>

@@ -1,5 +1,5 @@
 <?php
-// $Id: template.inc.php,v 1.10 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: template.inc.php,v 1.11 2006/03/06 06:20:30 nao-pon Exp $
 
 define("MAX_LEN",60);
 function plugin_template_action()
@@ -119,7 +119,7 @@ function plugin_template_action()
 	else
 	{
 		// ページ名が指定されていない
-		$ret['body'] = $ret['msg'] = str_replace('$1',htmlspecialchars(strip_bracket($page)),$_title_invalidwn);
+		$ret['body'] = $ret['msg'] = str_replace('$1',htmlspecialchars(strip_bracket($vars["refer"])),$_title_invalidwn);
 		$vars["page"] = "";
 		return $ret;
 	}

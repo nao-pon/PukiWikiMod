@@ -6,6 +6,8 @@ function pukiwiki_new($limit=0, $offset=0)
 	$comment = array();
 
 	include (XOOPS_ROOT_PATH."/modules/pukiwiki/cache/config.php");
+	$use_static_url = (string)$use_static_url;
+	$trackback = (int)$trackback;
 	
 	$SQL = "SELECT p.id, p.lastediter, p.name as pname, p.title, p.editedtime , c.count, t.plain FROM ".
 		$xoopsDB->prefix("pukiwikimod_pginfo")." p LEFT JOIN ".

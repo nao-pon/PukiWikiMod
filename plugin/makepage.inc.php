@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.13 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.14 2006/03/06 06:20:30 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -65,6 +65,7 @@ function plugin_makepage_convert()
 		$body_message = (!empty($post['body_message']))? htmlspecialchars($post['body_message']) : $_makepage_messages['msg_makepage'];
 		$body_message = str_replace('$1',htmlspecialchars($post['new_page']),$body_message);
 		
+		$matches = array();
 		preg_match("/((.+)\/([^\/]+))/",$s_makepage.$post['new_page'],$matches);
 		$temp = auto_template("[[:template_mp/".strip_bracket($makepage)."]]",TRUE,$matches);
 		

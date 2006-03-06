@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: backup.php,v 1.7 2005/06/23 08:18:54 nao-pon Exp $
+// $Id: backup.php,v 1.8 2006/03/06 06:20:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // バックアップデータを作成する
@@ -84,6 +84,7 @@ function get_backup_info($filename)
 	if(!is_array($lines)) return array();
 
 	$age = 0;
+	$match = array();
 	foreach($lines as $line)
 	{
 		preg_match("/^$splitter\s(\d+)$/",trim($line),$match);
@@ -107,6 +108,7 @@ function read_backup($filename)
 	if(!is_array($lines)) return array();
 
 	$age = 0;
+	$match = array();
 	foreach($lines as $line)
 	{
 		preg_match("/^$splitter\s(\d+)$/",trim($line),$match);
@@ -133,11 +135,6 @@ function get_backup_list($_page="")
 	global $_msg_backuplist,$_msg_diff,$_msg_nowdiff,$_msg_source,$_title_backup_delete;
 	global $X_admin,$X_uid,$vars;
 
-	$ins_date = date($date_format,$val);
-	$ins_time = date($time_format,$val);
-	$ins_week = "(".$weeklabels[date("w",$val)].")";
-	$ins = "$ins_date $ins_week $ins_time";
-
 	$lword = (array_key_exists('lw',$vars))? $vars['lw'] : "";
 	if ($lword == " ") $lword = "";
 
@@ -160,7 +157,7 @@ function get_backup_list($_page="")
 		if (count($pages) == 0)
 			return '';
 		
-		$retvars = page_list($pages,'backup',$withfilename,"",$lword);
+		$retvars = page_list($pages,'backup',FALSE,$lword);
 		
 		/*
 		if (!$X_uid && $fp = @fopen($f_cache,"wb"))

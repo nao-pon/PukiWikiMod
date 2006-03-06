@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pginfo.inc.php,v 1.8 2006/01/13 11:40:30 nao-pon Exp $
+// $Id: pginfo.inc.php,v 1.9 2006/03/06 06:20:30 nao-pon Exp $
 //
 
 // メッセージ設定
@@ -292,6 +292,7 @@ function pginfo_db_init()
 			
 			//echo $page."<hr />";
 			// 編集権限
+			$arg = array();
 			if (preg_match("/^#freeze(?:\tuid:([0-9]+))?(?:\taid:([0-9,]+))?(?:\tgid:([0-9,]+))?\n/",$checkpostdata,$arg))
 			{
 				$freeze = 1;
@@ -772,6 +773,7 @@ function attach_db_init()
 		
 		foreach(array_diff($files,$domix) as $file)
 		{
+			$matches = array();
 			if (!preg_match($pattern,$file,$matches))
 			{
 				$dones[0][] = $file;

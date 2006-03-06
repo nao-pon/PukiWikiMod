@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: template.php,v 1.9 2004/10/11 14:03:30 nao-pon Exp $
+// $Id: template.php,v 1.10 2006/03/06 06:20:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 function auto_template($page,$this=false,$matches=array())
@@ -56,6 +56,7 @@ function get_uptemplate_page($page)
 {
 	global $auto_template_name;
 	$page = strip_bracket($page);
+	$arg = array();
 	if (preg_match("/^(.+)\/[^\/]+(\/$auto_template_name)$/",$page,$arg))
 	{
 		if (is_page($arg[1].$arg[2]))

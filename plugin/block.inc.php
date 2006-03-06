@@ -1,5 +1,5 @@
 <?php
-// $Id: block.inc.php,v 1.6 2005/11/08 08:27:20 nao-pon Exp $
+// $Id: block.inc.php,v 1.7 2006/03/06 06:20:30 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -74,7 +74,7 @@ function plugin_block_convert()
 		$_style .= "font-size:".$fontsize.";";
 	}
 
-	
+	$match = array();
 	if (preg_match("/^([\d]+%?)(px)?$/i",$width,$match))
 	{
 		$width = (!strstr($match[1],"%"))? $match[1]."px" : $match[1];

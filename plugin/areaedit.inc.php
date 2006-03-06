@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: areaedit.inc.php,v 1.14 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: areaedit.inc.php,v 1.15 2006/03/06 06:20:30 nao-pon Exp $
 //
 /* 
 *プラグイン areaedit
@@ -57,6 +57,7 @@ function plugin_areaedit_convert()
 	$btn_name = $_areaedit_messages['btn_name'];
    	if ( func_num_args() ){
         foreach ( func_get_args() as $opt ){
+        	$matches = array();
 	      	if ( $opt == 'start' ){
     	         $end_flag = 0;
        		}
@@ -159,6 +160,7 @@ function plugin_areaedit_inline()
 	$nofreeze = $noauth = $inline_preview = 0;
 	foreach ( $args as $opt ){
 		$opt = trim($opt);
+		$match = array();
         if ( $opt == 'nofreeze' ){
 			$nofreeze = 1;
 			$noauth = 1;
@@ -283,6 +285,7 @@ function plugin_areaedit_action_inline()
 			$headdata .= $line;
 			continue;
 		}
+		$match = array();
 		if ( ! preg_match("/&$str_areaedit/", $line, $match) ){
 			$headdata .= $line;
 			continue;
@@ -437,6 +440,7 @@ function plugin_areaedit_action_block()
 			if ( $flag == 0 ) {
 				$headdata .= $line;
 			}
+			$matches = array();
 			if ( ( $flag == 0 or $flag == 1 ) and 
 				preg_match('/^#areaedit(?:\(([^)]+)\))?\s*$/', $line, $matches) ){
 				$options = preg_split('/\s*,\s*/', $matches[1]);
@@ -444,6 +448,7 @@ function plugin_areaedit_action_block()
 					$flag = $para_flag = 1;
 					foreach ( $options as $opt ){
 						$opt = trim($opt);
+						$mat = array();
        					if ( $opt == 'nofreeze' ){
 							$found_nofreeze = 1;
 							$found_noauth = 1;
@@ -572,6 +577,7 @@ function plugin_areaedit_collect($page,$postdata_old){
 	foreach($postdata_old as $line)
 	{
 		if ( substr($line,0,1) == ' ' || substr($line,0,2) == '//' ) continue;
+		$match = array();
 		if ( ! preg_match("/&$str_areaedit/", $line, $match) )	continue;
 		$pos = 0;
 		$arr = $ic->get_objects($line,$page);
@@ -603,7 +609,7 @@ function plugin_areaedit_preview($refer,$targetdata,$headdata,$taildata,$inline_
 	$preview_above = '';
 	if ( $inline_flag ){
 		$append = "";
-		//if ( preg_match('/^(.+)?\n/', $taildata, $match) ) $append = $match[1];
+		$match = array();
 		if ( preg_match('/^(.+)?\n/', str_replace("->\n","->___td_br___",$taildata), $match) ) $append = $match[1];
 		$head = str_replace("\r",'',$headdata);
 		$head = str_replace("->\n","->___td_br___",$head);

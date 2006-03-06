@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.14 2006/02/24 00:10:58 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.15 2006/03/06 06:20:30 nao-pon Exp $
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
@@ -147,6 +147,7 @@ function b_pukiwiki_page_encode($key)
 // [[ ]] を取り除く
 function b_pukiwiki_page_strip_bracket($str)
 {
+		$match = array();
 	if(preg_match("/^\[\[(.*)\]\]$/",$str,$match))
 	{
 		$str = $match[1];

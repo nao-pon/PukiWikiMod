@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: paint.inc.php,v 1.17 2006/01/14 15:41:40 nao-pon Exp $
+// $Id: paint.inc.php,v 1.18 2006/03/06 06:20:30 nao-pon Exp $
 // ORG: paint.inc.php,v 1.11 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -322,6 +322,7 @@ function paint_insert_ref($filename)
 	//}
 	
 	// 過去ログ自動作成
+	$datas = array();
 	preg_match_all("/(#ref\(.+?#img\(,clear\))/s",$postdata,$datas,PREG_SET_ORDER);
 	list($head,$foot) = preg_split("/(#ref\(.+#img\(,clear\))/s",$postdata);
 	

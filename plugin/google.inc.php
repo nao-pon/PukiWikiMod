@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.12 2005/03/23 14:16:29 nao-pon Exp $
+// $Id: google.inc.php,v 1.13 2006/03/06 06:20:30 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -179,12 +179,13 @@ function plugin_google_get_result_by_google($word,$max=10,$start=0)
 	$data = str_replace(array("&lt;","&gt;","&amp;"),array("<",">","&"),$data);
 	$data = str_replace("<br> ","",$data);
 	//echo $data;
-	$ret = array();
+	$arg = $ret = array();
 	if (preg_match_all("/<item[^>]*>(.+?)<\/item>/i",$data,$arg))
 	{
 		$i = 0;
 		foreach($arg[1] as $item)
 		{
+			$match = array();
 			if (preg_match("/<title[^>]*>(.*)<\/title>/",$item,$match)) $ret[$i]['title'] = $match[1];
 			if (preg_match("/<snippet[^>]*>(.*)<\/snippet>/",$item,$match)) $ret[$i]['snippet'] = $match[1];
 			if (preg_match("/<URL[^>]*>(.*)<\/URL>/",$item,$match)) $ret[$i]['url'] = $match[1];
@@ -260,7 +261,9 @@ function plugin_google_result_google_api($word,$max=10,$start=0,$do_refresh=FALS
 		$query .= 'Content-Length: '.strlen($data)."\r\n";
 		$query .= "\r\n";
 		$query .= $data;
-
+		
+		$errno = 0;
+		$errstr = "";
 		$fp = fsockopen("api.google.com",80,$errno,$errstr,5);
 		if (!$fp)
 		{

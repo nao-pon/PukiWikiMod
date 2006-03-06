@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: newsclip.inc.php,v 1.8 2005/03/16 14:32:29 nao-pon Exp $
+// $Id: newsclip.inc.php,v 1.9 2006/03/06 06:20:30 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -154,6 +154,7 @@ function plugin_newsclip_get($word,$do_refresh=FALSE)
 		$data = preg_replace("/\x0D\x0A|\x0D|\x0A/","\n",$data);
 		
 		// 抽出
+		$match = array();
 		$data = (preg_match("/".preg_quote("<!--result_title-->","/")."(.+)".preg_quote("<!--/generalsearch_result-->","/")."/s",$data,$match))?
 			$match[1] : "";
 

@@ -1,5 +1,5 @@
 <?php
-// $Id: urlbookmark.inc.php,v 1.4 2004/12/23 14:00:22 nao-pon Exp $
+// $Id: urlbookmark.inc.php,v 1.5 2006/03/06 06:20:30 nao-pon Exp $
 
 /*
  * PukiWiki urlbookmark プラグイン
@@ -75,6 +75,7 @@ function plugin_urlbookmark_action()
 	}
 	
 	$head = '';
+	$match = array();
 	if (preg_match('/^(-{1,2})(.*)/',$post['msg'],$match))
 	{
 		$head = $match[1];

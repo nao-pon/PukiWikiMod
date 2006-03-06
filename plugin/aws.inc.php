@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.13 2006/01/19 00:21:15 nao-pon Exp $
+// $Id: aws.inc.php,v 1.14 2006/03/06 06:20:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -134,6 +134,7 @@ function plugin_aws_convert()
 function plugin_aws_add_imgsize_tag($tag)
 {
 	$tag = stripslashes($tag);
+	$arg = array();
 	if (preg_match('/<(img src=")([^"]+)("[^>]*)>/',$tag,$arg))
 	{
 		$img_size = @getimagesize($arg[2]);
@@ -193,6 +194,7 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 		elseif ($k)
 			$url = $amazon_xml."/onca/xml3?t={$amazon_t}&dev-t={$amazon_dev_t}&type=lite&page=1&locale=jp&f={$xls_url}$f&mode=$m&KeywordSearch=$k";
 			
+		$s_val = array();
 		if ($s && preg_match("/(\+(titlerank|daterank))/",$s,$s_val))
 		{
 			$url .= "&sort=".$s_val[1];

@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.33 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.34 2006/03/06 06:20:30 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -109,7 +109,7 @@ function plugin_pcomment_action() {
 
 function plugin_pcomment_convert() {
 	global $script,$vars,$BracketName,$WikiName,$digest;
-	global $_pcmt_btn_name, $_pcmt_btn_comment, $_pcmt_msg_comment, $_pcmt_msg_all, $_pcmt_msg_edit, $_pcmt_msg_recent, $_pcmt_msg_warning;
+	global $_pcmt_btn_name, $_pcmt_btn_comment, $_pcmt_msg_comment, $_pcmt_msg_all, $_pcmt_msg_edit, $_pcmt_msg_recent, $_pcmt_msg_warning,$_pcmt_msg_none;
 	
 	$style = "";
 	
@@ -121,6 +121,7 @@ function plugin_pcomment_convert() {
 	
 	//array_walk($args, 'pcmt_check_arg', $params);
 	//なぜか $args のメンバー数が多い時 array_walk ではPHPが落ちることがある
+	$params = array();
 	foreach($args as $key=>$val)
 	{
 		pcmt_check_arg($val, $key, $params);
@@ -129,6 +130,7 @@ function plugin_pcomment_convert() {
 	$all_option = (is_array($args))? implode(" ",$args) : $args;
 	//ボタンテキスト指定オプション
 	$btn_text = $_pcmt_btn_comment;
+	$arg = array();
 	if (preg_match("/(?: |^)btn:([^ ]+)(?: |$)/i",trim($all_option),$arg)){
 		$btn_text = htmlspecialchars($arg[1]);
 	}
@@ -257,6 +259,7 @@ EOD;
 function pcmt_insert($page) {
 	global $post,$vars,$script,$now,$do_backup,$BracketName;
 	global $_title_updated,$no_name,$X_uid,$X_uname;
+	global $_title_paint_collided,$_msg_paint_collided;
 
 	$page = $post['page'];
 	if (!preg_match("/^$BracketName$/",$page))
@@ -345,6 +348,7 @@ function pcmt_insert($page) {
 		//リプライ先のコメントを検索
 		if ($reply > 0) {
 			while ($pos >= 0 and $pos < count($postdata)) {
+				$matches = array();
 				if (preg_match('/^(\-{1,2})(?!\-)/',$postdata[$pos], $matches) and --$reply == 0) {
 					$level = strlen($matches[1]) + 1; //挿入するレベル
 					break;
@@ -514,6 +518,7 @@ function pcmt_get_comments($data,$count,$dir,$reply,$page)
 	foreach ($data as $line) {
 		if ($count > 0 and $dir and $cnt == $count) { break; }
 		//if (rtrim(strtolower($line)) == "//{$marker} of comments") { break; }
+		$matches = array();
 		if (preg_match('/^(\-{1,2})(?!\-)(.*)$/', $line, $matches)) {
 			if ($count > 0 and strlen($matches[1]) == 1 and ++$cnt > $count) { break; }
 			if ($reply) {

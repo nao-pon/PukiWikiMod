@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.26 2005/12/25 23:27:32 nao-pon Exp $
+// $Id: trackback.php,v 1.27 2006/03/06 06:20:30 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -128,12 +128,14 @@ function tb_send($page,$data="")
 	//set_time_limit(0); // 処理実行時間制限(php.ini オプション max_execution_time )
 	
 	// convert_html() 変換結果の <a> タグから URL 抽出
+	$links = array();
 	preg_match_all('#href="(https?://[^"]+)"#',$data,$links,PREG_PATTERN_ORDER);
 
 	// 自ホスト(XOOPS_WIKI_URLで始まるurl)を除く
 	$links = preg_grep("/^(?!".preg_quote(XOOPS_WIKI_HOST.XOOPS_WIKI_URL,'/').")./",$links[1]);
 	
 	// convert_html() 変換結果から Ping 送出  URL 抽出
+	$pings = array();
 	preg_match_all('#<!--__PINGSEND__"(https?://[^"]+)"-->#',$data,$pings,PREG_PATTERN_ORDER);
 	
 	// 自ホスト($scriptで始まるurl)を除く
@@ -355,7 +357,7 @@ function tb_get_rdf($page)
 	$creator = get_pg_auther_name(add_bracket($page));
 	$tb_id = tb_get_id($page);
 	$self = XOOPS_WIKI_HOST.getenv('REQUEST_URI');
-	$dcdate = substr_replace(get_date('Y-m-d\TH:i:sO',$time),':',-2,0);
+	$dcdate = substr_replace(get_date('Y-m-d\TH:i:sO',get_filetime($page)),':',-2,0);
 	$tb_url = tb_get_my_tb_url($tb_id);
 	// dc:date="$dcdate"
 	
@@ -410,6 +412,7 @@ function tb_get_url($url)
 		return '';
 	}
 	
+	$matches = array();
 	if (!preg_match_all('#<rdf:RDF[^>]*>(.*?)</rdf:RDF>#si',$data['data'],$matches,PREG_PATTERN_ORDER))
 	{
 		$ng_host[$parse_url['host']]++;

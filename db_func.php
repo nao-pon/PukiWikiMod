@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.34 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: db_func.php,v 1.35 2006/03/06 06:20:30 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -168,6 +168,7 @@ function get_relaypage_by_name($page)
 	}
 	
 	// 階層を抽出
+	$match = array();
 	if (preg_match("/(.+)\/[^\/]+/",$page,$match))
 	{
 		$up_page = $match[1];

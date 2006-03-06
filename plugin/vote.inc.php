@@ -1,5 +1,5 @@
 <?php
-// $Id: vote.inc.php,v 1.13 2005/05/13 00:24:06 nao-pon Exp $
+// $Id: vote.inc.php,v 1.14 2006/03/06 06:20:30 nao-pon Exp $
 
 function plugin_vote_init()
 {
@@ -54,6 +54,7 @@ function plugin_vote_action()
 			$celldata = array();
 			foreach($__line as $line)
 			{
+				$arg = array();
 				if(preg_match("/^(.*)?#vote\((.*)\)(.*)$/i",$line,$arg))
 				{
 					$celltag = $arg[1];
@@ -91,6 +92,7 @@ function plugin_vote_action()
 								$lastvote = $arg[1];
 								continue;
 							}
+							$match = array();
 							if(preg_match("/^(.+)\[(\d+)\]$/",$item,$match))
 							{
 								$item = $match[1];
@@ -242,6 +244,7 @@ function plugin_vote_convert()
 		elseif (strtolower($arg) == "#ksort") $ksort = 1;
 		elseif (strtolower($arg) != "#notimestamp")
 		{
+			$match = array();
 			if(preg_match("/^(.+)\[(\d+)\]$/",$arg,$match))
 			{
 				$arg = $match[1];

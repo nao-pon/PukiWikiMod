@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.68 2006/02/24 00:10:58 nao-pon Exp $
+// $Id: func.php,v 1.69 2006/03/06 06:20:30 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -205,7 +205,7 @@ function open_interwikiname_list()
 	$cnt = 0;
 	foreach($aryinterwikiname as $line)
 	{
-		//if(preg_match("/\[((https?|ftp|news)(\:\/\/[[:alnum:]\+\$\;\?\.%,!#~\*\/\:@&=_\-]+))\s([^\]]+)\]\s?([^\s]*)/",$line,$match))
+		$match = array();
 		if(preg_match("/\[(((?:https?|ftp|news):\/\/|\.\.?\/)([[:alnum:]\+\$\;\?\.%,!#~\*\/\:@&=_\-]+))\s([^\]]+)\]\s?([^\s]*)/",$line,$match))
 		{
 			$retval[$match[4]]["url"] = $match[1];
@@ -229,6 +229,7 @@ function strip_bracket($str)
 	$ret[$str] = $str;
 	if($strip_link_wall)
 	{
+		$match = array();
 		if(preg_match("/^\[\[(.*)\]\]$/",$str,$match)) {
 			$ret[$str] = $match[1];
 		}
@@ -751,6 +752,7 @@ function auto_br($msg){
 			{
 				//取り合えず改行前の~を削除
 				$line = preg_replace("/~(->)?$/","\\1",$line);
+				$reg = array();
 				if (preg_match("/^(.*\|(\{)?(LEFT|CENTER|RIGHT)?(:)?(TOP|MIDDLE|BOTTOM)?)(.*)$/",$line,$reg)){
 					//$line = $reg[1] . preg_replace("/(^[^ #\-+*hc].*?)(->)?$/","$1~$2",$reg[6]);
 					$line = $reg[1] . preg_replace("/(^[^ #*hc].*?)(->)?$/","$1~$2",$reg[6]);
@@ -877,6 +879,7 @@ function cell_format_tag_del ($td) {
 	// 背景画指定削除
 	$td = preg_replace("/(SC|BC):\(([^),]*)(,once|,1)?\)/i","",$td);
 	// 文字揃え指定削除
+	$tmp = array();
 	if (preg_match("/^(LEFT|CENTER|RIGHT)?(:)(TOP|MIDDLE|BOTTOM)?/i",$td,$tmp)) {
 		$td = (!$tmp[1] && !$tmp[3])? $tmp[2] : "";
 	}
@@ -947,6 +950,7 @@ function get_makedate_byname($page,$sep="-")
 {
 	$page = strip_bracket($page);
 	$info = get_pg_info_db($page);
+	$page_date = array();
 	preg_match("/.*\/([0-9]+)$sep([0-9]+)$sep([0-9]+)/",$page,$page_date);
 	$make_date[1] = date("Y",$info['buildtime']);
 	$make_date[2] = date("m",$info['buildtime']);
@@ -1020,13 +1024,11 @@ function get_autolink_pattern_sub(& $pages, $start, $end, $pos)
 	$lev ++;
 	
 	$result = '';
-	$count = 0;
-	
+	$count = $i = $j = 0;
 	$x = (mb_strlen($pages[$start]) <= $pos);
-	
 	if ($x) { ++$start; }
 	
-	for ($i = $start; $i < $end; $i = $j) // What is the initial state of $j?
+	for ($i = $start; $i < $end; $i = $j)
 	{
 		$char = mb_substr($pages[$i], $pos, 1);
 		for ($j = $i; $j < $end; $j++)
@@ -1150,6 +1152,7 @@ function include_page($page,$ret_array=false)
 	if (preg_match("/^#more/m",$body))
 	{
 		$body = preg_replace("/\n#more\(\s*off\s*\).*?(\n#more\(\s*on\s*\)\n|$)/s","\n",$body);
+		$match = array();
 		if (preg_match("/(.*?)\n#more(\([^)]*\))?\n/s",$body,$match))
 			$body = $match[1];
 		$body .= "\n\nRIGHT:[[$_msg_read_more>$page]]";
@@ -1204,16 +1207,20 @@ function get_url_by_id($id=0)
 {
 	global $use_static_url;
 	
+	static $ret = array();
+		
 	if (!$id) return XOOPS_WIKI_URL."/";
+
+	if (isset($ret[$id])) return $ret[$id];
 	
 	if ($use_static_url == 3)
-		return $ret[$name] = XOOPS_URL."/pukiwiki+._".$id.".htm";
+		return $ret[$id] = XOOPS_URL."/pukiwiki+._".$id.".htm";
 	else if ($use_static_url == 2)
-		return $ret[$name] = XOOPS_URL."/pukiwiki+index.pgid+_".$id.".htm";
+		return $ret[$id] = XOOPS_URL."/pukiwiki+index.pgid+_".$id.".htm";
 	else if ($use_static_url)
-		return $ret[$name] = XOOPS_WIKI_URL."/".$id.".html";
+		return $ret[$id] = XOOPS_WIKI_URL."/".$id.".html";
 	else
-		return XOOPS_WIKI_URL."/?".rawurlencode(strip_bracket(get_pgname_by_id($id)));
+		return $ret[$id] = XOOPS_WIKI_URL."/?".rawurlencode(strip_bracket(get_pgname_by_id($id)));
 }
 
 //ページ名からURLを求める
@@ -1249,6 +1256,7 @@ function select_contents_by_level($str,$lev=1,$tag="ul")
 	
 	$reg = "/\x08(([\d]+)[^\x08]+?<\/$tag>)/";
 	
+	$arg = array();
 	while(preg_match($reg,$str,$arg))
 	{
 		if ($arg[2] > $lev)
@@ -1365,7 +1373,7 @@ function check_int_param(&$arg)
 //XOOPS Protector モジュール で 挿入された末尾の */ を取り除く
 function remove_protector_chr(&$arg)
 {
-	
+	$match = array();
 	if (preg_match("#^(.+)\*/$#s",$arg,$match))
 	{
 		$_tmp = preg_replace("#/\*.*?\*/#s","",$match[1]);
@@ -1464,6 +1472,7 @@ function X_get_users($sort=true)
 // #以降をトリップに変換して # で分割した配列で返す
 function convert_trip($val)
 {
+		$match = array();
 	if (preg_match('/([^#]+)#(.+)/', $val, $match))
 	{
 		$name = $match[1];

@@ -1,5 +1,5 @@
 <?php
-// $Id: countdown.inc.php,v 1.8 2004/11/01 01:16:25 nao-pon Exp $
+// $Id: countdown.inc.php,v 1.9 2006/03/06 06:20:30 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -27,6 +27,7 @@ function plugin_countdown_inline() {
   list($y,$m,$d,$title) = func_get_args();
   //第[1-5]？曜日対応
   $my_lng_week = "|".implode("|",$_msg_week);
+  $arg = array();
   if (preg_match("/(sun|mon|tue|wed|thu|fri|sat".$my_lng_week.")([1-5])?/",$d,$arg)) {
 		$e_week = array("sun","mon","tue","wed","thu","fri","sat");
 		if (LANG != "en") $arg[1] = str_replace($_msg_week,$e_week,$arg[1]);

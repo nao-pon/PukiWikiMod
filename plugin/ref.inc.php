@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.26 2005/11/12 13:12:36 nao-pon Exp $
+// $Id: ref.inc.php,v 1.27 2006/03/06 06:20:30 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -64,6 +64,7 @@ function plugin_ref_action()
 		$count = 0;
 		while($file = readdir($dir))
 		{
+			$matches = array();
 			if (!preg_match($pattern,$file,$matches))
 			{
 				continue;
@@ -254,6 +255,7 @@ function plugin_ref_body($name,$args,$params){
 		$l_url = $url = $ext = $info = htmlspecialchars($name);
 		$icon = $size = '';
 		$page = $vars['page'];
+		$match = array();
 		if (preg_match('/([^\/]+)$/', $name, $match)) { $ext = $match[1]; }
 	} else { //添付ファイル
 		$icon = REF_FILE_ICON;
@@ -268,6 +270,7 @@ function plugin_ref_body($name,$args,$params){
 			}
 		}
 		//相対パスからフルパスを得る
+		$matches = array();
 		if (preg_match('/^(.+)\/([^\/]+)$/',$name,$matches))
 		{
 			if ($matches[1] == '.' or $matches[1] == '..')
@@ -345,6 +348,7 @@ function plugin_ref_body($name,$args,$params){
 			$org_h = (!empty($size[1]))? $size[1] : 0;
 		}
 		foreach ($params['_args'] as $arg){
+			$m = array();
 			if (preg_match("/^(m)?w:([0-9]+)$/i",$arg,$m)){
 				$params['_size'] = TRUE;
 				$params['_w'] = $m[2];
@@ -446,6 +450,7 @@ function plugin_ref_body($name,$args,$params){
 		$params['_wmp'] = "";
 		
 		foreach ($params['_args'] as $arg){
+			$m = array();
 			if (preg_match("/^q(?:uality)?:((auto)?(high|low|best|medium))$/i",$arg,$m)){
 				$params['_qp'] = "<param name=\"quality\" value=\"{$m[1]}\">";
 				$params['_q']  = " quality=\"{$m[1]}\"";
@@ -499,6 +504,7 @@ _HTML_;
 
 	} else { // 通常ファイル
 		foreach ($params['_args'] as $arg){
+			$m = array();
 			if (preg_match("/^t:(.*)$/i",$arg,$m)){
 				$m[1] = htmlspecialchars(str_replace("&amp;quot;","",$m[1]));
 				if ($m[1]) $info = $m[1]."&#13;&#10;".$info;

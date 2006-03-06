@@ -79,6 +79,7 @@ function plugin_gimage_convert()
 	$_array = array();
 	foreach($array as $prm)
 	{
+		$match = array();
 		if (preg_match("/^c(?:ol)?:([\d]+)$/",$prm,$match))
 		{
 			$col = min(10,$match[1]);
@@ -162,6 +163,7 @@ function plugin_gimage_search($q,$qmode,$do_refresh=FALSE,$col=5,$row=4)
 
 		$images = array();
 		
+		$dats = array();
 		if (preg_match_all("/<!\-\-a image\-\->(.+?)<!\-\-\/a image\-\->/is",$res,$dats,PREG_PATTERN_ORDER))
 		{
 			$dats[1] = array_slice($dats[1],0,$col * $row);
@@ -169,6 +171,7 @@ function plugin_gimage_search($q,$qmode,$do_refresh=FALSE,$col=5,$row=4)
 			{
 				$image = array();
 				//image
+				$match = array();
 				if (preg_match("/<a href=\"imgdt\.jsp.+?サムネイル.+?<\/a>/is",$dat,$match))
 				{
 					$image['thumb'] = $match[0];

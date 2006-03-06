@@ -1,5 +1,5 @@
 <?php
-// $Id: xoopsblock.inc.php,v 1.4 2004/03/20 07:21:18 nao-pon Exp $
+// $Id: xoopsblock.inc.php,v 1.5 2006/03/06 06:20:30 nao-pon Exp $
 
 /*
  * countdown.inc.php
@@ -7,7 +7,7 @@
  * Author: nao-pon http://hypweb.net
  * XOOPS Module Block Plugin
  *
- * XOOPSのブロックを表示するプラグイン
+ * XOOPS???????示???????
  */
 
 function plugin_xoopsblock_init() {
@@ -21,13 +21,14 @@ function plugin_xoopsblock_convert() {
 
 	list($tgt,$option1,$option2) = func_get_args();
 	
-	unset($tgt_bid);
+	$tgt_bid = null;
 	if (preg_match("/^\d+$/",$tgt))
 		$tgt_bid = $tgt;
 
 	$align = "left";
 	$around = false;
 	$width = "";
+	$arg = array();
 	if (preg_match("/^(left|center|right)$/i",$option2,$arg))
 		$align = $arg[1];
 	if (preg_match("/^(left|center|right)$/i",$option1,$arg))
@@ -71,7 +72,7 @@ function plugin_xoopsblock_convert() {
 	$ret = "";
 	if (file_exists(XOOPS_ROOT_PATH.'/class/template.php'))
 	{
-		// XOOPS 2 系用
+		// XOOPS 2 ??
 		require_once XOOPS_ROOT_PATH.'/class/template.php';
 		$xoopsTpl = new XoopsTpl();
 	}
@@ -88,11 +89,11 @@ function plugin_xoopsblock_convert() {
 			if ($tgt_bid === $bid || $tgt == $name){
 				$block = $myblock->buildBlock();
 				if (!is_object($xoopsTpl))
-					// XOOPS 1 系用
+					// XOOPS 1 ??
 					$ret = $block['content'];
 				else
 				{
-					// XOOPS 2 系用
+					// XOOPS 2 ??
 					$bcachetime = $myblock->getVar('bcachetime');
 					if (empty($bcachetime)) {
 						$xoopsTpl->xoops_setCaching(0);

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.47 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: make_link.php,v 1.48 2006/03/06 06:20:30 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -99,6 +99,7 @@ class InlineConverter
 	}
 	function get_objects($string,$page)
 	{
+		$matches = array();
 		preg_match_all("/{$this->pattern}/x",$string,$matches,PREG_SET_ORDER);
 		
 		$arr = array();
@@ -297,6 +298,7 @@ EOD;
 		list($all,$this->plain,$name,$this->param,$body) = $this->splice($arr);
 		
 		// 本来のプラグイン名およびパラメータを取得しなおす PHP4.1.2 (?R)対策
+		$matches = array();
 		if (preg_match("/^{$this->pattern}/x",$all,$matches)
 			and $matches[1] != $this->plain)
 
@@ -540,6 +542,7 @@ EOD;
 		
 		list(,$alias,,$name,$this->param) = $this->splice($arr);
 		
+		$matches = array();
 		if (preg_match('/^([^#]+)(#[A-Za-z][\w-]*)$/',$this->param,$matches))
 		{
 			list(,$this->param,$this->anchor) = $matches;
@@ -936,6 +939,7 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 		$related[$sb_page] = get_filetime($page);
 	}
 	
+	$sep = array();
 	if ($alias && preg_match("/^#(.*)#$/",$alias,$sep))
 	{
 		// パン屑リスト出力
@@ -1062,6 +1066,7 @@ function get_interwiki_url($name,$param)
 		$interwikinames = array();
 		foreach (get_source($interwiki) as $line)
 		{
+			$matches = array();
 			if (preg_match('/\[((?:(?:https?|ftp|news):\/\/|\.\.?\/)[!~*\'();\/?:\@&=+\$,%#\w.-]*)\s([^\]]+)\]\s?([^\s]*)/',$line,$matches))
 			{
 				$interwikinames[$matches[2]] = array($matches[1],$matches[3]);
@@ -1165,6 +1170,7 @@ function replace_pagename_d2s($str,$compact=0)
 	
 	if (strpos($str,"/") !== FALSE)
 	{
+		$arg = array();
 		preg_match("#^(.+)/([^/]+)$#",$str,$arg);
 		if (preg_match("/^[0-9\-]+$/",$arg[2]))
 		{

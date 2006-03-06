@@ -22,7 +22,7 @@
  *
  * ÈòÆñ½ê       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.22 2005/12/18 14:10:47 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.23 2006/03/06 06:20:30 nao-pon Exp $
  *
  */
 
@@ -464,6 +464,7 @@ class ShowRSS_XML
 }
 function plugin_showrss_get_timestamp($str)
 {
+	$matches = array();
 	if (!preg_match('/(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(([+-])(\d{2}):(\d{2}))?/',$str,$matches))
 	{
 		$time = strtotime($str);

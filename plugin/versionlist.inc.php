@@ -5,7 +5,7 @@
  * CopyRight 2002 S.YOSHIMURA GPL2
  * http://masui.net/pukiwiki/ yosimura@excellence.ac.jp
  *
- * $Id: versionlist.inc.php,v 1.3 2004/11/24 13:15:35 nao-pon Exp $
+ * $Id: versionlist.inc.php,v 1.4 2006/03/06 06:20:30 nao-pon Exp $
  */
 
 function plugin_versionlist_convert()
@@ -31,6 +31,7 @@ function plugin_versionlist_convert()
         $filenp = $sdir . $file;
         $fd = fopen($filenp,'r');
         while(!feof ($fd)){
+          $match = array();
           if(preg_match('/Id:(.+),v (\d+\.\d+)/',fgets($fd,1024),$match)){
             $comment = trim($match[1] . " -&gt; " .  $match[2]) ;
             break;

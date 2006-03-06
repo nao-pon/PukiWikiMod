@@ -14,7 +14,7 @@
 
  ※$_btn_nameはcommentプラグインで既に設定されている場合があります
 
- $Id: article.inc.php,v 1.14 2006/01/14 15:41:40 nao-pon Exp $
+ $Id: article.inc.php,v 1.15 2006/03/06 06:20:30 nao-pon Exp $
  
  */
 
@@ -48,6 +48,9 @@ function plugin_article_action()
 		include (PLUGIN_DATA_DIR.$conf);
 	else
 		return (array("msg"=>"ERROR: Config file 'PLUGIN_DATA_DIR/{$conf}' is not found.","body"=>"ERROR: Config file 'PLUGIN_DATA_DIR/{$conf}' is not found."));
+	
+	$article_auto_br = (int)$article_auto_br;
+	$article_ins = (int)$article_ins;
 	
 	if (!$post["msg"]) $post["msg"]="\t";
 	if ($post["msg"])
@@ -102,7 +105,7 @@ function plugin_article_action()
 	page_write($post["refer"],$postdata,NULL,"","","","","","",array('plugin'=>'article','mode'=>'add'));
 	
 	$retvars["msg"] = $title;
-	$retvars["body"] = $body;
+	//$retvars["body"] = $body;
 
 	$post["page"] = $post["refer"];
 	$vars["page"] = $post["refer"];
@@ -148,6 +151,11 @@ function plugin_article_convert()
 		include (PLUGIN_DATA_DIR.$conf_file);
 	else
 		return "ERROR: Config file 'PLUGIN_DATA_DIR/{$conf_file}' is not found.";
+
+	$article_name_cols = (int)$article_name_cols;
+	$article_subject_cols = (int)$article_subject_cols ;
+	$article_cols = (int)$article_cols;
+	$article_rows = (int)$article_rows;
 	
 	if (!$btn) $btn = $_btn_article;
 	if (!$nsize) $nsize = $article_name_cols;

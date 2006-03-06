@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.38 2006/02/24 00:15:27 nao-pon Exp $
+// $Id: index.php,v 1.39 2006/03/06 06:20:30 nao-pon Exp $
 
 
 define("UTIME",time());
@@ -127,6 +127,7 @@ function writeConfig(){
 	$f_countup_xoops = (int)$f_countup_xoops;
 	$f_tb_check_link_to_me = (int)$f_tb_check_link_to_me;
 	$f_fusen_enable_allpage = (int)$f_fusen_enable_allpage;
+	$f_kanji2kana_encoding = (int)$f_kanji2kana_encoding;
 	
 	if ($f_jp_pagereading == 2)
 	{
@@ -201,7 +202,7 @@ function writeConfig(){
 	fwrite($file, str_replace("\r","",$content));
 	fclose($file);
 
-	if($wiki_adminpass != ""){
+	if(!empty($wiki_adminpass)){
 		$wiki_adminpass = md5($wiki_adminpass);
 		$file = fopen(_AM_WIKI_ADMIN_PASS, "wb");
 		$content = "<?php\n\$adminpass = '$wiki_adminpass';\n?>";

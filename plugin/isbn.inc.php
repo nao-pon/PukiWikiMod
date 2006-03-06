@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.22 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.23 2006/03/06 06:20:30 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -73,6 +73,7 @@ function plugin_isbn_convert() {
 		$off = 0;
 		$_price = (int) trim(str_replace(",","",$tmpary[2]));
 		$_listprice = (int) trim(str_replace(",","",$tmpary[8]));
+		$_usedprice = (int) trim(str_replace(",","",$tmpary[9]));
 		if ($_price && $_listprice && ($_price != $_listprice))
 		{
 			$off = 100 - (($_price/$_listprice) * 100);
@@ -87,7 +88,7 @@ function plugin_isbn_convert() {
 		}
 	}
 	if ($header != "info")
-		return plugin_isbn_print_isbn_img($isbn, $align, $alt, $title, $h_title, $price, $header,$listprice,$usedprice);
+		return plugin_isbn_print_isbn_img($isbn, $align, $alt, $title, $h_title, $price, $header,$_listprice,$_usedprice);
 	else
 	{
 		return plugin_isbn_get_info($tmpary,$isbn);
@@ -112,6 +113,7 @@ function plugin_isbn_inline()
 	//$text = htmlspecialchars(preg_replace('#</?(a|span)[^>]*>#i','',$option));
 	$alt = plugin_isbn_get_caption($tmpary);
 	$amazon_a = '<a href="'.str_replace('_ISBN_',$isbn,ISBN_AMAZON_SHOP).'" target="_blank" title="'.$alt.'">';
+	$match = array();
 	if (!preg_match("/(s|l|m)?ima?ge?/i",$option,$match))
 	{
 		if ($option || $body) $title = $option.$body;
@@ -273,6 +275,7 @@ function plugin_isbn_get_isbn_title($isbn,$check=true) {
 			$body = "";
 		}
 		
+		$data = array();
 		$body = mb_convert_encoding($body,SOURCE_ENCODING,"UTF-8");
 		$category = (preg_match("/<Catalog>(.+)<\/Catalog>/",$body,$data))? trim($data[1]) : "";
 		$title = (preg_match("/<ProductName>(.+)<\/ProductName>/",$body,$data))? trim($data[1]) : "";
@@ -332,6 +335,7 @@ function plugin_isbn_cache_image_fetch($target, $dir, $check=true) {
 
 	if (!is_readable($filename) || (is_readable($filename) && $check && ISBN_AMAZON_EXPIRE_IMG * 3600 * 24 < time() - filemtime($filename))) {
 		$size = "MZZZZ";
+		$match = array();
 		if (preg_match("/^(?:(s|m|l):)(.+)/i",$target,$match))
 		{
 			$size = strtoupper($match[1]);

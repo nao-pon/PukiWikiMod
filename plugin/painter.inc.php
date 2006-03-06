@@ -19,16 +19,12 @@ function plugin_painter_action()
 	{
 		case "paint":
 			return plugin_painter_paint();
-			break;
 		case "upload":
 			return plugin_painter_save(true);
-			break;
 		case "save":
 			return plugin_painter_save();
-			break;
 		case "write":
 			return plugin_painter_write();
-			break;
 		default:
 	}
 }
@@ -63,6 +59,7 @@ function plugin_painter_convert()
 			$page = $vars['page'];
 			$_name = $name;
 			//相対パスからフルパスを得る
+			$matches = array();
 			if (preg_match('/^(.+)\/([^\/]+)$/',$name,$matches))
 			{
 				if ($matches[1] == '.' or $matches[1] == '..')
@@ -127,7 +124,7 @@ function plugin_painter_convert()
 
 function plugin_painter_write()
 {
-	global $post,$vars;
+	global $post,$vars,$script;
 	
 	if (!exist_plugin('paint'))
 		return array('msg'=>'paint.inc.php not found or not correct version.');
@@ -222,7 +219,7 @@ function plugin_painter_write()
 
 function plugin_painter_save($upload=false)
 {
-	global $vars;
+	global $vars,$script;
 	$files = plugin_painter_getfiles($vars['refer']);
 	$page = $vars['refer'] = decode($vars['refer']);
 	
@@ -290,6 +287,7 @@ function plugin_painter_add($files,$upload=false)
 			
 			$s_args = htmlspecialchars($vars['attachref_opt']);
 			$comment = "";
+			$m_args = array();
 			if (preg_match("/t:([^,]*)/i",$s_args,$m_args)){
 				$comment = $m_args[1];
 				$comment = str_replace("\x08",",",$comment);
@@ -382,8 +380,8 @@ function plugin_painter_getfiles($refer)
 		//user-codeでチェック
 		foreach($tmplist as $tmpimg)
 		{
-			list($ucode,$uip,$file,$page,$uid) = explode("\t", $tmpimg);
-			if($ucode == $usercode || ($X_uid && ($uid == $X_uid)) || $X_admin)
+			list($uip,$uhost,$file,$page,$uid) = explode("\t", $tmpimg);
+			if($ucode == PUKIWIKI_UCD|| ($X_uid && ($uid == $X_uid)) || $X_admin)
 			{
 				$page = decode($page);
 				$tmp[] = compact('page','file');
@@ -421,6 +419,7 @@ function plugin_painter_paint()
 	$page = $vars['refer'];
 	$name = (isset($vars['image_canvas']))? rtrim($vars['image_canvas']) : "";
 	//相対パスからフルパスを得る
+	$matches = array();
 	if (preg_match('/^(.+)\/([^\/]+)$/',$name,$matches))
 	{
 		if ($matches[1] == '.' or $matches[1] == '..')

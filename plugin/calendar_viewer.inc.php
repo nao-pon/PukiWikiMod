@@ -3,7 +3,7 @@
  * PukiWiki calendar_viewerプラグイン
  *
  *
- *$Id: calendar_viewer.inc.php,v 1.27 2005/12/20 15:27:31 nao-pon Exp $
+ *$Id: calendar_viewer.inc.php,v 1.28 2006/03/06 06:20:30 nao-pon Exp $
   calendarrecentプラグインを元に作成
  */
 /**
@@ -119,12 +119,13 @@ function plugin_calendar_viewer_convert($func_vars_array="")
 				$pagename = add_bracket($pagename);
 
 		if (isset($func_vars_array[3])){
-				if ($func_vars_array[3] == "cal2"){
-			$cal2 = 1;
-		} else {
-			$date_sep = htmlspecialchars($func_vars_array[3]);
+			if ($func_vars_array[3] == "cal2"){
+				$cal2 = 1;
+			} else {
+				$date_sep = htmlspecialchars($func_vars_array[3]);
+			}
 		}
-		}
+		$reg_array = array();
 		if (preg_match("/[0-9]{4}".$date_sep."[0-9]{2}/",$func_vars_array[1])){
 			//指定年月の一覧表示
 			$page_YM = $func_vars_array[1];
@@ -376,7 +377,7 @@ function plugin_calendar_viewer_action(){
 	}
 	$mode = $vars["mode"];
 
-	$args_array = array($vars["page"], $page_YM,$mode, $date_sep, $_contents);
+	$args_array = array($vars["page"], $page_YM,$mode, $date_sep);
 	
 	if (!empty($vars['co'])) $args_array[] = "contents:".(int)$vars['co'];
 	
@@ -405,7 +406,7 @@ function plugin_calendar_viewer_isValidDate($aStr, $aSepList="-/ .") {
 		//yyyymmddとしてチェック
 		return checkdate(substr($aStr,4,2),substr($aStr,6,2),substr($aStr,0,4));
 	}
-	//if( ereg("^([0-9]{2,4})[$aSepList]([0-9]{1,2})[$aSepList]([0-9]{1,2})$", $aStr, $m) ) {
+	$m = array();
 	if( ereg("^([0-9]{2,4})[$aSepList]([0-9]{1,2})[$aSepList]([0-9]{1,2})([$aSepList][0-9])?$", $aStr, $m) ) {
 		return checkdate($m[2], $m[3], $m[1]);
 	}

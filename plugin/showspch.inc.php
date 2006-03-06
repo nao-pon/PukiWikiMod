@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: showspch.inc.php,v 1.3 2005/03/09 12:18:27 nao-pon Exp $
+// $Id: showspch.inc.php,v 1.4 2006/03/06 06:20:30 nao-pon Exp $
 
 function plugin_showspch_convert()
 {
@@ -26,6 +26,7 @@ function plugin_showspch_tag($name,$text="")
 	
 	$page = $vars['page'];
 	//相対パスからフルパスを得る
+	$matches = array();
 	if (preg_match('/^(.+)\/([^\/]+)$/',$name,$matches))
 	{
 		if ($matches[1] == '.' or $matches[1] == '..')
@@ -59,7 +60,7 @@ function plugin_showspch_action()
 	
 	$file = UPLOAD_DIR.encode($vars['page']).'_'.encode($vars['file']);
 	if (!is_file($file)) {
-		if (!is_page($page))
+		if (!is_page($vars['page']))
 		{ 
 			return array('msg'=>'page not found.');
 		}
@@ -72,6 +73,7 @@ function plugin_showspch_action()
 	//spch情報読み込み
 	$data = array();
 	$fp = fopen ($file, "rb");
+	$_line = "";
 	while (!feof ($fp) || $_line)
 	{
 		$_line = trim(fgets($fp, 4096));
