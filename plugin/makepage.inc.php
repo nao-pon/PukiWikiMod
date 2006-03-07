@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.14 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.15 2006/03/07 02:09:20 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -208,7 +208,7 @@ function plugin_makepage_action()
 				}
 				make_user_link($_name);
 				
-				$postdata = str_replace("___NAME___",$_name."\n#clear",$postdata);
+				$postdata = str_replace("___NAME___",$_name,$postdata);
 				
 				$postdata = auto_br($postdata);
 			}
