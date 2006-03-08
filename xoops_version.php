@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.13 2006/01/19 01:05:48 nao-pon Exp $
+// $Id: xoops_version.php,v 1.14 2006/03/08 12:10:30 nao-pon Exp $
  
 $modversion['name'] = "PukiWiki";
 $modversion['description'] = "PukiWiki";
@@ -110,8 +110,6 @@ $modversion['comments']['itemName'] = 'pgid';
 $modversion['comments']['callbackFile'] = 'include/comment_functions.php';
 //$modversion['comments']['callback']['approve'] = 'pukiwiki_com_approve';
 $modversion['comments']['callback']['update'] = 'pukiwiki_com_update';
-
-$xoopsModuleConfig['com_anonpost'] = 1;
 
 // On Update
 if( ! empty( $_POST['fct'] ) && ! empty( $_POST['op'] ) && $_POST['fct'] == 'modulesadmin' && $_POST['op'] == 'update_ok' && $_POST['dirname'] == $modversion['dirname'] ) {
