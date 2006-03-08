@@ -1,5 +1,5 @@
 <?php
-// $Id: recentchanges.inc.php,v 1.3 2003/12/16 04:48:52 nao-pon Exp $
+// $Id: recentchanges.inc.php,v 1.4 2006/03/08 05:33:44 nao-pon Exp $
 
 function plugin_recentchanges_action()
 {
@@ -21,7 +21,7 @@ function plugin_recentchanges_action()
 	if ($where) $where = " AND ($where)";
 	//echo $where;
 
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE (name NOT LIKE ':%')$where ORDER BY editedtime DESC LIMIT $maxshow;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE (editedtime!=0) AND (name NOT LIKE ':%')$where ORDER BY editedtime DESC LIMIT $maxshow;";
 	$res = $xoopsDB->query($query);
 	//echo $query."<br>";
 	if ($res)
