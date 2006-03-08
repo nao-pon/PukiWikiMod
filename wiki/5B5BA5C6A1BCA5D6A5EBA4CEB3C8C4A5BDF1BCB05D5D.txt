@@ -1,0 +1,165 @@
+// author:0
+// author_ucd:dJJpB.Oa0RuI	web-master
+**テーブル拡張書式
+#contents
+***幅と配置
+ |TLEFT:50%|c
+ |左寄せ:50%|
+|TLEFT:50%|c
+|左寄せ:50%|
+----
+ |TCENTR:50%|c
+ |センタリング:50%|
+|TCENTER:50%|c
+|センタリング:50%|
+----
+ |TRIGHT:50%|c
+ |左寄せ:50%|
+|TRIGHT:50%|c
+|左寄せ:50%|
+***枠線(border)
+ |B:20||c
+ |Border|20px|
+|B:20||c
+|B|20px|
+----
+ |B:20,10||c
+ |BorderとSellSpacing|20px,10px|
+|B:20,10||c
+|BorderとSellSpacing|20px,10px|
+----
+ |B:20,0||c
+ |BorderとSellSpacing|20px,0px|
+|B:20,0||c
+|BorderとSellSpacing|20px,0px|
+----
+ |B:0,10||c
+ |BorderとSellSpacing|0px,10px|
+|B:0,10||c
+|BorderとSellSpacing|0px,10px|
+----
+ |B:5one||c
+ |一重線|5px|
+|B:5one||c
+|一重線|5px|
+----
+ |B:5two||c
+ |二重線|5px|
+|B:5two||c
+|二重線|5px|
+----
+ |B:5boko||c
+ |凹線|5px|
+|B:5boko||c
+|凹線|5px|
+----
+ |B:5deko||c
+ |凸線|5px|
+|B:5deko||c
+|凸線|5px|
+----
+ |B:5in||c
+ |インセット|5px|
+|B:5in||c
+|インセット|5px|
+----
+ |B:5out||c
+ |アウトセット|5px|
+|B:5out||c
+|アウトセット|5px|
+----
+ |B:5dash||c
+ |破線|5px|
+|B:5dash||c
+|破線|5px|
+----
+ |B:5dott||c
+ |点線|5px|
+|B:5dott||c
+|点線|5px|
+----
+ |B:5dashBC:#ff0000||c
+ |破線|5px赤(#ff0000)|
+|B:5dashBC:#ff0000||c
+|破線|5px赤(#ff0000)|
+----
+ |B:5dottBC:green||c
+ |点線|5pxみどり(green)|
+|B:5dottBC:green||c
+|点線|5pxみどり(green)|
+***テーブルとセルの色・背景画
+ |TC:green||c
+ |表の色はみどり|セルの色は指定無し|
+|TC:green||c
+|表の色はみどり|セルの色は指定無し|
+----
+ |TC:greenSC:0|SC:white|c
+ |この列は透明|この列は白|
+ |2行目|2行目|
+|TC:greenSC:0|SC:white|c
+|この列は透明|この列は白|
+|2行目|2行目|
+----
+ |TC:green|||c
+ |SC:0透明指定~->
+ (0かtransparent)|SC:yellow色名指定~->
+ (yellow)|SC:#5555FF16進指定~->
+ (#5555FF)|
+|TC:green|||c
+|SC:0透明指定~->
+(0かtransparent)|SC:yellow色名指定~->
+(yellow)|SC:#5555FF16進指定~->
+(#5555FF)|
+----
+ |B:0,10TC:(http://hypweb.net/xoops/images/bg/arapasu-asa-001.jpg)|c
+ |テーブルの背景画有り:セル色指定無し|
+|B:0,10TC:(http://hypweb.net/xoops/images/bg/arapasu-asa-001.jpg)|c
+|テーブルの背景画有り:セル色指定無し|
+----
+ |B:0,10TC:(http://hypweb.net/xoops/images/bg/arapasu-asa-001.jpg)|c
+ |SC:(http://hypweb.net/xoops/images/bg/arapasu-asa-002.jpg)テーブル・セルの背景画有り|
+|B:0,10TC:(http://hypweb.net/xoops/images/bg/arapasu-asa-001.jpg)|c
+|SC:(http://hypweb.net/xoops/images/bg/arapasu-asa-002.jpg)テーブル・セルの背景画有り|
+----
+ |B:0,10TC:(http://hypweb.net/xoops/images/bg/arapasu-asa-001.jpg)|c
+ |SC:yellow(http://hypweb.net/xoops/images/bg/arapasu-asa-002.jpg,1)テーブル・セルの背景画有り~->
+ セルの背景画繰り返しなし(once又は1)背景色(yellow)|
+|B:0,10TC:(http://hypweb.net/xoops/images/bg/arapasu-asa-001.jpg)|c
+|SC:yellow(http://hypweb.net/xoops/images/bg/arapasu-asa-002.jpg,1)テーブル・セルの背景画有り~->
+セルの背景画繰り返しなし(once又は1)背景色(yellow)|
+***セルの幅指定と文字揃え
+ |T:100%:10%|:90%|c
+ |10%|90%|
+|T:100%:10%|:90%|c
+|10%|90%|
+----
+ |T:100%RIGHT:10%|CENTER:90%|c
+ |10%|90%|
+|T:100%RIGHT:10%|CENTER:90%|c
+|10%|90%|
+***回り込み
+ |TLEFT:50%AROUND|c
+ |TEXT~->
+ 1~->
+ 2|
+ 回り込み~
+ &br-all;解除
+|TLEFT:50%AROUND|c
+|TEXT~->
+1~->
+2|
+回り込み~
+&br-all;解除
+***タイトル(<TH>)
+ |タイトル|h
+ |TEXT|
+|タイトル|h
+|TEXT|
+***セルの連結
+ |TEXT|TEXT2|
+ |>|連結|
+|TEXT|TEXT2|
+|>|連結|
+***テーブルの入れ子
+ |親テーブル|}|子テーブル|{|
+|親テーブル|}|子テーブル|{|

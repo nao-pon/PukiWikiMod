@@ -1,10 +1,32 @@
--[http://www.c2.com/cgi/wiki? WikiWikiWeb] raw WikiNameのみなのでraw。
--[http://www.todo.org/cgi-bin/jp/tiki.cgi?c=v&p= Tiki] euc
--[http://www.hyuki.com/yukiwiki/yukiwiki.cgi? YukiWiki] yw
--[http://www.jin.gr.jp/~nahi/RWiki/?cmd=view;name= RWiki] euc
--[http://www.factage.com/sng/pukiwiki/pukiwiki.php? PukiWiki]
--[http://pukiwiki.org/index.php? pukiwiki]
--[http://www.gembook.jp/html/moin/moin.cgi/ ウヰキエリア] moin
+-PukiWiki
+--[http://pukiwiki.org/? PukiWiki公式] utf8
+--[http://pukiwiki.sourceforge.jp/dev/? PukiWiki開発]
 
--[http://www.google.co.jp/search?ie=utf8&oe=utf8&q=$1&lr=lang_ja&hl=ja Google] utf8 IEのGoogleツールバー対策でUTF-8になってます。
--[http://search.yahoo.co.jp/bin/search?p= Yahoo] euc
+-PukiWikiMod
+--[http://hypweb.net/xoops/modules/pukiwiki/? PukiWikiMod] euc
+--[http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/pukiwikimod/pukiwiki/ CVS] raw
+--[http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/pukiwikimod/pukiwiki/pukiwiki.tar.gz?tarball=1&only_with_tag= CVS版] raw
+
+-XOOPS:
+--[http://xoops.sourceforge.jp/wiki/free/? XOOPS Wiki]
+--[http://xoops.sourceforge.jp/wiki/xoops1/? XOOPS1 Wiki]
+--[http://xoops.sourceforge.jp/wiki/xoops2/? XOOPS2 Wiki]
+
+-サーチエンジン
+--[http://www.google.co.jp/search?num=50&ie=utf8&oe=utf8&lr=lang_ja&hl=ja&q= Google] utf8 IEのGoogleツールバー対策でUTF-8になってます。
+--[http://search.yahoo.co.jp/bin/search?p= Yahoo] euc
+--[http://search.weather.yahoo.co.jp/bin/search?pref=all&p= 天気] euc
+
+-辞書
+--[http://dic.yahoo.co.jp/bin/dsearch?p= 辞書] euc
+--[http://e-words.jp/?w= IT用語] sjis
+--[http://ja.wikipedia.org/wiki/ フリー百科事典] utf8
+--[http://d.hatena.ne.jp/keyword/ はてな] euc
+
+-XOOPSマニア
+--[http://hypweb.net/xoops/search.php?action=results&andor=AND&query= XOOPSマニア検索] euc
+--[http://www.google.co.jp/search?ie=utf8&oe=utf8&lr=lang_ja&hl=ja&domains=hypweb.net&sitesearch=hypweb.net&q= XOOPSマニア検索(Google)] utf8
+--[http://hypweb.net/xoops/modules/pukiwiki/?cmd=search&type=AND&word= XOOPSマニアWiki内検索] euc
+
+-その他
+--[http://feeds.archive.org/validator/check.cgi?url= RssCheck]
