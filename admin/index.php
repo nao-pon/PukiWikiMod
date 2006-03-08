@@ -1,10 +1,20 @@
 <?php
-// $Id: index.php,v 1.39 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: index.php,v 1.40 2006/03/08 06:55:05 nao-pon Exp $
 
+include('../../../include/cp_header.php');
+
+if ( $xoopsUser ) {
+	$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+	if ( !$xoopsUser->isAdmin($xoopsModule->mid()) ) { 
+		redirect_header(XOOPS_URL."/",3,_NOPERM);
+		exit();
+	}
+} else {
+	redirect_header(XOOPS_URL."/",3,_NOPERM);
+	exit();
+}
 
 define("UTIME",time());
-include("admin_header.php");
-include_once(XOOPS_ROOT_PATH."/class/module.errorhandler.php");
 
 // PukiWikiMod ディレクトリ名
 define("PUKIWIKI_DIR_NAME", $xoopsModule->dirname());
@@ -427,7 +437,7 @@ function displayForm(){
 	
 	global $xoopsModule;
 	echo "
-	| "._AM_SYSTEM_ADMENU." | <a href='./myblocksadmin.php'>"._AM_SYSTEM_ADMENU2."</a> | <a href='".XOOPS_URL."/modules/system/admin.php?fct=preferences&op=showmod&mod=".$xoopsModule->mid()."'>"._MD_AM_PREF."</a> |
+	| "._AM_WIKI_TITLE1." | <a href='./myblocksadmin.php'>"._MI_SYSTEM_ADMENU2."</a> | <a href='".XOOPS_URL."/modules/system/admin.php?fct=preferences&op=showmod&mod=".$xoopsModule->mid()."'>"._MI_SYSTEM_ADMENU6."</a> |
 	<hr />
 	<h2>"._AM_WIKI_TITLE0."</h2>
 	<span style='color:red;font-weight:bold;'>"._AM_WIKI_INFO0."</span>

@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.13 2006/01/12 01:33:19 nao-pon Exp $
+// $Id: admin.php,v 1.14 2006/03/08 06:55:05 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE0", "PukiWikiMod initial setting.");
@@ -58,8 +58,6 @@ define("_AM_WIKI_USE_STATIC_URL", "Use static URL.(ex. [Page ID].html) A setup i
 
 define("_AM_WIKI_UPDATE_PING_TO", "The place which always carries out Ping transmission at the time of edit of a page. It divides in a new-line or a space.");
 define("_AM_WIKI_COMMON_DIRS", "A common link directory. An auto link becomes effective even if it omits this. Finally / (slash) is required. It divides in a new-line or a space.");
-define("_AM_SYSTEM_ADMENU","Basic settings.");
-define("_AM_SYSTEM_ADMENU2","Block management.");
 
 // Ver 1.0.6
 define("_AM_WIKI_ANCHOR_VISIBLE","A fixed link anchor is displayed.");
