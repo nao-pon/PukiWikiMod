@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.40 2006/03/08 06:55:05 nao-pon Exp $
+// $Id: index.php,v 1.41 2006/03/08 11:49:46 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
@@ -437,7 +437,7 @@ function displayForm(){
 	
 	global $xoopsModule;
 	echo "
-	| "._AM_WIKI_TITLE1." | <a href='./myblocksadmin.php'>"._MI_SYSTEM_ADMENU2."</a> | <a href='".XOOPS_URL."/modules/system/admin.php?fct=preferences&op=showmod&mod=".$xoopsModule->mid()."'>"._MI_SYSTEM_ADMENU6."</a> |
+	| "._MI_PUKIWIKI_ADMENU." | <a href='./myblocksadmin.php'>"._MI_PUKIWIKI_ADMENU2."</a> | <a href='".XOOPS_URL."/modules/system/admin.php?fct=preferences&op=showmod&mod=".$xoopsModule->mid()."'>"._MI_SYSTEM_ADMENU6."</a> |
 	<hr />
 	<h2>"._AM_WIKI_TITLE0."</h2>
 	<span style='color:red;font-weight:bold;'>"._AM_WIKI_INFO0."</span>
