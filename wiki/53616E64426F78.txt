@@ -22,7 +22,7 @@
 ----
 *大見出し2
 **小見出し2-1
-http://pukiwiki.org/
+http://pukiwiki.sourceforge.jp/
 **小見出し2-2
 
 [[sng]]
@@ -61,11 +61,11 @@ http://pukiwiki.org/
 
 -オートリンク
 --URLの最後が各種画像ファイル拡張子だとそのまま表示する
---- http://pukiwiki.org/pukiwiki.gif
+--- http://pukiwiki.sourceforge.jp/pukiwiki.gif
 --ホームページ
---- http://pukiwiki.org/
+--- http://pukiwiki.sourceforge.jp/
 --メールアドレス
---- info@pukiwiki.org
+--- info@pukiwiki.sourceforge.jp
 
  整形済みテキスト整形済みテキスト整形済みテキスト
  整形済みテキスト整形済みテキスト整形済みテキスト

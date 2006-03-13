@@ -3,7 +3,7 @@
 //
 // PukiWiki 1.3.* 
 //  Copyright (C) 2002 by PukiWiki Developers Team
-//  http://pukiwiki.org/
+//  http://pukiwiki.sourceforge.jp/
 //
 // PukiWiki 1.3 (Base)
 //  Copyright (C) 2001,2002 by sng.
@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.85 2006/02/23 11:40:28 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.86 2006/03/13 14:19:00 nao-pon Exp $
 /////////////////////////////////////////////////
 //XOOPS設定読み込み
 include("../../mainfile.php");

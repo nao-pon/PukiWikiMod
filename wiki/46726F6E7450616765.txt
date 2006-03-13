@@ -15,5 +15,5 @@
 -InterWikiSandBox
 --InterWikiを試してみてください
 
--[[PukiWiki.org:http://pukiwiki.org]]
+-[[PukiWiki-official:http://pukiwiki.sourceforge.jp/]]
 --開発チームの公式PukiWikiです

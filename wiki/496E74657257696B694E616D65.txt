@@ -1,5 +1,5 @@
 -PukiWiki
---[http://pukiwiki.org/? PukiWiki给及] utf8
+--[http://pukiwiki.sourceforge.jp/? PukiWiki给及] utf8
 --[http://pukiwiki.sourceforge.jp/dev/? PukiWiki倡券]
 
 -PukiWikiMod

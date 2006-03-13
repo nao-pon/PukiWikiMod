@@ -3,10 +3,10 @@ NAME
 
        PukiWiki 1.3.3 by
         Copyright (C) 2001,2002 by sng, PukiWiki Developers Team
-        http://pukiwiki.org/
+        http://pukiwiki.sourceforge.jp/
 
 SYNOPSIS
-        http://pukiwiki.org/
+        http://pukiwiki.sourceforge.jp/
 
 DESCRIPTION
     PukiWikiは参加者が自由にページを追加・削除・編集できる
