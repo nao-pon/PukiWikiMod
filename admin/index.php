@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.41 2006/03/08 11:49:46 nao-pon Exp $
+// $Id: index.php,v 1.42 2006/03/13 04:38:28 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
@@ -436,9 +436,8 @@ function displayForm(){
 		$f_fusen_enable_allpage[0] = " checked";
 	
 	global $xoopsModule;
-	echo "
-	| "._MI_PUKIWIKI_ADMENU." | <a href='./myblocksadmin.php'>"._MI_PUKIWIKI_ADMENU2."</a> | <a href='".XOOPS_URL."/modules/system/admin.php?fct=preferences&op=showmod&mod=".$xoopsModule->mid()."'>"._MI_SYSTEM_ADMENU6."</a> |
-	<hr />
+	include("./mymenu.php");
+	echo "<hr />
 	<h2>"._AM_WIKI_TITLE0."</h2>
 	<span style='color:red;font-weight:bold;'>"._AM_WIKI_INFO0."</span>
 	<ul>
