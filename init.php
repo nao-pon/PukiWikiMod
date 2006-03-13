@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.55 2006/01/21 04:22:14 nao-pon Exp $
+// $Id: init.php,v 1.56 2006/03/13 02:01:53 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -350,8 +350,9 @@ if (isset($vars['pgid']))
 	}
 	else
 	{
-		header("Location: ".XOOPS_WIKI_URL."/");
-		exit;
+		header( "HTTP/1.1 404 Not Found" );
+		$vars['page'] = $defaultpage;
+		$vars['cmd'] = "read";
 	}
 }
 
