@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.42 2006/03/13 04:38:28 nao-pon Exp $
+// $Id: index.php,v 1.43 2006/03/13 05:05:26 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
@@ -29,10 +29,15 @@ define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/'.PUKIWIKI_DIR_NAME);
 if(!class_exists('HypCommonFunc')){include(XOOPS_WIKI_PATH."/include/hyp_common_func.php");}
 
 // config.php がない場合(初期導入時)
-if (file_exists(XOOPS_WIKI_PATH."/cache/config.php")) { @touch(XOOPS_WIKI_PATH."/cache/config.php"); }
+$install = false;
+if (file_exists(XOOPS_WIKI_PATH."/cache/config.php"))
+{
+	@touch(XOOPS_WIKI_PATH."/cache/config.php");
+	$install = true;
+}
 
 include(XOOPS_WIKI_PATH."/pukiwiki.ini.php");
-@include(XOOPS_WIKI_PATH."/cache/config.php");
+include(XOOPS_WIKI_PATH."/cache/config.php");
 include(XOOPS_WIKI_PATH."/html.php");
 include(XOOPS_WIKI_PATH."/file.php");
 include(XOOPS_WIKI_PATH."/func.php");
@@ -289,7 +294,7 @@ function checkPermit(){
 		echo "<p>$_alert_icon<a href='".XOOPS_URL."/modules/".PUKIWIKI_DIR_NAME."/?plugin=tb_sendedping_conv'><span style='color:red;font-weight:bold;font-size:160%;'>"._AM_WIKI_ERROR02."</span><a></p>";
 }
 
-function displayForm(){
+function displayForm($install){
 	global $xoopsConfig, $xoopsModule, $xoopsUser, $X_admin, $X_uid;
 	global $defaultpage, $modifier, $modifierlink, $function_freeze, $adminpass, $wiki_writable, $hide_navi, $wiki_mail_sw, $_btn_freeze_enable ,$defvalue_freeze,$defvalue_gids,$defvalue_aids, $wiki_allow_new, $read_auth, $cycle, $maxage, $pcmt_page_name,$wiki_user_dir,$pagereading_enable,$pagereading_kanji2kana_converter,$pagereading_kanji2kana_encoding,$pagereading_chasen_path,$pagereading_kakasi_path,$pagereading_config_page,$page_title,$trackback,$page_cache_min,$use_static_url,$update_ping_to,$wiki_common_dirs,$fixed_heading_anchor,$trackback_encoding,$countup_xoops,$use_xoops_comments,$tb_check_link_to_me,$fusen_enable_allpage;
 	
@@ -437,14 +442,16 @@ function displayForm(){
 	
 	global $xoopsModule;
 	include("./mymenu.php");
-	echo "<hr />
-	<h2>"._AM_WIKI_TITLE0."</h2>
-	<span style='color:red;font-weight:bold;'>"._AM_WIKI_INFO0."</span>
-	<ul>
-		<li><a href='".XOOPS_URL."/modules/pukiwiki/?plugin=pginfo' target='setting'>"._AM_WIKI_DB_INIT."</a></li>
-	</ul>
-	<hr />
-	<h2>"._AM_WIKI_TITLE1."</h2>
+	if (!$install)
+	{
+		echo "<hr />
+		<h2>"._AM_WIKI_TITLE0."</h2>
+		<span style='color:red;font-weight:bold;'>"._AM_WIKI_INFO0."</span>
+		<ul>
+			<li><a href='".XOOPS_URL."/modules/pukiwiki/?plugin=pginfo' target='setting'>"._AM_WIKI_DB_INIT."</a></li>
+		</ul>";
+	}
+	echo "<hr /><h2>"._AM_WIKI_TITLE1."</h2>
 	<form method='post' action='index.php'>
 	<table border=1>
 	<tr><td>
@@ -828,7 +835,7 @@ function db_check()
 clearstatcache();
 if($_SERVER["REQUEST_METHOD"] == "GET"){
 	db_check();
-	displayForm();
+	displayForm($install);
 } else {
 	$tiket = "";
 	$tiket_file = "../cache/t_config.php";
