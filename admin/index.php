@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.43 2006/03/13 05:05:26 nao-pon Exp $
+// $Id: index.php,v 1.44 2006/03/13 06:16:43 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
@@ -170,6 +170,16 @@ function writeConfig(){
 		$trackback_encoding = "UTF-8";
 	else
 		$trackback_encoding = "SJIS";
+	
+	// .htaccess を自動作成
+	if ($f_use_static_url && !file_exists("../.htaccess"))
+	{
+		$dat = join('',file("../.htaccess.dev"));
+		$dat = str_replace("[XOOPS_ROOT]",preg_replace("#/modules/pukiwiki/admin/(index\.php)?$#","",$_SERVER["REQUEST_URI"]),$dat);
+		$fp = fopen("../.htaccess", 'w');
+		fwrite($fp,$dat);
+		fclose($fp);		
+	}
 	
 	$content = "";
 	$content .= "<?php";
