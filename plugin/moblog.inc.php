@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.10 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.11 2006/03/14 13:05:56 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -10,7 +10,7 @@ function plugin_moblog_action()
 	
 	//error_reporting(E_ALL);
 	//設定ファイル読み込み
-	require('./plugin_data/moblog/moblog.ini.php');
+	include('./plugin_data/moblog/moblog.ini.php');
 	$refresh_min = (int)$refresh_min;
 	$host = (string)$host;
 	$mail = (string)$mail;
@@ -42,8 +42,11 @@ function plugin_moblog_action()
 		plugin_moblog_output ();
 	else
 		touch ($chk_file);
-
-
+	
+	// wait 指定
+	$wait = (empty($vars['wait']))? 0 : (int)$vars['wait']);
+	sleep(min(15,$wait));
+	
 	// 接続開始
 	$err = "";
 	$num = $size = $errno = 0;
@@ -122,7 +125,16 @@ function plugin_moblog_action()
 			while (eregi("(.*)=\?iso-[^\?]+\?Q\?([^\?]+)\?=(.*)",$subject,$regs)) {//MIME Q
 				$subject = $regs[1].quoted_printable_decode($regs[2]).$regs[3];
 			}
-			$subject = htmlspecialchars(mb_convert_encoding($subject,"EUC-JP","AUTO"));
+			$subject = trim(mb_convert_encoding($subject,"EUC-JP","AUTO"));
+			
+			//回転指定コマンド検出
+			$rotate = 0;
+			if (preg_match("/(.*)(?:(r|l)@)$/i",$subject,$match))
+			{
+				$subject = rtrim($match[1]);
+				$rotate = (strtolower($match[2]) == "r")? 1 : 3;
+			}
+			
 			// 未承諾広告カット
 			if ($write && $deny_title){
 				if (preg_match($deny_title,$subject)) $write = false;
@@ -173,7 +185,6 @@ function plugin_moblog_action()
 		} else {
 			$part[0] = $dat[$j];// 普通のテキストメール
 		}
-	//print_r($part);
 
 		foreach ($part as $multi) {
 			list($m_head, $m_body) = plugin_moblog_mime_split($multi);
@@ -250,6 +261,11 @@ function plugin_moblog_action()
 						$fp = fopen($save_file, "wb");
 						fputs($fp, $tmp);
 						fclose($fp);
+						//回転指定
+						if ($rotate)
+						{
+							HypCommonFunc::rotateImage($save_file, $rotate);
+						}
 						do_upload($page,$filename,$save_file);
 					} else {
 						$write = false;
@@ -263,24 +279,7 @@ function plugin_moblog_action()
 		
 		// wikiページ書き込み
 		if ($write) plugin_moblog_page_write($page,$subject,$text,$filename,$ref_option,$now);
-
-/*
-		if ($write) {
-			array_unshift($lines, $line);
-			
-			// ヘッダ情報を記録
-			if ($mailbbs_head_save)
-				mailbbs_head_save($id,$head);
-		} else {
-			// 拒否メールログ保存
-			if ($mailbbs_denylog_save)
-				mailbbs_deny_log($head,$subject,str_replace("~\n","\n",$text));
-		}
-*/
 	}
-
-	//echo $debg;
-
 	// imgタグ呼び出し
 	plugin_moblog_output ();
 }
