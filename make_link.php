@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.48 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: make_link.php,v 1.49 2006/03/19 23:25:35 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -11,15 +11,15 @@ function make_link($string,$page = '')
 {
 	global $vars;
 	static $converter;
-	
+
 	$string = str_replace('&amp;','&',$string);
-	if (!isset($converter))
-	{
-		$converter = new InlineConverter();
-	}
-	$_converter = $converter; // copy
-	return $_converter->convert($string, ($page != '') ? $page : $vars['page']);
+	if (! isset($converter)) $converter = new InlineConverter();
+
+	$clone = $converter->get_clone($converter);
+
+	return $clone->convert($string, ($page != '') ? $page : $vars['page']);
 }
+
 //インライン要素を置換する
 class InlineConverter
 {
@@ -27,6 +27,27 @@ class InlineConverter
 	var $pattern;
 	var $pos;
 	var $result;
+
+	function get_clone($obj) {
+		static $clone_func;
+
+		if (! isset($clone_func)) {
+			if (version_compare(PHP_VERSION, '5.0.0', '<')) {
+				$clone_func = create_function('$a', 'return $a;');
+			} else {
+				$clone_func = create_function('$a', 'return clone $a;');
+			}
+		}
+		return $clone_func($obj);
+	}
+
+	function __clone() {
+		$converters = array();
+		foreach ($this->converters as $key=>$converter) {
+			$converters[$key] = $this->get_clone($converter);
+		}
+		$this->converters = $converters;
+	}
 	
 	function InlineConverter($converters=NULL,$excludes=NULL)
 	{
