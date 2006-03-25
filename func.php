@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.69 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: func.php,v 1.70 2006/03/25 02:44:33 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1373,16 +1373,28 @@ function check_int_param(&$arg)
 //XOOPS Protector モジュール で 挿入された末尾の */ を取り除く
 function remove_protector_chr(&$arg)
 {
-	$match = array();
-	if (preg_match("#^(.+)\*/$#s",$arg,$match))
+	if (is_array($arg))
 	{
-		$_tmp = preg_replace("#/\*.*?\*/#s","",$match[1]);
-		if (strpos($_tmp,"/*") !== false)
+		$_tmp = array();
+		foreach($arg as $_arg)
 		{
-			$arg = $match[1];
+			remove_protector_chr($_arg);
+			$_tmp[] = $_arg;
+		}
+		$arg = $_tmp;
+	}
+	else
+	{
+		$match = array();
+		if (preg_match("#^(.+)\*/$#s",$arg,$match))
+		{
+			$_tmp = preg_replace("#/\*.*?\*/#s","",$match[1]);
+			if (strpos($_tmp,"/*") !== false)
+			{
+				$arg = $match[1];
+			}
 		}
 	}
-	
 	return $arg;
 }
 
