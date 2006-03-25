@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.56 2006/03/13 02:01:53 nao-pon Exp $
+// $Id: init.php,v 1.57 2006/03/25 02:46:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -196,9 +196,19 @@ if (!empty($_COOKIE)) {$_COOKIE = input_filter($_COOKIE);}
 if (!empty($_POST))
 {
 	//XOOPS Protector モジュール で 挿入された末尾の */ を取り除く
-	foreach(array('msg','msg_before','msg_after','body','areaedit_msg','original','headdata','taildata','question','answer') as $_tmp)
+	foreach(array('msg','msg_before','msg_after','body','areaedit_msg','original','headdata','taildata','question','answer','pages','page') as $_tmp)
 	{
 		if (isset($_POST[$_tmp])) {remove_protector_chr($_POST[$_tmp]);}
+	}
+	unset($_tmp);
+}
+
+if (!empty($_GET))
+{
+	//XOOPS Protector モジュール で 挿入された末尾の */ を取り除く
+	foreach(array('page') as $_tmp)
+	{
+		if (isset($_GET[$_tmp])) {remove_protector_chr($_GET[$_tmp]);}
 	}
 	unset($_tmp);
 }
