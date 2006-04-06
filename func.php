@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.71 2006/04/06 13:32:16 nao-pon Exp $
+// $Id: func.php,v 1.72 2006/04/06 14:29:50 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1436,7 +1436,7 @@ function get_token_html()
 		$handler = new XoopsMultiTokenHandler();
 	}
 	// 有効期限無期限(セッションが切れるまで)
-	$ticket = &$handler->create('pukiwikimod',0);
+	$ticket = &$handler->create('pukiwikimod'.PUKIWIKI_DIR_NUM,0);
 	return $ticket->getHtml();
 }
 // チケットの検査
@@ -1444,7 +1444,7 @@ function check_token_ticket($onetime=true)
 {
 	if (!class_exists('XoopsTokenHandler')) {return true;}
 	$handler = new XoopsMultiTokenHandler();
-	return $handler->autoValidate('pukiwikimod',$onetime);
+	return $handler->autoValidate('pukiwikimod'.PUKIWIKI_DIR_NUM,$onetime);
 }
 
 // 与えられた文字列をページ名に矯正する

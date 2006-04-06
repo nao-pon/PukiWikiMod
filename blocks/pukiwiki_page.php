@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.16 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.17 2006/04/06 14:30:05 nao-pon Exp $
 
 if (! defined('PWM_BLOCK_PAGE_INCLUDED')) {
 define('PWM_BLOCK_PAGE_INCLUDED', true);
@@ -11,6 +11,7 @@ function b_pukiwiki_page_show($options)
 	global $xoopsConfig;
 	
 	$dir_name = $options[3];
+	$dir_num = preg_replace( '/^(\D+)(\d*)$/', "$2",$dir_name);
 	
 	$show_page = ($options[0])? $options[0] : "";
 	$cache_time = (empty($options[1]))? 0 : $options[1];
@@ -92,7 +93,7 @@ function b_pukiwiki_page_show($options)
 		$data = str_replace("_gEsTnAmE_",$uname,$data);
 	}
 	// Ticket置換
-	$data = preg_replace("/<!\-\-XOOPS_TOKEN_INSERT\-\->/e","xb_get_token_html()",$data);
+	$data = preg_replace("/<!\-\-XOOPS_TOKEN_INSERT\-\->/e","xb_get_token_html(".$dir_num.")",$data);
 	
 	// 外部リンクマーク用 class設定
 	//$data = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/","$1class=\"ext\" $2",$data);

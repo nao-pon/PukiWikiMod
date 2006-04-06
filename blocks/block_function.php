@@ -1,7 +1,7 @@
 <?php
 //
 // Created on 2006/04/06 by nao-pon http://hypweb.net/
-// $Id: block_function.php,v 1.1 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: block_function.php,v 1.2 2006/04/06 14:30:05 nao-pon Exp $
 //
 
 if (! defined('PWM_BLOCK_FUNC_INCLUDED'))
@@ -333,7 +333,7 @@ function xb_get_page_css_tag($page,$wiki_url,$dir_name)
 }
 
 // チケット取得
-function xb_get_token_html()
+function xb_get_token_html($dir_num = "")
 {
 	if (!class_exists('XoopsTokenHandler')) {return "";}
 	static $handler;
@@ -341,7 +341,7 @@ function xb_get_token_html()
 	{
 		$handler = new XoopsMultiTokenHandler();
 	}
-	$ticket = &$handler->create('pukiwikimod',0);
+	$ticket = &$handler->create('pukiwikimod'.$dir_num,0);
 	return $ticket->getHtml();
 }
 
