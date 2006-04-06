@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.58 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: init.php,v 1.59 2006/04/06 23:53:43 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -524,8 +524,8 @@ define('PCMT_PAGE',add_bracket($pcmt_page_name));
 define('PAGE_CACHE_MIN',$page_cache_min);
 
 // XOOPS THEME スタイルシート
-define('WIKI_THEME_CSS',(file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'))?
-	XOOPS_THEME_URL.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'
+define('WIKI_THEME_CSS',(file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_set'].'/'.PUKIWIKI_DIR_NAME.'.css'))?
+	XOOPS_THEME_URL.'/'.$xoopsConfig['theme_set'].'/'.PUKIWIKI_DIR_NAME.'.css'
 	:
 	"");
 
