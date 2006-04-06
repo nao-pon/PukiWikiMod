@@ -1,5 +1,5 @@
 <?php
-// $Id: comment_functions.php,v 1.2 2005/03/24 23:53:37 nao-pon Exp $
+// $Id: comment_functions.php,v 1.3 2006/04/06 13:32:16 nao-pon Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -30,13 +30,14 @@
 function pukiwiki_com_update($id, $total_num)
 {
 	global $xoopsDB,$xoopsUser;
-	
-	//error_reporting(E_ALL);
+	// PukiWikiMod ディレクトリ名
+	$dir_name = basename(dirname(dirname( __FILE__ )));
+	$dir_num = preg_replace( '/^(\D+)(\d*)$/', "$2",$dir_name);
 	
 	$X_uid = (is_object($xoopsUser))? $xoopsUser->uid() : 0;
 	$time = time();
 	
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id=$id LIMIT 1;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".$dir_num."_pginfo")." WHERE id=$id LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return false;
 	$arg = mysql_fetch_row($res);
@@ -44,10 +45,10 @@ function pukiwiki_com_update($id, $total_num)
 	
 	$value = "editedtime=$time";
 	$value .= ",lastediter=$X_uid";
-	$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE id = '$id';";
+	$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".$dir_num."_pginfo")." SET $value WHERE id = '$id';";
 	if ($result=$xoopsDB->query($query))
 	{
-		pukiwiki_com_touch($id,$time);
+		pukiwiki_com_touch($id,$time,$dir_num);
 		return true;
 	}
 	return false;
@@ -59,18 +60,17 @@ function pukiwiki_com_approve(&$comment)
 	// notification mail here
 }
 
-function pukiwiki_com_touch($id,$time)
+function pukiwiki_com_touch($id,$time,$dir_num)
 {
 	global $xoopsDB;
-	//error_reporting(E_ALL);
-	
+
 	$dir = str_replace("\\","/",dirname(__FILE__));
 	$dir = str_replace("/include","",$dir);
 	
 	require($dir."/cache/config.php");
 	require_once($dir."/func.php");
 	
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id=$id LIMIT 1;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".$dir_num."_pginfo")." WHERE id=$id LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return false;
 	$arg = mysql_fetch_row($res);

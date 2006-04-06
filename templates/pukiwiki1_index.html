@@ -1,0 +1,12 @@
+<{$body}>
+<hr />
+<{if $show_comments }>
+<{include file='db:pukiwiki1_comments.html'}>
+<{/if}>
+<{if $is_read }>
+<{$trackback_body}>
+<{/if}>
+<div class="pukiwiki_footer">
+<{$page_info}>
+<{$pukiwiki_footer}>
+</div>

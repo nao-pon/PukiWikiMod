@@ -25,8 +25,11 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.86 2006/03/13 14:19:00 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.87 2006/04/06 13:32:15 nao-pon Exp $
 /////////////////////////////////////////////////
+
+include 'initialize.php';
+
 //XOOPS設定読み込み
 include("../../mainfile.php");
 global $xoopsUser,$xoopsDB,$xoopsConfig;
@@ -1157,6 +1160,10 @@ if (empty($vars['xoops_block']))
 	// XOOPS 1 用 XOOPS/include/functions.php の改造が必要
 	global $xoops_mod_add_title,$xoops_mod_add_header;
 	$xoops_mod_add_title = $xoops_pagetitle;
+	
+	//<base>
+	$xoops_mod_add_header = '<base href="'.XOOPS_WIKI_HOST.str_replace("/modules/".PUKIWIKI_DIR_NAME, XOOPS_WIKI_URL, $_SERVER['REQUEST_URI']).'" />';
+	
 	//<link>タグを追加
 	if (is_page($vars["page"]))
 	{
@@ -1171,21 +1178,22 @@ if (empty($vars['xoops_block']))
 		}
 		$up_page = ($up_page && is_page($up_page))? "/".get_pgid_by_name($up_page) : "";
 		
-		$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php/rss10/s'.$up_page.'/index.rdf';
+		$rss_url = XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/index.php/rss10/s'.$up_page.'/index.rdf';
 		
-		$xoops_mod_add_header = '
-<link rel="index" href="'.XOOPS_URL.'/modules/pukiwiki/index.php?cmd=list" />
+		$xoops_mod_add_header .= '
+<link rel="index" href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/?cmd=list" />
 <link rel="alternate" type="application/rss+xml" title="RSS" href="'.$rss_url.'" />
 ';
 		$xoops_mod_add_header .= get_header_link_tag_by_name($vars["page"]);
 	}
 
 	// CSS タグ設定
-	$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/trackback.css" type="text/css" media="screen" charset="shift_jis">'."\n";	$xoops_mod_add_header .= '<link rel="stylesheet" href="skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+	$xoops_mod_add_header .= '<link rel="stylesheet" href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/skin/trackback.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+	$xoops_mod_add_header .= '<link rel="stylesheet" href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/skin/default.ja.css" type="text/css" media="screen" charset="shift_jis">'."\n";
 	// 管理画面のCSS
-	if(is_readable(XOOPS_ROOT_PATH."/modules/".$xoopsModule->dirname()."/cache/css.css"))
+	if(is_readable(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/cache/css.css"))
 	{
-		$xoops_mod_add_header .= '<link rel="stylesheet" href="cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
+		$xoops_mod_add_header .= '<link rel="stylesheet" href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
 	}
 	
 	// テーマディレクトリに置いてある pukiwiki.css

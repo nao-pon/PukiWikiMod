@@ -88,7 +88,7 @@ function plugin_filesdel_action()
 		}
 		
 		//カウンターDB
-		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_count")." WHERE `name` = '".get_pgname_by_id($vars['_pgid'])."' LIMIT 1;";
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." WHERE `name` = '".get_pgname_by_id($vars['_pgid'])."' LIMIT 1;";
 		$result=$xoopsDB->queryF($query);
 
 		

@@ -1,9 +1,9 @@
 RewriteEngine on
 
-#静的ページ風URLを有効にした場合は、[XOOPS_ROOT]を環境に合わせて書き換え
+#静的ページ風URLを有効にした場合は、[PWM_DIR]を環境に合わせて書き換え
 #ファイル名を .htaccess にリネームしてください。
 
-RewriteBase [XOOPS_ROOT]/modules/pukiwiki
+RewriteBase [PWM_DIR]
 
 RewriteRule ^([0-9]*)\.html?(#.*)?$ index.php?pgid=$1$2 [qsappend]
 RewriteRule ^tb/([0-9]+)/?$ index.php?pwm_ping=$1 [qsappend]

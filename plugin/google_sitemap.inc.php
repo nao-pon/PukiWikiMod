@@ -1,5 +1,5 @@
 <?php
-// $Id: google_sitemap.inc.php,v 1.1 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: google_sitemap.inc.php,v 1.2 2006/04/06 13:32:16 nao-pon Exp $
 
 function plugin_google_sitemap_action()
 {
@@ -12,7 +12,7 @@ function plugin_google_sitemap_action()
 	
 	if (empty($vars['view']))
 	{
-		$query = "SELECT count(*) FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE (`name` NOT LIKE ':%')$where;";
+		$query = "SELECT count(*) FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE (`name` NOT LIKE ':%')$where;";
 		$res = $xoopsDB->query($query);
 		//echo $query."<br>";
 		if ($res)
@@ -29,7 +29,7 @@ function plugin_google_sitemap_action()
 				//	$limit = ($i - 1) * $page_cnt;
 				//	$limit = $limit . ", 1";
 
-				//	$query = "SELECT `editedtime` FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE (`name` NOT LIKE ':%')$where ORDER BY editedtime DESC LIMIT $limit;";
+				//	$query = "SELECT `editedtime` FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE (`name` NOT LIKE ':%')$where ORDER BY editedtime DESC LIMIT $limit;";
 				//	$res = $xoopsDB->query($query);
 				//}
 				//if ($res)
@@ -56,7 +56,7 @@ function plugin_google_sitemap_action()
 		$limit = ($view - 1) * $page_cnt;
 		$limit = $limit . ", ".$page_cnt;
 
-		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE (`name` NOT LIKE ':%')$where ORDER BY editedtime DESC LIMIT $limit;";
+		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE (`name` NOT LIKE ':%')$where ORDER BY editedtime DESC LIMIT $limit;";
 		$res = $xoopsDB->query($query);
 		
 		if ($res)

@@ -1,7 +1,7 @@
 <?php
 	error_reporting(E_ALL);
 /**
- * $Id: deldel.inc.php,v 1.2 2006/03/06 06:20:30 nao-pon Exp $
+ * $Id: deldel.inc.php,v 1.3 2006/04/06 13:32:16 nao-pon Exp $
  * ORG: deldel.inc.php 161 2005-06-28 12:58:13Z okkez $
  *
  * 色んなものを一括削除するプラグイン
@@ -348,7 +348,7 @@ function plugin_deldel_action() {
 						$flag[$s_page] = false;
 					}
 					//カウンターDB
-					$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_count")." WHERE `name` = '".addslashes($page)."' LIMIT 1;";
+					$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." WHERE `name` = '".addslashes($page)."' LIMIT 1;";
 					$result=$xoopsDB->queryF($query);
 				}
 				break;

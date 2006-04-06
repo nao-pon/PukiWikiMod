@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.11 2006/03/14 13:05:56 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.12 2006/04/06 13:32:16 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -365,8 +365,6 @@ function plugin_moblog_page_write($page,$subject,$text,$filename,$ref_option,$no
 	// ページ更新
 	page_write($page,$save_data,NULL,$aids,$gids,"","",$freeze,"");
 	
-	//Ping送信
-	//$tmp = @file(XOOPS_URL."/modules/pukiwiki/ping.php?$page");
 }
 /* コマンドー送信！！*/
 function plugin_moblog_sendcmd($cmd) {

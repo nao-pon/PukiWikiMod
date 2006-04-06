@@ -1,5 +1,5 @@
 <?php
-// $Id: comment_new.php,v 1.1 2004/12/23 14:46:41 nao-pon Exp $
+// $Id: comment_new.php,v 1.2 2006/04/06 13:32:15 nao-pon Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -24,11 +24,14 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
+
+include 'initialize.php';
+
 include '../../mainfile.php';
 $com_itemid = isset($_GET['com_itemid']) ? intval($_GET['com_itemid']) : 0;
 if ($com_itemid > 0)
 {
-	$sql = "SELECT * FROM " . $xoopsDB->prefix('pukiwikimod_pginfo') . " WHERE id=" . $com_itemid . "";
+	$sql = "SELECT * FROM " . $xoopsDB->prefix('pukiwikimod'.PUKIWIKI_DIR_NUM.'_pginfo') . " WHERE id=" . $com_itemid . "";
 	$result = $xoopsDB->query($sql);
 	$row = $xoopsDB->fetchArray($result);
 	$com_replytitle = preg_replace("#/[0-9-]+$#","/".$row['title'],$row['name']);

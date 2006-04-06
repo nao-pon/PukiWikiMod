@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.39 2006/03/06 06:20:30 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.40 2006/04/06 13:32:16 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -1254,7 +1254,7 @@ class AttachPages
 			$where = " WHERE ".join(' AND ',$where);
 			
 			// このページの添付ファイル数取得
-			$query = "SELECT count(*) as count FROM `".$xoopsDB->prefix(pukiwikimod_attach)."`{$where};";
+			$query = "SELECT count(*) as count FROM `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")."`{$where};";
 			if (!$result = $xoopsDB->query($query))
 				{
 					$this->err = 1;
@@ -1271,7 +1271,7 @@ class AttachPages
 			// ファイル情報取得
 			$order = ($f_order == "name")? " ORDER BY name ASC" : " ORDER BY mtime DESC";
 			$limit = " LIMIT {$start},{$max}";
-			$query = "SELECT name,age FROM `".$xoopsDB->prefix(pukiwikimod_attach)."`{$where}{$order}{$limit};";
+			$query = "SELECT name,age FROM `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")."`{$where}{$order}{$limit};";
 			$result = $xoopsDB->query($query);
 			while($_row = mysql_fetch_row($result))
 			{
@@ -1299,7 +1299,7 @@ class AttachPages
 			}
 			
 			// 添付ファイルのあるページ数カウント
-			$query = "SELECT p.id FROM ".$xoopsDB->prefix(pukiwikimod_pginfo)." p INNER JOIN ".$xoopsDB->prefix(pukiwikimod_attach)." a ON p.id=a.pgid{$where} GROUP BY a.pgid;";
+			$query = "SELECT p.id FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." p INNER JOIN ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." a ON p.id=a.pgid{$where} GROUP BY a.pgid;";
 			$result = $xoopsDB->query($query);
 			
 			$this->count = 0;
@@ -1315,7 +1315,7 @@ class AttachPages
 			$order = ($f_order == "name")? " ORDER BY p.name ASC" : " ORDER BY p.editedtime DESC";
 			$limit = " LIMIT $start,$max";
 			
-			$query = "SELECT p.name,p.editedtime FROM ".$xoopsDB->prefix(pukiwikimod_pginfo)." p INNER JOIN ".$xoopsDB->prefix(pukiwikimod_attach)." a ON p.id=a.pgid{$where} GROUP BY a.pgid{$order}{$limit};";
+			$query = "SELECT p.name,p.editedtime FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." p INNER JOIN ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." a ON p.id=a.pgid{$where} GROUP BY a.pgid{$order}{$limit};";
 			if (!$result = $xoopsDB->query($query)) echo "QUERY ERROR : ".$query;
 			
 			

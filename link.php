@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: link.php,v 1.11 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: link.php,v 1.12 2006/04/06 13:32:16 nao-pon Exp $
 //
 
 // PukiWikiMod 1.4.1 以降でMySQLデータベース利用に変更
@@ -36,7 +36,7 @@ function links_get_related_db($page)
 		}
 	}
 	
-	$query = "SELECT p.name, p.editedtime FROM `".$xoopsDB->prefix("pukiwikimod_rel")."` AS r, `".$xoopsDB->prefix("pukiwikimod_pginfo")."` AS p WHERE `relid` = ".get_pgid_by_name($page)." AND p.id = r.pgid".$where.";";
+	$query = "SELECT p.name, p.editedtime FROM `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_rel")."` AS r, `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")."` AS p WHERE `relid` = ".get_pgid_by_name($page)." AND p.id = r.pgid".$where.";";
 	$result = $xoopsDB->query($query);
 	
 	if ($result)

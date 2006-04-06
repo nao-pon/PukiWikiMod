@@ -5,7 +5,7 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: counter.inc.php,v 1.9 2005/01/29 03:13:54 nao-pon Exp $
+ * $Id: counter.inc.php,v 1.10 2006/04/06 13:32:16 nao-pon Exp $
  */
 
 // counter file
@@ -139,17 +139,17 @@ function plugin_counter_get_count($page)
 		global $xoopsDB;
 		$name = strip_bracket($page);
 		$s_name = addslashes($name);
-		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_count")." WHERE name='$name';";
+		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." WHERE name='$name';";
 		$result=$xoopsDB->query($query);
 
 		if (mysql_num_rows($result))
 		{
-			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_count")." SET count=$total,today='$date',today_count=$today,yesterday_count=$yesterday,ip='$ip' WHERE name='$name';";
+			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." SET count=$total,today='$date',today_count=$today,yesterday_count=$yesterday,ip='$ip' WHERE name='$name';";
 			$result=$xoopsDB->queryF($query);
 		}
 		else
 		{
-			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_count")." (name,count,today,today_count,yesterday_count,ip) VALUES('$s_name',$total,'$date',$today,$yesterday,'$ip');";
+			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." (name,count,today,today_count,yesterday_count,ip) VALUES('$s_name',$total,'$date',$today,$yesterday,'$ip');";
 			$result=$xoopsDB->queryF($query);
 		}
 

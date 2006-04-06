@@ -1,17 +1,25 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.15 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.16 2006/04/06 13:32:15 nao-pon Exp $
+
+if (! defined('PWM_BLOCK_PAGE_INCLUDED')) {
+define('PWM_BLOCK_PAGE_INCLUDED', true);
+
+if (! defined('PWM_BLOCK_FUNC_INCLUDED')) include_once("block_function.php");
+
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
+	
+	$dir_name = $options[3];
 	
 	$show_page = ($options[0])? $options[0] : "";
 	$cache_time = (empty($options[1]))? 0 : $options[1];
 	$cache_time = (int)$cache_time * 60;
 	$cache_no = (empty($options[2]))? "0" : $options[2];
-	$cache_file = XOOPS_ROOT_PATH."/modules/pukiwiki/cache/p/xoops_block_{$cache_no}.dat";
+	$cache_file = XOOPS_ROOT_PATH."/modules/".$dir_name."/cache/p/xoops_block_{$cache_no}.dat";
 	
-	$wiki_url = XOOPS_URL.'/modules/pukiwiki/';
-
+	$wiki_url = XOOPS_URL."/modules/".$dir_name."/";
+	
 	if (file_exists($cache_file) && filemtime($cache_file) > time() - $cache_time)
 	{
 		$data = join('',@file($cache_file));
@@ -22,6 +30,7 @@ function b_pukiwiki_page_show($options)
 		if ($show_page)
 		{
 			$url = $wiki_url.'index.php?xoops_block=1&cmd=read&page='.rawurlencode($show_page);
+
 			include_once(XOOPS_ROOT_PATH."/class/snoopy.php");
 			$snoopy = new Snoopy;
 			
@@ -83,7 +92,7 @@ function b_pukiwiki_page_show($options)
 		$data = str_replace("_gEsTnAmE_",$uname,$data);
 	}
 	// Ticket置換
-	$data = preg_replace("/<!\-\-XOOPS_TOKEN_INSERT\-\->/e","b_pukiwiki_get_token_html()",$data);
+	$data = preg_replace("/<!\-\-XOOPS_TOKEN_INSERT\-\->/e","xb_get_token_html()",$data);
 	
 	// 外部リンクマーク用 class設定
 	//$data = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/","$1class=\"ext\" $2",$data);
@@ -95,12 +104,12 @@ function b_pukiwiki_page_show($options)
 		$wiki_url.'skin/default.ja.css';
 	$css_tag = '<link rel="stylesheet" href="'.$css_url.'" type="text/css" media="screen" charset="shift_jis">';
 	// 管理画面の CSS
-	if(file_exists( XOOPS_ROOT_PATH."/modules/pukiwiki/cache/css.css"))
+	if(file_exists( XOOPS_ROOT_PATH."/modules/".$dir_name."/cache/css.css"))
 	{
 		$css_tag .= "\n".'<link rel="stylesheet" href="'.$wiki_url.'cache/css.css" type="text/css" media="screen" charset="shift_jis">'."\n";
 	}
 	// ページ用の .css
-	$css_tag .= b_pukiwiki_page_get_page_css_tag($show_page,$wiki_url);
+	$css_tag .= xb_get_page_css_tag($show_page,$wiki_url,$dir_name);
 	
 	// ヘッダ情報付加
 	global $xoopsTpl;
@@ -118,6 +127,7 @@ function b_pukiwiki_page_show($options)
 
 	return $block;
 }
+
 function b_pukiwiki_page_edit($options)
 {
 	$form = "";
@@ -127,62 +137,10 @@ function b_pukiwiki_page_edit($options)
 	$form .= "<input type='text' name='options[]' value='".$options[1]."' />(min)<br />";
 	$form .= "Cache file number: ";
 	$form .= "<input type='text' name='options[]' value='".$options[2]."' />";
+	$form .= "<input type='hidden' name='options[]' value='".$options[3]."' />";
 	return $form;
 }
 
-// ページ名のエンコード
-function b_pukiwiki_page_encode($key)
-{
-	$enkey = '';
-	$arych = preg_split("//", $key, -1, PREG_SPLIT_NO_EMPTY);
-	
-	foreach($arych as $ch)
-	{
-		$enkey .= sprintf("%02X", ord($ch));
-	}
 
-	return $enkey;
 }
-
-// [[ ]] を取り除く
-function b_pukiwiki_page_strip_bracket($str)
-{
-		$match = array();
-	if(preg_match("/^\[\[(.*)\]\]$/",$str,$match))
-	{
-		$str = $match[1];
-	}
-	return $str;
-}
-
-// ページ専用CSSタグを得る
-function b_pukiwiki_page_get_page_css_tag($page,$wiki_url)
-{
-	$page = b_pukiwiki_page_strip_bracket($page);
-	$ret = '';
-	$_page = '';
-	$dir = XOOPS_ROOT_PATH."/modules/pukiwiki/cache/";
-	foreach(explode('/',$page) as $val)
-	{
-		$_page = ($_page)? $_page."/".$val : $val;
-		$_pagecss_file = b_pukiwiki_page_encode($_page).".css";
-		if(file_exists($dir.$_pagecss_file))
-		{
-			$ret .= '<link rel="stylesheet" href="'.$wiki_url.'cache/'.$_pagecss_file.'" type="text/css" media="screen" charset="shift_jis">'."\n";
-		}
-	}
-	return $ret;
-}
-
-// チケット取得
-function b_pukiwiki_get_token_html()
-{
-	if (!class_exists('XoopsTokenHandler')) {return "";}
-	static $handler;
-	if (!is_object($handler))
-	{
-		$handler = new XoopsMultiTokenHandler();
-	}
-	$ticket = &$handler->create('pukiwikimod',0);
-	return $ticket->getHtml();
-}
+?>

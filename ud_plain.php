@@ -2,8 +2,10 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ud_plain.php,v 1.1 2004/07/31 06:48:05 nao-pon Exp $
+// $Id: ud_plain.php,v 1.2 2006/04/06 13:32:15 nao-pon Exp $
 /////////////////////////////////////////////////
+
+include 'initialize.php';
 
 //XOOPS設定読み込み
 include("../../mainfile.php");

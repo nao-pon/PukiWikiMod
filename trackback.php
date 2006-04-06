@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.27 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: trackback.php,v 1.28 2006/04/06 13:32:16 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -56,7 +56,7 @@ function tb_count($page,$ext='.txt')
 		
 		$page = strip_bracket($page);
 		
-		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_tb")." WHERE page_name='".addslashes($page)."';";
+		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." WHERE page_name='".addslashes($page)."';";
 		$results=$xoopsDB->query($query);
 
 		return mysql_num_rows($results);
@@ -95,7 +95,7 @@ function tb_send($page,$data="")
 		
 		// 非同期モードで別スレッド処理 Blokking=0,Retry=5,接続タイムアウト=30,ソケットタイムアウト=30)
 		$ret = http_request(
-		XOOPS_URL."/modules/pukiwiki/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']
+		XOOPS_URL."/modules/".PUKIWIKI_DIR_NAME."/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']
 		,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5,30,30);
 		
 		return;
@@ -114,7 +114,7 @@ function tb_send($page,$data="")
 		
 		//Pukiwikiはスタックされないので送信済みに加えない
 		if (strpos($line,"?plugin=tb&tb_id=") !== false || //PukiWiki
-			strpos($line,"/modules/pukiwiki/") !== false   //PukiWikiMod 全般
+			strpos($line,"/modules/".PUKIWIKI_DIR_NAME."/") !== false   //PukiWikiMod 全般
 			)
 			$to_pukiwiki[] = trim($line);
 		else
@@ -313,7 +313,7 @@ function tb_delete($page)
 	$page = addslashes(strip_bracket($page));
 	$where = " WHERE page_name='$page'";
 	
-	$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_tb")." $where;";
+	$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." $where;";
 	$results=$xoopsDB->queryF($query);
 }
 
@@ -322,7 +322,7 @@ function tb_get_db($tb_id,$key=1)
 {
 	global $xoopsDB;
 	
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_tb")." WHERE tb_id='$tb_id' ORDER BY last_time DESC;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." WHERE tb_id='$tb_id' ORDER BY last_time DESC;";
 	$results=$xoopsDB->query($query);
 	//echo $query;
 	

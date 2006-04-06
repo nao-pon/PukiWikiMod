@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: popular.inc.php,v 1.15 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: popular.inc.php,v 1.16 2006/04/06 13:32:16 nao-pon Exp $
 //
 
 /*
@@ -128,7 +128,7 @@ function plugin_popular_convert()
 		$sort = "count";
 	}
 	//echo $where;
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." as p , ".$xoopsDB->prefix("pukiwikimod_count")." as c $where ORDER BY $sort DESC LIMIT $max;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." as p , ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." as c $where ORDER BY $sort DESC LIMIT $max;";
 	$res = $xoopsDB->query($query);
 	//echo $query."<br>";
 	if ($res)

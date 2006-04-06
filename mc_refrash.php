@@ -2,8 +2,10 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: mc_refrash.php,v 1.4 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: mc_refrash.php,v 1.5 2006/04/06 13:32:15 nao-pon Exp $
 /////////////////////////////////////////////////
+
+include 'initialize.php';
 
 //チケットシステムを使用しない
 define ('PWM_TICET_NOT_USE', TRUE);

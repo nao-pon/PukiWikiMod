@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rename.inc.php,v 1.8 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: rename.inc.php,v 1.9 2006/04/06 13:32:16 nao-pon Exp $
 //
 
 /*
@@ -495,20 +495,20 @@ function rename_proceed($pages,$files,$exists)
 		// DB更新(ページ名はブラケットなし)
 		$db_old = addslashes($old);
 		$db_new = addslashes($new);
-		// pukiwikimod_count
+		// pukiwikimod{PUKIWIKI_DIR_NUM}_count
 		//  -name
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_count")." SET name='$db_new' WHERE name = '$db_old';";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." SET name='$db_new' WHERE name = '$db_old';";
 		$result=$xoopsDB->queryF($query);
 		
-		// pukiwikimod_pginfo
+		// pukiwikimod{PUKIWIKI_DIR_NUM}_pginfo
 		//  -name
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET name='$db_new' WHERE name = '$db_old';";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET name='$db_new' WHERE name = '$db_old';";
 		$result=$xoopsDB->queryF($query);
 		
-		// pukiwikimod_tb
+		// pukiwikimod{PUKIWIKI_DIR_NUM}_tb
 		//  -tb_id (MD5値)
 		//  -page_name
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_tb")." SET page_name='$db_new',tb_id='".md5($new)."' WHERE page_name = '$db_old';";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." SET page_name='$db_new',tb_id='".md5($new)."' WHERE page_name = '$db_old';";
 		$result=$xoopsDB->queryF($query);
 		
 		// ページスタイルシート

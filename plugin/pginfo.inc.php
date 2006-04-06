@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pginfo.inc.php,v 1.9 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: pginfo.inc.php,v 1.10 2006/04/06 13:32:16 nao-pon Exp $
 //
 
 // メッセージ設定
@@ -220,7 +220,7 @@ function pginfo_db_init()
 	if ($dir = @opendir(DATA_DIR))
 	{
 		//name テーブルの属性を BINARY にセット(検索で大文字・小文字を区別する)
-		$query = 'ALTER TABLE `'.$xoopsDB->prefix("pukiwikimod_pginfo").'` CHANGE `name` `name` VARCHAR( 255 ) BINARY NOT NULL ';
+		$query = 'ALTER TABLE `'.$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo").'` CHANGE `name` `name` VARCHAR( 255 ) BINARY NOT NULL ';
 		$result=$xoopsDB->queryF($query);
 		
 		// ページ閲覧権限のキャッシュをクリアー
@@ -240,10 +240,10 @@ function pginfo_db_init()
 		}
 		if ($done)
 		{
-			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_pginfo' Already converted {$docnt} pages.</b></div>";
+			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo' Already converted {$docnt} pages.</b></div>";
 		}
 		
-		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_pginfo' Now converting... </b>( * = 10 Pages)<hr>";
+		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo' Now converting... </b>( * = 10 Pages)<hr>";
 		
 		$fcounter = $counter = 0;
 		
@@ -337,7 +337,7 @@ function pginfo_db_init()
 			if (!$id)
 			{
 				// 新規作成
-				$query = "insert into ".$xoopsDB->prefix("pukiwikimod_pginfo")." (`name`,`buildtime`,`editedtime`,`aids`,`gids`,`vaids`,`vgids`,`lastediter`,`uid`,`freeze`,`unvisible`,`update`) values('$name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible,1);";
+				$query = "insert into ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." (`name`,`buildtime`,`editedtime`,`aids`,`gids`,`vaids`,`vgids`,`lastediter`,`uid`,`freeze`,`unvisible`,`update`) values('$name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible,1);";
 			}
 			else
 			{
@@ -359,7 +359,7 @@ function pginfo_db_init()
 				.",`freeze`='$freeze'"
 				.",`unvisible`='$unvisible'"
 				.",`update`='1'";
-				$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE id = '$id' LIMIT 1;";
+				$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET $value WHERE id = '$id' LIMIT 1;";
 			}
 			$result=$xoopsDB->queryF($query);
 			//echo $query."<hr>";
@@ -395,11 +395,11 @@ function pginfo_db_init()
 		echo "</div>";
 		
 		// アップデートしなかったページ情報(テキストファイルがないページ)を削除済み(editedtime=0)にする
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET `editedtime` = '0' WHERE `update` = '0';";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET `editedtime` = '0' WHERE `update` = '0';";
 		$result=$xoopsDB->queryF($query);
 		
 		// アップデートフラグ戻し
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET `update` = '0';";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET `update` = '0';";
 		$result=$xoopsDB->queryF($query);
 		
 		@unlink ($work);
@@ -429,15 +429,15 @@ function count_db_init()
 		}
 		if ($done)
 		{
-			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_counter' Already converted {$docnt} pages.</b></div>";
+			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_counter' Already converted {$docnt} pages.</b></div>";
 		}
 		else
 		{
-			$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_count");
+			$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count");
 			$result=$xoopsDB->queryF($query);
 		}
 		
-		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_counter' Now converting... </b>( * = 10 Pages)<hr>";
+		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_counter' Now converting... </b>( * = 10 Pages)<hr>";
 		
 		
 		$counter = 0;
@@ -476,7 +476,7 @@ function count_db_init()
 			$yesterday_count = rtrim($array[3]);
 			$ip = rtrim($array[4]);
 			
-			$query = "insert into ".$xoopsDB->prefix("pukiwikimod_count")." (name,count,today,today_count,yesterday_count,ip) values('$name',$count,'$today',$today_count,$yesterday_count,'$ip');";
+			$query = "insert into ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." (name,count,today,today_count,yesterday_count,ip) values('$name',$count,'$today',$today_count,$yesterday_count,'$ip');";
 			$result=$xoopsDB->queryF($query);
 			
 			$counter++;
@@ -536,10 +536,10 @@ function pginfo_db_retitle()
 		}
 		if ($done)
 		{
-			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_pginfo(only title)' Already converted {$docnt} pages.</b></div>";
+			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo(only title)' Already converted {$docnt} pages.</b></div>";
 		}
 		
-		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_pginfo(only title)' Now converting... </b>( * = 10 Pages)<hr>";
+		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo(only title)' Now converting... </b>( * = 10 Pages)<hr>";
 		
 		
 		$counter = 0;
@@ -571,7 +571,7 @@ function pginfo_db_retitle()
 			$title = addslashes(str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),get_heading_init($page)));
 			$name = addslashes(strip_bracket($page));
 			$value = "title='$title'";
-			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE name = '$name';";
+			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET $value WHERE name = '$name';";
 			$result=$xoopsDB->queryF($query);
 			
 			$counter++;
@@ -631,10 +631,10 @@ function plain_db_init()
 		}
 		if ($done)
 		{
-			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_plain' Already converted {$docnt} pages.</b></div>";
+			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_plain' Already converted {$docnt} pages.</b></div>";
 		}
 		
-		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_plain' Now converting... </b>( * = 10 Pages)<hr>";
+		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_plain' Now converting... </b>( * = 10 Pages)<hr>";
 		
 		
 		$counter = 0;
@@ -667,7 +667,7 @@ function plain_db_init()
 			}
 			
 			$id = get_pgid_by_name($page);
-			$query = "SELECT plain FROM `".$xoopsDB->prefix("pukiwikimod_plain")."` WHERE `pgid` = ".$id.";";
+			$query = "SELECT plain FROM `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_plain")."` WHERE `pgid` = ".$id.";";
 			$result = $xoopsDB->query($query);
 			if (mysql_num_rows($result))
 			{
@@ -747,14 +747,14 @@ function attach_db_init()
 		}
 		if ($done)
 		{
-			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_attach' Already converted {$docnt} pages.</b></div>";
+			echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_attach' Already converted {$docnt} pages.</b></div>";
 		}
 		else
 		{
-			$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_attach");
+			$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach");
 			$result=$xoopsDB->queryF($query);
 		}
-		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod_attach' Now converting... </b>( * = 10 Pages)<hr>";
+		echo "<div style=\"font-size:14px;\"><b>DB 'pukiwikimod".PUKIWIKI_DIR_NUM."_attach' Now converting... </b>( * = 10 Pages)<hr>";
 		
 		
 		include_once(PLUGIN_DIR."attach.inc.php");

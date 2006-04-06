@@ -1,0 +1,21 @@
+<?php
+//
+// Created on 2006/04/06 by nao-pon http://hypweb.net/
+// $Id: short_url.php.dev,v 1.1 2006/04/06 13:32:15 nao-pon Exp $
+//
+
+
+$GLOBALS['PWM_SHORTURL'.preg_replace("/^(\D+)(\d*)$/","$2",basename(dirname( __FILE__ )))]
+ = "wiki";
+
+/*****
+ XOOPSのルートからのショートパスを記入
+ = "wiki"; なら XOOPS_URL/wiki/ でアクセス可能。
+ ただし、XOOPS_ROOT_PATH の .htaccess に以下の記述を追加する
+ 
+ RewriteEngine on
+ RewriteBase /
+ RewriteRule ^wiki(.*) /modules/pukiwiki$1
+ 
+*****/
+?>

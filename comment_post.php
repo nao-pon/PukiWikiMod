@@ -1,5 +1,5 @@
 <?php
-// $Id: comment_post.php,v 1.2 2005/12/18 14:10:47 nao-pon Exp $
+// $Id: comment_post.php,v 1.3 2006/04/06 13:32:15 nao-pon Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -24,6 +24,7 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
+include 'initialize.php';
 include '../../mainfile.php';
 include XOOPS_ROOT_PATH.'/include/comment_post.php';
 ?>

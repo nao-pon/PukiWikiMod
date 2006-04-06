@@ -22,17 +22,37 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.16 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.17 2006/04/06 13:32:15 nao-pon Exp $
 
-function wiki_search($queryarray, $andor, $limit, $offset, $userid){
+if( ! defined( 'XOOPS_ROOT_PATH' ) ) exit ;
+$mydirname = basename( dirname( __FILE__ ) ) ;
+if( ! preg_match( '/^(\D+)(\d*)$/' , $mydirname , $regs ) ) echo ( "invalid dirname: " . htmlspecialchars( $mydirname ) ) ;
+$mydirnumber = $regs[2] === '' ? '' : intval( $regs[2] ) ;
+
+
+eval( '
+
+function wiki'.$mydirnumber.'_search($queryarray, $andor, $limit, $offset, $userid)
+{
+	return wiki_search_base( "'.$mydirname.'" , "'.$mydirnumber.'" , $queryarray, $andor, $limit, $offset, $userid) ;
+}
+
+' ) ;
+
+if (! defined('PWM_XOOPS_SERACH_INCLUDED'))
+{
+
+define ('PWM_XOOPS_SERACH_INCLUDED',true);
+
+function wiki_search_base($pwm_dirname, $pwm_dirnum, $queryarray, $andor, $limit, $offset, $userid){
 	global $xoopsDB,$xoopsUser;
-	
-	include (XOOPS_ROOT_PATH."/modules/pukiwiki/cache/config.php");
+
+	include (XOOPS_ROOT_PATH."/modules/".$pwm_dirname."/cache/config.php");
 	$use_static_url = (int)$use_static_url;
 	
 	$X_uid = $X_admin = 0;
 	if ( $xoopsUser ) {
-		$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+		$xoopsModule = XoopsModule::getByDirname($pwm_dirname);
 		if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
 			$X_admin = 1;
 		}
@@ -59,7 +79,7 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	if ($where)
 		$where_base = "($where_base) AND ($where)";
 	
-	$sql = "SELECT p.id,p.name,p.editedtime,p.vaids,p.vgids,p.uid,p.title,t.plain FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." p LEFT JOIN ".$xoopsDB->prefix("pukiwikimod_plain")." t ON t.pgid=p.id WHERE ($where_base) ";
+	$sql = "SELECT p.id,p.name,p.editedtime,p.vaids,p.vgids,p.uid,p.title,t.plain FROM ".$xoopsDB->prefix("pukiwikimod".$pwm_dirnum."_pginfo")." p LEFT JOIN ".$xoopsDB->prefix("pukiwikimod".$pwm_dirnum."_plain")." t ON t.pgid=p.id WHERE ($where_base) ";
 	if ( $userid != 0 ) {
 		$sql .= "AND (p.uid=".$userid.") ";
 	}
@@ -102,7 +122,6 @@ function wiki_search($queryarray, $andor, $limit, $offset, $userid){
 	return $ret;
 }
 
-// ?????????O???ID???
 function pukiwikimod_X_get_groups(){
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
@@ -114,5 +133,7 @@ function pukiwikimod_X_get_groups(){
 		global $xoopsUser;
 		return XoopsGroup::getByUser($xoopsUser);
 	}
+}
+
 }
 ?>

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: tb_sendedping_conv.inc.php,v 1.1 2005/02/23 00:16:41 nao-pon Exp $
+// $Id: tb_sendedping_conv.inc.php,v 1.2 2006/04/06 13:32:16 nao-pon Exp $
 //
 
 function plugin_tb_sendedping_conv_action()
@@ -19,7 +19,7 @@ function plugin_tb_sendedping_conv_action()
 		$_tb = $_t.".ping";
 		$cache[$_tb] = get_pgid_by_name($page);
 		// データベースを変換
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_tb")." SET `tb_id` = ".$cache[$_tb]." WHERE `tb_id` = \"".$_t."\"";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." SET `tb_id` = ".$cache[$_tb]." WHERE `tb_id` = \"".$_t."\"";
 		
 		//echo $query."<br>";
 		$xoopsDB->queryF($query);

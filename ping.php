@@ -2,13 +2,15 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ping.php,v 1.9 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: ping.php,v 1.10 2006/04/06 13:32:15 nao-pon Exp $
 /////////////////////////////////////////////////
 
-//XOOPSİ’è“Ç‚İ‚İ
+include 'initialize.php';
+
+//XOOPSÀßÄêÆÉ¤ß¹ş¤ß
 include("../../mainfile.php");
 
-// ƒvƒƒOƒ‰ƒ€ƒtƒ@ƒCƒ‹“Ç‚İ‚İ
+// ¥×¥í¥°¥é¥à¥Õ¥¡¥¤¥ëÆÉ¤ß¹ş¤ß
 require("func.php");
 require("file.php");
 require("plugin.php");
@@ -45,49 +47,49 @@ else
 }
 $up_page = ($up_page && is_page($up_page))? "&p=".get_pgid_by_name($up_page) : "";
 
-$rss_url = XOOPS_URL.'/modules/pukiwiki/index.php?cmd=rss10&content=s'.$up_page;
+$rss_url = XOOPS_URL.XOOPS_WIKI_URL.'/?cmd=rss10&content=s'.$up_page;
 
 $filename = CACHE_DIR.encode($page).".tbf";
 
 if (file_exists($filename))
 {
-	//í‚ÉƒQƒXƒgƒ‚[ƒh
+	//¾ï¤Ë¥²¥¹¥È¥â¡¼¥É
 	$X_admin = $X_uid = 0;
 	
-	// ‘¶İ‚µ‚È‚¢ƒy[ƒW or ƒQƒXƒg‰{——Œ ŒÀ‚È‚µ
+	// Â¸ºß¤·¤Ê¤¤¥Ú¡¼¥¸ or ¥²¥¹¥È±ÜÍ÷¸¢¸Â¤Ê¤·
 	if (!is_page(add_bracket($page)) || !check_readable($page,FALSE,FALSE))
 	{
-		unlink($filename); // ”»’èƒtƒ@ƒCƒ‹‚ğíœ
+		unlink($filename); // È½Äê¥Õ¥¡¥¤¥ë¤òºï½ü
 		exit;
 	}
 	
-	sleep(3); // ƒy[ƒW‚ª•\¦‚³‚ê‚é‚Ü‚Å‚¿‚å‚Á‚Æ‘Ò‚Â
+	sleep(3); // ¥Ú¡¼¥¸¤¬É½¼¨¤µ¤ì¤ë¤Ş¤Ç¤Á¤ç¤Ã¤ÈÂÔ¤Ä
 	
-	// ÀsŠÔ‚ğ’·‚ß‚Éİ’è
+	// ¼Â¹Ô»ş´Ö¤òÄ¹¤á¤ËÀßÄê
 	@set_time_limit(120);
 	
-	//sleep(mt_rand(40,60)); //“K“–‚É’x‰„‚³‚¹‚é
+	//sleep(mt_rand(40,60)); //Å¬Åö¤ËÃÙ±ä¤µ¤»¤ë
 	
-	//ƒLƒƒƒbƒVƒ…ì¬ (ƒy[ƒW)
+	//¥­¥ã¥Ã¥·¥åºîÀ® (¥Ú¡¼¥¸)
 	convert_html($page,false,true);
 	
-	//ƒLƒƒƒbƒVƒ…ì¬ (RSS)
+	//¥­¥ã¥Ã¥·¥åºîÀ® (RSS)
 	http_request($rss_url);
 	
 	sleep(2);
 	
-	//ƒ\[ƒX‚ğæ“¾
+	//¥½¡¼¥¹¤ò¼èÆÀ
 	$data = get_source($page);
 	
-	//ˆ—‚µ‚È‚¢ƒvƒ‰ƒOƒCƒ“‚ğíœ
+	//½èÍı¤·¤Ê¤¤¥×¥é¥°¥¤¥ó¤òºï½ü
 	if ($notb_plugin)
 	{
-		// ”O‚Ì‚½‚ß quote
+		// Ç°¤Î¤¿¤á quote
 		$notb_plugin = preg_quote($notb_plugin,"/");
-		// ³‹K•\Œ»Œ`®‚Ö
+		// Àµµ¬É½¸½·Á¼°¤Ø
 		$notb_plugin = str_replace(",","|",$notb_plugin);
 		
-		// ŠY“–ƒvƒ‰ƒOƒCƒ“‚ğíœ
+		// ³ºÅö¥×¥é¥°¥¤¥ó¤òºï½ü
 		$data = preg_replace("/#($notb_plugin)(\(((?!#[^(]+\()(?!\),).)*\))?/","",$data);
 	}
 
@@ -97,7 +99,7 @@ if (file_exists($filename))
 
 	tb_send($page,$data);
 	
-	unlink($filename); // ”»’èƒtƒ@ƒCƒ‹‚ğíœ
+	unlink($filename); // È½Äê¥Õ¥¡¥¤¥ë¤òºï½ü
 }
 
 exit;

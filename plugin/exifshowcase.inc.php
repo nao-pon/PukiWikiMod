@@ -4,7 +4,7 @@
 //
 //
 // ref.inc.php,v 1.20をベースに作成
-// $Id: exifshowcase.inc.php,v 1.6 2005/11/08 08:27:20 nao-pon Exp $
+// $Id: exifshowcase.inc.php,v 1.7 2006/04/06 13:32:16 nao-pon Exp $
 // ORG: exifshowcase.inc.php,v 1.20 2004/01/17 12:52:01 m-arai Exp $
 //
 
@@ -197,7 +197,7 @@ function plugin_exifshowcase_body($args,$page)
 		$order = " ORDER BY `mtime` ASC";
 	}
 	
-	$query = "SELECT name FROM `".$xoopsDB->prefix(pukiwikimod_attach)."` WHERE {$where}{$order};";
+	$query = "SELECT name FROM `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")."` WHERE {$where}{$order};";
 	
 	$result = $xoopsDB->query($query);
 	while($_row = mysql_fetch_row($result))

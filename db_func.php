@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.35 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: db_func.php,v 1.36 2006/04/06 13:32:15 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -79,7 +79,7 @@ function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting
 	if ($where) $where = " WHERE".$where;
 	$limit = ($limit)? " LIMIT $limit" : "";
 	//echo $where;
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")."$where$order$limit;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")."$where$order$limit;";
 	$res = $xoopsDB->query($query);
 	if ($res)
 	{
@@ -101,7 +101,7 @@ function get_pg_info_db($page)
 	if (isset($val[$page])) return $val[$page];
 	
 	$val[$page] = array();
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE name='$page' LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return $val[$page];
 	$val[$page] = mysql_fetch_array($res,MYSQL_ASSOC);
@@ -115,7 +115,7 @@ function get_pgname_by_id($id)
 	global $xoopsDB;
 	static $page_name = array();
 	if (isset($page_name[$id])) return $page_name[$id];
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id=$id LIMIT 1;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE id=$id LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return "";
 	$ret = mysql_fetch_row($res);
@@ -130,7 +130,7 @@ function get_pgid_by_name($page)
 	static $page_id = array();
 	$page = addslashes(strip_bracket($page));
 	if (isset($page_id[$page])) return $page_id[$page];
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE name='$page' LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return 0;
 	$ret = mysql_fetch_row($res);
@@ -187,7 +187,7 @@ function get_relaypage_by_name($page)
 	$where .= "AND name NOT LIKE ':%' ";
 	$where .= "AND editedtime !=0 ";
 	
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id<$this_id ".$where."ORDER BY id DESC LIMIT 1;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE id<$this_id ".$where."ORDER BY id DESC LIMIT 1;";
 	$ret = mysql_fetch_row($xoopsDB->query($query));
 	if ($ret) 
 	{
@@ -200,7 +200,7 @@ function get_relaypage_by_name($page)
 		$prev_pg_id = ($up_page)? $up_pg_id : 0;
 	}
 	
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE id>$this_id ".$where."ORDER BY id LIMIT 1;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE id>$this_id ".$where."ORDER BY id LIMIT 1;";
 	$ret = mysql_fetch_row($xoopsDB->query($query));
 	if ($ret) 
 	{
@@ -209,20 +209,6 @@ function get_relaypage_by_name($page)
 	}
 	else
 	{
-		/*
-		$query = str_replace($where2,"",$query);
-		$ret = mysql_fetch_row($xoopsDB->query($query));
-		if ($ret) 
-		{
-			$next_pg = $ret[1];
-			$next_pg_id = $ret[0];
-		}
-		else
-		{
-			$next_pg = "";
-			$next_pg_id = 0;
-		}
-		*/
 		$next_pg = $up_page;
 		$next_pg_id = ($up_page)? $up_pg_id : 0;
 	}
@@ -267,7 +253,7 @@ function get_header_link_tag_by_name($page)
 		$ret .= '<link rel="start" href="'.get_url_by_id($up_page).'">'."\n";
 	}
 	else
-		$ret .= '<link rel="start" href="'.XOOPS_URL.'/modules/pukiwiki/">'."\n";
+		$ret .= '<link rel="start" href="'.XOOPS_WIKI_URL.'/">'."\n";
 	if ($prev_pg)
 	{
 		$ret .= '<link rel="prev" href="'.get_url_by_id($prev_pg).'">'."\n";
@@ -340,9 +326,6 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	{
 		if ($action == "insert")
 		{
-			//$up_page = preg_replace("/\/[^/]+$/","",$page);
-			//if ($up_page == $page) $up_page = "";
-			//$page_auths = get_pg_allow_viewer($up_page);
 			$page_auths = get_pg_allow_viewer(strip_bracket($page));
 			$vaids = "&".str_replace(",","&",$page_auths['user']);
 			$vgids = "&".str_replace(",","&",$page_auths['group']);
@@ -359,9 +342,6 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	}
 	else
 	{
-		//$up_page = preg_replace("/\/[^/]+$/","",$page);
-		//if ($up_page == $page) $up_page = "";
-		//$page_auths = get_pg_allow_viewer($up_page);
 		$page_auths = get_pg_allow_viewer(strip_bracket($page));
 		$vaids = "&".str_replace(",","&",$page_auths['user']);
 		$vgids = "&".str_replace(",","&",$page_auths['group']);
@@ -373,7 +353,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	{
 		$buildtime = $editedtime;
 		
-		$query = "SELECT count(*) FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name = '$s_name' LIMIT 1;";
+		$query = "SELECT count(*) FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE name = '$s_name' LIMIT 1;";
 		//if ($X_admin) echo $query."<br />";
 		$result=$xoopsDB->query($query);
 		$count = mysql_fetch_row($result);
@@ -392,11 +372,11 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 			$value .= ",uid=$uid";
 			$value .= ",freeze=$freeze";
 			$value .= ",unvisible=$unvisible";
-			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE name = '$s_name';";
+			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET $value WHERE name = '$s_name';";
 		}
 		else
 		{
-			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_pginfo")." (name,buildtime,editedtime,aids,gids,vaids,vgids,lastediter,uid,freeze,unvisible,title) VALUES('$s_name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible,'$title');";
+			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." (name,buildtime,editedtime,aids,gids,vaids,vgids,lastediter,uid,freeze,unvisible,title) VALUES('$s_name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible,'$title');";
 		}
 		//if ($X_admin) echo $query;exit;
 		$result=$xoopsDB->queryF($query);
@@ -422,7 +402,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		if ($uid) $value .= ",uid=$uid";
 		if ($freeze !== "") $value .= ",freeze=$freeze";
 		if ($unvisible !== "") $value .= ",unvisible=$unvisible";
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE name = '$s_name';";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET $value WHERE name = '$s_name';";
 		//echo $query;
 		//exit;
 		$result=$xoopsDB->queryF($query);
@@ -431,7 +411,7 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		{
 			//コメントページも含む
 			$comment_page = addslashes(strip_bracket(sprintf(PCMT_PAGE,$name)));
-			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET vaids='$vaids', vgids='$vgids' WHERE ((name LIKE '$s_name/%') OR (name = '$comment_page') OR (name LIKE '$comment_page/%')) AND (unvisible = 0);";
+			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET vaids='$vaids', vgids='$vgids' WHERE ((name LIKE '$s_name/%') OR (name = '$comment_page') OR (name LIKE '$comment_page/%')) AND (unvisible = 0);";
 			$result=$xoopsDB->queryF($query);
 		}
 		plain_db_write($page,"update");
@@ -441,9 +421,8 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 	elseif ($action == "delete")
 	{
 
-		//$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name = '$s_name';";
 		$value = "editedtime=0";
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE name = '$s_name';";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET $value WHERE name = '$s_name';";
 		
 		$result=$xoopsDB->queryF($query);
 		plain_db_write($page,"delete");
@@ -528,7 +507,7 @@ function plain_db_write($page,$action)
 	// 新規作成
 	if ($action == "insert")
 	{
-		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_plain")." (pgid,plain) VALUES($pgid,'$data');";
+		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_plain")." (pgid,plain) VALUES($pgid,'$data');";
 		$result=$xoopsDB->queryF($query);
 		//if (!$result) echo $query."<hr>";
 		
@@ -537,7 +516,7 @@ function plain_db_write($page,$action)
 		{
 			$relid = get_pgid_by_name($rel_page);
 			if ($pgid == $relid || !$relid) {continue;}
-			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_rel")." (pgid,relid) VALUES(".$pgid.",".$relid.");";
+			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_rel")." (pgid,relid) VALUES(".$pgid.",".$relid.");";
 			$result=$xoopsDB->queryF($query);
 			//if (!$result) echo $query."<hr>";
 		}
@@ -572,7 +551,7 @@ function plain_db_write($page,$action)
 			{
 				$refid = get_pgid_by_name($_page);
 				if ($pgid == $refid || !$refid) {continue;}
-				$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_rel")." (pgid,relid) VALUES(".$refid.",".$pgid.");";
+				$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_rel")." (pgid,relid) VALUES(".$refid.",".$pgid.");";
 				$result=$xoopsDB->queryF($query);
 				//PlainテキストDB 更新予約を設定
 				need_update_plaindb(add_bracket($_page));
@@ -584,19 +563,19 @@ function plain_db_write($page,$action)
 	elseif ($action == "update")
 	{
 		$value = "plain='$data'";
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_plain")." SET $value WHERE pgid = $pgid;";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_plain")." SET $value WHERE pgid = $pgid;";
 		$result=$xoopsDB->queryF($query);
 		//if (!$result) echo $query."<hr>";
 		
 		//リンク先ページ
-		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_rel")." WHERE pgid = ".$pgid.";";
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_rel")." WHERE pgid = ".$pgid.";";
 		$result=$xoopsDB->queryF($query);
 		//if (!$result) echo $query."<hr>";
 		foreach ($rel_pages as $rel_page)
 		{
 			$relid = get_pgid_by_name($rel_page);
 			if ($pgid == $relid || !$relid) {continue;}
-			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_rel")." (pgid,relid) VALUES(".$pgid.",".$relid.");";
+			$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_rel")." (pgid,relid) VALUES(".$pgid.",".$relid.");";
 			$result=$xoopsDB->queryF($query);
 			//if (!$result) echo $query."<hr>";
 		}
@@ -605,12 +584,12 @@ function plain_db_write($page,$action)
 	// ページ削除
 	elseif ($action == "delete")
 	{
-		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_plain")." WHERE pgid = $pgid;";
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_plain")." WHERE pgid = $pgid;";
 		$result=$xoopsDB->queryF($query);
 		//if (!$result) echo $query."<hr>";
 		
 		//リンクページ
-		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_rel")." WHERE pgid = ".$pgid." OR relid = ".$pgid.";";
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_rel")." WHERE pgid = ".$pgid." OR relid = ".$pgid.";";
 		$result=$xoopsDB->queryF($query);
 	}
 	else
@@ -645,7 +624,7 @@ function attach_db_write($data,$action)
 	// 新規作成
 	if ($action == "insert")
 	{
-		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_attach")." (pgid,name,type,mtime,size,mode,count,age,pass,freeze,copyright,owner) VALUES($pgid,'$name','$type',$mtime,$size,'$mode',$count,$age,'$pass',$freeze,$copyright,$owner);";
+		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." (pgid,name,type,mtime,size,mode,count,age,pass,freeze,copyright,owner) VALUES($pgid,'$name','$type',$mtime,$size,'$mode',$count,$age,'$pass',$freeze,$copyright,$owner);";
 		$result=$xoopsDB->queryF($query);
 		//if (!$result) echo $query."<hr>";
 	}
@@ -665,7 +644,7 @@ function attach_db_write($data,$action)
 		.",freeze=$freeze"
 		.",copyright=$copyright"
 		.",owner=$owner";
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_attach")." SET $value WHERE pgid=$pgid AND name='$name' LIMIT 1;";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." SET $value WHERE pgid=$pgid AND name='$name' LIMIT 1;";
 		$result=$xoopsDB->queryF($query);
 		//if (!$result) echo $query."<hr>";
 	}
@@ -676,7 +655,7 @@ function attach_db_write($data,$action)
 		$q_name = ($name)? " AND name='{$name}' LIMIT 1" : "";
 		
 		$ret = array();
-		$query = "SELECT name FROM ".$xoopsDB->prefix("pukiwikimod_attach")." WHERE pgid = {$pgid}{$q_name};";
+		$query = "SELECT name FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." WHERE pgid = {$pgid}{$q_name};";
 		if ($result=$xoopsDB->query($query))
 		{
 			while($data = mysql_fetch_row($result))
@@ -686,7 +665,7 @@ function attach_db_write($data,$action)
 		}
 		if (!$ret) $ret = TRUE;
 		
-		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_attach")." WHERE pgid = {$pgid}{$q_name};";
+		$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." WHERE pgid = {$pgid}{$q_name};";
 		
 		$result=$xoopsDB->queryF($query);
 		//if (!$result) echo $query."<hr>";
@@ -749,7 +728,7 @@ function check_pginfo($page)
 	$lastediter = $uid;
 	
 	// 新規作成
-	$query = "insert into ".$xoopsDB->prefix("pukiwikimod_pginfo")." (`name`,`buildtime`,`editedtime`,`aids`,`gids`,`vaids`,`vgids`,`lastediter`,`uid`,`freeze`,`unvisible`) values('$name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible);";
+	$query = "insert into ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." (`name`,`buildtime`,`editedtime`,`aids`,`gids`,`vaids`,`vgids`,`lastediter`,`uid`,`freeze`,`unvisible`) values('$name',$buildtime,$editedtime,'$aids','$gids','$vaids','$vgids',$lastediter,$uid,$freeze,$unvisible);";
 	
 	$result=$xoopsDB->queryF($query);
 	
@@ -761,16 +740,6 @@ function check_pginfo($page)
 function get_pagecomment_count($pgid,$link="",$str="")
 {
 	global $xoopsDB,$pukiwiki_mid;
-	
-	/*
-	$count = "";
-	$sql = "SELECT count(*) FROM " . $xoopsDB->prefix('xoopscomments') . " WHERE `com_modid`=$pukiwiki_mid AND `com_itemid`=$pgid;";
-	//echo $sql;
-	if ($result = $xoopsDB->query($sql))
-	{
-		$count = mysql_result($result,0);
-	}
-	*/
 	
 	$count = xoops_comment_count($pukiwiki_mid,$pgid);
 	
@@ -797,7 +766,7 @@ function touch_db($page)
 		$editedtime = filemtime(DATA_DIR.encode($page).".txt");
 		$value = "editedtime=$editedtime";
 		$value .= ",lastediter=$X_uid";
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_pginfo")." SET $value WHERE id=$id;";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET $value WHERE id=$id;";
 		$result=$xoopsDB->queryF($query);
 		//exit($query);
 	}

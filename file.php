@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.67 2006/03/08 13:13:34 nao-pon Exp $
+// $Id: file.php,v 1.68 2006/04/06 13:32:15 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -1186,7 +1186,7 @@ function get_heading($page)
 	
 	$page = addslashes(strip_bracket($page));
 	global $xoopsDB;
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." WHERE name='$page' LIMIT 1;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." WHERE name='$page' LIMIT 1;";
 	$res = $xoopsDB->query($query);
 	if (!$res) return "";
 	$_ret = mysql_fetch_row($res);

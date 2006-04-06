@@ -1,0 +1,25 @@
+<div class="outer">
+<div class="head"><a name="page_comments"></a><{$comments_title}></div>
+<div>
+<div style="text-align: center;">
+<{$commentsnav|replace:"action=\"index.php\"":"action=\"index.php#page_comments\""}>
+<{$lang_notice}>
+</div>
+
+<{if $comments}>
+<div style="">
+<!-- start comments loop -->
+<{if $comment_mode == "flat"}>
+<{include file="db:system_comments_flat.html"}>
+<{elseif $comment_mode == "thread"}>
+<{include file="db:system_comments_thread.html"}>
+<{elseif $comment_mode == "nest"}>
+<{include file="db:system_comments_nest.html"}>
+<{/if}>
+<!-- end comments loop -->
+</div>
+<{/if}>
+
+</div>
+</div>
+<hr />

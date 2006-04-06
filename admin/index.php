@@ -1,10 +1,15 @@
 <?php
-// $Id: index.php,v 1.44 2006/03/13 06:16:43 nao-pon Exp $
+// $Id: index.php,v 1.45 2006/04/06 13:32:15 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
+// PukiWikiMod ディレクトリ名
+define("PUKIWIKI_DIR_NAME", basename(str_replace("/admin","",dirname( __FILE__ ))));
+define("PUKIWIKI_DIR_NUM", preg_replace("/^(\D+)(\d*)$/","$2",PUKIWIKI_DIR_NAME));
+
+	
 if ( $xoopsUser ) {
-	$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+	$xoopsModule = XoopsModule::getByDirname(PUKIWIKI_DIR_NAME);
 	if ( !$xoopsUser->isAdmin($xoopsModule->mid()) ) { 
 		redirect_header(XOOPS_URL."/",3,_NOPERM);
 		exit();
@@ -15,9 +20,6 @@ if ( $xoopsUser ) {
 }
 
 define("UTIME",time());
-
-// PukiWikiMod ディレクトリ名
-define("PUKIWIKI_DIR_NAME", $xoopsModule->dirname());
 
 // PukiWikiMod ルートDir
 define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
@@ -61,7 +63,7 @@ function wiki_synchronize_allusers($id="",$type="all users")
 		// Count forum posts
 		$tables[] = array ('table_name' => 'bb_posts', 'uid_column' => 'uid');
 		// PukiWikiMod
-		$tables[] = array ('table_name' => 'pukiwikimod_pginfo', 'uid_column' => 'uid');
+		$tables[] = array ('table_name' => 'pukiwikimod'.PUKIWIKI_DIR_NUM.'_pginfo', 'uid_column' => 'uid');
 
 		$total_posts = 0;
 		foreach ($tables as $table) {
@@ -174,11 +176,22 @@ function writeConfig(){
 	// .htaccess を自動作成
 	if ($f_use_static_url && !file_exists("../.htaccess"))
 	{
+		$
 		$dat = join('',file("../.htaccess.dev"));
-		$dat = str_replace("[XOOPS_ROOT]",preg_replace("#/modules/pukiwiki/admin/(index\.php)?$#","",$_SERVER["REQUEST_URI"]),$dat);
+		$dat = str_replace("[PWM_DIR]",preg_replace("#/admin/(index\.php)?$#","",$_SERVER["REQUEST_URI"]),$dat);
 		$fp = fopen("../.htaccess", 'w');
 		fwrite($fp,$dat);
 		fclose($fp);		
+	}
+	
+	if (file_exists("../short_url.php"))
+	{
+		include("../short_url.php");
+		$short_url = $GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM];
+	}
+	else
+	{
+		$short_url = "";
 	}
 	
 	$content = "";
@@ -220,6 +233,9 @@ function writeConfig(){
 	\$fusen_enable_allpage = $f_fusen_enable_allpage;
 	\$pukiwiki_dirs = array(
 		'wiki' => '".DATA_DIR."',
+		'dir_name' => '".PUKIWIKI_DIR_NAME."',
+		'dir_num' => '".PUKIWIKI_DIR_NUM."',
+		'short_url' => '".$short_url."',
 	);
 	";
 	$content .= "\n?>";
@@ -325,7 +341,7 @@ function displayForm($install){
 	$X_admin =0;
 	$X_uid =0;
 	if ( $xoopsUser ) {
-		$xoopsModule = XoopsModule::getByDirname("pukiwiki");
+		$xoopsModule = XoopsModule::getByDirname(PUKIWIKI_DIR_NAME);
 		if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
 			$X_admin = 1;
 		}
@@ -458,7 +474,7 @@ function displayForm($install){
 		<h2>"._AM_WIKI_TITLE0."</h2>
 		<span style='color:red;font-weight:bold;'>"._AM_WIKI_INFO0."</span>
 		<ul>
-			<li><a href='".XOOPS_URL."/modules/pukiwiki/?plugin=pginfo' target='setting'>"._AM_WIKI_DB_INIT."</a></li>
+			<li><a href='".XOOPS_WIKI_URL."/?plugin=pginfo' target='setting'>"._AM_WIKI_DB_INIT."</a></li>
 		</ul>";
 	}
 	echo "<hr /><h2>"._AM_WIKI_TITLE1."</h2>
@@ -692,10 +708,10 @@ function db_check()
 {
 	global $xoopsDB;
 	// DB Check
-	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." LIMIT 1;";
+	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." LIMIT 1;";
 	if(!$result=$xoopsDB->query($query))
 	{
-		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_pginfo")."` (
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")."` (
   `id` int(10) NOT NULL auto_increment,
   `name` varchar(255) binary NOT NULL default '',
   `buildtime` int(10) NOT NULL default '0',
@@ -714,38 +730,38 @@ function db_check()
   UNIQUE KEY `name` (`name`)
 ) TYPE=MyISAM;";
 		if(!$result=$xoopsDB->queryF($query)){
-			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo "ERROR: 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo' is already processing settled.<br/>";
 			echo $query;
 		}
 	}
 	else
 	{
 		// titleを追加した
-		$query = "select `title` FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." LIMIT 1;";
+		$query = "select `title` FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." LIMIT 1;";
 		if(!$result=$xoopsDB->query($query))
 		{
-			$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod_pginfo")."` ADD `title` VARCHAR(255) NOT NULL default '';";
+			$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")."` ADD `title` VARCHAR(255) NOT NULL default '';";
 			if(!$result=$xoopsDB->queryF($query)){
-				echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+				echo "ERROR: 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo' is already processing settled.<br/>";
 				echo $query;
 			}
 		}
 		// updateを追加した 04/1/27
-		$query = "select `update` FROM ".$xoopsDB->prefix("pukiwikimod_pginfo")." LIMIT 1;";
+		$query = "select `update` FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." LIMIT 1;";
 		if(!$result=$xoopsDB->query($query))
 		{
-			$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod_pginfo")."` ADD `update` tinyint(1) NOT NULL default '0';";
+			$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")."` ADD `update` tinyint(1) NOT NULL default '0';";
 			if(!$result=$xoopsDB->queryF($query)){
-				echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+				echo "ERROR: 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo' is already processing settled.<br/>";
 				echo $query;
 			}
 		}
 	}
 
-	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod_count")." LIMIT 1;";
+	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." LIMIT 1;";
 	if(!$result=$xoopsDB->query($query))
 	{
-		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_count")."` (
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")."` (
   `name` varchar(255) NOT NULL default '',
   `count` int(10) NOT NULL default '0',
   `today` varchar(10) NOT NULL default '',
@@ -755,15 +771,15 @@ function db_check()
   UNIQUE KEY `name` (`name`)
 ) TYPE=MyISAM;";
 		if(!$result=$xoopsDB->queryF($query)){
-			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo "ERROR: 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo' is already processing settled.<br/>";
 			echo $query;
 		}
 	}
 
-	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod_tb")." LIMIT 1;";
+	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." LIMIT 1;";
 	if(!$result=$xoopsDB->query($query))
 	{
-		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_tb")."` (
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")."` (
   `last_time` int(10) NOT NULL default '0',
   `url` text NOT NULL,
   `title` varchar(255) NOT NULL default '',
@@ -776,28 +792,28 @@ function db_check()
   KEY `page_name` (`page_name`)
 ) TYPE=MyISAM;";
 		if(!$result=$xoopsDB->queryF($query)){
-			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo "ERROR: 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo' is already processing settled.<br/>";
 			echo $query;
 		}
 	}
-	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod_plain")." LIMIT 1;";
+	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_plain")." LIMIT 1;";
 	if(!$result=$xoopsDB->query($query))
 	{
-		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_plain")."` (
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_plain")."` (
   `pgid` int(10) NOT NULL default '0',
   `plain` text NOT NULL,
   PRIMARY KEY  (`pgid`)
 ) TYPE=MyISAM;";
 		if(!$result=$xoopsDB->queryF($query)){
-			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo "ERROR: 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo' is already processing settled.<br/>";
 			echo $query;
 		}
 	}
 	
-	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod_attach")." LIMIT 1;";
+	$query = "select * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." LIMIT 1;";
 	if(!$result=$xoopsDB->query($query))
 	{
-		$query = "CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_attach")."` (
+		$query = "CREATE TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")."` (
  `id` int(11) NOT NULL auto_increment,
  `pgid` int(11) NOT NULL default '0',
  `name` varchar(255) binary NOT NULL default '',
@@ -814,31 +830,31 @@ function db_check()
  UNIQUE KEY `id` (`id`)
 ) TYPE=MyISAM;";
 		if(!$result=$xoopsDB->queryF($query)){
-			echo "ERROR: 'pukiwikimod_attach' is already processing settled.<br/>";
+			echo "ERROR: 'pukiwikimod".PUKIWIKI_DIR_NUM."_attach' is already processing settled.<br/>";
 			echo $query;
 		}
 	}
 	
 	// Ver 1.4.1 ページ間リンク情報DB追加
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_rel")." LIMIT 1;";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_rel")." LIMIT 1;";
 	if(!$result=$xoopsDB->query($query))
 	{
-		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod_rel")."` (
+		$query="CREATE TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_rel")."` (
   `pgid` int(11) NOT NULL default '0',
   `relid` int(11) NOT NULL default '0',
   KEY `pgid` (`pgid`),
   KEY `relid` (`relid`)
 ) TYPE=MyISAM;";
 		if(!$result=$xoopsDB->queryF($query)){
-			echo "ERROR: 'pukiwikimod_pginfo' is already processing settled.<br/>";
+			echo "ERROR: 'pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo' is already processing settled.<br/>";
 			echo $query;
 		}
 	}
 	
 	// ページ名を BINARY に
-	$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod_pginfo")."` CHANGE `name` `name` VARCHAR( 255 ) BINARY NOT NULL";
+	$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")."` CHANGE `name` `name` VARCHAR( 255 ) BINARY NOT NULL";
 	$xoopsDB->queryF($query);
-	$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod_count")."` CHANGE `name` `name` VARCHAR( 255 ) BINARY NOT NULL";
+	$query = "ALTER TABLE `".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")."` CHANGE `name` `name` VARCHAR( 255 ) BINARY NOT NULL";
 	$xoopsDB->queryF($query);
 	
 }

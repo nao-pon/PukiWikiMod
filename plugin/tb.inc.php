@@ -1,5 +1,5 @@
 <?php
-// $Id: tb.inc.php,v 1.12 2005/12/25 23:27:32 nao-pon Exp $
+// $Id: tb.inc.php,v 1.13 2006/04/06 13:32:16 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -155,18 +155,18 @@ function tb_save()
 	$page_name = addslashes($page);
 	$ip = $HTTP_SERVER_VARS["REMOTE_ADDR"];
 	
-	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod_tb")." WHERE (url='$url' AND tb_id='$tb_id');";
+	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." WHERE (url='$url' AND tb_id='$tb_id');";
 	$result=$xoopsDB->query($query);
 
 	if (mysql_num_rows($result))
 	{
-		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod_tb")." SET last_time=".UTIME.",title='$title',excerpt='$excerpt',blog_name='$blog_name',page_name='$page_name',ip='$ip' WHERE (url='$url' AND tb_id='$tb_id');";
+		$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." SET last_time=".UTIME.",title='$title',excerpt='$excerpt',blog_name='$blog_name',page_name='$page_name',ip='$ip' WHERE (url='$url' AND tb_id='$tb_id');";
 		$result=$xoopsDB->queryF($query);
 		if (!$result) tb_xml_msg(1,'MySQL ERROR !');
 	}
 	else
 	{
-		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod_tb")." (last_time,url,title,excerpt,blog_name,tb_id,page_name,ip) VALUES(".UTIME.",'$url','$title','$excerpt','$blog_name','$tb_id','$page_name','$ip');";
+		$query = "INSERT INTO ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." (last_time,url,title,excerpt,blog_name,tb_id,page_name,ip) VALUES(".UTIME.",'$url','$title','$excerpt','$blog_name','$tb_id','$page_name','$ip');";
 		$result=$xoopsDB->queryF($query);
 		if (!$result) tb_xml_msg(1,'MySQL ERROR !');
 	}
@@ -378,7 +378,7 @@ function tb_delete_url($urls,$tb_id)
 
 	$where = " WHERE tb_id='$tb_id' AND (url='".join("' OR url='",$urls)."')";
 
-	$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod_tb")." $where;";
+	$query = "DELETE FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_tb")." $where;";
 	$results=$xoopsDB->queryF($query);
 
 }

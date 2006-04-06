@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.57 2006/03/25 02:46:34 nao-pon Exp $
+// $Id: init.php,v 1.58 2006/04/06 13:32:15 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -65,9 +65,6 @@ define("S_COPYRIGHT","Based on \"PukiWiki\" by <a href=\"http://pukiwiki.sourcef
 define("UTIME",time());
 define("MUTIME",getmicrotime());
 
-// PukiWikiMod ディレクトリ名
-define("PUKIWIKI_DIR_NAME", $xoopsModule->dirname());
-
 // PukiWikiMod ルートDir
 define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
 
@@ -75,7 +72,9 @@ define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
 define("XOOPS_WIKI_HOST",preg_replace("#^(https?://[^/]+).*$#","$1",XOOPS_URL));
 
 // PukiWikiMod ルートURL(スキームとドメインを省いたもの)
-define("XOOPS_WIKI_URL",preg_replace("#^".preg_quote(XOOPS_WIKI_HOST)."(:[\d]+)?#","",XOOPS_URL).'/modules/'.PUKIWIKI_DIR_NAME);
+define("XOOPS_WIKI_URL",preg_replace("#^".preg_quote(XOOPS_WIKI_HOST)."(:[\d]+)?#","",XOOPS_URL).
+	(!empty($GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM]))?
+		'/'.$GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM] : '/modules/'.PUKIWIKI_DIR_NAME);
 
 /////////////////////////////////////////////////
 // 初期設定 (サーバ変数)
@@ -128,7 +127,6 @@ $no_name = $xoopsConfig['anonymous'];
 
 if ( $xoopsUser && is_object($xoopsModule))
 {
-	//$xoopsModule = XoopsModule::getByDirname("pukiwiki");
 	if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) { 
 		$X_admin = 1;
 	}
