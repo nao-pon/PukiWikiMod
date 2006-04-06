@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.15 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: xoops_version.php,v 1.16 2006/04/06 13:42:39 nao-pon Exp $
 
 $pwm_dirname = basename( dirname( __FILE__ ) ) ;
 if( preg_match( '/^(\D+)(\d*)$/' , $pwm_dirname , $regs ) ) {
@@ -30,6 +30,7 @@ $modversion['tables'][1] = "pukiwikimod{$pwm_number}_pginfo";
 $modversion['tables'][2] = "pukiwikimod{$pwm_number}_plain";
 $modversion['tables'][3] = "pukiwikimod{$pwm_number}_tb";
 $modversion['tables'][4] = "pukiwikimod{$pwm_number}_attach";
+$modversion['tables'][5] = "pukiwikimod{$pwm_number}_rel";
 
 //Admin things
 $modversion['hasAdmin'] = 1;
