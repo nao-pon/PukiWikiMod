@@ -1,5 +1,4 @@
 <?php
-// $Id: data.inc.php,v 1.3 2006/04/06 13:32:16 nao-pon Exp $
 
 // PukiWikiMod ディレクトリ名
 $dir_name = basename( dirname( dirname( __FILE__ ) ));
@@ -22,12 +21,12 @@ function pukiwiki_new_base($dir_name, $dir_num, $limit=0, $offset=0)
 {
 	$xoopsDB =& Database::getInstance();
 	$comment = array();
-
-	include (XOOPS_ROOT_PATH."/modules/'.$dir_name.'/cache/config.php");
+	
+	include (XOOPS_ROOT_PATH."/modules/".$dir_name."/cache/config.php");
 	$use_static_url = (string)$use_static_url;
 	$trackback = (int)$trackback;
 
-	if (! $pukiwiki_dirs['short_url'])
+	if (!empty($pukiwiki_dirs['short_url']))
 	{
 		$dir = (string)$pukiwiki_dirs['short_url'];
 	}
