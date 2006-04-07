@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: mbstring.php,v 1.2 2005/09/11 11:11:27 dashboard Exp $
+// $Id: mbstring.php,v 1.3 2006/04/07 02:40:16 nao-pon Exp $
 // ORG: mbstring.php,v 1.6 2003/08/08 07:29:56 arino Exp $
 //
 
@@ -28,9 +28,9 @@
  *
  */
 
-if (is_readable('jcode_1.34/jcode_wrapper.php'))
+if (is_readable('jcode/jcode_wrapper.php'))
 {
-	require_once('jcode_1.34/jcode_wrapper.php');
+	require_once('jcode/jcode_wrapper.php');
 }
 if (!function_exists('jcode_convert_encoding'))
 {
