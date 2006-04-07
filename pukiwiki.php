@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.88 2006/04/07 06:44:03 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.89 2006/04/07 08:50:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -527,7 +527,7 @@ else
 		$post["msg_before"] = str_replace(_PARAEDIT_SEPARATE_STR, "\n", $post["msg_before"]);
 		$post["msg_after"]  = str_replace(_PARAEDIT_SEPARATE_STR, "\n", $post["msg_after"]);
 		// 連結
-		$post["msg"] = $post["msg_before"].$post["msg"]."\n".$post["msg_after"];
+		$post["msg"] = $post["msg_before"].$post["msg"].$post["msg_after"];
 
 		if(is_uploaded_file($HTTP_POST_FILES["attach_file"]["tmp_name"])){
 			// とりあえず pgid を振る(添付ファイル処理用)
