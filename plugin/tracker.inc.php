@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone
-// $Id: tracker.inc.php,v 1.25 2006/04/07 11:36:29 nao-pon Exp $
+// $Id: tracker.inc.php,v 1.26 2006/04/07 12:15:58 nao-pon Exp $
 // ORG: tracker.inc.php,v 1.29 2005/03/02 13:31:05 henoheno Exp $
 
 //
@@ -203,7 +203,7 @@ function plugin_tracker_action()
 		page_write($page,$postdata,NULL,"","","","","","",array('plugin'=>'tracker','mode'=>'all'));
 		$r_page = rawurlencode($page);
 		
-		header("Location: ".get_url_by_name($page));
+		header("Location: ".XOOPS_WIKI_HOST.get_url_by_name($page));
 		exit;
 	}
 	else

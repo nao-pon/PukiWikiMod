@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.29 2006/04/06 23:39:53 nao-pon Exp $
+// $Id: trackback.php,v 1.30 2006/04/07 12:15:58 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -150,8 +150,8 @@ function tb_send($page,$data="")
 	
 	if ($h_excerpt) $title .= "/".$h_excerpt;
 	
-	$myurl = get_url_by_name($page);
-	$xml_myurl = get_url_by_name($up_page);
+	$myurl = XOOPS_WIKI_HOST.get_url_by_name($page);
+	$xml_myurl = XOOPS_WIKI_HOST.get_url_by_name($up_page);
 	
 	$xml_title = $page_title."/".$up_page;
 	

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.27 2006/04/07 11:36:29 nao-pon Exp $
+// $Id: rss.php,v 1.28 2006/04/07 12:15:58 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -50,7 +50,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 	$up_page = ($page)? $page : $defaultpage;
 	if ($page)
 	{
-		$linkpage = get_url_by_name($up_page);
+		$linkpage = XOOPS_WIKI_HOST.get_url_by_name($up_page);
 	}
 	else
 	{
@@ -93,7 +93,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 		$desc = date("D, d M Y H:i:s T",filemtime(get_filename(encode($line))));
 		$dcdate =  substr_replace(date("Y-m-d\TH:i:sO",filemtime(get_filename(encode($line)))),':',-2,0);
 		$pgid = get_pgid_by_name($line);
-		$link_url = get_url_by_id($pgid);
+		$link_url = XOOPS_WIKI_HOST.get_url_by_id($pgid);
 		
 		if($rss==2)
 			$items.= "<item rdf:about=\"".$link_url."\">\n";

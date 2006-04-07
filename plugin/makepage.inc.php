@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.15 2006/03/07 02:09:20 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.16 2006/04/07 12:15:58 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -131,7 +131,7 @@ function plugin_makepage_action()
 		{
 			if (!empty($vars['multi'])) continue;
 			if (!empty($vars['auto_make'])) exit();
-			header("Location: ".get_url_by_name($page));
+			header("Location: ".XOOPS_WIKI_HOST.get_url_by_name($page));
 		}
 		else
 		{
@@ -225,7 +225,7 @@ function plugin_makepage_action()
 	
 	global $_title_updated;
 	$title = str_replace('$1',htmlspecialchars(strip_bracket($page)),$_title_updated);
-	redirect_header(get_url_by_name($page),1,$title);
+	redirect_header(XOOPS_WIKI_HOST.get_url_by_name($page),1,$title);
 	exit();
 }
 ?>

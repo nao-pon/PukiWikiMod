@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.21 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: comment.inc.php,v 1.22 2006/04/07 12:15:58 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -46,7 +46,7 @@ function plugin_comment_action()
 	$_comment_format = $comment_format;
 
 	if($post['msg']=="") {
-		$retvars['redirect'] = get_url_by_name($post["refer"]);
+		$retvars['redirect'] = XOOPS_WIKI_HOST.get_url_by_name($post["refer"]);
 		return $retvars;
 	}
 	if($post['msg'])

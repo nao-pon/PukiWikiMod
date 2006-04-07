@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.89 2006/04/07 08:50:47 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.90 2006/04/07 12:15:58 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -284,7 +284,7 @@ else
 				$pg_link_url = $retvars['redirect'];
 			else
 			{
-				$pg_link_url = get_url_by_name($vars["refer"]);
+				$pg_link_url = XOOPS_WIKI_HOST.get_url_by_name($vars["refer"]);
 			}
 			redirect_header($pg_link_url,1,$title);
 			exit();
@@ -765,7 +765,7 @@ else
 					// 新規作成時はIDが入っていないので
 					if (!$pgid) $pgid = get_pgid_by_name($post["page"]);
 					
-					$pg_link_url = get_url_by_id($pgid);
+					$pg_link_url = XOOPS_WIKI_HOST.get_url_by_id($pgid);
 					
 					redirect_header($pg_link_url,1,$title);
 					exit();

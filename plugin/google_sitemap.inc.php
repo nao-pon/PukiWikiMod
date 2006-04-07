@@ -1,5 +1,5 @@
 <?php
-// $Id: google_sitemap.inc.php,v 1.3 2006/04/07 11:36:29 nao-pon Exp $
+// $Id: google_sitemap.inc.php,v 1.4 2006/04/07 12:15:58 nao-pon Exp $
 
 function plugin_google_sitemap_action()
 {
@@ -122,7 +122,7 @@ function plugin_google_sitemap_action()
 				
 				$items .= "<url>";
 				$items .= "<loc>";
-				$items .= get_url_by_id($data[0]);
+				$items .= XOOPS_WIKI_HOST.get_url_by_id($data[0]);
 				$items .= "</loc>";
 				$items .= "<lastmod>";
 				$items .= gmdate('Y-m-d\TH:i:s\Z',$data[3]);

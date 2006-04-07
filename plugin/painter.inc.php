@@ -239,7 +239,7 @@ function plugin_painter_save($upload=false)
 				$url = $script."?plugin=attach&amp;pcmd=upload&amp;page=".rawurlencode($page);
 		}
 		else
-			$url = get_url_by_name($page);
+			$url = XOOPS_WIKI_HOST.get_url_by_name($page);
 		redirect_header($url,1,"アップロード済みファイルはありません。");
 		exit();
 	}

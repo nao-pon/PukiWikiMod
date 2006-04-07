@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.70 2006/04/07 11:36:29 nao-pon Exp $
+// $Id: file.php,v 1.71 2006/04/07 12:15:58 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -165,7 +165,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		global $xoopsConfig;
 		
 		$mail_body = _MD_PUKIWIKI_MAIL_FIRST."\n";
-		$mail_body .= _MD_PUKIWIKI_MAIL_URL.get_url_by_name($page)."\n";
+		$mail_body .= _MD_PUKIWIKI_MAIL_URL.XOOPS_WIKI_HOST.get_url_by_name($page)."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_PAGENAME.$s_page."\n";
 		$mail_body .= _MD_PUKIWIKI_MAIL_POSTER.preg_replace("/([^#]+).*/","$1",$X_uname)."\n";
 		$mail_body .= "UCD: ".PUKIWIKI_UCD."\n";
