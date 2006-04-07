@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.36 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: db_func.php,v 1.37 2006/04/07 11:53:32 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -253,7 +253,7 @@ function get_header_link_tag_by_name($page)
 		$ret .= '<link rel="start" href="'.get_url_by_id($up_page).'">'."\n";
 	}
 	else
-		$ret .= '<link rel="start" href="'.XOOPS_WIKI_URL.'/">'."\n";
+		$ret .= '<link rel="start" href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/">'."\n";
 	if ($prev_pg)
 	{
 		$ret .= '<link rel="prev" href="'.get_url_by_id($prev_pg).'">'."\n";
