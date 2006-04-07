@@ -1,5 +1,5 @@
 <?php
-// $Id: updateblock.inc.php,v 1.2 2006/03/06 07:30:11 nao-pon Exp $
+// $Id: updateblock.inc.php,v 1.3 2006/04/07 06:44:03 nao-pon Exp $
 
 if( ! defined( 'XOOPS_ROOT_PATH' ) ) exit ;
 
@@ -72,12 +72,9 @@ if( substr( XOOPS_VERSION , 6 , 3 ) < 2.1 ) {
 			if ( isset( $fblock['options'] ) ) {
 				$old_vals=explode("|",$fblock['options']);
 				$def_vals=explode("|",$modversion['blocks'][$i]['options']);
-				if (count($old_vals) == count($def_vals)) {
-					$modversion['blocks'][$i]['options'] = $fblock['options'];
-					$local_msgs[] = "Option's values of the block <b>".$fblock['name']."</b> will be kept. (value = <b>".$fblock['options']."</b>)";
-				} else if (count($old_vals) < count($def_vals)){
+				if (count($old_vals) <= count($def_vals)){
 					for ($j=0; $j < count($old_vals); $j++) {
-						$def_vals[$j] = $old_vals[$j];
+						if ((string)$old_vals[$j] !== "") $def_vals[$j] = $old_vals[$j];
 					}
 					$modversion['blocks'][$i]['options'] = implode("|",$def_vals);
 					$local_msgs[] = "Option's values of the block <b>".$fblock['name']."</b> will be kept and new option(s) are added. (value = <b>".$modversion['blocks'][$i]['options']."</b>)";

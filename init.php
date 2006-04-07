@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.59 2006/04/06 23:53:43 nao-pon Exp $
+// $Id: init.php,v 1.60 2006/04/07 06:44:03 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -72,9 +72,9 @@ define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
 define("XOOPS_WIKI_HOST",preg_replace("#^(https?://[^/]+).*$#","$1",XOOPS_URL));
 
 // PukiWikiMod ルートURL(スキームとドメインを省いたもの)
-define("XOOPS_WIKI_URL",preg_replace("#^".preg_quote(XOOPS_WIKI_HOST)."(:[\d]+)?#","",XOOPS_URL).
-	(!empty($GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM]))?
-		'/'.$GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM] : '/modules/'.PUKIWIKI_DIR_NAME);
+define("XOOPS_WIKI_URL",preg_replace("#^".preg_quote(XOOPS_WIKI_HOST)."(:[\d]+)?#", "", XOOPS_URL.
+	((!empty($GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM]))?
+		'/'.$GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM] : '/modules/'.PUKIWIKI_DIR_NAME)));
 
 /////////////////////////////////////////////////
 // 初期設定 (サーバ変数)
