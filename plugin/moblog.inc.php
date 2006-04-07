@@ -1,5 +1,5 @@
 <?php
-// $Id: moblog.inc.php,v 1.12 2006/04/06 13:32:16 nao-pon Exp $
+// $Id: moblog.inc.php,v 1.13 2006/04/07 01:48:49 nao-pon Exp $
 // Author: nao-pon http://hypweb.net/
 // Bace script is pop.php of mailbbs by Let's PHP!
 // Let's PHP! Web: http://php.s3.to/
@@ -44,7 +44,7 @@ function plugin_moblog_action()
 		touch ($chk_file);
 	
 	// wait 指定
-	$wait = (empty($vars['wait']))? 0 : (int)$vars['wait']);
+	$wait = (empty($vars['wait']))? 0 : (int)$vars['wait'];
 	sleep(min(15,$wait));
 	
 	// 接続開始
