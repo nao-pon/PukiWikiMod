@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.68 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: file.php,v 1.69 2006/04/07 08:27:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -1177,7 +1177,7 @@ function delete_page_info(&$str,$clr_anchor)
 }
 
 //ページ名から最初の見出しを得る
-function get_heading($page)
+function get_heading($page, $init=false)
 {
 	static $ret = array();
 	$page = strip_bracket($page);
@@ -1191,7 +1191,7 @@ function get_heading($page)
 	if (!$res) return "";
 	$_ret = mysql_fetch_row($res);
 	$_ret =  htmlspecialchars($_ret[12],ENT_NOQUOTES);
-	return $ret[$page] = ($_ret)? $_ret : htmlspecialchars($page,ENT_NOQUOTES);
+	return $ret[$page] = ($_ret || $init)? $_ret : htmlspecialchars($page,ENT_NOQUOTES);
 }
 
 //ページ名から最初の見出しを得る(ファイルから)

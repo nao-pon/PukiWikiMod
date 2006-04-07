@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pginfo.inc.php,v 1.10 2006/04/06 13:32:16 nao-pon Exp $
+// $Id: pginfo.inc.php,v 1.11 2006/04/07 08:27:59 nao-pon Exp $
 //
 
 // メッセージ設定
@@ -329,7 +329,7 @@ function pginfo_db_init()
 			
 			// タイトル情報
 			$title = "";
-			if (!$id || !empty($post['title']))
+			if (!$id || !empty($post['title']) || !get_heading($page, true))
 			{
 				$title = addslashes(str_replace(array('&lt;','&gt;','&amp;','&quot;','&#039;'),array('<','>','&','"',"'"),get_heading_init($page)));
 			}
