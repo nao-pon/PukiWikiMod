@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.45 2006/01/12 01:27:28 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.46 2006/04/07 11:36:29 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -94,7 +94,7 @@ define("PWM_FILE_OPEN_ATTACHMENT",TRUE);
 /////////////////////////////////////////////////
 // index.php などに変更した場合のスクリプト名の設定
 // とくに設定しなくても問題なし
-$script = XOOPS_WIKI_URL.'/index.php';
+$script = XOOPS_WIKI_URL.'/';
 
 /////////////////////////////////////////////////
 // 更新履歴ページの名前

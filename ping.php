@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ping.php,v 1.10 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: ping.php,v 1.11 2006/04/07 11:36:29 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -47,7 +47,7 @@ else
 }
 $up_page = ($up_page && is_page($up_page))? "&p=".get_pgid_by_name($up_page) : "";
 
-$rss_url = XOOPS_URL.XOOPS_WIKI_URL.'/?cmd=rss10&content=s'.$up_page;
+$rss_url = XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/?cmd=rss10&content=s'.$up_page;
 
 $filename = CACHE_DIR.encode($page).".tbf";
 

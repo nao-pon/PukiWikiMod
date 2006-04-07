@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.72 2006/04/06 14:29:50 nao-pon Exp $
+// $Id: func.php,v 1.73 2006/04/07 11:36:29 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1215,15 +1215,15 @@ function get_url_by_id($id=0)
 	{
 		if (!empty($GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM]))
 		{
-			$dir = $GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM];
+			$dir = "/".$GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM];
 		}
 		else
 		{
-			$dir = "modules/".PUKIWIKI_DIR_NAME;
+			$dir = "/modules/".PUKIWIKI_DIR_NAME;
 		}
 	}
 	
-	if (!$id) return XOOPS_WIKI_URL."/";
+	if (!$id) return XOOPS_URL."/".$dir."/";
 
 	if (isset($ret[$id])) return $ret[$id];
 	
@@ -1232,9 +1232,9 @@ function get_url_by_id($id=0)
 	else if ($use_static_url == 2)
 		return $ret[$id] = XOOPS_URL."/".PUKIWIKI_DIR_NAME."+index.pgid+_".$id.".htm";
 	else if ($use_static_url)
-		return $ret[$id] = XOOPS_URL."/".$dir."/".$id.".html";
+		return $ret[$id] = XOOPS_URL.$dir."/".$id.".html";
 	else
-		return $ret[$id] = XOOPS_URL."/".$dir."/?".rawurlencode(strip_bracket(get_pgname_by_id($id)));
+		return $ret[$id] = XOOPS_URL.$dir."/?".rawurlencode(strip_bracket(get_pgname_by_id($id)));
 }
 
 //ページ名からURLを求める
@@ -1249,26 +1249,26 @@ function get_url_by_name($name="")
 	{
 		if (!empty($GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM]))
 		{
-			$dir = $GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM];
+			$dir = "/".$GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM];
 		}
 		else
 		{
-			$dir = "modules/".PUKIWIKI_DIR_NAME;
+			$dir = "/modules/".PUKIWIKI_DIR_NAME;
 		}
 	}
 	
 	if(isset($ret[$name])) return $ret[$name];
 	
-	if (!$name || !is_page($name)) return $ret[$name] = XOOPS_URL."/".$dir."/";
+	if (!$name || !is_page($name)) return $ret[$name] = XOOPS_URL.$dir."/";
 	
 	if ($use_static_url == 3)
 		return $ret[$name] = XOOPS_URL."/pukiwiki+._".get_pgid_by_name($name).".htm";
 	else if ($use_static_url == 2)
 		return $ret[$name] = XOOPS_URL."/pukiwiki+index.pgid+_".get_pgid_by_name($name).".htm";
 	else if ($use_static_url)
-		return $ret[$name] = XOOPS_URL."/".$dir."/".get_pgid_by_name($name).".html";
+		return $ret[$name] = XOOPS_URL.$dir."/".get_pgid_by_name($name).".html";
 	else
-		return $ret[$name] = XOOPS_URL."/".$dir."/?".rawurlencode(strip_bracket($name));
+		return $ret[$name] = XOOPS_URL.$dir."/?".rawurlencode(strip_bracket($name));
 }
 
 // $content から指定レベル以上のリストを取り出す。
