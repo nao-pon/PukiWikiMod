@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.45 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: index.php,v 1.46 2006/04/08 08:18:49 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
@@ -32,7 +32,7 @@ if(!class_exists('HypCommonFunc')){include(XOOPS_WIKI_PATH."/include/hyp_common_
 
 // config.php がない場合(初期導入時)
 $install = false;
-if (file_exists(XOOPS_WIKI_PATH."/cache/config.php"))
+if (! file_exists(XOOPS_WIKI_PATH."/cache/config.php"))
 {
 	@touch(XOOPS_WIKI_PATH."/cache/config.php");
 	$install = true;
@@ -173,15 +173,17 @@ function writeConfig(){
 	else
 		$trackback_encoding = "SJIS";
 	
-	// .htaccess を自動作成
+	// 可能なら .htaccess を自動作成
 	if ($f_use_static_url && !file_exists("../.htaccess"))
 	{
-		$
 		$dat = join('',file("../.htaccess.dev"));
 		$dat = str_replace("[PWM_DIR]",preg_replace("#/admin/(index\.php)?$#","",$_SERVER["REQUEST_URI"]),$dat);
-		$fp = fopen("../.htaccess", 'w');
-		fwrite($fp,$dat);
-		fclose($fp);		
+		//$dat = str_replace("[PWM_DIR]",dirname(dirname(__FILE__)),$dat);
+		if ($fp = fopen("../.htaccess", 'w'))
+		{
+			fwrite($fp,$dat);
+			fclose($fp);
+		}		
 	}
 	
 	if (file_exists("../short_url.php"))
@@ -434,10 +436,10 @@ function displayForm($install){
 	}
 	
 	$_trackback_encoding_sw = array("","","");
-	if (!$trackback_encoding || $trackback_encoding == "EUC-JP")
-		$_trackback_encoding_sw[0] = " checked";
-	else if ($trackback_encoding == "UTF-8")
+	if (empty($trackback_encoding) || $trackback_encoding == "UTF-8")
 		$_trackback_encoding_sw[1] = " checked";
+	else if ($trackback_encoding == "EUC-JP")
+		$_trackback_encoding_sw[0] = " checked";
 	else
 		$_trackback_encoding_sw[2] = " checked";
 		

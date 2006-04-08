@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.16 2006/04/06 13:42:39 nao-pon Exp $
+// $Id: xoops_version.php,v 1.17 2006/04/08 08:18:49 nao-pon Exp $
 
 $pwm_dirname = basename( dirname( __FILE__ ) ) ;
 if( preg_match( '/^(\D+)(\d*)$/' , $pwm_dirname , $regs ) ) {
@@ -39,7 +39,8 @@ $modversion['adminmenu'] = "admin/menu.php";
 
 // Menu
 global $xoopsUser;
-include(XOOPS_ROOT_PATH."/modules/".$modversion['dirname']."/cache/config.php");
+$wiki_allow_new = 0;
+@include(XOOPS_ROOT_PATH."/modules/".$modversion['dirname']."/cache/config.php");
 
 $modversion['hasMain'] = 1;
 $modversion['sub'][0]['name'] = _MI_PUKIWIKI_RECENT;
