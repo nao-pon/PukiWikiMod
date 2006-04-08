@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.46 2006/04/08 08:18:49 nao-pon Exp $
+// $Id: index.php,v 1.47 2006/04/08 09:20:11 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
@@ -470,7 +470,7 @@ function displayForm($install){
 	
 	global $xoopsModule;
 	include("./mymenu.php");
-	if (!$install)
+	if ($install)
 	{
 		echo "<hr />
 		<h2>"._AM_WIKI_TITLE0."</h2>
