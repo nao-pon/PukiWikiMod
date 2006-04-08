@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.17 2006/04/08 08:18:49 nao-pon Exp $
+// $Id: xoops_version.php,v 1.18 2006/04/08 09:21:26 nao-pon Exp $
 
 $pwm_dirname = basename( dirname( __FILE__ ) ) ;
 if( preg_match( '/^(\D+)(\d*)$/' , $pwm_dirname , $regs ) ) {
@@ -112,9 +112,9 @@ $modversion['blocks'][6]['can_clone'] = true ;
 $modversion['blocks'][6]['template'] = '';
 
 // Templates
-$modversion['templates'][1]['file'] = "pukiwikimod{$pwm_number}_index.html";
+$modversion['templates'][1]['file'] = "pukiwiki{$pwm_number}_index.html";
 $modversion['templates'][1]['description'] = '';
-$modversion['templates'][2]['file'] = "pukiwikimod{$pwm_number}_comments.html";
+$modversion['templates'][2]['file'] = "pukiwiki{$pwm_number}_comments.html";
 $modversion['templates'][2]['description'] = '';
 
 // Comments
