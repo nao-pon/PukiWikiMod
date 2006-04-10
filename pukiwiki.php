@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: pukiwiki.php,v 1.92 2006/04/10 13:04:06 nao-pon Exp $
+// $Id: pukiwiki.php,v 1.93 2006/04/10 15:20:56 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -1162,8 +1162,8 @@ if (empty($vars['xoops_block']))
 	$xoops_mod_add_title = $xoops_pagetitle;
 	
 	//<base>
-	if (!empty($GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM]))
-		$xoops_mod_add_header = '<base href="'.XOOPS_WIKI_HOST.$_SERVER['REQUEST_URI'].'" />'."\n";
+	//if (!empty($GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM]))
+	//	$xoops_mod_add_header = '<base href="'.XOOPS_WIKI_HOST.$_SERVER['REQUEST_URI'].'" />'."\n";
 	
 	//<link>タグを追加
 	if (is_page($vars["page"]))
