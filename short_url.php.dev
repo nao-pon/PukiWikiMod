@@ -1,7 +1,7 @@
 <?php
 //
 // Created on 2006/04/06 by nao-pon http://hypweb.net/
-// $Id: short_url.php.dev,v 1.1 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: short_url.php.dev,v 1.2 2006/04/10 15:20:26 nao-pon Exp $
 //
 
 
@@ -9,13 +9,14 @@ $GLOBALS['PWM_SHORTURL'.preg_replace("/^(\D+)(\d*)$/","$2",basename(dirname( __F
  = "wiki";
 
 /*****
+
  XOOPSのルートからのショートパスを記入
  = "wiki"; なら XOOPS_URL/wiki/ でアクセス可能。
  ただし、XOOPS_ROOT_PATH の .htaccess に以下の記述を追加する
  
  RewriteEngine on
  RewriteBase /
- RewriteRule ^wiki(.*) /modules/pukiwiki$1
+ RewriteRule ^wiki(.*) modules/pukiwiki$1
  
 *****/
 ?>
