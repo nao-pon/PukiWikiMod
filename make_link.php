@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.49 2006/03/19 23:25:35 nao-pon Exp $
+// $Id: make_link.php,v 1.50 2006/04/12 12:47:10 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -1129,6 +1129,11 @@ function get_interwiki_url($name,$param)
 //			$param = htmlspecialchars($param);
 			break;
 		
+		// 二重にURLエンコードする
+		case 'dbl':
+			$param = rawurlencode(rawurlencode($param));
+			break;
+					
 		default:
 			// エイリアスの変換
 			if (array_key_exists($opt,$encode_aliases))
