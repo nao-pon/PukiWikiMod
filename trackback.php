@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.30 2006/04/07 12:15:58 nao-pon Exp $
+// $Id: trackback.php,v 1.31 2006/04/21 14:30:57 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -101,8 +101,6 @@ function tb_send($page,$data="")
 		return;
 	}
 	
-	//error_reporting(E_ALL);
-	
 	// 送信済みエントリーを取得
 	$ping_filename = TRACKBACK_DIR.tb_get_id($page).".ping";
 	$to_pukiwiki = $sended = $sendtime = array();
@@ -151,9 +149,16 @@ function tb_send($page,$data="")
 	if ($h_excerpt) $title .= "/".$h_excerpt;
 	
 	$myurl = XOOPS_WIKI_HOST.get_url_by_name($page);
-	$xml_myurl = XOOPS_WIKI_HOST.get_url_by_name($up_page);
+	if ($defaultpage == $up_page)
+	{
+		$xml_myurl = XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/";
+	}
+	else
+	{
+		$xml_myurl = XOOPS_WIKI_HOST.get_url_by_name($up_page);
+	}
 	
-	$xml_title = $page_title."/".$up_page;
+	$xml_title = $page_title."/".strip_bracket($up_page);
 	
 	$data = trim(strip_htmltag($data));
 	$data = preg_replace("/^".preg_quote($h_excerpt,"/")."/","",$data);
@@ -202,16 +207,26 @@ function tb_send($page,$data="")
 				set_time_limit(120); // 処理実行時間を長めに再設定
 				touch($filename); // 判定ファイルをtouch
 				
+				tb_debug_output($link);
+				
 				// URL から TrackBack ID を取得する
 				$tb_id = trim(str_replace("&amp;","&",tb_get_url($link)));
 				
-				//tb_debug_output($tb_id);
+				tb_debug_output($tb_id);
 				
 				if (empty($tb_id) || in_array($tb_id,$sended)) // TrackBack に対応していないか送信済み
 				{
 					continue;
 				}
 				$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
+				tb_debug_output
+				(
+					$tb_id."\n"
+					.$result['query']."\n"
+					.$result['rc']."\n"
+					.$result['header']."\n"
+					.$result['data']."\n"
+				);
 				if ($result['rc'] === 200 || strpos($result['data'],"<error>0</error>") !== false)
 				{
 					$sended[] = $tb_id;
@@ -254,23 +269,6 @@ function tb_send($page,$data="")
 			$done = false;
 			// XML RPC Ping を打ってみる
 			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,3,10,30);
-			if ($result['rc'] === 200)
-			{
-				// 超手抜きなチェック
-				if (strpos($result['data'],"<boolean>0</boolean>") !== false)
-					$done = true;
-				else
-				{
-					//set_time_limit(120); // 処理実行時間を長めに再設定
-					//Track Back Ping
-					$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
-					// 超手抜きなチェック
-					if (strpos($result['data'],"<error>0</error>") !== false)
-						$done = true;
-				}
-			}
-			
-			/*
 			tb_debug_output
 			(
 				$tb_id."\n"
@@ -279,7 +277,31 @@ function tb_send($page,$data="")
 				.$result['header']."\n"
 				.$result['data']."\n"
 			);
-			*/
+			if ($result['rc'] === 200)
+			{
+				// 超手抜きなチェック
+				if (strpos($result['data'],"<boolean>0</boolean>") !== false)
+				{
+					$done = true;
+				}
+				else
+				{
+					//set_time_limit(120); // 処理実行時間を長めに再設定
+					//Track Back Ping
+					$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
+					tb_debug_output
+					(
+						$tb_id."\n"
+						.$result['query']."\n"
+						.$result['rc']."\n"
+						.$result['header']."\n"
+						.$result['data']."\n"
+					);
+					// 超手抜きなチェック
+					if (strpos($result['data'],"<error>0</error>") !== false)
+						$done = true;
+				}
+			}
 			
 			if ($done)
 			{
@@ -411,6 +433,10 @@ function tb_get_url($url)
 		$ng_host[$parse_url['host']]++;
 		return '';
 	}
+
+	//文字コード判定 変換
+	$src_enc = HypCommonFunc::get_encoding_by_meta($data['data']);
+	$data['data'] = str_replace("\0","",mb_convert_encoding($data['data'], SOURCE_ENCODING, $src_enc));
 	
 	$matches = array();
 	if (!preg_match_all('#<rdf:RDF[^>]*>(.*?)</rdf:RDF>#si',$data['data'],$matches,PREG_PATTERN_ORDER))
@@ -418,11 +444,13 @@ function tb_get_url($url)
 		$ng_host[$parse_url['host']]++;
 		return '';
 	}
+	//$matches[1] = str_replace("\0","",mb_convert_encoding($matches[1], "UTF-8", SOURCE_ENCODING));
 	
 	$tb_urls = array();
 	$obj = new TrackBack_XML();
 	foreach ($matches[1] as $body)
 	{
+		$body = str_replace("\0","",mb_convert_encoding($body, "UTF-8", SOURCE_ENCODING));
 		list($tb_url,$tb_url_nc) = $obj->parse($body,$url);
 		if ($tb_url !== FALSE)
 			return $tb_url;
@@ -656,6 +684,7 @@ EOD;
 
 function tb_debug_output($str)
 {
+	if (empty($GLOBALS['pwm_config']['debug']['trackback'])) return;
 	$data = "----------\n".date("D M j G:i:s T Y")."\n----------\n";
 	$data .= $str."\n\n";
 	$filename = CACHE_DIR."tb_debug.txt";
