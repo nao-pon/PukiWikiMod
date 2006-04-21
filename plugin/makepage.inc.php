@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.16 2006/04/07 12:15:58 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.17 2006/04/21 14:25:04 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -119,10 +119,10 @@ function plugin_makepage_action()
 	{
 		$words = array($vars['new_page']);
 	}
+	$_cnt = 0;
 	foreach($words as $word)
 	{
 		@set_time_limit(120);
-		
 		if (function_exists("mb_convert_kana")) $word = mb_convert_kana($word, "KVs");
 		$word = reform2pagename($word);
 		$page = add_bracket($vars['prefix'].strip_bracket($word));
@@ -145,6 +145,9 @@ function plugin_makepage_action()
 				$vars["page"] = "";
 				return $retvars;
 			}
+			
+			//待つ
+			if ($_cnt++ > 0) sleep(30);
 			
 			//ページ新規作成
 			$up_freeze_info = get_freezed_uppage($page);
