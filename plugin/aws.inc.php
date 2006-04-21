@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.14 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: aws.inc.php,v 1.15 2006/04/21 14:24:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -108,7 +108,7 @@ function plugin_aws_convert()
 	
 	//$start = getmicrotime();
 	
-	@list($f,$m,$k,$b,$s) = func_get_args();
+	@list($f,$m,$k,$b,$s,$noheader) = array_pad(func_get_args(),6,"");
 
 	@list($ret,$refresh) = plugin_aws_get($f,$m,$k,$b,$s);
 	
@@ -118,7 +118,7 @@ function plugin_aws_convert()
 	if ($k)
 	{
 		$more_link = "http://www.amazon.co.jp/exec/obidos/external-search?mode=blended&amp;tag={$plugin_aws_dataset['amazon_t']}&amp;keyword=".rawurlencode($k)."&amp;encoding-string-jp=".rawurlencode("日本語");
-		$more = "<h4><a href=\"{$more_link}\" target=\"_blank\">「".htmlspecialchars($k)."」をAmazonで探す...</a></h4>";
+		$more = (!$noheader) ? "<h4><a href=\"{$more_link}\" target=\"_blank\">「".htmlspecialchars($k)."」をAmazonで探す...</a></h4>" : "";
 		
 	}
 	// リフレッシュが必要
@@ -211,6 +211,7 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 			$ret = "";
 		}
 		$ret = mb_convert_encoding($ret, "EUC-JP", "UTF-8");
+		$ret = str_replace("\0","",$ret);
 		
 		if ($ret && strpos(strtolower($ret),"<errormsg>") === FALSE)
 		{
