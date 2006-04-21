@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.56 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: convert_html.php,v 1.57 2006/04/21 14:26:24 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -972,7 +972,7 @@ function keyword_to_strong(&$str,$words=array())
 			"/(<[^>]*>|&(?:#[0-9]+|#x[0-9a-f]+|[0-9a-zA-Z]+);)|($pattern)/";
 		$str = preg_replace_callback($pattern,
 			create_function('$arr',
-				'return $arr[1] ? $arr[1] : "<strong>{$arr[2]}</strong>";'),$str);
+				'return $arr[1] ? $arr[1] : "<span class=\"pwm_keyword\">{$arr[2]}</span>";'),$str);
 	}
 	
 	return ;
