@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.28 2006/04/07 12:15:58 nao-pon Exp $
+// $Id: rss.php,v 1.29 2006/04/21 14:29:07 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -249,6 +249,7 @@ function catrss($rss,$page,$with_content="",$list_count=0)
   <title>'.$page_title_utf8.$page_add_utf8.'</title>
   <link>'.$linkpage.'</link>
   <description>'.$description.'</description>
+  <dc:language>ja-jp</dc:language>
   <dc:date>'.substr_replace(date("Y-m-d\TH:i:sO"),':',-2,0).'</dc:date>
   <items>
    <rdf:Seq>
