@@ -482,6 +482,24 @@ EOF;
 		}
 		return;
 	}
+	
+	function set_query_words()
+	{
+		if (!defined("XOOPS_QUERY_WORD"))
+		{
+			if (file_exists(XOOPS_ROOT_PATH."/class/hyp_get_engine.php"))
+			{
+				include_once(XOOPS_ROOT_PATH."/class/hyp_get_engine.php");
+				HypGetQueryWord::set_xoops_constants();
+			}
+			else
+			{
+				define("XOOPS_QUERY_WORD","");
+				define("XOOPS_QUERY_WORD2","");
+				define("XOOPS_SEARCH_ENGINE_NAME","");
+			}
+		}
+	}
 }
 
 /*
@@ -501,6 +519,7 @@ class Hyp_HTTP_Request
 	var $method='GET';
 	var $headers='';
 	var $post=array();
+	var $ua='';
 	
 	// リダイレクト回数制限
 	var $redirect_max=10;
@@ -542,12 +561,18 @@ class Hyp_HTTP_Request
 	var $header = '';  // Header
 	var $data = '';    // Data
 	
+	function Hyp_HTTP_Request()
+	{
+		$this->ua="PHP/".PHP_VERSION;
+	}
+		
 	function init()
 	{
 		$this->url='';
 		$this->method='GET';
 		$this->headers='';
 		$this->post=array();
+		$this->ua="PHP/".PHP_VERSION;
 		
 		// result
 		$this->query = '';   // Query String
@@ -578,7 +603,7 @@ class Hyp_HTTP_Request
 		
 		$query = $this->method.' '.$this->url." HTTP/1.0\r\n";
 		$query .= "Host: ".$arr['host']."\r\n";
-		$query .= "User-Agent: hyp_http_request/1.0\r\n";
+		if (!empty($this->ua)) $query .= "User-Agent: ".$this->ua."\r\n";
 		
 		// proxyのBasic認証 
 		if ($this->need_proxy_auth and isset($this->proxy_auth_user) and isset($this->proxy_auth_pass)) 
