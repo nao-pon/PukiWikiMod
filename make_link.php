@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.50 2006/04/12 12:47:10 nao-pon Exp $
+// $Id: make_link.php,v 1.51 2006/04/21 14:28:37 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -118,22 +118,16 @@ class InlineConverter
 		
 		return "\x08"; //処理済みの部分にマークを入れる
 	}
-	function get_objects($string,$page)
+	function get_objects($string, $page)
 	{
-		$matches = array();
-		preg_match_all("/{$this->pattern}/x",$string,$matches,PREG_SET_ORDER);
-		
-		$arr = array();
-		foreach ($matches as $match)
-		{
+		$matches = $arr = array();
+		preg_match_all('/' . $this->pattern . '/x', $string, $matches, PREG_SET_ORDER);
+		foreach ($matches as $match) {
 			$obj = $this->get_converter($match);
-			if ($obj->set($match,$page) !== FALSE)
-			{
-				$arr[] = $obj; // copy
- 				if ($obj->body != '')
- 				{
- 					$arr = array_merge($arr,$this->get_objects($obj->body,$page));
- 				}
+			if ($obj->set($match, $page) !== FALSE) {
+				$arr[] = $this->get_clone($obj);
+				if ($obj->body != '')
+					$arr = array_merge($arr, $this->get_objects($obj->body, $page));
 			}
 		}
 		return $arr;
