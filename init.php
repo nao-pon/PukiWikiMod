@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.60 2006/04/07 06:44:03 nao-pon Exp $
+// $Id: init.php,v 1.61 2006/04/21 14:27:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -36,7 +36,7 @@ define('INI_FILE','./pukiwiki.ini.php');
 require('./version.php');
 
 // Copyright.
-define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2005 <a href=\"http://ishii.mydns.jp/\">ishii</a> & <a href=\"http://hypweb.net/\">nao-pon</a>. License is <a href=\"http://www.gnu.org/\">GNU/GPL</a>.");
+define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2006 ishii &amp; nao-pon License is GNU/GPL.");
 
 //文字エンコード
 define('SOURCE_ENCODING','EUC-JP');
@@ -61,7 +61,7 @@ if (!empty($_SERVER['PATH_INFO']))
 }
 
 define("S_VERSION","1.3.3");
-define("S_COPYRIGHT","Based on \"PukiWiki\" by <a href=\"http://pukiwiki.sourceforge.jp/\">PukiWiki Developers Team</a>");
+define("S_COPYRIGHT","Based on \"PukiWiki\" by PukiWiki Developers Team");
 define("UTIME",time());
 define("MUTIME",getmicrotime());
 
