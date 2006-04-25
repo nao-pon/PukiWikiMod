@@ -1,4 +1,8 @@
 <?php
+// $Id: hyp_common_func.php,v 1.1 2006/04/25 11:38:38 nao-pon Exp $
+// HypCommonFunc Class by nao-pon http://hypweb.net
+////////////////////////////////////////////////
+
 if( ! class_exists( 'HypCommonFunc' ) )
 {
 
@@ -483,20 +487,21 @@ EOF;
 		return;
 	}
 	
-	function set_query_words()
+	// リファラーから検索語と検索エンジンを取得し定数に定義する
+	function set_query_words($qw="HYP_QUERY_WORD",$qw2="HYP_QUERY_WORD2",$en="HYP_SEARCH_ENGINE_NAME",$tmpdir="")
 	{
-		if (!defined("XOOPS_QUERY_WORD"))
+		if (!defined($qw))
 		{
-			if (file_exists(XOOPS_ROOT_PATH."/class/hyp_get_engine.php"))
+			if (file_exists(dirname(__FILE__)."/hyp_get_engine.php"))
 			{
-				include_once(XOOPS_ROOT_PATH."/class/hyp_get_engine.php");
-				HypGetQueryWord::set_xoops_constants();
+				include_once(dirname(__FILE__)."/hyp_get_engine.php");
+				HypGetQueryWord::set_constants($qw,$qw2,$en,$tmpdir);
 			}
 			else
 			{
-				define("XOOPS_QUERY_WORD","");
-				define("XOOPS_QUERY_WORD2","");
-				define("XOOPS_SEARCH_ENGINE_NAME","");
+				define($qw , "");
+				define($qw2, "");
+				define($en , "");
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: images.php,v 1.8 2005/12/21 12:12:31 nao-pon Exp $
+// $Id: images.php,v 1.9 2006/04/25 11:38:38 nao-pon Exp $
 /////////////////////////////////////////////////
 
 error_reporting(0);
@@ -51,7 +51,7 @@ function get_image_filename($q,$type,$exp)
 	}
 	$q = $url.$q;
 	
-	include_once("include/hyp_common_func.php");
+	include_once("include/hyp_common/hyp_common_func.php");
 	include_once("proxy.php");
 	
 	$result =  http_request($q);

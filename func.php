@@ -1,11 +1,11 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.75 2006/04/08 02:01:15 nao-pon Exp $
+// $Id: func.php,v 1.76 2006/04/25 11:38:38 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
 // class HypCommonFunc
-if(!class_exists('HypCommonFunc')){include("./include/hyp_common_func.php");}
+if(!class_exists('HypCommonFunc')){include("./include/hyp_common/hyp_common_func.php");}
 
 // 文字列がページ名かどうか
 function is_pagename($str)
