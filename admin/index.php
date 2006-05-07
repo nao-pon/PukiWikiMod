@@ -1,10 +1,10 @@
 <?php
-// $Id: index.php,v 1.47 2006/04/08 09:20:11 nao-pon Exp $
+// $Id: index.php,v 1.48 2006/05/07 13:50:19 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
 // PukiWikiMod ディレクトリ名
-define("PUKIWIKI_DIR_NAME", basename(str_replace("/admin","",dirname( __FILE__ ))));
+define("PUKIWIKI_DIR_NAME", basename(dirname(dirname( __FILE__ ))));
 define("PUKIWIKI_DIR_NUM", preg_replace("/^(\D+)(\d*)$/","$2",PUKIWIKI_DIR_NAME));
 
 	
