@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.40 2006/04/06 13:32:16 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.41 2006/05/08 08:34:12 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -157,16 +157,24 @@ function plugin_attach_action()
 	if (array_key_exists('refer',$vars) and is_pagename($vars['refer']))
 	{
 		$read_cmds = array('info','open','list','imglist');
-		if (ATTACH_UPLOAD_ADMIN_ONLY)
+		if (in_array($pcmd,$read_cmds))
 		{
-			$check = $X_admin;
+			//閲覧
+			if (!check_readable($vars['refer'])) return array('result'=>FALSE,'msg'=>_MD_PUKIWIKI_NO_VISIBLE);
 		}
 		else
 		{
-			$check = (ATTACH_UPLOAD_EDITER_ONLY && !in_array($pcmd,$read_cmds)) ? 
-			check_editable($vars['refer']) : check_readable($vars['refer']);
+			//アップロード・削除など
+			if (ATTACH_UPLOAD_ADMIN_ONLY)
+			{
+				$check = $X_admin;
+			}
+			else
+			{
+				$check = check_editable($vars['refer']);
+			}
+			if (!$check) return array('result'=>FALSE,'msg'=>$_attach_messages['err_noparm']);
 		}
-		if (!$check) return array('result'=>FALSE,'msg'=>$_attach_messages['err_noparm']);
 	}
 	
 	// Upload
