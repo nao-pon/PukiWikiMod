@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.27 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: ref.inc.php,v 1.28 2006/05/11 08:24:52 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -555,7 +555,7 @@ function plugin_ref_cache_image_save($data, $filename, $name)
 	}
 	
 	$GLOBALS['pukiwiki_allow_extensions'] = "";
-	do_upload($vars['page'],$name,$filename.".tmp",FALSE,NULL,TRUE);
+	do_upload($vars['page'],$name,$filename.".tmp",TRUE,NULL,TRUE);
 	
 	return $filename;
 }
