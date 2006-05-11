@@ -22,7 +22,7 @@
  *
  * ÈòÆñ½ê       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.23 2006/03/06 06:20:30 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.24 2006/05/11 13:39:42 nao-pon Exp $
  *
  */
 
@@ -125,7 +125,7 @@ function plugin_showrss_convert()
 		case 6:
 			$max = trim($array[5]);
 		case 5:
-			$show_description = trim($array[4]);
+			$show_description = strtolower(trim($array[4]));
 		case 4:
 			$usetimestamp = trim($array[3]);
 		case 3:
@@ -182,9 +182,19 @@ class ShowRSS_html
 
 	function ShowRSS_html($rss,$show_description="",$max=10)
 	{
-		global $nothanks_rss_url;
+		global $nothanks_rss_url, $pwm_config;
 
 		$count = 1;
+		$withimg = ($show_description == "nositeimage")? false : ($show_description == "siteimage")? true : null;
+		if ($withimg === true || (is_null($withimg) && !empty($pwm_config['p_showrss']['siteimg'])))
+		{
+			$image_clr = "<div style=\"clear:both;\"></div>";
+			$image = "";
+		}
+		else
+		{
+			$image = $image_clr = "";
+		}
 		foreach ($rss as $date=>$items)
 		{
 			if ($count > $max) break;
@@ -217,11 +227,12 @@ class ShowRSS_html
 				else if ($item['DC:PUBLISHER'])
 					$title .= " [".$item['DC:PUBLISHER']."]";
 				
+				if ($image_clr) $image = "<a href=\"$link\" title=\"$title $passage\" target=\"_blank\"><img src=\"http://img.simpleapi.net/small/".$link."\" width=\"128\" height=\"128\" class=\"siteimg\"></a>";
 				$link = "<a href=\"$link\" title=\"$title $passage\" target=\"_blank\">$title</a>";
 				if ($show_description)
 				{
 					$item['DESCRIPTION'] = htmlspecialchars(strip_tags(str_replace(array("&lt;","&gt;"),array("<",">"),$item['DESCRIPTION'])));
-					$link .= "<br />"."<p class=\"quotation\">".make_link($item['DESCRIPTION'])."</p>";
+					$link .= "<br />"."<div class=\"quotation\">".$image.make_link($item['DESCRIPTION']).$image_clr."</div>";
 				}
 				$this->items[$date][] = $this->format_link($link);
 			}

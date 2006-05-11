@@ -769,7 +769,7 @@ input.pcmt
 	margin-right:.5em;
 	border:none;
 }
-p.quotation
+p.quotation, div.quotation
 {
 	border: #888899 2px dotted;
 	padding: .5em;
@@ -779,6 +779,13 @@ p.quotation
 	font-size:85%;
 	line-height:1.5;
 	word-break: normal;
+}
+p.quotation, div.quotation img.siteimg
+{
+	margin-right:8px;
+	display: block;
+	float:left;
+	border: none;
 }
 /* source.inc.php */
 div.wiki_source
