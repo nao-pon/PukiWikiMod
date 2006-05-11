@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.51 2006/04/21 14:28:37 nao-pon Exp $
+// $Id: make_link.php,v 1.52 2006/05/11 07:57:34 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -246,16 +246,27 @@ class Link
 	function setParam($page,$name,$body,$type='',$alias='')
 	{
 		static $converter = NULL;
+		static $ref_enable = NULL;
+		global $pwm_config;
 		
 		$this->page = $page;
 		$this->name = $name;
 		$this->body = $body;
 		$this->type = $type;
-		//if ($type != 'InterWikiName' and preg_match('/\.(gif|png|jpe?g)$/i',$alias))
+
 		if (is_url($alias) && preg_match('/\.(gif|png|jpe?g)$/i',$alias))
 		{
-			$alias = htmlspecialchars(str_replace("&#173;","",$alias));
-			$alias = "$separator<img src=\"$alias\" alt=\"$name\" />";
+			if (is_null($ref_enable)) $ref_enable = exist_plugin_convert("ref");
+			if ($ref_enable && $pwm_config['showimg_by_ref'])
+			{
+				$alias = str_replace("&#173;","",$alias);
+				$alias = do_plugin_inline("ref","{$alias},{$pwm_config['showimg_by_ref']}");
+			}
+			else
+			{
+				$alias = htmlspecialchars(str_replace("&#173;","",$alias));
+				$alias = "$separator<img src=\"$alias\" alt=\"$name\" />";
+			}
 		}
 		else if ($alias != '')
 		{

@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.46 2006/04/07 11:36:29 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.47 2006/05/11 07:57:34 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -323,6 +323,13 @@ $pwm_config['show_oldname'] = 0;
 ///////////////////////////////////////////////// 
 // 更新通知Ping の最短通知間隔 単位:分
 $pwm_config['update_ping_limit'] = 60;
+
+///////////////////////////////////////////////// 
+// イメージURLの表示にrefプラグインを使用する
+// 使用する: "追加オプションを記述", 使用しない: "";
+// ex. $pwm_config['showimg_by_ref'] = "mw:100,mh:100";
+// ex. $pwm_config['showimg_by_ref'] = "";
+$pwm_config['showimg_by_ref'] = "mw:100,mh:100";
 
 /////////////////////////////////////////////////
 // ユーザ定義ルール
