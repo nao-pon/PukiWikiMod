@@ -1,5 +1,5 @@
 <?php
-// $Id: comment_functions.php,v 1.3 2006/04/06 13:32:16 nao-pon Exp $
+// $Id: comment_functions.php,v 1.4 2006/05/12 05:26:06 nao-pon Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -78,7 +78,7 @@ function pukiwiki_com_touch($id,$time,$dir_num)
 	
 	$fname = $pukiwiki_dirs['wiki'].encode(add_bracket($name)).".txt";
 	
-	touch($fname,$time);
+	pkwk_touch_file($fname,$time);
 	
 	return;
 }

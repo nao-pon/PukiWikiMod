@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.71 2006/04/07 12:15:58 nao-pon Exp $
+// $Id: file.php,v 1.72 2006/05/12 05:26:06 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -215,10 +215,11 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 	if (is_null($notimestamp)) $notimestamp=$post['notimestamp'];
 	
 	$timestamp = FALSE;
+	$filename = $dir.encode($page).".txt";
 	
 	if($str == "")
 	{
-		@unlink($dir.encode($page).".txt");
+		@unlink($filename);
 		$action = "delete";
 		put_recentdeleted(strip_bracket($page));
 	}
@@ -230,16 +231,15 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		
 		if($notimestamp && is_page($page))
 		{
-			$timestamp = @filemtime($dir.encode($page).".txt");
+			$timestamp = @filemtime($filename);
 		}
-		$fp = fopen($dir.encode($page).".txt","w");
+		$fp = fopen($filename,"w");
 		if($fp===FALSE) die_message("cannot write page file or diff file or other".htmlspecialchars($page)."<br>maybe permission is not writable or filename is too long");
 		while(!flock($fp,LOCK_EX));
 		fputs($fp,$str);
 		flock($fp,LOCK_UN);
 		fclose($fp);
-		if($timestamp)
-			touch($dir.encode($page).".txt",$timestamp);
+		if($timestamp) pkwk_touch_file($filename,$timestamp);
 	}
 
 	// is_pageのキャッシュをクリアする。
@@ -1382,6 +1382,79 @@ function push_page_changes($id,$txt)
 	{
 		fputs($fp,join($sep,$adds));
 		fclose($fp);
+	}
+}
+
+// _If needed_, re-create the file to change/correct ownership into PHP's
+// NOTE: Not works for Windows
+function pkwk_chown($filename, $preserve_time = TRUE)
+{
+	static $php_uid; // PHP's UID
+
+	if (! isset($php_uid)) {
+		if (extension_loaded('posix')) {
+			$php_uid = posix_getuid(); // Unix
+		} else {
+			$php_uid = 0; // Windows
+		}
+	}
+
+	// Lock for pkwk_chown()
+	$lockfile = CACHE_DIR . 'pkwk_chown.lock';
+	$flock = fopen($lockfile, 'a') or
+		die('pkwk_chown(): fopen() failed for: CACHEDIR/' .
+			basename(htmlspecialchars($lockfile)));
+	flock($flock, LOCK_EX) or die('pkwk_chown(): flock() failed for lock');
+
+	// Check owner
+	$stat = stat($filename) or
+		die('pkwk_chown(): stat() failed for: '  . basename(htmlspecialchars($filename)));
+	if ($stat[4] === $php_uid) {
+		// NOTE: Windows always here
+		$result = TRUE; // Seems the same UID. Nothing to do
+	} else {
+		$tmp = $filename . '.' . getmypid() . '.tmp';
+
+		// Lock source $filename to avoid file corruption
+		// NOTE: Not 'r+'. Don't check write permission here
+		$ffile = fopen($filename, 'r') or
+			die('pkwk_chown(): fopen() failed for: ' .
+				basename(htmlspecialchars($filename)));
+
+		// Try to chown by re-creating files
+		// NOTE: @unlink() before rename() is for Windows but here's for Unix only
+		flock($ffile, LOCK_EX) or die('pkwk_chown(): flock() failed');
+		$result = copy($filename, $tmp) &&
+			($preserve_time ? touch($tmp, $stat[9], $stat[8]) : TRUE) &&
+			rename($tmp, $filename);
+		flock($ffile, LOCK_UN) or die('pkwk_chown(): flock() failed');
+
+		fclose($ffile) or die('pkwk_chown(): fclose() failed');
+	}
+
+	// Unlock for pkwk_chown()
+	flock($flock, LOCK_UN) or die('pkwk_chown(): flock() failed for lock');
+	fclose($flock) or die('pkwk_chown(): fclose() failed for lock');
+
+	return $result;
+}
+
+// touch() with trying pkwk_chown()
+function pkwk_touch_file($filename, $time = FALSE, $atime = FALSE)
+{
+	// Is the owner incorrected and unable to correct?
+	if (pkwk_chown($filename)) {
+		if ($time === FALSE) {
+			$result = touch($filename);
+		} else if ($atime === FALSE) {
+			$result = touch($filename, $time);
+		} else {
+			$result = touch($filename, $time, $atime);
+		}
+		return $result;
+	} else {
+		die('pkwk_touch_file(): Invalid UID and (not writable for the directory or not a flie): ' .
+			htmlspecialchars(basename($filename)));
 	}
 }
 ?>

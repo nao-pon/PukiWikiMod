@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.41 2006/05/08 08:34:12 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.42 2006/05/12 05:26:06 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -351,7 +351,7 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL,$notouch=FA
 	
 	if (!$notouch && is_page($page))
 	{
-		touch(get_filename(encode($page)));
+		pkwk_touch_file(get_filename(encode($page)));
 		touch_db($page);
 	}
 	
@@ -955,7 +955,7 @@ EOD;
 		}
 		if (is_page($this->page))
 		{
-			touch(get_filename(encode($this->page)));
+			pkwk_touch_file(get_filename(encode($this->page)));
 			touch_db($this->page);
 		}
 		

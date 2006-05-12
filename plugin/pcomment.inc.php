@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.34 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.35 2006/05/12 05:26:06 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -377,7 +377,7 @@ function pcmt_insert($page) {
 	//親ページのファイルタイム更新
 	if (empty($post['notimestamp']))
 	{
-		touch(DATA_DIR.encode($post['refer']).".txt");
+		pkwk_touch_file(DATA_DIR.encode($post['refer']).".txt");
 		//親ページのDB更新
 		pginfo_db_write($post['refer'],"update");
 		//Pingを送信するページ
