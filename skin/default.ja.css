@@ -780,7 +780,7 @@ p.quotation, div.quotation
 	line-height:1.5;
 	word-break: normal;
 }
-p.quotation, div.quotation img.siteimg
+div.quotation img.siteimg
 {
 	margin-right:8px;
 	display: block;
