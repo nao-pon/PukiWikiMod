@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.76 2006/04/25 11:38:38 nao-pon Exp $
+// $Id: func.php,v 1.77 2006/05/12 00:06:17 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1442,6 +1442,29 @@ function reform2pagename($str)
 	$bef = array(" ","#","&","<",">",'"',":");
 	$str = str_replace($bef,$pwm_confg['reform_to'],$str);
 	return $str;
+}
+
+//プラグインオプションを解析する汎用関数
+function pwm_check_arg($args, &$params, $separator=":")
+{
+	if (empty($args)) { $params['_done'] = TRUE; return; }
+	$keys = array_keys($params);
+	foreach($args as $val)
+	{
+		list($_key,$_val) = array_pad(explode($separator,$val,2),2,TRUE);
+		$_key = trim($_key);
+		$_val = trim($_val);
+		if (in_array($_key,$keys))
+		{
+			$params[$_key] = $_val;
+		}
+		else
+		{
+			$params['_args'][] = $val;
+		}
+	}
+	$params['_done'] = TRUE;
+	return;
 }
 
 //////////////////////////////////////////////////////
