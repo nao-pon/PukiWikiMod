@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.42 2006/05/12 05:26:06 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.43 2006/05/12 06:45:18 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -792,9 +792,7 @@ class AttachFile
 		$s_err = ($err == '') ? '' : '<p style="font-weight:bold">'.$_attach_messages[$err].'</p>';
 		$ref = "";
 		
-		//$uid = get_pg_auther($this->page);
 		$pass = '';
-		//if (ATTACH_PASSWORD_REQUIRE && !ATTACH_UPLOAD_ADMIN_ONLY && ((!$X_admin && $X_uid !== $uid) || $X_uid == 0))
 		if (ATTACH_PASSWORD_REQUIRE && !ATTACH_UPLOAD_ADMIN_ONLY && !$X_uid)
 		{
 			$title = $_attach_messages[ATTACH_UPLOAD_ADMIN_ONLY ? 'msg_adminpass' : 'msg_password'];
@@ -869,9 +867,8 @@ class AttachFile
 <hr />
 $s_err
 EOD;
-		$uid = get_pg_auther($this->page);
-		//if (check_editable($this->page,false,false) && ((!ATTACH_DELETE_ADMIN_ONLY && $X_uid == $this->status['owner']) || (($X_admin || $X_uid == $uid) && $X_uid != 0))){
-		if ($X_admin || ( $X_uid == $this->status['owner']) || (!ATTACH_DELETE_ADMIN_ONLY && !$this->status['owner'])){
+		if ($X_admin || (($X_uid || $pass) && ($X_uid == $this->status['owner'] || (!ATTACH_DELETE_ADMIN_ONLY && !$this->status['owner']))))
+		{
 			$retval['body'] .= <<< EOD
 <form action="$script" method="post">
  <div>
