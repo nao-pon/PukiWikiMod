@@ -1,7 +1,7 @@
 <?php
 //
 // Created on 2006/05/11 by nao-pon http://hypweb.net/
-// $Id: siteimage.inc.php,v 1.2 2006/05/12 00:08:28 nao-pon Exp $
+// $Id: siteimage.inc.php,v 1.3 2006/05/12 00:10:48 nao-pon Exp $
 //
 
 function plugin_siteimage_init()
