@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.13 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: google.inc.php,v 1.14 2006/05/21 02:34:23 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -209,7 +209,11 @@ function plugin_google_result_google_api($word,$max=10,$start=0,$do_refresh=FALS
 	
 	////////   Googleライセンスキーを設定   ////////
 	$google_license_key = $plugin_google_dataset['license_key'];
-	
+	if (is_array($google_license_key))
+	{
+		$google_license_key = $google_license_key[mt_rand(0,count($google_license_key)-1)];
+	}
+		
 	// キャッシュ有効時間(h)
 	$cache_time = $plugin_google_dataset['cache_time'];
 	
