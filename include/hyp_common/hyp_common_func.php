@@ -1,5 +1,5 @@
 <?php
-// $Id: hyp_common_func.php,v 1.1 2006/04/25 11:38:38 nao-pon Exp $
+// $Id: hyp_common_func.php,v 1.2 2006/06/07 04:11:37 nao-pon Exp $
 // HypCommonFunc Class by nao-pon http://hypweb.net
 ////////////////////////////////////////////////
 
@@ -525,6 +525,8 @@ class Hyp_HTTP_Request
 	var $headers='';
 	var $post=array();
 	var $ua='';
+
+	var $uri='';
 	
 	// リダイレクト回数制限
 	var $redirect_max=10;
@@ -603,10 +605,10 @@ class Hyp_HTTP_Request
 		
 		$url_base = $arr['scheme'].'://'.$arr['host'].':'.$arr['port'];
 		$url_path = isset($arr['path']) ? $arr['path'] : '/';
-		$this->url = ($via_proxy ? $url_base : '').$url_path.$arr['query'];
+		$this->uri = ($via_proxy ? $url_base : '').$url_path.$arr['query'];
 
 		
-		$query = $this->method.' '.$this->url." HTTP/1.0\r\n";
+		$query = $this->method.' '.$this->uri." HTTP/1.0\r\n";
 		$query .= "Host: ".$arr['host']."\r\n";
 		if (!empty($this->ua)) $query .= "User-Agent: ".$this->ua."\r\n";
 		
@@ -724,6 +726,7 @@ class Hyp_HTTP_Request
 		// Redirect
 		switch ($rc)
 		{
+			case 303: // See Other
 			case 302: // Moved Temporarily
 			case 301: // Moved Permanently
 				$matches = array();
