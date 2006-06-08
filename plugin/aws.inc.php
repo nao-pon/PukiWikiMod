@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.15 2006/04/21 14:24:19 nao-pon Exp $
+// $Id: aws.inc.php,v 1.16 2006/06/08 05:24:24 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -82,8 +82,6 @@ function plugin_aws_action()
 			
 			if ($ret)
 			{
-				// plane_text DB を更新
-				need_update_plaindb($page);
 				// ページHTMLキャッシュを削除
 				delete_page_html($page,"html");
 			}
@@ -93,9 +91,6 @@ function plugin_aws_action()
 				touch($filename,$old_time);
 			}
 		}
-		
-		header("Content-Type: image/gif");
-		readfile('image/transparent.gif');
 		exit;
 	}
 	

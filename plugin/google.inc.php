@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: google.inc.php,v 1.14 2006/05/21 02:34:23 nao-pon Exp $
+// $Id: google.inc.php,v 1.15 2006/06/08 05:24:24 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -85,8 +85,6 @@ function plugin_google_action()
 			
 			if ($ret['rc'] == 200)
 			{
-				// plane_text DB を更新
-				need_update_plaindb($page);
 				// ページHTMLキャッシュを削除
 				delete_page_html($page,"html");
 			}
@@ -96,9 +94,6 @@ function plugin_google_action()
 				touch($filename,$old_time);
 			}
 		}
-		
-		header("Content-Type: image/gif");
-		readfile('image/transparent.gif');
 		exit;
 	}
 	

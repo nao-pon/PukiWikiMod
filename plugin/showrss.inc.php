@@ -22,7 +22,7 @@
  *
  * 避難所       ->   http://do3ob.s20.xrea.com/
  *
- * version: $Id: showrss.inc.php,v 1.24 2006/05/11 13:39:42 nao-pon Exp $
+ * version: $Id: showrss.inc.php,v 1.25 2006/06/08 05:24:24 nao-pon Exp $
  *
  */
 
@@ -67,8 +67,6 @@ function plugin_showrss_action()
 			
 			if ($rss)
 			{
-				// plane_text DB を更新
-				need_update_plaindb($page);
 				// ページHTMLキャッシュを削除
 				delete_page_html($page,"html");
 			}
@@ -78,8 +76,6 @@ function plugin_showrss_action()
 				touch($filename,$old_time);
 			}
 		}
-		header("Content-Type: image/gif");
-		readfile('image/transparent.gif');
 		exit;
 	}
 	
@@ -182,7 +178,7 @@ class ShowRSS_html
 
 	function ShowRSS_html($rss,$show_description="",$max=10)
 	{
-		global $nothanks_rss_url, $pwm_config;
+		global $nothanks_rss_url, $pwm_config, $link_target;
 
 		$count = 1;
 		$withimg = ($show_description == "nositeimage")? false : ($show_description == "siteimage")? true : null;
@@ -227,8 +223,8 @@ class ShowRSS_html
 				else if ($item['DC:PUBLISHER'])
 					$title .= " [".$item['DC:PUBLISHER']."]";
 				
-				if ($image_clr) $image = "<a href=\"$link\" title=\"$title $passage\" target=\"_blank\"><img src=\"http://img.simpleapi.net/small/".$link."\" width=\"128\" height=\"128\" class=\"siteimg\"></a>";
-				$link = "<a href=\"$link\" title=\"$title $passage\" target=\"_blank\">$title</a>";
+				if ($image_clr) $image = "<a href=\"$link\" title=\"$title $passage\" target=\"{$link_target}\"><img src=\"http://img.simpleapi.net/small/".$link."\" width=\"128\" height=\"128\" class=\"siteimg\"></a>";
+				$link = "<a href=\"$link\" title=\"$title $passage\" target=\"{$link_target}\">$title</a>";
 				if ($show_description)
 				{
 					$item['DESCRIPTION'] = htmlspecialchars(strip_tags(str_replace(array("&lt;","&gt;"),array("<",">"),$item['DESCRIPTION'])));

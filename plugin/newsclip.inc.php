@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: newsclip.inc.php,v 1.9 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: newsclip.inc.php,v 1.10 2006/06/08 05:24:24 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -10,7 +10,7 @@
 function plugin_newsclip_init()
 {
 	$data = array('plugin_newsclip_dataset'=>array(
-	'cache_time'    => 1,                                  // キャッシュ有効時間(h)
+	'cache_time'    => 6,                                  // キャッシュ有効時間(h)
 	'def_max'       => 10,                                 // デフォルト表示数
 	'max_limit'     => 10,                                 // 最大表示数
 	'head_msg'      => '<h4>検索結果: %s <span class="small">by NEWSサイト</span></h4><p class="empty"></p>',
@@ -27,6 +27,7 @@ function plugin_newsclip_split($_data)
 	
 	$data ="";
 	$data .= "<div class=\"small\" style=\"text-align:right;\">".$arg[2]."</div>";
+	$arg[0] = str_replace(array("&LT;","&lt;","&GT;","&gt;","&quot;","&QUOT;","&amp;","&AMP;"),array("<","<",">",">",'"','"',"&","&"),$arg[0]);
 	$data .= "<p class=\"quotation\" style=\"margin-top:1px;\">".make_link($arg[0])."</p>";
 	return $data;
 }
@@ -57,8 +58,6 @@ function plugin_newsclip_action()
 			
 			if ($ret)
 			{
-				// plane_text DB を更新
-				need_update_plaindb($page);
 				// ページHTMLキャッシュを削除
 				delete_page_html($page,"html");
 			}
@@ -68,9 +67,6 @@ function plugin_newsclip_action()
 				touch($filename,$old_time);
 			}
 		}
-		
-		header("Content-Type: image/gif");
-		readfile('image/transparent.gif');
 		exit;
 	}
 	
@@ -114,7 +110,7 @@ function plugin_newsclip_convert()
 
 function plugin_newsclip_get($word,$do_refresh=FALSE)
 {
-	global $plugin_newsclip_dataset;
+	global $plugin_newsclip_dataset,$link_target;
 	
 	$data = "";
 	$refresh = FALSE;
@@ -155,7 +151,7 @@ function plugin_newsclip_get($word,$do_refresh=FALSE)
 		
 		// 抽出
 		$match = array();
-		$data = (preg_match("/".preg_quote("<!--result_title-->","/")."(.+)".preg_quote("<!--/generalsearch_result-->","/")."/s",$data,$match))?
+		$data = (preg_match("/".preg_quote("<!--result_title-->","/")."(.+)".preg_quote('<table border="0" cellpadding="3" cellspacing="0" width="100%">',"/")."/s",$data,$match))?
 			$match[1] : "";
 
 		//font,img除去
@@ -166,7 +162,16 @@ function plugin_newsclip_get($word,$do_refresh=FALSE)
 		{
 			$data = str_replace($match[0],"",$data);
 		}
-
+		
+		//別ウィンドウ表示 除去
+		$data = preg_replace('#\-\s*<a[^>]+>別ウィンドウ表示</a>\s*\-#is',"",$data);
+		
+		//NEW 除去
+		$data = preg_replace('#\s*<b>NEW</b>\s*#i',"",$data);
+		
+		//(時間|日)前 除去
+		$data = preg_replace('#\s*\d+(時間|日)前\s*#',"",$data);
+		
 		// br->il
 		$data = preg_replace("/<br>\d+\s((?:(?!<br>).)+)<br>/s","<li>$1",$data);
 		
@@ -175,7 +180,8 @@ function plugin_newsclip_get($word,$do_refresh=FALSE)
 		$data = preg_replace("/<br><\/div>/i","</p></li>",$data);
 
 		//aタグ
-		$data = str_replace("<a href=\"/","<a target=\"_blank\" href=\"".$goo."/",$data);
+		$data = str_replace("<a href=\"/","<a target=\"{$link_target}\" href=\"".$goo."/",$data);
+		$data = str_replace("<a href=","<a target=\"{$link_target}\" href=",$data);
 		
 		//bタグ
 		$data = str_replace(array("<B>","</B>"),"",$data);
