@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: index.php,v 1.4 2006/04/23 01:51:51 nao-pon Exp $
+// $Id: index.php,v 1.5 2006/06/08 04:59:33 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -113,15 +113,16 @@ if($vars['cmd'] == "read")
 				&& (!file_exists(P_CACHE_DIR.$pgid.".mcr") || time() - filemtime(P_CACHE_DIR.$pgid.".mcr") > 300)
 				)
 			{
-				// チェックファイルをtouch
-				touch(P_CACHE_DIR.$pgid.".mcr");
-				// パラメーターセット
-				//$vars['mc_refresh'] = join(" ",array_values($vars['mc_refresh']));
+				// ワークリスト ファイル作成
+				$_fp = fopen(P_CACHE_DIR.$pgid.".mcr", "wb");
+				fwrite($_fp, join("\n",array_values($vars['mc_refresh'])));
+				fclose($_fp);
 				// 非同期でモードでデータ更新
 				http_request(
-				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/mc_refrash.php"
-				,'POST','',array('mc_refresh'=>join(" ",array_values($vars['mc_refresh'])),'tgt_page'=>$vars['page']),HTTP_REQUEST_URL_REDIRECT_MAX,0,3);
+				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/mc_refrash.php". "?tgt_page=".rawurlencode($vars['page'])
+				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
 			}
+
 			
 			// ping送出に失敗している可能性があれば再送 (1件あたりのリミット:120秒)
 			if (file_exists(CACHE_DIR.$e_page.".tbf") && time() - filemtime(CACHE_DIR.$e_page.".tbf") > 120 )

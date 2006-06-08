@@ -2,13 +2,10 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: mc_refrash.php,v 1.5 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: mc_refrash.php,v 1.6 2006/06/08 04:59:33 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
-
-//チケットシステムを使用しない
-define ('PWM_TICET_NOT_USE', TRUE);
 
 //XOOPS設定読み込み
 include("../../mainfile.php");
@@ -38,6 +35,14 @@ $debug = "";
 // 動作中フラグ ON
 touch(P_CACHE_DIR."mc_refresh_run.flg");
 
+// 動作リスト取得
+$page = add_bracket($vars['tgt_page']);
+$pgid = get_pgid_by_name($page);
+$_datafile = P_CACHE_DIR.$pgid.".mcr";
+$data = file($_datafile);
+unlink($_datafile);
+touch($_datafile);
+
 // 古いキャッシュの削除
 $gabegge_cycle = 24; // 24h
 $gabegge_limit = 30; // 30d
@@ -49,7 +54,7 @@ if (!file_exists(CACHE_DIR."pcache.gab") || filemtime(CACHE_DIR."pcache.gab") + 
 		touch(CACHE_DIR."pcache.gab");
 		while (false !== ($file = readdir($dir)))
 		{
-			if (substr($file,0,1) == ".") { continue; }
+			if (substr($file,0,1) == "." || "index.html") { continue; }
 			$file = P_CACHE_DIR.$file;
 			if (filemtime($file) + $gabegge_limit * 86400 < time())
 			{
@@ -60,18 +65,16 @@ if (!file_exists(CACHE_DIR."pcache.gab") || filemtime(CACHE_DIR."pcache.gab") + 
 	}
 }
 
-$data = (isset($post['mc_refresh']))? explode(" ",$post['mc_refresh']) : array();
-$page = add_bracket($post['tgt_page']);
-
 $done = 0;
 $done_data = array();
 foreach($data as $uri)
 {
+	$uri = trim($uri);
 	// 無効なURIはパス
-	if (!preg_match("#^\?plugin=(aws|google|gimage|showrss|newsclip)&pmode=refresh#",$uri)) continue;
+	if (!preg_match("#^\?plugin=(aws|google|gimage|showrss|newsclip|yahoo)&pmode=refresh#",$uri)) continue;
 	
 	// 実行時間を長めに設定
-	set_time_limit(120);
+	@set_time_limit(120);
 	
 	// データ更新 同期モードで順番に
 	$rc = http_request(
@@ -88,18 +91,15 @@ foreach($data as $uri)
 
 if ($done)
 {
-	$filename = CACHE_DIR.encode(strip_bracket($page)).".udp";
-
-	if (file_exists($filename))
+	@unlink(CACHE_DIR.encode(strip_bracket($page)).".udp");
+	
+	if (is_page($page))
 	{
-		unlink($filename);
-		if (is_page($page))
-		{
-			// plane_text DB を更新
-			plain_db_write($page,"update");
-		}
+		// plane_text DB を更新
+		plain_db_write($page,"update");
+		// ページHTMLキャッシュを削除
+		delete_page_html($page,"html");
 	}
-
 }
 
 if ($debug)
