@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: yahoo.inc.php,v 1.2 2006/06/09 01:48:09 nao-pon Exp $
+// $Id: yahoo.inc.php,v 1.3 2006/06/09 13:35:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #yahoo([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -13,6 +13,7 @@ function plugin_yahoo_init()
 		'msg_web'  => 'Webサイト',
 		'msg_img'  => '画像',
 		'msg_mov'  => '動画',
+		'err_badres'  => 'Yahoo!のサーバーに接続できませんでした。',
 		'err_option'  => '#yahoo(mode,query) エラー:オプションが正しく指定されていません。',
 		'err_setconfig'  => '※ 設定エラー: [ '.PLUGIN_DATA_DIR.'yahoo/config.php ] に設定情報を記入してください。',
 		'err_nonwritable'  => '※ 設定エラー: ディレクトリ [ '.PLUGIN_DATA_DIR.'yahoo/ ] に書き込み権限がありません。',
@@ -153,7 +154,7 @@ function plugin_yahoo_convert()
 			$mode = "web";
 	}
 
-	$prms = array("target"=>$link_target,"type"=>"or","max"=>$plugin_yahoo_dataset['max_'.$mode],"col"=>$plugin_yahoo_dataset['col_'.$mode]);
+	$prms = array("target"=>$link_target,"type"=>"and","max"=>$plugin_yahoo_dataset['max_'.$mode],"col"=>$plugin_yahoo_dataset['col_'.$mode]);
 	pwm_check_arg($args, &$prms);
 	$max = (int)$prms['max'];
 	$more = "<a href='".$more.($max+$more_add)."' target='".htmlspecialchars($prms['target'])."'>".sprintf($plugin_yahoo_dataset['msg_more'],htmlspecialchars($query),$plugin_yahoo_dataset['msg_'.$mode])."</a>";
@@ -266,15 +267,21 @@ function plugin_yahoo_gethtml($mode,$query,$type,$max,$target,$col)
 	if ($xml['rc'] == 200 && $xml['data'])
 	{
 		$xml = $xml['data'];
+		$xm = new HypSimpleXML();
+		$xml = $xm->XMLstr_in($xml);
+		// 該当データなし
+		if (!$xml['totalResultsReturned'])
+		{
+			return sprintf($plugin_yahoo_dataset['msg_notfound'],$qs,$plugin_yahoo_dataset['msg_'.$mode]);
+		}
 	}
 	else
 	{
-		$xml = "";
+		// データ取得エラー
+		return $plugin_yahoo_dataset['err_badres'];
+
 	}
 
-	$xm = new HypSimpleXML();
-	$xml = $xm->XMLstr_in($xml);
-	
 	// 該当データなし
 	if (!$xml['totalResultsReturned'])
 	{
