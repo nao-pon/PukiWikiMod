@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: gimage.inc.php,v 1.15 2006/06/08 05:26:20 nao-pon Exp $
+// $Id: gimage.inc.php,v 1.16 2006/06/09 01:49:57 nao-pon Exp $
 //
 //	 GNU/GPL にしたがって配布する。
 //
@@ -69,6 +69,6 @@ function plugin_gimage_convert()
 	
 	$max = $col * $row;
 	
-	return do_plugin_convert("yahoo","img,\"{$query}\",type:{$qmode},max:{$max},col:{$col}");
+	return do_plugin_convert("yahoo","img,{$query},type:{$qmode},max:{$max},col:{$col}");
 }
 ?>
