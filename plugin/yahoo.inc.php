@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: yahoo.inc.php,v 1.1 2006/06/08 05:25:36 nao-pon Exp $
+// $Id: yahoo.inc.php,v 1.2 2006/06/09 01:48:09 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #yahoo([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -9,6 +9,7 @@ function plugin_yahoo_init()
 {
 	$msg = array('plugin_yahoo_dataset'=>array(
 		'msg_notfound'  => '※ Yahoo!で「%1$s」の%2$sを検索しましたが見つかりませんでした。',
+		'msg_more'  => '「%1$s」の%2$sをもっと探す',
 		'msg_web'  => 'Webサイト',
 		'msg_img'  => '画像',
 		'msg_mov'  => '動画',
@@ -68,7 +69,8 @@ EOT;
 	
 	set_plugin_messages($data);
 }
-
+?>
+<?php
 function plugin_yahoo_action()
 {
 	global $get,$plugin_yahoo_dataset;
@@ -127,14 +129,20 @@ function plugin_yahoo_convert()
 	{
 		case "web":
 			$mode = "web";
+			$more = "http://search.yahoo.co.jp/search?p=".rawurlencode($query)."&ei=EUC-JP&b=";
+			$more_add = 1;
 			break;
 		case "image":
 		case "img":
 			$mode = "img";
+			$more = "http://images.search.yahoo.co.jp/bin/query?p=".rawurlencode($query)."&ei=EUC-JP&b=";
+			$more_add = 0;
 			break;
 		case "movie":
 		case "mov":
 			$mode = "mov";
+			$more = "http://video.search.yahoo.co.jp/bin/query?p=".rawurlencode($query)."&ei=EUC-JP&b=";
+			$more_add = 0;
 			break;
 		//case "related":
 		//case "rel":
@@ -147,8 +155,10 @@ function plugin_yahoo_convert()
 
 	$prms = array("target"=>$link_target,"type"=>"or","max"=>$plugin_yahoo_dataset['max_'.$mode],"col"=>$plugin_yahoo_dataset['col_'.$mode]);
 	pwm_check_arg($args, &$prms);
+	$max = (int)$prms['max'];
+	$more = "<a href='".$more.($max+$more_add)."' target='".htmlspecialchars($prms['target'])."'>".sprintf($plugin_yahoo_dataset['msg_more'],htmlspecialchars($query),$plugin_yahoo_dataset['msg_'.$mode])."</a>";
 	
-	list($ret,$refresh) = plugin_yahoo_get($mode,$query,$prms['type'],$prms['max'],$prms['target'],$prms['col']);
+	list($ret,$refresh) = plugin_yahoo_get($mode,$query,$prms['type'],$max,$prms['target'],$prms['col']);
 	
 	// リフレッシュが必要
 	if ($refresh)
@@ -156,11 +166,12 @@ function plugin_yahoo_convert()
 		$vars['mc_refresh'][] = "?plugin=yahoo&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&m=".rawurlencode($mode)."&q=".rawurlencode($query)."&t=".rawurlencode($prms['type'])."&ma=".rawurlencode($prms['max'])."&ta=".rawurlencode($prms['target'])."&c=".rawurlencode($prms['col']);
 	}
 	
+	
 	$cr = '<!-- Begin Yahoo! JAPAN Web Services Attribution Snippet -->
 <a href="http://developer.yahoo.co.jp/about" target="'.$link_target.'"><img src="http://i.yimg.jp/images/yjdn/yjdn_attbtn2_105_17.gif" width="105" height="17" title="Webサービス by Yahoo! JAPAN" alt="Webサービス by Yahoo! JAPAN" border="0" style="margin:15px 15px 15px 15px"></a>
 <!-- End Yahoo! JAPAN Web Services Attribution Snippet -->';
 
-	return "<p><div class='pwm_yahoo'>{$ret}</div>{$cr}</p>";
+	return "<p><div class='pwm_yahoo'>{$ret}</div>{$cr}{$more}</p>";
 
 }
 
