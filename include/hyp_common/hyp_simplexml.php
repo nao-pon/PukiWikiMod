@@ -1,5 +1,5 @@
 <?php
-// $Id: hyp_simplexml.php,v 1.1 2006/06/07 04:11:51 nao-pon Exp $
+// $Id: hyp_simplexml.php,v 1.2 2006/06/09 13:31:57 nao-pon Exp $
 // HypSimpleXML Class by nao-pon http://hypweb.net
 // Based on SimpleXML
 // added function 'XMLstr_in()'
@@ -90,7 +90,7 @@ class HypSimpleXML
 	/**
 	 * @access private
 	 */
-	var $options;
+	var $options = array();
 
 	/**
 	 * @access private
@@ -100,7 +100,7 @@ class HypSimpleXML
 	/**
 	 * @access private
 	 */
-	var $output;
+	var $output = array();
 
 	/**
 	 * @access private
