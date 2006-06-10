@@ -161,6 +161,25 @@ function pukiwiki_charcode()
 
 function pukiwiki_initTexts()
 {
+	if (pukiwiki_initLoad) return;
+	pukiwiki_initLoad = 1;
+	var oElements = document.getElementsByTagName("form");
+	for (i = 0; i < oElements.length; i++)
+	{
+		oElement = oElements[i];
+		var onkeyup = oElement.onkeyup;
+		var onmouseup = oElement.onmouseup;
+		oElement.onkeyup = function()
+		{
+			if (onkeyup) onkeyup();
+			pukiwiki_pos();
+		};
+		oElement.onmouseup = function()
+		{
+			if (onmouseup) onmouseup();
+			pukiwiki_pos();
+		};
+	}	
 	return;
 }
 

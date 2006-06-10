@@ -195,6 +195,8 @@ function pukiwiki_setActive(e)
 }
 function pukiwiki_initTexts()
 {
+	if (pukiwiki_initLoad) return;
+	pukiwiki_initLoad = 1;
 	pukiwiki_elem = null;
 	oElements = document.getElementsByTagName("input");
 	for (i = 0; i < oElements.length; i++)

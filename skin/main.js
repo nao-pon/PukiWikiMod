@@ -4,6 +4,7 @@ var pukiwiki_Gecko=(navigator && navigator.userAgent && navigator.userAgent.inde
 var pukiwiki_Is_pukiwikimod = (document.URL.indexOf(pukiwiki_root_url,0) == 0);
 
 var pukiwiki_mapLoad=0;
+var pukiwiki_initLoad=0;
 
 // cookie
 var pukiwiki_adv = pukiwiki_load_cookie("pwmod");
@@ -13,7 +14,7 @@ var pukiwiki_adv = pukiwiki_load_cookie("pwmod");
 var pukiwiki_adv_tag = '';
 if (pukiwiki_adv == "on")
 {
-	pukiwiki_adv_tag += '<span style="cursor:hand;">';
+	pukiwiki_adv_tag += '<span style="cursor:pointer;">';
 	
 	if (pukiwiki_Is_pukiwikimod) pukiwiki_adv_tag +=
 '<img src="'+pukiwiki_root_url+'image/clip.png" width="18" height="16" border="0" title="'+pukiwiki_msg_attach+'" alt="&amp;attachref;" onClick="javascript:pukiwiki_ins(\'&attachref();\'); return false;" '+'/'+'>';
@@ -30,7 +31,7 @@ var pukiwiki_helper_img =
 ' '+
 pukiwiki_adv_tag +
 '<img src="'+pukiwiki_root_url+'image/colors.gif" width="64" height="16" border="0" usemap="#map_color" tabindex="-1" '+'/'+'> '+
-'<span style="cursor:hand;">'+
+'<span style="cursor:pointer;">'+
 '<img src="'+pukiwiki_root_url+'face/smile.gif" width="15" height="15" border="0" title=":)" alt=":)" onClick="javascript:pukiwiki_face(\':)\'); return false;" '+'/'+'>'+
 '<img src="'+pukiwiki_root_url+'face/bigsmile.gif" width="15" height="15" border="0" title=":D" alt=":D" onClick="javascript:pukiwiki_face(\':D\'); return false;" '+'/'+'>'+
 '<img src="'+pukiwiki_root_url+'face/huh.gif" width="15" height="15" border="0" title=":p" alt=":p" onClick="javascript:pukiwiki_face(\':p\'); return false;" '+'/'+'>'+
@@ -207,10 +208,10 @@ else
 // Add function in 'window.onload' event.
 void function()
 {
-	var $onoccur = window.onload;
+	var onload = window.onload;
 	window.onload = function()
 	{
-		if ($onoccur) $onoccur();
+		if (onload) onload();
 		pukiwiki_initTexts();
 	}
 } ();

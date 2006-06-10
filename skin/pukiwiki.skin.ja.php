@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.41 2006/02/22 12:52:09 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.42 2006/06/10 06:34:44 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 global $pwm_confg;
 ?>
@@ -11,7 +11,7 @@ global $pwm_confg;
 	//-->
 	</script>
 	<script type="text/javascript" src="skin/default.ja.js"></script>
-<div class="pukiwiki_body" onmouseup="pukiwiki_pos();return true;" onkeyup="pukiwiki_pos();return true;">
+<div class="pukiwiki_body">
 	<?php if((!$hide_navi && !$noheader) || !$is_read){ // header ?>
 		<center><div class="wiki_page_title"><?php echo $page ?></div>
 	<?php if($is_page) { ?>
