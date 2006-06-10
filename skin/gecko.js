@@ -17,7 +17,7 @@ function pukiwiki_face(v)
 		var s2 = (pukiwiki_elem.value).substring(se,pukiwiki_getTextLength(pukiwiki_elem));
 		var s3 = pukiwiki_getMozSelection(pukiwiki_elem);
 		if (!s1 && !s2 && !s3) s1 = pukiwiki_elem.value;
-		pukiwiki_elem.value = s1 + s3 + ' ' + v + ' ' + s2;
+		pukiwiki_setText(s1 + s3 + ' ' + v + ' ' + s2);
 		se = se + v.length + 2;
 		pukiwiki_elem.setSelectionRange(se, se);
 		pukiwiki_elem.focus();
@@ -53,7 +53,7 @@ function pukiwiki_ins(v)
 		var s2 = (pukiwiki_elem.value).substring(se,pukiwiki_getTextLength(pukiwiki_elem));
 		var s3 = pukiwiki_getMozSelection(pukiwiki_elem);
 		if (!s1 && !s2 && !s3) s1 = pukiwiki_elem.value;
-		pukiwiki_elem.value = s1 + s3 + v + s2;
+		pukiwiki_setText(s1 + s3 + v + s2);
 		se = se + v.length + 2;
 		pukiwiki_elem.setSelectionRange(se, se);
 		pukiwiki_elem.focus();
@@ -101,7 +101,7 @@ function pukiwiki_tag(v)
 		{
 			str = '&font(' + v + '){' + str + '};';
 		}
-		pukiwiki_elem.value = s1 + str + s2;
+		pukiwiki_setText(s1 + str + s2);
 		se = ss + str.length;
 		pukiwiki_elem.setSelectionRange(ss, se);
 		pukiwiki_elem.focus();
@@ -137,7 +137,7 @@ function pukiwiki_linkPrompt(v)
 		if (my_link != null)
 		{
 			str = '[[' + str + ':' + my_link + ']]';
-			pukiwiki_elem.value = s1 + str + s2;
+			pukiwiki_setText(s1 + str + s2);
 			se = ss + str.length;
 			pukiwiki_elem.setSelectionRange(se, se);
 			pukiwiki_elem.focus();
@@ -170,7 +170,7 @@ function pukiwiki_charcode()
 		for(var n = 0; n < str.length; n++) j += ("&#"+(str.charCodeAt(n))+";");
 		str = j;
 		
-		pukiwiki_elem.value = s1 + str + s2;
+		pukiwiki_setText(s1 + str + s2);
 		se = ss + str.length;
 		pukiwiki_elem.setSelectionRange(ss, se);
 		pukiwiki_elem.focus();
@@ -244,4 +244,13 @@ function pukiwiki_show_hint()
 	alert(pukiwiki_msg_gecko_hint_text);
 	
 	if (pukiwiki_elem != null) pukiwiki_elem.focus();
+}
+
+function pukiwiki_setText(v)
+{
+	var scrollTop = pukiwiki_elem.scrollTop;
+	var scrollLeft = pukiwiki_elem.scrollLeft;
+	pukiwiki_elem.value =v;
+	pukiwiki_elem.scrollTop = scrollTop;
+	pukiwiki_elem.scrollLeft = scrollLeft;
 }
