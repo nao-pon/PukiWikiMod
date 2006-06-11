@@ -1,5 +1,5 @@
 <?php
-// $Id: comment_functions.php,v 1.4 2006/05/12 05:26:06 nao-pon Exp $
+// $Id: comment_functions.php,v 1.5 2006/06/11 01:53:06 nao-pon Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -64,11 +64,13 @@ function pukiwiki_com_touch($id,$time,$dir_num)
 {
 	global $xoopsDB;
 
-	$dir = str_replace("\\","/",dirname(__FILE__));
-	$dir = str_replace("/include","",$dir);
+	$dir = dirname(dirname(__FILE__));
 	
-	require($dir."/cache/config.php");
-	require_once($dir."/func.php");
+	include($dir."/cache/config.php");
+	include_once($dir."/func.php");
+	include_once($dir."/file.php");
+	// キャッシュディレクトリ
+	if (!defined("CACHE_DIR")) define("CACHE_DIR",$dir."/cache/");
 	
 	$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".$dir_num."_pginfo")." WHERE id=$id LIMIT 1;";
 	$res = $xoopsDB->query($query);
