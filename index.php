@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: index.php,v 1.5 2006/06/08 04:59:33 nao-pon Exp $
+// $Id: index.php,v 1.6 2006/06/13 13:39:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -393,7 +393,7 @@ else
 		}
 	}
 	// プレビュー
-	else if(arg_check("preview") || $post["preview"] || $post["template"])
+	else if($vars['cmd'] == "preview")
 	{
 		// 整数値しか許可されないパラメータをチェック
 		check_int_param($arg);
@@ -518,7 +518,7 @@ else
 		$body .= edit_form($postdata_input,$vars["page"],0,$vars["gids"],$vars["aids"]);
 	}
 	// 書き込みもしくは追加もしくはコメントの挿入
-	else if($post["write"] || ($_SERVER['REQUEST_METHOD'] == "POST" && arg_check("write")))
+	else if($vars['cmd'] == "write")
 	{
 		// 整数値しか許可されないパラメータをチェック
 		check_int_param($arg);

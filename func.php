@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.77 2006/05/12 00:06:17 nao-pon Exp $
+// $Id: func.php,v 1.78 2006/06/13 13:39:19 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -146,11 +146,11 @@ function do_search($word,$type='AND',$non_format=FALSE)
 }
 
 // プログラムへの引数のチェック
-function arg_check($str)
+function arg_check($str, $method="vars")
 {
-	global $arg,$vars;
+	global $get,$post,$vars;
 
-	return preg_match("/^".$str."/",$vars["cmd"]);
+	return preg_match("/^".$str."/",${$method}["cmd"]);
 }
 
 // ページリストのソート

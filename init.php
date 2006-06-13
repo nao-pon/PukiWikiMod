@@ -1,33 +1,11 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.61 2006/04/21 14:27:41 nao-pon Exp $
+// $Id: init.php,v 1.62 2006/06/13 13:39:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
 	if ((isset($_POST['cmd']) && isset($_POST['plugin'])) || (isset($_GET['cmd']) && isset($_GET['plugin'])))
 		{ exit('Using both cmd= and plugin= is not allowed.'); }
-
-// Tokenチケット確認
-if (!defined('PWM_TICET_NOT_USE') && strtoupper($_SERVER["REQUEST_METHOD"]) == "POST")
-{
-	// POSTメソッドの時のみチェック
-	
-	// TB受信?
-	if (!empty($_GET['pwm_ping']))
-	{
-		$_POST['plugin'] = 'tb';
-		$_GET['cmd'] = $_POST['cmd'] = '';
-	}
-	
-	// paint, painter プラグインでの投稿は時間が経ってセッションが切れている場合があるので通過させる。
-	// tb プラグインも通過。
-	if (empty($_POST['plugin']) || !preg_match("/paint(er)?|tb/",$_POST['plugin']))
-	{
-		// fusen プラグインでの投稿はAjaxなのでチケットを破棄しないようにする。pginfo はインラインフレーム処理だから
-		$onetime = (!empty($_POST['plugin']) && ($_POST['plugin']=="fusen" || $_POST['plugin']=="pginfo"))? false : true;
-		if (!check_token_ticket($onetime)) exit('It is an invalid request.');
-	}
-}
 
 // 設定ファイルの場所
 define('INI_FILE','./pukiwiki.ini.php');
@@ -140,8 +118,6 @@ if ( $xoopsUser && is_object($xoopsModule))
 // UserCode with cookie
 $X_ucd = (isset($_COOKIE["pukiwiki_uc"]))? $_COOKIE["pukiwiki_uc"] : "";
 //user-codeの発行
-// ↓この方式はやめた
-//if(!$X_ucd){ $X_ucd = substr(crypt(md5(getenv("REMOTE_ADDR").$adminpass.gmdate("Ymd", time()+9*60*60)),'id'),-12); }
 if(!$X_ucd || strlen($X_ucd) == 12){ $X_ucd = md5(getenv("REMOTE_ADDR").$adminpass.gmdate("Ymd", time()+9*60*60)); }
 setcookie("pukiwiki_uc", $X_ucd, time()+86400*365);//1年間
 $X_ucd = substr(crypt($X_ucd,($adminpass)? $adminpass : 'id'),-12);
@@ -403,7 +379,7 @@ else if (arg_check("preview") || $post["preview"] || $post["template"])
 {
 	$vars['cmd'] = "preview";
 }
-else if (arg_check("write") || $post["write"])
+else if (arg_check("write","post") || $post["write"])
 {
 	$vars['cmd'] = "write";
 }
@@ -415,6 +391,35 @@ else if (isset($vars['cmd']) && !in_array($vars['cmd'],array("read","edit","prev
 }
 
 // $vars['cmd'] End
+
+// Tokenチケット確認
+if (empty($vars["plugin"]) && ($vars['cmd'] == "preview" || $vars['cmd'] == "write"))
+{
+	// プリビューと編集時
+	if ($pwm_config['use_ticket_in_edit'] === 0 || ($pwm_config['use_ticket_in_edit'] === 1 && $X_uid))
+	if (!defined('PWM_TICET_NOT_USE')) define('PWM_TICET_NOT_USE', TRUE);
+}
+if (!defined('PWM_TICET_NOT_USE') && strtoupper($_SERVER["REQUEST_METHOD"]) == "POST")
+{
+	// POSTメソッドの時のみチェック
+	
+	// TB受信?
+	if (!empty($_GET['pwm_ping']))
+	{
+		$_POST['plugin'] = 'tb';
+		$_GET['cmd'] = $_POST['cmd'] = '';
+	}
+	
+	// paint, painter プラグインでの投稿は時間が経ってセッションが切れている場合があるので通過させる。
+	// tb プラグインも通過。
+	if (empty($_POST['plugin']) || !preg_match("/paint(er)?|tb/",$_POST['plugin']))
+	{
+		// fusen プラグインでの投稿はAjaxなのでチケットを破棄しないようにする。pginfo はインラインフレーム処理だから
+		$onetime = (!empty($_POST['plugin']) && ($_POST['plugin']=="fusen" || $_POST['plugin']=="pginfo"))? false : true;
+		if (!check_token_ticket($onetime)) exit('It is an invalid request.');
+	}
+}
+
 
 // cmd,plugin,pgid が指定されていない場合は、QUERY_STRINGをページ名かInterWikiNameであるとみなす
 if (! isset($vars['cmd']) && ! isset($vars['plugin']) )
