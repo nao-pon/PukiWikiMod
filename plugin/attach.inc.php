@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.43 2006/05/12 06:45:18 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.44 2006/06/15 02:08:31 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -44,7 +44,7 @@ else
 	define('ATTACH_FILE_MODE',0644); 
 	//define('ATTACH_FILE_MODE',0604); // for XREA.COM 
 
-	// open, delete, upload 時にリファラをチェックする
+	// open 時にリファラをチェックする
 	// 0:チェックしない, 1:未定義は許可, 2:未定義も不許可
 	// 未設定 = URL直打ち, ノートンなどでリファラを遮断 など。
 	define('ATTACH_REFCHECK',1);
@@ -140,11 +140,16 @@ function plugin_attach_action()
 	$age = array_key_exists('age',$vars) ? $vars['age'] : 0;
 	$pcmd = array_key_exists('pcmd',$vars) ? $vars['pcmd'] : '';
 	
+	if (!empty($vars['page']) && is_page($vars['page']) && empty($pcmd))
+	{
+		//ページが指定されていて pcmd がない時は 'upload' にする
+		$pcmd = 'upload';
+	}
+	
 	// リファラチェック
 	if (ATTACH_REFCHECK)
 	{
-		if (($vars['pcmd'] == 'open' || $vars['pcmd'] == 'delete' || ($vars['pcmd'] == 'upload' && strtoupper($_SERVER["REQUEST_METHOD"]) == "POST") || !$pcmd)
-		 && !pukiwiki_refcheck(ATTACH_REFCHECK-1))
+		if ($pcmd == 'open' && !pukiwiki_refcheck(ATTACH_REFCHECK-1))
 		{
 			//redirect_header(XOOPS_WIKI_URL,0,"Access denied!");
 			//echo "Access Denied!";
@@ -154,35 +159,41 @@ function plugin_attach_action()
 	}
 	
 	// Authentication
-	if (array_key_exists('refer',$vars) and is_pagename($vars['refer']))
+	if (array_key_exists('refer',$vars) and is_page($vars['refer']))
 	{
-		$read_cmds = array('info','open','list','imglist');
-		if (in_array($pcmd,$read_cmds))
+		if ($pcmd == 'upload')
 		{
-			//閲覧
-			if (!check_readable($vars['refer'])) return array('result'=>FALSE,'msg'=>_MD_PUKIWIKI_NO_VISIBLE);
-		}
-		else
-		{
-			//アップロード・削除など
+			//アップロード
 			if (ATTACH_UPLOAD_ADMIN_ONLY)
 			{
 				$check = $X_admin;
 			}
 			else
 			{
-				$check = check_editable($vars['refer']);
+				if (ATTACH_UPLOAD_EDITER_ONLY)
+				{
+					$check = check_editable($vars['refer']);
+				}
+				else
+				{
+					$check = check_readable($vars['refer']);
+				}
 			}
 			if (!$check) return array('result'=>FALSE,'msg'=>$_attach_messages['err_noparm']);
 		}
-	}
-	
-	// Upload
-	if (array_key_exists('attach_file',$_FILES))
-	{
-		$pass = array_key_exists('pass',$vars) ? md5($vars['pass']) : NULL;
-		$copyright = (isset($post['copyright']))? TRUE : FALSE;
-		return attach_upload($_FILES['attach_file'],$vars['refer'],$pass,$copyright);
+		else
+		{
+			//その他
+			if (!check_readable($vars['refer'])) return array('result'=>FALSE,'msg'=>_MD_PUKIWIKI_NO_VISIBLE);
+		}
+		
+		// Upload
+		if (array_key_exists('attach_file',$_FILES))
+		{
+			$pass = array_key_exists('pass',$vars) ? md5($vars['pass']) : NULL;
+			$copyright = (isset($post['copyright']))? TRUE : FALSE;
+			return attach_upload($_FILES['attach_file'],$vars['refer'],$pass,$copyright);
+		}
 	}
 	
 	$pass = array_key_exists('pass',$vars) ? $vars['pass'] : NULL;
@@ -198,13 +209,14 @@ function plugin_attach_action()
 		case 'upload':  return attach_showform();
 		case 'copyright':  return attach_copyright($pass);
 	}
-	if ($vars['page'] == '' or !is_page($vars['page']))
+	if (empty($vars['page']) || !is_page($vars['page']))
 	{
 		return attach_list();
 	}
 	
-	return attach_showform();
+	return false;
 }
+
 //-------- call from skin
 function attach_filelist($isbn=false)
 {
