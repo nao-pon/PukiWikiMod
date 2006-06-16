@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.49 2006/06/16 01:57:39 nao-pon Exp $
+// $Id: index.php,v 1.50 2006/06/16 05:12:17 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
@@ -334,9 +334,12 @@ function displayForm($install){
 	xoops_cp_header();
 	OpenTable();
 	checkPermit($install);
-
-//	global $xoopsConfig;
-//	echo (nl2br(htmlspecialchars(print_r($xoopsModule,true))));
+	
+	$pwm_newver = pwm_chech_newversion();
+	if ($pwm_newver && _XOOPS_WIKI_VERSION != $pwm_newver)
+	{
+		echo "<img src='../image/alert.gif'>&nbsp;"."You can get new \"PukiwikiMod\" (version {$pwm_newver}) [ <a href=\"http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/pukiwikimod/pukiwiki.tar.gz?only_with_tag=MAIN&amp;view=tar\" target=\"_blank\">this link!</a> ]. your version is "._XOOPS_WIKI_VERSION."<hr />";	
+	}
 
 	$X_admin =0;
 	$X_uid =0;
@@ -508,11 +511,6 @@ function displayForm($install){
 	</td><td>
 		<input type='radio' name='wiki_function_freeze' value='1'".$_ff_enable.">"._AM_WIKI_ENABLE."
 		<input type='radio' name='wiki_function_freeze' value='0'".$_ff_disable.">"._AM_WIKI_DISABLE."
-	</td></tr>
-	<tr><td>
-		"._AM_WIKI_ADMINPASS."
-	</td><td>
-		<input type='text' size='"._WIKI_AM_TEXT_SIZE."' name='wiki_adminpass' value=''>
 	</td></tr>
 	<tr><td>
 		"._AM_WIKI_FUNCTION_UNVISIBLE."
@@ -897,5 +895,30 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 		redirect_header("./index.php",1,_AM_DBUPDATED);
 		exit();
 	}
+}
+
+function pwm_chech_newversion()
+{
+	$url = 'http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/*checkout*/pukiwikimod/pukiwiki/version.php?content-type=text%2Fplain';	
+	
+	$d = new Hyp_HTTP_Request();
+
+	$d->url = $url;
+	$d->connect_try = 2;
+	$d->connect_timeout = 2;
+	$d->read_timeout = 1;
+	
+	$d->get();
+	
+	$new = false;
+	if ($d->rc == 200 && $d->data)
+	{
+		$dat = $d->data;
+		if (preg_match('/"_XOOPS_WIKI_VERSION",\s?"([^"]+)"/',$dat,$arg))
+		{
+			$new = $arg[1];
+		}
+	}
+	return $new;
 }
 ?>
