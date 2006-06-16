@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.48 2006/05/07 13:50:19 nao-pon Exp $
+// $Id: index.php,v 1.49 2006/06/16 01:57:39 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
@@ -28,11 +28,11 @@ define("XOOPS_WIKI_PATH",XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME);
 define("XOOPS_WIKI_URL",XOOPS_URL.'/modules/'.PUKIWIKI_DIR_NAME);
 
 // class HypCommonFunc
-if(!class_exists('HypCommonFunc')){include(XOOPS_WIKI_PATH."/include/hyp_common_func.php");}
+if(!class_exists('HypCommonFunc')){include(XOOPS_WIKI_PATH."/include/hyp_common/hyp_common_func.php");}
 
 // config.php がない場合(初期導入時)
 $install = false;
-if (! file_exists(XOOPS_WIKI_PATH."/cache/config.php"))
+if (! file_exists(XOOPS_WIKI_PATH."/cache/config.php") || !filesize(XOOPS_WIKI_PATH."/cache/config.php"))
 {
 	@touch(XOOPS_WIKI_PATH."/cache/config.php");
 	$install = true;
@@ -269,7 +269,7 @@ function writeConfig(){
 	exit();
 }
 
-function checkPermit(){
+function checkPermit($install = false){
 	global $xoopsModule;
 	$wiki_error = array();
 	$_check_list = array(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/attach/",
@@ -284,19 +284,17 @@ function checkPermit(){
 		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/trackback/",
 		XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/wiki/");
 	
-	/*
-	if ($dir = @opendir(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/wiki/")) {
+	if ($install && $dir = @opendir(XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/wiki/")) {
 		while($file = readdir($dir)) {
 			if($file == ".." || $file == ".") continue;
 			array_push($_check_list, XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/wiki/".$file);
 		}
 		closedir($dir);
 	}
-	*/
 
 	foreach($_check_list as $dir){
 		if(!is_writable($dir)){
-			$wiki_error[] = _AM_WIKI_ERROR01."=> ".$dir;
+			$wiki_error[] = _AM_WIKI_ERROR01."=> ".str_replace(XOOPS_ROOT_PATH."/modules/","XOOPS Module directry/",$dir);
 		}
 	}
 
@@ -335,7 +333,7 @@ function displayForm($install){
 	
 	xoops_cp_header();
 	OpenTable();
-	checkPermit();
+	checkPermit($install);
 
 //	global $xoopsConfig;
 //	echo (nl2br(htmlspecialchars(print_r($xoopsModule,true))));
@@ -415,7 +413,10 @@ function displayForm($install){
 	$_unvisible_sw_ = array("","");
 	$_unvisible_sw_[$read_auth] = " checked";
 
-	$_wiki_css_file = @file(_AM_WIKI_CSS_FILE);
+	if (! $_wiki_css_file = @file(_AM_WIKI_CSS_FILE))
+	{
+		$_wiki_css_file = array();
+	}
 	$wiki_css = "";
 	foreach($_wiki_css_file as $__wiki){
 		$wiki_css .= $__wiki;
