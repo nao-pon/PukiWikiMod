@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.50 2006/06/16 05:12:17 nao-pon Exp $
+// $Id: index.php,v 1.51 2006/06/16 06:12:03 nao-pon Exp $
 
 include('../../../include/cp_header.php');
 
@@ -43,6 +43,7 @@ include(XOOPS_WIKI_PATH."/cache/config.php");
 include(XOOPS_WIKI_PATH."/html.php");
 include(XOOPS_WIKI_PATH."/file.php");
 include(XOOPS_WIKI_PATH."/func.php");
+include_once(XOOPS_WIKI_PATH."/version.php");
 define("_AM_WIKI_CONFIG_FILE", "../cache/config.php");
 define("_AM_WIKI_ADMIN_PASS", "../cache/adminpass.php");
 define("_AM_WIKI_CSS_FILE", XOOPS_ROOT_PATH."/modules/".PUKIWIKI_DIR_NAME."/cache/css.css");
