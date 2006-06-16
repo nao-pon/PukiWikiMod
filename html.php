@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.64 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: html.php,v 1.65 2006/06/16 05:11:44 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -764,10 +764,8 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	$ret .= "<tr><th class='style_th'>$_btn_allow_group</th><th class='style_th'>$_btn_allow_user</th><th class='style_th'>$_btn_allow_memo_t</th></tr>";
 	$ret .= "<tr><td class='style_td'>";
 
-	if ($wiki_writable !== 2){
-		$groups = X_get_group_list();
-		$mygroups = X_get_groups();
-	}
+	$groups = X_get_group_list();
+	$mygroups = X_get_groups();
 
 	// グループの名前をサイトの設定に書き換え
 	//$_btn_allow_memo = str_replace("_GUEST_ALLOW_",$_btn_allow_guest,$_btn_allow_memo);
@@ -797,10 +795,7 @@ function allow_edit_form($allow_groups=NULL,$allow_users=NULL) {
 	$ret .= "</select></td>";
 	$ret .= "<td class='style_td'>";
 	
-	if ($wiki_writable !== 2){
-		$allusers = X_get_users();
-		//asort($allusers);
-	}
+	$allusers = X_get_users();
 
 	// ユーザ一覧表示
 	$ret .= "<select  size='10' name='aids[]' id='aids[]' multiple='multiple'>";
