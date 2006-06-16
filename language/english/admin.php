@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.14 2006/03/08 06:55:05 nao-pon Exp $
+// $Id: admin.php,v 1.15 2006/06/16 05:09:14 nao-pon Exp $
 // FIXME: not good at English. :P
 
 define("_AM_WIKI_TITLE0", "PukiWikiMod initial setting.");
@@ -24,7 +24,7 @@ define("_AM_WIKI_ERROR01", "not writable");
 define("_AM_WIKI_DEFAULTPAGE", "Default Page");
 define("_AM_WIKI_MODIFIER", "Modifier");
 define("_AM_WIKI_MODIFIERLINK", "Modifier's Homepage");
-define("_AM_WIKI_FUNCTION_FREEZE", "Enable Freeze");
+define("_AM_WIKI_FUNCTION_FREEZE", "Enable editable authority for each page.");
 define("_AM_WIKI_ADMINPASS", "The password to unfreeze<br>type a new password only when changing it.");
 define("_AM_WIKI_CSS", "Styles of page that override default style<br />(This can be useful to change style of PukiWiki pages to fit them your theme)");
 
@@ -39,7 +39,7 @@ define("_AM_WIKI_MAIL_ALL", "All users");
 define("_AM_WIKI_MAIL_NOADMIN", "All users except Webmasters");
 define("_AM_WIKI_MAIL_NONE", "Nobody");
 
-define("_AM_WIKI_FUNCTION_UNVISIBLE", "Enable perusal authority for every page.");
+define("_AM_WIKI_FUNCTION_UNVISIBLE", "Enable perusal authority for each page.");
 define("_AM_WIKI_BACKUP_TIME", "The interval of fixed backup.(hour) [every updating at 0]");
 define("_AM_WIKI_BACKUP_AGE", "Maximum generations of backup.");
 define("_AM_WIKI_PCMT_PAGE", 'The default of the new creation page name in pcomment plug-in.(Installation page name is set to %s.)');

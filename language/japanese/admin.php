@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.php,v 1.22 2006/03/13 06:16:43 nao-pon Exp $
+// $Id: admin.php,v 1.23 2006/06/16 05:09:14 nao-pon Exp $
 
 define("_AM_WIKI_TITLE0", "PukiWiki 初期設定");
 define("_AM_WIKI_INFO0", "モジュールを新規インストールした時は次のリンク先にアクセスして必要な処理を実行してください。<br />通常、初期導入時に１回のみ実行します。");
@@ -23,7 +23,7 @@ define("_AM_WIKI_ERROR01", "書き込み権限がありません。");
 define("_AM_WIKI_DEFAULTPAGE", "デフォルトページ");
 define("_AM_WIKI_MODIFIER", "編集者の名前");
 define("_AM_WIKI_MODIFIERLINK", "編集者のホームページ");
-define("_AM_WIKI_FUNCTION_FREEZE", "凍結機能を有効にする");
+define("_AM_WIKI_FUNCTION_FREEZE", "ページごとの編集権限機能を有効にする");
 define("_AM_WIKI_ADMINPASS", "凍結解除用の管理者パスワード<br>（パスワードを変更する場合のみ記入してください）");
 define("_AM_WIKI_CSS", "スタイルシートのオーバーライド<br />（テーマによって見出し等が非常に見づらくなったり、<br />Wikiの色を変えたい時に有効です）");
 
@@ -42,7 +42,7 @@ define("_AM_WIKI_WRITABLE", "上記設定の<b>編集を許可するユーザー</b>");
 define("_AM_WIKI_ANONWRITABLE_MSG", "<dl><dt>(説明) 編集を許可するユーザー</dt><dd>不許可において下の「<b>ページごとの編集権限</b>」より優先します。<br />例えば・・・<br />「<b>管理者のみ</b>」を選択した場合、「<b>ページごとの編集権限</b>」に関わらず、すべてのページが管理者のみしか編集できません。<br />「<b>すべての訪問者</b>」を選択すると、「<b>ページごとの編集権限</b>」で各ページの編集権限をコントロールできるようになります。</dd></dl>");
 define("_AM_WIKI_ALLOW_NEW", "ページの新規作成を許可するユーザー");
 
-define("_AM_WIKI_FUNCTION_UNVISIBLE", "ページごとの閲覧制限機能を有効にする");
+define("_AM_WIKI_FUNCTION_UNVISIBLE", "ページごとの閲覧権限機能を有効にする");
 define("_AM_WIKI_BACKUP_TIME", "定期バックアップの間隔(時間(hour)で指定[0で更新毎])");
 define("_AM_WIKI_BACKUP_AGE", "バックアップの最大世代数");
 define("_AM_WIKI_PCMT_PAGE", 'pcommentプラグインでの新規作成ページ名のデフォルト (%sに設置ページ名が入る)');
