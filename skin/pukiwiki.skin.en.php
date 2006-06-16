@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.en.php,v 1.11 2005/07/13 15:47:28 nao-pon Exp $
+// $Id: pukiwiki.skin.en.php,v 1.12 2006/06/16 06:07:32 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 ?>
 
@@ -65,7 +65,7 @@ if (!defined('DATA_DIR')) exit;
 	]<br /></center>
 	<?php echo $hr ?>
 	<?php } else { if (!$_freeze) { // header ?>
-		<div style="float:right;width:65px;"><a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="Attach" /></a><a href="<?php echo $link_edit ?>"><img src="./image/edit_button.gif" width="45" height="22" border="0" alt="edit" /></a></div>
+		<div style="float:right;width:65px;"><a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="Attach" title="Attach" /></a><a href="<?php echo $link_edit ?>"><img src="./image/edit_button.gif" width="45" height="22" border="0" alt="edit" title="edit" /></a></div>
 	<?php } } ?>
 
 	<?php if($is_read) { ?>
@@ -84,7 +84,7 @@ if (!defined('DATA_DIR')) exit;
 	
 	<div style="clear:both;"></div>
 	
-	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev"> <img src="./image/next.png" width="6" height="12" alt="Next"> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
+	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev" /> <img src="./image/next.png" width="6" height="12" alt="Next" /> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
 	
 	<?php } // is_read ?>
 	<div class="wiki_header_img"></div>
@@ -103,34 +103,34 @@ if (!defined('DATA_DIR')) exit;
 	
 	<div style="text-align:right">
 		<?php if($is_page) { ?>
-		<a href="<?php echo $link_page ?>"><img src="./image/reload.png" width="20" height="20" border="0" alt="Reload" /></a>
+		<a href="<?php echo $link_page ?>"><img src="./image/reload.png" width="20" height="20" border="0" alt="Reload" title="Reload" title="Reload" /></a>
 		&nbsp;
 		<?php if (!$_freeze){ ?>
 		<?php if ($wiki_allow_newpage){ ?>
-		<a href="<?php echo $link_new ?>"><img src="./image/new.png" width="20" height="20" border="0" alt="New" /></a>
-		<a href="<?php echo $link_copy ?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="Page Copy" /></a>
+		<a href="<?php echo $link_new ?>"><img src="./image/new.png" width="20" height="20" border="0" alt="New" title="New" title="New" /></a>
+		<a href="<?php echo $link_copy ?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="Page Copy" title="Page Copy" title="Page Copy" /></a>
 		<?php } // $wiki_allow_newpage ?>
-		<a href="<?php echo $link_edit ?>"><img src="./image/edit.png" width="20" height="20" border="0" alt="Edit" /></a>
-		<a href="<?php echo $link_rename ?>"><img src="./image/rename.png" width="20" height="20" border="0" alt="Rename" /></a>
+		<a href="<?php echo $link_edit ?>"><img src="./image/edit.png" width="20" height="20" border="0" alt="Edit" title="Edit" title="Edit" /></a>
+		<a href="<?php echo $link_rename ?>"><img src="./image/rename.png" width="20" height="20" border="0" alt="Rename" title="Rename" title="Rename" /></a>
 		&nbsp;
 		<?php } // !$_freeze ?>
-		<a href="<?php echo $link_diff ?>"><img src="./image/diff.png" width="20" height="20" border="0" alt="Diff" /></a>
-		<a href="<?php echo $link_source ?>"><img src="./image/source.png" width="20" height="20" border="0" alt="Source" /></a>
-		<a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="Attach" /></a>
-		<a href="<?php echo $link_attachlist ?>"><img src="./image/attach.png" width="20" height="20" border="0" alt="Attach List" /></a>
+		<a href="<?php echo $link_diff ?>"><img src="./image/diff.png" width="20" height="20" border="0" alt="Diff" title="Diff" title="Diff" /></a>
+		<a href="<?php echo $link_source ?>"><img src="./image/source.png" width="20" height="20" border="0" alt="Source" title="Source" title="Source" /></a>
+		<a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="Attach" title="Attach" title="Attach" /></a>
+		<a href="<?php echo $link_attachlist ?>"><img src="./image/attach.png" width="20" height="20" border="0" alt="Attach List" title="Attach List" title="Attach List" /></a>
 		&nbsp;
 		<?php } // $is_page ?>
-		<a href="<?php echo $link_top ?>"><img src="./image/top.png" width="20" height="20" border="0" alt="Wiki Top" /></a>
-		<a href="<?php echo $link_list ?>"><img src="./image/list.png" width="20" height="20" border="0" alt="Page List" /></a>
-		<a href="<?php echo $link_search ?>"><img src="./image/search.png" width="20" height="20" border="0" alt="Search" /></a>
-		<a href="<?php echo $link_whatsnew ?>"><img src="./image/recentchanges.png" width="20" height="20" border="0" alt="Resent Chenges" /></a>
+		<a href="<?php echo $link_top ?>"><img src="./image/top.png" width="20" height="20" border="0" alt="Wiki Top" title="Wiki Top" title="Wiki Top" /></a>
+		<a href="<?php echo $link_list ?>"><img src="./image/list.png" width="20" height="20" border="0" alt="Page List" title="Page List" title="Page List" /></a>
+		<a href="<?php echo $link_search ?>"><img src="./image/search.png" width="20" height="20" border="0" alt="Search" title="Search" title="Search" /></a>
+		<a href="<?php echo $link_whatsnew ?>"><img src="./image/recentchanges.png" width="20" height="20" border="0" alt="Resent Chenges" title="Resent Chenges" title="Resent Chenges" /></a>
 		<?php if($do_backup) { ?>
-		<a href="<?php echo $link_backup ?>"><img src="./image/backup.png" width="20" height="20" border="0" alt="Backup" /></a>
+		<a href="<?php echo $link_backup ?>"><img src="./image/backup.png" width="20" height="20" border="0" alt="Backup" title="Backup" title="Backup" /></a>
 		<?php } // $do_backup ?>
 		&nbsp;
-		<a href="<?php echo "$script?".rawurlencode("Help") ?>"><img src="./image/help.png" width="20" height="20" border="0" alt="Help" /></a>
+		<a href="<?php echo "$script?".rawurlencode("Help") ?>"><img src="./image/help.png" width="20" height="20" border="0" alt="Help" title="Help" title="Help" /></a>
 		&nbsp;
-		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.png" width="36" height="14" border="0" alt="RSS feed" /></a>
+		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.png" width="36" height="14" border="0" alt="RSS feed" title="RSS feed" title="RSS feed" /></a>
 	</div>
 	<?php
 	if ($is_page)

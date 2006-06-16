@@ -1,5 +1,5 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.42 2006/06/10 06:34:44 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.43 2006/06/16 06:07:41 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
 global $pwm_confg;
 ?>
@@ -66,7 +66,7 @@ global $pwm_confg;
 	]<br /></center>
 	<?php echo $hr ?>
 	<?php } else { if (!$_freeze) { // header ?>
-		<div style="float:right;width:65px;"><a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="ファイル添付" /></a><a href="<?php echo $link_edit ?>"><img src="./image/edit_button.gif" width="45" height="22" border="0" alt="編集" /></a></div>
+		<div style="float:right;width:65px;"><a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="ファイル添付" title="ファイル添付" /></a><a href="<?php echo $link_edit ?>"><img src="./image/edit_button.gif" width="45" height="22" border="0" alt="編集" title="編集" /></a></div>
 	<?php } } ?>
 
 	<?php if($is_read) { ?>
@@ -85,7 +85,7 @@ global $pwm_confg;
 	
 	<div style="clear:both;"></div>
 	
-	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev"> <img src="./image/next.png" width="6" height="12" alt="Next"> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
+	<div class="wiki_page_navi"><?php echo get_prevpage_link_by_name($vars['page']) ?> <img src="./image/prev.png" width="6" height="12" alt="Prev" /> <img src="./image/next.png" width="6" height="12" alt="Next" /> <?php echo get_nextpage_link_by_name($vars['page']) ?></div>
 	
 	<?php } // is_read ?>
 
@@ -116,34 +116,34 @@ global $pwm_confg;
 	<div>
 	<div style="text-align:right">
 		<?php if($is_page) { ?>
-		<a href="<?php echo $link_page ?>"><img src="./image/reload.png" width="20" height="20" border="0" alt="リロード" /></a>
+		<a href="<?php echo $link_page ?>"><img src="./image/reload.png" width="20" height="20" border="0" alt="リロード" title="リロード" /></a>
 		&nbsp;
 		<?php if (!$_freeze){ ?>
 		<?php if ($wiki_allow_newpage){ ?>
-		<a href="<?php echo $link_new ?>"><img src="./image/new.png" width="20" height="20" border="0" alt="新規" /></a>
-		<a href="<?php echo $link_copy ?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="コピー" /></a>
+		<a href="<?php echo $link_new ?>"><img src="./image/new.png" width="20" height="20" border="0" alt="新規" title="新規" /></a>
+		<a href="<?php echo $link_copy ?>"><img src="./image/copy.png" width="20" height="20" border="0" alt="コピー" title="コピー" /></a>
 		<?php } // $wiki_allow_newpage ?>
-		<a href="<?php echo $link_edit ?>"><img src="./image/edit.png" width="20" height="20" border="0" alt="編集" /></a>
-		<a href="<?php echo $link_rename ?>"><img src="./image/rename.png" width="20" height="20" border="0" alt="リネーム" /></a>
+		<a href="<?php echo $link_edit ?>"><img src="./image/edit.png" width="20" height="20" border="0" alt="編集" title="編集" /></a>
+		<a href="<?php echo $link_rename ?>"><img src="./image/rename.png" width="20" height="20" border="0" alt="リネーム" title="リネーム" /></a>
 		&nbsp;
 		<?php } // !$_freeze ?>
-		<a href="<?php echo $link_diff ?>"><img src="./image/diff.png" width="20" height="20" border="0" alt="差分" /></a>
-		<a href="<?php echo $link_source ?>"><img src="./image/source.png" width="20" height="20" border="0" alt="ソース" /></a>
-		<a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="ファイル添付" /></a>
-		<a href="<?php echo $link_attachlist ?>"><img src="./image/attach.png" width="20" height="20" border="0" alt="添付ファイル一覧" /></a>
+		<a href="<?php echo $link_diff ?>"><img src="./image/diff.png" width="20" height="20" border="0" alt="差分" title="差分" /></a>
+		<a href="<?php echo $link_source ?>"><img src="./image/source.png" width="20" height="20" border="0" alt="ソース" title="ソース" /></a>
+		<a href="<?php echo $link_attach ?>"><img src="./image/file.png" width="20" height="20" border="0" alt="ファイル添付" title="ファイル添付" /></a>
+		<a href="<?php echo $link_attachlist ?>"><img src="./image/attach.png" width="20" height="20" border="0" alt="添付ファイル一覧" title="添付ファイル一覧" /></a>
 		&nbsp;
 		<?php } // $is_page ?>
-		<a href="<?php echo $link_top ?>"><img src="./image/top.png" width="20" height="20" border="0" alt="Wikiトップ" /></a>
-		<a href="<?php echo $link_list ?>"><img src="./image/list.png" width="20" height="20" border="0" alt="一覧" /></a>
-		<a href="<?php echo $link_search ?>"><img src="./image/search.png" width="20" height="20" border="0" alt="検索" /></a>
-		<a href="<?php echo $link_whatsnew ?>"><img src="./image/recentchanges.png" width="20" height="20" border="0" alt="最終更新" /></a>
+		<a href="<?php echo $link_top ?>"><img src="./image/top.png" width="20" height="20" border="0" alt="Wikiトップ" title="Wikiトップ" /></a>
+		<a href="<?php echo $link_list ?>"><img src="./image/list.png" width="20" height="20" border="0" alt="一覧" title="一覧" /></a>
+		<a href="<?php echo $link_search ?>"><img src="./image/search.png" width="20" height="20" border="0" alt="検索" title="検索" /></a>
+		<a href="<?php echo $link_whatsnew ?>"><img src="./image/recentchanges.png" width="20" height="20" border="0" alt="最終更新" title="最終更新" /></a>
 		<?php if($do_backup) { ?>
-		<a href="<?php echo $link_backup ?>"><img src="./image/backup.png" width="20" height="20" border="0" alt="バックアップ" /></a>
+		<a href="<?php echo $link_backup ?>"><img src="./image/backup.png" width="20" height="20" border="0" alt="バックアップ" title="バックアップ" /></a>
 		<?php } // $do_backup ?>
 		&nbsp;
-		<a href="<?php echo "$script?".rawurlencode("ヘルプ") ?>"><img src="./image/help.png" width="20" height="20" border="0" alt="ヘルプ" /></a>
+		<a href="<?php echo "$script?".rawurlencode("ヘルプ") ?>"><img src="./image/help.png" width="20" height="20" border="0" alt="ヘルプ" title="ヘルプ" /></a>
 		&nbsp;
-		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.png" width="36" height="14" border="0" alt="最終更新のRSS" /></a>
+		<a href="<?php echo $script ?>?cmd=rss10"><img src="./image/rss.png" width="36" height="14" border="0" alt="最終更新のRSS" title="最終更新のRSS" /></a>
 	</div>
 	<?php
 	if (isset($pwm_confg['ad_bottom']))
