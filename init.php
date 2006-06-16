@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.62 2006/06/13 13:39:19 nao-pon Exp $
+// $Id: init.php,v 1.63 2006/06/16 02:04:32 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -160,7 +160,7 @@ foreach (array('msg', 'pass') as $key) {
 
 // Expire risk
 unset($HTTP_GET_VARS, $HTTP_POST_VARS);	//, 'SERVER', 'ENV', 'SESSION', ...
-unset($_REQUEST);	// Considered harmful
+//unset($_REQUEST);	// Considered harmful
 
 // Remove null character etc.
 if (!empty($_GET))    {$_GET    = input_filter($_GET);}
@@ -403,23 +403,16 @@ if (!defined('PWM_TICET_NOT_USE') && strtoupper($_SERVER["REQUEST_METHOD"]) == "
 {
 	// POSTメソッドの時のみチェック
 	
-	// TB受信?
-	if (!empty($_GET['pwm_ping']))
-	{
-		$_POST['plugin'] = 'tb';
-		$_GET['cmd'] = $_POST['cmd'] = '';
-	}
-	
 	// paint, painter プラグインでの投稿は時間が経ってセッションが切れている場合があるので通過させる。
 	// tb プラグインも通過。
-	if (empty($_POST['plugin']) || !preg_match("/paint(er)?|tb/",$_POST['plugin']))
+	if (empty($post['plugin']) || !preg_match("/paint(er)?|tb/",$post['plugin']))
 	{
 		// fusen プラグインでの投稿はAjaxなのでチケットを破棄しないようにする。pginfo はインラインフレーム処理だから
-		$onetime = (!empty($_POST['plugin']) && ($_POST['plugin']=="fusen" || $_POST['plugin']=="pginfo"))? false : true;
+		$onetime = (!empty($post['plugin']) && ($post['plugin']=="fusen" || $post['plugin']=="pginfo"))? false : true;
 		if (!check_token_ticket($onetime)) exit('It is an invalid request.');
 	}
 }
-
+unset($_REQUEST);	// Considered harmful
 
 // cmd,plugin,pgid が指定されていない場合は、QUERY_STRINGをページ名かInterWikiNameであるとみなす
 if (! isset($vars['cmd']) && ! isset($vars['plugin']) )
