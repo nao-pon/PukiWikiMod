@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.45 2006/06/22 02:47:27 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.46 2006/06/22 05:51:19 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -43,6 +43,17 @@ else
 	// ファイルのアクセス権 
 	define('ATTACH_FILE_MODE',0644); 
 	//define('ATTACH_FILE_MODE',0604); // for XREA.COM 
+
+	// イメージファイルのアクセス権
+	if  (ini_get('safe_mode') == "1")
+	{  
+		//セーフモード時はサムネイル作成と回転のためゲストに書き込み権限が必要
+		define('ATTACH_IMGFILE_MODE', 0606);
+	}
+	else
+	{
+		define('ATTACH_IMGFILE_MODE', ATTACH_FILE_MODE);
+	}
 
 	// open 時にリファラをチェックする
 	// 0:チェックしない, 1:未定義は許可, 2:未定義も不許可
@@ -299,7 +310,7 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL,$notouch=FA
 			if (file_exists($_pagecss_file)) unlink($_pagecss_file);
 			if (move_uploaded_file($tmpname,$_pagecss_file))
 			{
-				chmod($_pagecss_file,ATTACH_FILE_MODE);
+				attach_chmod($_pagecss_file);
 				// 空のファイルの場合はファイル削除
 				if (!trim(join('',file($_pagecss_file))))
 				{
@@ -344,7 +355,7 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL,$notouch=FA
 		
 		if (move_uploaded_file($tmpname,$obj->filename))
 		{
-			chmod($obj->filename,ATTACH_FILE_MODE);
+			attach_chmod($obj->filename);
 		}
 		else
 			return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
@@ -356,7 +367,7 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL,$notouch=FA
 		}
 		if (rename($tmpname,$obj->filename))
 		{
-			chmod($obj->filename,ATTACH_FILE_MODE);
+			attach_chmod($obj->filename);
 		}
 		else
 			return array('result'=>FALSE,'msg'=>$_attach_messages['err_exists']);
@@ -377,6 +388,20 @@ function do_upload($page,$fname,$tmpname,$copyright=FALSE,$pass=NULL,$notouch=FA
 
 	return array('result'=>TRUE,'msg'=>$_attach_messages['msg_uploaded']);
 }
+
+// ファイルアクセス権限を設定
+function attach_chmod($file)
+{
+	if (defined('ATTACH_IMGFILE_MODE') && getimagesize($file))
+	{
+		chmod($file, ATTACH_IMGFILE_MODE);
+	}
+	else
+	{
+		chmod($file, ATTACH_FILE_MODE);	
+	}
+}
+
 //詳細フォームを表示
 function attach_info($err='')
 {
