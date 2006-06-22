@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.72 2006/05/12 05:26:06 nao-pon Exp $
+// $Id: file.php,v 1.73 2006/06/22 02:46:13 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -1376,7 +1376,14 @@ function push_page_changes($id,$txt)
 	{
 		$adds = array();
 	}
-	array_unshift($adds,convert_html($txt));
+
+	$pcon = new pukiwiki_converter();
+	$pcon->safe = TRUE;
+	$pcon->page = get_pgname_by_id($id);
+	$pcon->string = $txt;
+	$txt = $pcon->convert();
+	
+	array_unshift($adds,$txt);
 	
 	if ($fp = @fopen($add_file,"wb"))
 	{
