@@ -1,5 +1,5 @@
 <?php
-// $Id: trackback.php,v 1.31 2006/04/21 14:30:57 nao-pon Exp $
+// $Id: trackback.php,v 1.32 2006/06/22 23:48:14 nao-pon Exp $
 /*
  * PukiWiki TrackBack プログラム
  * (C) 2003, Katsumi Saito <katsumi@jo1upk.ymt.prug.or.jp>
@@ -634,7 +634,7 @@ function tb_get_tb_body($tb_id,$page=FALSE)
 	global $script;
 	global $_tb_title,$_tb_header,$_tb_entry,$_tb_refer,$_tb_date;
 	global $_tb_header_Excerpt,$_tb_header_Weblog,$_tb_header_Tracked;
-	global $X_admin;
+	global $X_admin,$link_target;
 	
 	if ($page) $tb_id = tb_get_id($tb_id);
 	
@@ -655,7 +655,7 @@ function tb_get_tb_body($tb_id,$page=FALSE)
 <div class="trackback-body">
  <span class="trackback-post">
   $del_form_tag
-  <a href="$url" target="new">$title</a><br />
+  <a href="$url" target="{$link_target}">$title</a><br />
   <strong>$_tb_header_Excerpt</strong> $excerpt<br />
   <strong>$_tb_header_Weblog</strong> $blog_name<br />
   <strong>$_tb_header_Tracked</strong> $time$ip_tag
