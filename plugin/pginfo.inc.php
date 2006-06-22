@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pginfo.inc.php,v 1.11 2006/04/07 08:27:59 nao-pon Exp $
+// $Id: pginfo.inc.php,v 1.12 2006/06/22 02:44:47 nao-pon Exp $
 //
 
 // メッセージ設定
@@ -167,6 +167,7 @@ __EOD__;
 		//error_reporting(E_ALL);
 		$post['start_time'] = time();
 		
+		header ("Content-Type: text/html; charset="._CHARSET);
 		// mod_gzip を無効にするオプション(要サーバー側設定)
 		header('X-NoGzip: 1');
 		
