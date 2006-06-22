@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.44 2006/06/15 02:08:31 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.45 2006/06/22 02:47:27 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -208,6 +208,7 @@ function plugin_attach_action()
 		case 'unfreeze':return attach_freeze(FALSE,$pass);
 		case 'upload':  return attach_showform();
 		case 'copyright':  return attach_copyright($pass);
+		case 'rotate':  return attach_rotate($pass);
 	}
 	if (empty($vars['page']) || !is_page($vars['page']))
 	{
@@ -424,6 +425,24 @@ function attach_freeze($freeze,$pass)
 	
 	$obj = &new AttachFile($refer,$file,$age);
 	return $obj->getstatus() ? $obj->freeze($freeze,$pass) : array('msg'=>$_attach_messages['err_notfound']);
+}
+//イメージ回転
+function attach_rotate($pass)
+{
+	global $vars,$_attach_messages;
+	foreach (array('refer','file','age','pass','rd') as $var)
+	{
+		$$var = array_key_exists($var,$vars) ? $vars[$var] : '';
+	}
+	
+	if (ATTACH_UPLOAD_EDITER_ONLY and !is_editable($refer))
+	{
+		return array('msg'=>$_attach_messages['err_noparm']);
+	}
+	
+	$rd = intval($rd);
+	$obj = &new AttachFile($refer,$file,$age);
+	return $obj->getstatus() ? $obj->rotate($rd,$pass) : array('msg'=>$_attach_messages['err_notfound']);
 }
 //著作権設定
 function attach_copyright($pass)
@@ -803,13 +822,16 @@ class AttachFile
 		$s_file = htmlspecialchars($this->file);
 		$s_err = ($err == '') ? '' : '<p style="font-weight:bold">'.$_attach_messages[$err].'</p>';
 		$ref = "";
-		
+		$img_info = "";
+			
 		$pass = '';
 		if (ATTACH_PASSWORD_REQUIRE && !ATTACH_UPLOAD_ADMIN_ONLY && !$X_uid)
 		{
 			$title = $_attach_messages[ATTACH_UPLOAD_ADMIN_ONLY ? 'msg_adminpass' : 'msg_password'];
 			$pass = $title.': <input type="password" name="pass" size="8" />';
 		}
+
+		$is_editable = ($X_admin || (($X_uid || $pass) && ($X_uid == $this->status['owner'] || (!ATTACH_DELETE_ADMIN_ONLY && !$this->status['owner']))));
 		
 		if ($this->age)
 		{
@@ -821,7 +843,40 @@ class AttachFile
 		}
 		else
 		{
-			$ref .= "<dd><hr /></dd><dd>".convert_html("&ref(\"".strip_bracket($this->page)."/".$this->file."\"".ATTACH_CONFIG_REF_OPTION.");")."</dd>\n";
+			// イメージファイルの場合
+			$isize = @getimagesize($this->filename);
+			if (is_array($isize))
+			{
+				$img_info = "Image: {$isize[0]} x {$isize[1]} px";
+				if ($is_editable && (defined('HYP_JPEGTRAN_PATH') || $isize[2] == 2))
+				{
+					$img_info = <<< EOD
+<form action="$script" method="post">
+ <div>
+  $img_info
+  <input type="hidden" name="plugin" value="attach" />
+  <input type="hidden" name="refer" value="$s_page" />
+  <input type="hidden" name="file" value="$s_file" />
+  <input type="hidden" name="age" value="{$this->age}" />
+  <input type="hidden" name="pcmd" value="rotate" />
+  [ Rotate:
+  <input type="radio" id="rotate90" name="rd" value="1" /> <label for="rotate90">90&deg;</label>
+  <input type="radio" id="rotate180" name="rd" value="2" /> <label for="rotate180">180&deg;</label>
+  <input type="radio" id="rotate270" name="rd" value="3" /> <label for="rotate270">270&deg;</label>
+  $pass
+  <input type="submit" value="{$_attach_messages['btn_submit']}" /> ]
+ </div>
+</form>
+EOD;
+				}
+			}
+
+			// refプラグインで表示
+			if (exist_plugin_inline("ref"))
+			{
+				$ref .= "<dd><hr /></dd><dd>".do_plugin_inline("ref", strip_bracket($this->page)."/".$this->file.ATTACH_CONFIG_REF_OPTION)."</dd>\n";
+			}
+			
 			if ($this->status['freeze'])
 			{
 				$msg_freezed = "<dd>{$_attach_messages['msg_isfreeze']}</dd>";
@@ -857,6 +912,9 @@ class AttachFile
 		}
 		$v_filename = ($this->status['copyright'])? "" : "<dd>{$_attach_messages['msg_filename']}:{$this->filename}</dd>";
 		$v_md5hash  = ($this->status['copyright'])? "" : "<dd>{$_attach_messages['msg_md5hash']}:{$this->md5hash}</dd>";
+		if ($img_info) $img_info = "<dd>{$img_info}</dd>";
+		if ($exif_tags) $exif_tags = "<dd>{$exif_tags}</dd>";
+		
 		$retval['body'] = <<< EOD
 <p class="small">
  [<a href="$script?plugin=attach&amp;pcmd=list&amp;refer=$r_page">{$_attach_messages['msg_list']}</a>]
@@ -873,13 +931,14 @@ class AttachFile
  <dd>{$_attach_messages['msg_dlcount']}:{$this->status['count'][$this->age]}</dd>
  <dd>{$_attach_messages['msg_owner']}:{$this->owner_str}</dd>
  $ref
+ $img_info
  $exif_tags
  $msg_freezed
 </dl>
 <hr />
 $s_err
 EOD;
-		if ($X_admin || (($X_uid || $pass) && ($X_uid == $this->status['owner'] || (!ATTACH_DELETE_ADMIN_ONLY && !$this->status['owner']))))
+		if ($is_editable)
 		{
 			$retval['body'] .= <<< EOD
 <form action="$script" method="post">
@@ -990,6 +1049,28 @@ EOD;
 		$redirect = "$script?plugin=attach&pcmd=info$param";
 		
 		return array('msg'=>$_attach_messages[$freeze ? 'msg_freezed' : 'msg_unfreezed'],'redirect'=>$redirect);
+	}
+	function rotate($count,$pass)
+	{
+		global $adminpass,$vars,$X_admin,$X_uid,$_attach_messages,$script;
+		
+		$uid = get_pg_auther($vars['page']);
+		if ((!$X_admin && $X_uid !== $uid && $X_uid != $this->status['owner']) || $X_uid == 0)
+		// 管理者とページ作成者とファイル所有者以外
+		{
+			if ((ATTACH_PASSWORD_REQUIRE and md5($pass) != $this->status['pass']) || $this->status['owner'])
+				return attach_info('err_password');
+		}
+		
+		$ret = HypCommonFunc::rotateImage($this->filename, $count);
+		
+		if ($ret) $this->del_thumb_files();
+		
+		$param  = '&file='.rawurlencode($this->file).'&refer='.rawurlencode($this->page).
+			($this->age ? '&age='.$this->age : '');
+		$redirect = "$script?plugin=attach&pcmd=info$param";
+		
+		return array('msg'=>$_attach_messages[$ret ? 'msg_rotated_ok' : 'msg_rotated_ng'],'redirect'=>$redirect);
 	}
 	function copyright($copyright,$pass)
 	{

@@ -235,6 +235,8 @@ $_attach_messages = array(
 	'msg_init_image'=> 'キャンバスに読み込む画像ファイル(JPEG or GIF)',
 	'msg_fit_size' => 'キャンバスサイズをこの画像に合わせる',
 	'msg_extensions' => '添付可能なファイルの拡張子( $1 )',
+	'msg_rotated_ok' => '画像を回転しました。<br />ブラウザでリロードしないと正しく表示されていないかもしれません。',
+	'msg_rotated_ng' => '画像を回転できませんでした。',
 );
 
 

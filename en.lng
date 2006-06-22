@@ -205,6 +205,8 @@ $_attach_messages = array(
 	'msg_init_image'=> 'The picture file read into canvas (JPEG or GIF)',
 	'msg_fit_size' => 'Canvas size is united with this picture.',
 	'msg_extensions' => 'Extension of file that can be appended ( $1 )',
+	'msg_rotated_ok' => 'Image was rotated.<br />It might not be correctly displayed by a browser as no reload.',
+	'msg_rotated_ng' => 'Image was not able to be rotated.',
 );
 
 ///////////////////////////////////////
