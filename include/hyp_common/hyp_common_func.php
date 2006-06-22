@@ -1,5 +1,5 @@
 <?php
-// $Id: hyp_common_func.php,v 1.3 2006/06/22 02:02:43 nao-pon Exp $
+// $Id: hyp_common_func.php,v 1.4 2006/06/22 05:57:35 nao-pon Exp $
 // HypCommonFunc Class by nao-pon http://hypweb.net
 ////////////////////////////////////////////////
 
@@ -391,7 +391,7 @@ EOF;
 		}
 		@imagedestroy($dst_im);
 		@imagedestroy($src_im);
-		chmod($o_file, 0666);
+		//chmod($o_file, 0666);
 		return $o_file;
 	}
 	
@@ -409,7 +409,7 @@ EOF;
 		if ( ini_get('safe_mode') != "1" )
 		{
 			exec( HYP_IMAGEMAGICK_PATH."convert -size {$org_w}x{$org_h} -geometry {$zoom}% -quality {$quality} +profile \"*\" {$ro_file} {$rs_file}" ) ;
-			@chmod($s_file, 0666);
+			//@chmod($s_file, 0666);
 		}
 		else
 		{
@@ -503,7 +503,7 @@ EOF;
 				else
 				{
 					rename($tmpfname, $src);
-					chmod($src, 0666);
+					//chmod($src, 0666);
 				}
 				unlink($tmpfname);
 				return $ret;
@@ -533,7 +533,7 @@ EOF;
 				}
 				else
 				{
-					chmod($src, 0666);
+					//chmod($src, 0666);
 				}
 				return $ret;
 			}
@@ -590,7 +590,7 @@ EOF;
 			imageJpeg($out, $src, $quality);
 			imageDestroy($in);
 			imageDestroy($out);
-			chmod($src, 0666);
+			//chmod($src, 0666);
 			return true;
 		}
 	}

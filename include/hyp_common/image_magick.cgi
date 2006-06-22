@@ -74,7 +74,7 @@ if ($m == "r")
 	else
 	{
 		$ret = "ERROR: 0";
-		@chmod($s, 0666);
+		@chmod($s, 0606);
 	}
 	
 	// ´°Î»
@@ -129,7 +129,7 @@ else if ($m == "rj" || $m == "ri")
 		{
 			$ret = "ERROR: 0";
 			copy($tmpfname, $s);
-			chmod($s, 0666);
+			chmod($s, 0606);
 		}
 		unlink($tmpfname);
 	}
@@ -149,7 +149,7 @@ else if ($m == "rj" || $m == "ri")
 		else
 		{
 			$ret = "ERROR: 0";
-			@chmod($s, 0666);
+			@chmod($s, 0606);
 		}
 	}
 	
