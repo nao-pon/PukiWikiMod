@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.58 2006/06/23 14:34:28 nao-pon Exp $
+// $Id: convert_html.php,v 1.59 2006/06/23 17:35:40 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -14,6 +14,7 @@ class pukiwiki_converter
 	
 	function convert()
 	{
+		static $pos = 0;
 		if ($this->safe)
 		{
 			global $vars,$get,$post,$pgid,$comment_no,$h_excerpt,$digest,$article_no,$show_comments,$related;
@@ -47,6 +48,12 @@ class pukiwiki_converter
 		
 		if ($this->safe)
 		{
+			if (count($foot_explain))
+			{
+				$ret = str_replace("<!--includepos-->",++$pos.".",$ret);
+				$foot_explain = explode("\0",str_replace("<!--includepos-->",$pos.".",join("\0",$foot_explain)));
+			}
+			
 			//ÂàÈòÊÑ¿ôÃÍÌá¤·
 			$vars = $_vars;
 			$post["page"] = $get["page"] = $vars["page"];
@@ -103,7 +110,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 			$h_excerpt =  $var_data[3];
 			$wiki_ads_shown =  $var_data[4];
 			$vars['is_rsstop'] =  $var_data[5];
-			$foot_explain = explode("\t",$var_data[6]);
+			$foot_explain = $var_data[6];
 			$wiki_strong_words = $var_data[7];
 			$contents = (isset($var_data[8]))? $var_data[8] : "";
 			$pwm_plugin_flg = (isset($var_data[9]))? $var_data[9] : "";
@@ -115,11 +122,6 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 			$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 			
 			$convert_load--;
-			if ($convert_load > 0 && $foot_explain)
-			{
-				$str = str_replace("<!--includepos-->",$convert_load.".",$str);
-				$foot_explain = explode("\0",str_replace("<!--includepos-->",$convert_load.".",join("\0",$foot_explain)));
-			}
 			
 			if (!$ret_array)
 				return $str;
@@ -198,7 +200,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		$var_data[3] = $h_excerpt;
 		$var_data[4] = $wiki_ads_shown;
 		$var_data[5] = $vars['is_rsstop'];
-		$var_data[6] = join("\t",$foot_explain);
+		$var_data[6] = $foot_explain;
 		$var_data[7] = ($convert_load === 1)? $wiki_head_keywords : $wiki_strong_words;
 		$var_data[8] = $body->contents;
 		$var_data[9] = $pwm_plugin_flg;
@@ -217,11 +219,6 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 	}
 
 	$convert_load--;
-	if ($convert_load > 0 && $foot_explain)
-	{
-		$str = str_replace("<!--includepos-->",$convert_load.".",$str);
-		$foot_explain = explode("\0",str_replace("<!--includepos-->",$convert_load.".",join("\0",$foot_explain)));
-	}
 
 	$contents = $body->contents;
 	
