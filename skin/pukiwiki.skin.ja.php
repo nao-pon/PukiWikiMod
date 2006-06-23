@@ -1,16 +1,9 @@
 <?php 
-// $Id: pukiwiki.skin.ja.php,v 1.43 2006/06/16 06:07:41 nao-pon Exp $
+// $Id: pukiwiki.skin.ja.php,v 1.44 2006/06/23 14:19:58 nao-pon Exp $
 if (!defined('DATA_DIR')) exit;
-global $pwm_confg;
 ?>
 
 <!-- pukiwikimod -->
-	<script type="text/javascript">
-	<!--
-	var pukiwiki_root_url = "<?php echo XOOPS_WIKI_HOST.XOOPS_WIKI_URL ?>/";
-	//-->
-	</script>
-	<script type="text/javascript" src="skin/default.ja.js"></script>
 <div class="pukiwiki_body">
 	<?php if((!$hide_navi && !$noheader) || !$is_read){ // header ?>
 		<center><div class="wiki_page_title"><?php echo $page ?></div>

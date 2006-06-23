@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.65 2006/06/16 05:11:44 nao-pon Exp $
+// $Id: html.php,v 1.66 2006/06/23 14:19:58 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -30,7 +30,7 @@ function catbody($title,$page,$body)
 	global $X_admin,$X_uname,$X_uid,$X_ucd,$noattach,$noheader,$trackback,$xoopsTpl,$pgid,$use_xoops_comments,$show_comments;
 	
 	global $_msg_pagecomment,$_msg_trackback,$_msg_pings;
-	global $pwm_plugin_flg,$fusen_enable_allpage;
+	global $pwm_plugin_flg,$fusen_enable_allpage,$pwm_confg;
 	
 	//form置換
 	$body = preg_replace("/(<form[^>]+)(>)/is","$1 onsubmit=\"return pukiwiki_check(this);\"$2",$body);

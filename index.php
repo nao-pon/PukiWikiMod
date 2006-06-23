@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: index.php,v 1.6 2006/06/13 13:39:19 nao-pon Exp $
+// $Id: index.php,v 1.7 2006/06/23 14:19:58 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -1162,10 +1162,8 @@ if (empty($vars['xoops_block']))
 	global $xoops_mod_add_title,$xoops_mod_add_header;
 	$xoops_mod_add_title = $xoops_pagetitle;
 	
-	//<base>
-	//if (!empty($GLOBALS['PWM_SHORTURL'.PUKIWIKI_DIR_NUM]))
-	//	$xoops_mod_add_header = '<base href="'.XOOPS_WIKI_HOST.$_SERVER['REQUEST_URI'].'" />'."\n";
-	
+	$xoops_mod_add_header = "";
+
 	//<link>タグを追加
 	if (is_page($vars["page"]))
 	{
@@ -1182,8 +1180,7 @@ if (empty($vars['xoops_block']))
 		
 		$rss_url = XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/index.php/rss10/s'.$up_page.'/index.rdf';
 		
-		$xoops_mod_add_header .= '
-<link rel="index" href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/?cmd=list" />
+		$xoops_mod_add_header .= '<link rel="index" href="'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/?cmd=list" />
 <link rel="alternate" type="application/rss+xml" title="RSS" href="'.$rss_url.'" />
 ';
 		$xoops_mod_add_header .= get_header_link_tag_by_name($vars["page"]);
@@ -1206,6 +1203,20 @@ if (empty($vars['xoops_block']))
 	
 	// 各ページ用の .css
 	$xoops_mod_add_header .= get_page_css_tag($vars["page"]);
+
+	// ベースのJavaScript
+	$xoops_mod_add_header .= '<script type="text/javascript">
+<!--
+var pukiwiki_root_url = "'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/";
+//-->
+</script>
+<script type="text/javascript" src="skin/default.ja.js"></script>'."\n";
+	
+	// プラグインで追加されたJavascript
+	if (!empty($stack['javascripts']))
+	{
+		$xoops_mod_add_header .= join("\n",$stack['javascripts']);
+	}
 	
 	// XOOPSヘッダ
 	include("header.php");
