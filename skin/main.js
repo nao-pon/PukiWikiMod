@@ -8,7 +8,7 @@ var pukiwiki_initLoad=0;
 
 // cookie
 var pukiwiki_adv = pukiwiki_load_cookie("pwmod");
-
+if (pukiwiki_adv) pukiwiki_save_cookie("pwmod",pukiwiki_adv,90,"/");
 
 // Helper image tag set
 var pukiwiki_adv_tag = '';
@@ -147,7 +147,6 @@ function pukiwiki_load_cookie(arg){ //arg=dataname
 		{
 			cookieData = cookieData.substring(startPoint2,endPoint);
 			cookieData = unescape(cookieData);
-			pukiwiki_save_cookie("pwmod",cookieData,90,"/");
 			return cookieData
 		}
 	}
