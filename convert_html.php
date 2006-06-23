@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.57 2006/04/21 14:26:24 nao-pon Exp $
+// $Id: convert_html.php,v 1.58 2006/06/23 14:34:28 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -17,6 +17,7 @@ class pukiwiki_converter
 		if ($this->safe)
 		{
 			global $vars,$get,$post,$pgid,$comment_no,$h_excerpt,$digest,$article_no,$show_comments,$related;
+			global $stack,$foot_explain;
 			//変数値退避
 			$_vars = $vars;
 			$_pgid = $pgid;
@@ -26,12 +27,16 @@ class pukiwiki_converter
 			$_article_no = $article_no;
 			$_show_comments = $show_comments;
 			$_related = $related;
+			$_stack = $stack;
+			$_foot_explain = $foot_explain;
 			
 			//初期化
 			$comment_no = 0;
 			$article_no = 0;
 			$vars['is_rsstop'] = 0;
 			$related = array();
+			$stack = array();
+			$foot_explain = array();
 			
 			//現ページ名書き換え
 			if ($this->page) $vars["page"] = $post["page"] = $get["page"] = $this->page;
@@ -51,7 +56,9 @@ class pukiwiki_converter
 			$digest = $_digest;
 			$article_no = $_article_no;
 			$show_comments = $_show_comments;
-			$related = array_merge($_related,$related);
+			$related = array_merge($_related, $related);
+			$stack = array_merge($_stack, $stack);
+			$foot_explain = array_merge($_foot_explain, $foot_explain);
 		}
 		return $ret;
 	}
@@ -59,11 +66,13 @@ class pukiwiki_converter
 
 function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$ret_array=false)
 {
-	global $vars,$related_link,$related,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id,$wiki_strong_words,$wiki_head_keywords;
+	global $vars,$related_link,$related,$stack,$noattach,$noheader,$h_excerpt,$no_plugins,$X_uid,$foot_explain,$wiki_ads_shown,$content_id,$wiki_strong_words,$wiki_head_keywords;
 	global $X_uname;
 	global $pwm_plugin_flg,$show_comments;
 	
 	static $convert_load = 0;
+	//global $converter_pos;
+	//$converter_pos = $convert_load;
 	$convert_load++;
 	
 	if ($convert_load === 1) $wiki_strong_words = array();
@@ -75,8 +84,18 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		$filename = PAGE_CACHE_DIR.encode($page).".txt";
 		if (!$X_uid && file_exists($filename) && ($cache || (filemtime($filename) + PAGE_CACHE_MIN * 60) > time()) && empty($vars['xoops_block']))
 		{
-			$htmls = file($filename);
-			$var_data = unserialize(rtrim(array_shift($htmls)));
+			$htmls = join('',file($filename));
+			list ($var_data, $str) = explode("\0",$htmls,2);
+			if (!$str)
+			{
+				$var_data = unserialize(rtrim(array_shift($htmls)));
+				$str = join('',$htmls);
+			}
+			else
+			{
+				$var_data = unserialize($var_data);
+			}
+				
 			if (!is_array($var_data)) $var_data = array();
 			$related_link = $var_data[0];
 			$noattach =  $var_data[1];
@@ -91,12 +110,16 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 			$show_comments = (isset($var_data[10]))? $var_data[10] : true;
 			$related = (isset($var_data[11]))? $var_data[11] : array();
 			$vars['author_ucd'] = (isset($var_data[12]))? $var_data[12] : "\t";
+			$stack = (isset($var_data[13]))? $var_data[13] : array();
 			
 			$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 			
 			$convert_load--;
-			
-			$str = join('',$htmls);
+			if ($convert_load > 0 && $foot_explain)
+			{
+				$str = str_replace("<!--includepos-->",$convert_load.".",$str);
+				$foot_explain = explode("\0",str_replace("<!--includepos-->",$convert_load.".",join("\0",$foot_explain)));
+			}
 			
 			if (!$ret_array)
 				return $str;
@@ -150,10 +173,6 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 	else
 		$str = join("\r", $result_last);
 	
-	// WikiName抑止の!を削除
-	//$WikiName_ORG = '[A-Z][a-z]+(?:[A-Z][a-z]+)+';
-	//$str = preg_replace("/!($WikiName_ORG)/", "$1", $str);
-	
 	//整形済み指定の" "を削除 nao-pon
 	$str = preg_replace("/(^|\n) /", "$1", $str);
 	
@@ -171,15 +190,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 	//ゲストアカウントでページコンバート指定時
 	if (!$X_uid && $page_cvt && !$cache && empty($vars['xoops_block']))
 	{
-		//マルチドメイン対応
-		//$str = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$str);
-		
-		//rsstopはインクルードページは常に0
-		//#rsstopを記述したページがインクルードされた場合問題も少し残るが
-		//calendar_viewer などでインクルードされたページに元ページの値がセット
-		//されてしまう問題のほうが大きいので、とりあえずこうする。
-		//$rsstop_set = ($convert_load === 1)? $vars['is_rsstop'] : 0;
-		
+	
 		$var_data = array();
 		$var_data[0] = $related_link;
 		$var_data[1] = $noattach;
@@ -187,14 +198,15 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		$var_data[3] = $h_excerpt;
 		$var_data[4] = $wiki_ads_shown;
 		$var_data[5] = $vars['is_rsstop'];
-		$var_data[6] = preg_replace("/\x0D\x0A|\x0D|\x0A/","\t",join("\t",$foot_explain));
+		$var_data[6] = join("\t",$foot_explain);
 		$var_data[7] = ($convert_load === 1)? $wiki_head_keywords : $wiki_strong_words;
-		$var_data[8] = str_replace(array("\r","\n"),"",$body->contents);
+		$var_data[8] = $body->contents;
 		$var_data[9] = $pwm_plugin_flg;
 		$var_data[10] = $show_comments;
 		$var_data[11] = $related;
 		$var_data[12] = $vars['author_ucd'];
-		$html = serialize($var_data)."\n".$str;
+		$var_data[13] = $stack;
+		$html = serialize($var_data)."\0".$str;
 		
 		//キャッシュ書き込み
 		if ($fp = @fopen($filename,"w"))
@@ -205,7 +217,12 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 	}
 
 	$convert_load--;
-	
+	if ($convert_load > 0 && $foot_explain)
+	{
+		$str = str_replace("<!--includepos-->",$convert_load.".",$str);
+		$foot_explain = explode("\0",str_replace("<!--includepos-->",$convert_load.".",join("\0",$foot_explain)));
+	}
+
 	$contents = $body->contents;
 	
 	//アンセット メモリー開放 $body は必須。
