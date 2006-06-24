@@ -1,5 +1,5 @@
 <?php
-// $Id: 18over.inc.php,v 1.1 2006/06/23 14:35:54 nao-pon Exp $
+// $Id: 18over.inc.php,v 1.2 2006/06/24 01:13:34 nao-pon Exp $
 
 function plugin_18over_init()
 {
@@ -26,9 +26,9 @@ function plugin_18over_convert()
 {
 	global $stack,$_18over_mes,$script;
 	
-	if (isset($stack['javascripts']['18over'])) return '';
+	if (isset($stack['addheaders']['18over'])) return '';
 	
-	$stack['javascripts']['18over'] = <<< EOD
+	$stack['addheaders']['18over'] = <<< EOD
 <script type="text/javascript">
 <!--
 if (!pukiwiki_load_cookie("pwm18"))

@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: index.php,v 1.7 2006/06/23 14:19:58 nao-pon Exp $
+// $Id: index.php,v 1.8 2006/06/24 01:13:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -1212,10 +1212,10 @@ var pukiwiki_root_url = "'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/";
 </script>
 <script type="text/javascript" src="skin/default.ja.js"></script>'."\n";
 	
-	// プラグインで追加されたJavascript
-	if (!empty($stack['javascripts']))
+	// プラグインで追加されたHEAD内要素
+	if (!empty($stack['addheaders']))
 	{
-		$xoops_mod_add_header .= join("\n",$stack['javascripts']);
+		$xoops_mod_add_header .= join("\n",$stack['addheaders']);
 	}
 	
 	// XOOPSヘッダ

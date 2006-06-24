@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.65 2006/06/23 14:19:58 nao-pon Exp $
+// $Id: init.php,v 1.66 2006/06/24 01:13:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -84,7 +84,7 @@ $vars['mc_refresh'] = array();
 $pwm_config = array();
 $wiki_strong_words = array();
 $stack = array();
-$stack['javascripts'] = array();
+$stack['addheaders'] = array();
 
 // 設定ファイルの読込
 if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
