@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.46 2006/06/22 05:51:19 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.47 2006/06/25 06:37:23 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -1124,7 +1124,7 @@ EOD;
 		global $X_admin,$X_uid;
 		$this->getstatus();
 		$uid = get_pg_auther($vars['page']);
-		if ((!X_admin && $X_uid !== $uid && $X_uid != $this->status['owner']) || $X_uid == 0)
+		if ((!$X_admin && $X_uid !== $uid && $X_uid != $this->status['owner']) || $X_uid == 0)
 		{
 			if ($this->status['copyright'])
 				return attach_info('err_copyright');
