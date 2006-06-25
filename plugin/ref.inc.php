@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.28 2006/05/11 08:24:52 nao-pon Exp $
+// $Id: ref.inc.php,v 1.29 2006/06/25 06:42:08 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -311,6 +311,8 @@ function plugin_ref_body($name,$args,$params){
 			$size = getimagesize($file);
 			$org_w = $size[0];
 			$org_h = $size[1];
+			// 著作権チェック
+			$copyright = plugin_ref_check_copyright($file.'.log',$page);
 		} else {
 			$lastmod = date('Y/m/d H:i:s',filemtime($file));
 			$info = "$lastmod $fsize";
@@ -338,6 +340,8 @@ function plugin_ref_body($name,$args,$params){
 				$size = plugin_ref_cache_image_fetch($filename, $url, $name);
 				$l_url = $script.'?plugin=attach&amp;openfile='.rawurlencode($name).'&amp;refer='.rawurlencode($page);
 				$fsize = sprintf('%01.1f',round(filesize($url)/1000,1)).'KB';
+				// 著作権チェック
+				$copyright = plugin_ref_check_copyright(UPLOAD_DIR.$filename.'.log',$page);
 			} else {
 				//キャッシュしない
 				$size = @getimagesize($url);
@@ -417,7 +421,8 @@ function plugin_ref_body($name,$args,$params){
 				}
 			}
 			$info = "width=\"$width\" height=\"$height\" ";
-			$ret .= "<a href=\"$l_url\" title=\"$title\"><img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info /></a>";
+			$type = ($copyright)? "" : " type=\"img\"";
+			$ret .= "<a href=\"$l_url\" title=\"$title\"{$type}><img src=\"".XOOPS_WIKI_URL."/$url\" alt=\"$title\" title=\"$title\" $info /></a>";
 		} else {
 			if ($org_w and $org_h) $info = "width=\"$org_w\" height=\"$org_h\" ";
 			if (!$params['nocache'])
@@ -519,6 +524,30 @@ _HTML_;
 	}
 	$rets[_body] = $ret;
 	return $rets;
+}
+
+// 著作権情報を調べる
+function plugin_ref_check_copyright($logname,$page)
+{
+	global $X_admin,$X_uid;
+
+	$status = array('count'=>array(0),'age'=>'','pass'=>'','freeze'=>FALSE,'copyright'=>FALSE,'owner'=>0);
+	if (file_exists($logname))
+	{
+		$data = file($logname);
+		foreach ($status as $key=>$value)
+		{
+			$status[$key] = chop(array_shift($data));
+		}
+	}
+	// copyrighit チェック
+	$uid = get_pg_auther($page);
+	$copyright = FALSE;
+	if ($X_uid == 0 || (!$X_admin && $X_uid !== $uid && $X_uid != $status['owner']))
+	{
+		$copyright = $status['copyright'];
+	}
+	return $copyright;
 }
 
 // 画像キャッシュがあるか調べる
