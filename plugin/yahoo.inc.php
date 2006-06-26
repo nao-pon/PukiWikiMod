@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: yahoo.inc.php,v 1.3 2006/06/09 13:35:34 nao-pon Exp $
+// $Id: yahoo.inc.php,v 1.4 2006/06/26 23:32:58 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #yahoo([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -362,8 +362,8 @@ function plugin_yahoo_build_img($xml,$target,$col)
 
 			if ($cnt++ % $col === 0 && $cnt !== 1) $html .= "</tr><tr>";
 			$html .= "<td style='text-align:center;vertical-align:middle;'>";
-			$html .= "<a href='".$dat['ClickUrl']."' target='{$target}'><img src='{$dat['Thumbnail']['Url']}' width='{$dat['Thumbnail']['Width']}' height='{$dat['Thumbnail']['Height']}' alt=\"{$title}\" title=\"{$title}\" /></a>";
-			$html .= "<br />".$size."<br />".$site;
+			$html .= "<a href=\"".$dat['ClickUrl']."\" target=\"{$target}\" title=\"{$title}\" type=\"img\"><img src=\"{$dat['Thumbnail']['Url']}\" width=\"{$dat['Thumbnail']['Width']}\" height=\"{$dat['Thumbnail']['Height']}\" alt=\"{$title}\" title=\"{$title}\" /></a>";
+			$html .= "<br /><small>".$size."<br />".$site."</small>";
 			$html .= "</td>";
 		}
 		$html .= "</tr></table>";
