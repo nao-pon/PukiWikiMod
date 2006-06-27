@@ -5,7 +5,7 @@
  * CopyRight 2002 Y.MASUI GPL2
  * http://masui.net/pukiwiki/ masui@masui.net
  *
- * $Id: counter.inc.php,v 1.10 2006/04/06 13:32:16 nao-pon Exp $
+ * $Id: counter.inc.php,v 1.11 2006/06/27 23:47:13 nao-pon Exp $
  */
 
 // counter file
@@ -139,12 +139,12 @@ function plugin_counter_get_count($page)
 		global $xoopsDB;
 		$name = strip_bracket($page);
 		$s_name = addslashes($name);
-		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." WHERE name='$name';";
+		$query = "SELECT * FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." WHERE name='$s_name';";
 		$result=$xoopsDB->query($query);
 
 		if (mysql_num_rows($result))
 		{
-			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." SET count=$total,today='$date',today_count=$today,yesterday_count=$yesterday,ip='$ip' WHERE name='$name';";
+			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_count")." SET count=$total,today='$date',today_count=$today,yesterday_count=$yesterday,ip='$ip' WHERE name='$s_name';";
 			$result=$xoopsDB->queryF($query);
 		}
 		else
