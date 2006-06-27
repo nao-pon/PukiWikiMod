@@ -33,7 +33,7 @@ var resizeSpeed = 9;	// controls the speed of the image resizing (1=slowest and 
 
 var borderSize = 10;	//if you adjust the padding in the CSS, you will need to update this variable
 
-var imagebox_timeout = 3500; // Timeout for load a image.(ms)
+var lightbox_timeout = 5000; // Timeout for load a image.(ms)
 // -----------------------------------------------------------------------------------
 
 //
@@ -114,8 +114,13 @@ Lightbox.prototype = {
 
 	initialize: function() {
 		if (!document.getElementsByTagName){ return; }
+		
+		this.timer = null;
+		this.imgPreloader = null;
+		this.myAjax = null;
+		
 		var anchors = document.getElementById('body').getElementsByTagName('a');
-
+		
 		// loop through all anchor tags
 		for (var i=0; i<anchors.length; i++){
 			var anchor = anchors[i];
@@ -298,25 +303,49 @@ Lightbox.prototype = {
 		Element.hide('imageDataContainer');
 		Element.hide('numberDisplay');
 
-		imgPreloader = new Image();
+		this.imgPreloader = new Image();
 
 		// once image is preloaded, resize image container
-		imgPreloader.onload=function(){
-			clearTimeout(mytimer);
+		this.imgPreloader.onload=function(){
+			this.myAjax = null;
+			clearTimeout(this.timer);
 			Element.setSrc('lightboxImage', imageArray[activeImage][0]);
-			myLightbox.resizeImageContainer(imgPreloader.width, imgPreloader.height);
-		}
-		imgPreloader.src = imageArray[activeImage][0];
+			this.resizeImageContainer(this.imgPreloader.width, this.imgPreloader.height);
+		}.bind(this);
+		this.imgPreloader.src = imageArray[activeImage][0];
 		
-		var mytimer = setTimeout(function(){
-				this.onload = function(){
-					Element.setSrc('lightboxImage', this.src);
-					myLightbox.resizeImageContainer(this.width, this.height);
-				}.bind(this);
-				this.src = './plugin_data/lightbox/images/timeout.gif';
-			}.bind(imgPreloader),imagebox_timeout);
+		// Check URL found or notfound?
+		if (this.imgPreloader.src.match(/^http/))
+		{
+			this.checkUrl(this.imgPreloader.src);
+		}
+		
+		this.timer = setTimeout(function(){
+			this.imgPreloader.src = imageArray[activeImage][0] = './plugin_data/lightbox/images/timeout.gif';
+		}.bind(this),lightbox_timeout);
 	},
-
+	
+	
+	// Check URL by ajax
+	checkUrl: function(url) {
+		var url = './plugin_data/lightbox/checkurl.php?q=' + encodeURIComponent(url);
+		this.myAjax = new Ajax.Request(
+			url, 
+			{
+				method: 'GET',
+				onComplete: this.onCheckedUrl.bind(this)
+			});
+	},
+	
+	// Checked URL
+	onCheckedUrl: function(Req) {
+		var rc = eval(Req.responseText);
+		if (rc != 200)
+		{
+			this.imgPreloader.src = imageArray[activeImage][0] = './plugin_data/lightbox/images/notfound.gif';
+		}
+	},
+	
 	//
 	//	resizeImageContainer()
 	//
