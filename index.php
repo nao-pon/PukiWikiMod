@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: index.php,v 1.8 2006/06/24 01:13:34 nao-pon Exp $
+// $Id: index.php,v 1.9 2006/06/27 00:14:47 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -88,7 +88,20 @@ if($vars['cmd'] == "read")
 			}
 			else
 			{
-				$postdata = convert_html($get["page"],false,true);
+				$postdata = '';
+				// ページ内容のレンダリングの前にコンバートするプラグイン
+				if (!empty($pwm_config['pre_plugin_convert']))
+				{
+					foreach($pwm_config['pre_plugin_convert'] as $pname => $poption)
+					{
+						if (exist_plugin_convert($pname))
+						{
+							$postdata .= do_plugin_convert($pname,$option);
+						}
+					}
+				}
+				// ページ内容のレンダリング
+				$postdata .= convert_html($get["page"],false,true);
 			}
 			
 			$title = htmlspecialchars(strip_bracket($get["page"]));

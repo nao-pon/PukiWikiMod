@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.49 2006/06/13 13:39:19 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.50 2006/06/27 00:14:47 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -340,6 +340,13 @@ $pwm_config['p_showrss']['siteimg'] = false;
 // プリビュー,ページ編集時 のチケット確認
 // 0:しない, 1:ゲストのみ確認する, 2:すべて確認する
 $pwm_config['use_ticket_in_edit'] = 1;
+
+///////////////////////////////////////////////// 
+// ページ内容のレンダリングの前にコンバートするプラグイン
+$pwm_config['pre_plugin_convert'] = array(
+//	'プラグイン名' => 'オプション',
+//	'lightbox' => '', //lightboxプラグインを全ページで有効にする場合
+	);
 
 /////////////////////////////////////////////////
 // ユーザ定義ルール
