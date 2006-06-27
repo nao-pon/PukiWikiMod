@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.53 2006/06/23 14:34:46 nao-pon Exp $
+// $Id: make_link.php,v 1.54 2006/06/27 00:13:56 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -256,6 +256,7 @@ class Link
 
 		if (is_url($alias) && preg_match('/\.(gif|png|jpe?g)$/i',$alias))
 		{
+			$this->type = "img";
 			if (is_null($ref_enable)) $ref_enable = exist_plugin_convert("ref");
 			if ($ref_enable && $pwm_config['showimg_by_ref'])
 			{
@@ -442,10 +443,12 @@ EOD;
 		//プラグインで付加された<a href>タグを取り除く
 		$this->alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
 		$status_script = ($alias_set_status)? " onMouseOver=\"window.status='".str_replace("'","\'",strip_tags($this->alias))."';return true\" onMouseOut=\"window.status='';return true\"":"";
+		//リンク先がイメージ？
+		$isimg = ($this->type == "img")? " type=\"img\"" : "";
 		if ($this->separator == ">")
-			{return "<a href=\"{$this->name}\" title=\"{$this->name}\"{$status_script}>{$this->alias}</a>";}
+			{return "<a href=\"{$this->name}\" title=\"{$this->name}\"{$isimg}{$status_script}>{$this->alias}</a>";}
 		else
-			{return "<a href=\"{$this->name}\" title=\"{$this->name}\" target=\"$link_target\"{$status_script}>{$this->alias}</a>";}
+			{return "<a href=\"{$this->name}\" title=\"{$this->name}\" target=\"$link_target\"{$isimg}{$status_script}>{$this->alias}</a>";}
 	}
 }
 // url (InterWiki definition type)
