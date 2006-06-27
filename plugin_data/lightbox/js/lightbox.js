@@ -8,64 +8,32 @@
 //	http://huddletogether.com/projects/lightbox2/
 //
 //	Licensed under the Creative Commons Attribution 2.5 License - http://creativecommons.org/licenses/by/2.5/
-//	
+//
 //	Credit also due to those who have helped, inspired, and made their code available to the public.
 //	Including: Scott Upton(uptonic.com), Peter-Paul Koch(quirksmode.org), Thomas Fuchs(mir.aculo.us), and others.
 //
 //
 // -----------------------------------------------------------------------------------
 /*
-
-	Table of Contents
-	-----------------
-	Configuration
-	Global Variables
-
-	Extending Built-in Objects	
-	- Object.extend(Element)
-	- Array.prototype.removeDuplicates()
-	- Array.prototype.empty()
-
-	Lightbox Class Declaration
-	- initialize()
-	- start()
-	- changeImage()
-	- resizeImageContainer()
-	- showImage()
-	- updateDetails()
-	- updateNav()
-	- enableKeyboardNav()
-	- disableKeyboardNav()
-	- keyboardAction()
-	- preloadNeighborImages()
-	- end()
-	
-	Miscellaneous Functions
-	- getPageScroll()
-	- getPageSize()
-	- getKey()
-	- listenKey()
-	- showSelectBoxes()
-	- hideSelectBoxes()
-	- pause()
-	- initLightbox()
-	
-	Function Calls
-	- addLoadEvent(initLightbox)
-	
+var headHTML = document.getElementsByTagName('head')[0];
+var linkCSS = document.createElement("link");
+linkCSS.setAttribute('rel','stylesheet');
+linkCSS.setAttribute('href','\/js\/lightbox\/css\/lightbox.css');
+linkCSS.setAttribute('type','text\/css');
+linkCSS.setAttribute('media','all,print');
+headHTML.appendChild(linkCSS);
 */
-// -----------------------------------------------------------------------------------
-
 //
 //	Configuration
 //
-var fileLoadingImage = "./plugin_data/lightbox/images/loading.gif";		
+var fileLoadingImage = "./plugin_data/lightbox/images/loading.gif";
 var fileBottomNavCloseImage = "./plugin_data/lightbox/images/closelabel.gif";
 
-var resizeSpeed = 8;	// controls the speed of the image resizing (1=slowest and 10=fastest)
+var resizeSpeed = 9;	// controls the speed of the image resizing (1=slowest and 10=fastest)
 
 var borderSize = 10;	//if you adjust the padding in the CSS, you will need to update this variable
 
+var imagebox_timeout = 3500; // Timeout for load a image.(ms)
 // -----------------------------------------------------------------------------------
 
 //
@@ -87,7 +55,7 @@ resizeDuration = (11 - resizeSpeed) * 0.15;
 Object.extend(Element, {
 	getWidth: function(element) {
 	   	element = $(element);
-	   	return element.offsetWidth; 
+	   	return element.offsetWidth;
 	},
 	setWidth: function(element,w) {
 	   	element = $(element);
@@ -103,11 +71,11 @@ Object.extend(Element, {
 	},
 	setSrc: function(element,src) {
     	element = $(element);
-    	element.src = src; 
+    	element.src = src;
 	},
 	setHref: function(element,href) {
     	element = $(element);
-    	element.href = href; 
+    	element.href = href;
 	},
 	setInnerHTML: function(element,content) {
 		element = $(element);
@@ -140,105 +108,39 @@ Array.prototype.empty = function () {
 
 // -----------------------------------------------------------------------------------
 
-//
-//	Lightbox Class Declaration
-//	- initialize()
-//	- start()
-//	- changeImage()
-//	- resizeImageContainer()
-//	- showImage()
-//	- updateDetails()
-//	- updateNav()
-//	- enableKeyboardNav()
-//	- disableKeyboardNav()
-//	- keyboardNavAction()
-//	- preloadNeighborImages()
-//	- end()
-//
-//	Structuring of code inspired by Scott Upton (http://www.uptonic.com/)
-//
 var Lightbox = Class.create();
 
 Lightbox.prototype = {
-	
-	// initialize()
-	// Constructor runs on completion of the DOM loading. Loops through anchor tags looking for 
-	// 'lightbox' references and applies onclick events to appropriate links. The 2nd section of
-	// the function inserts html at the bottom of the page which is used to display the shadow 
-	// overlay and the image container.
-	//
-	initialize: function() {	
+
+	initialize: function() {
 		if (!document.getElementsByTagName){ return; }
-		var anchors = document.getElementsByTagName('a');
+		var anchors = document.getElementById('body').getElementsByTagName('a');
 
 		// loop through all anchor tags
 		for (var i=0; i<anchors.length; i++){
 			var anchor = anchors[i];
 			
-			// auto check by nao-pon
 			var typeAttribute = String(anchor.getAttribute('type'));
 			if (anchor.getAttribute('href') && (typeAttribute.toLowerCase().match('img')))
 			{
 				anchor.setAttribute("rel", "lightbox[stack]");
 				anchor.onclick = function () {myLightbox.start(this); return false;}
 			}
-			
-			//var relAttribute = String(anchor.getAttribute('rel'));
-			// use the string.match() method to catch 'lightbox' references in the rel attribute
-			//if (anchor.getAttribute('href') && (relAttribute.toLowerCase().match('lightbox'))){
-			//	anchor.onclick = function () {myLightbox.start(this); return false;}
-			//}
-			
-			// end auto check by nao-pon
 		}
 
-		// The rest of this code inserts html at the bottom of the page that looks similar to this:
-		//
-		//	<div id="overlay"></div>
-		//	<div id="lightbox">
-		//		<div id="outerImageContainer">
-		//			<div id="imageContainer">
-		//				<img id="lightboxImage">
-		//				<div style="" id="hoverNav">
-		//					<a href="#" id="prevLink"></a>
-		//					<a href="#" id="nextLink"></a>
-		//				</div>
-		//				<div id="loading">
-		//					<a href="#" id="loadingLink">
-		//						<img src="images/loading.gif">
-		//					</a>
-		//				</div>
-		//			</div>
-		//		</div>
-		//		<div id="imageDataContainer">
-		//			<div id="imageData">
-		//				<div id="imageDetails">
-		//					<span id="caption"></span>
-		//					<span id="numberDisplay"></span>
-		//				</div>
-		//				<div id="bottomNav">
-		//					<a href="#" id="bottomNavClose">
-		//						<img src="images/close.gif">
-		//					</a>
-		//				</div>
-		//			</div>
-		//		</div>
-		//	</div>
-
-
 		var objBody = document.getElementsByTagName("body").item(0);
-		
+
 		var objOverlay = document.createElement("div");
 		objOverlay.setAttribute('id','overlay');
 		objOverlay.style.display = 'none';
 		objOverlay.onclick = function() { myLightbox.end(); return false; }
 		objBody.appendChild(objOverlay);
-		
+
 		var objLightbox = document.createElement("div");
 		objLightbox.setAttribute('id','lightbox');
 		objLightbox.style.display = 'none';
 		objBody.appendChild(objLightbox);
-	
+
 		var objOuterImageContainer = document.createElement("div");
 		objOuterImageContainer.setAttribute('id','outerImageContainer');
 		objLightbox.appendChild(objOuterImageContainer);
@@ -246,35 +148,35 @@ Lightbox.prototype = {
 		var objImageContainer = document.createElement("div");
 		objImageContainer.setAttribute('id','imageContainer');
 		objOuterImageContainer.appendChild(objImageContainer);
-	
+
 		var objLightboxImage = document.createElement("img");
 		objLightboxImage.setAttribute('id','lightboxImage');
 		objImageContainer.appendChild(objLightboxImage);
-	
+
 		var objHoverNav = document.createElement("div");
 		objHoverNav.setAttribute('id','hoverNav');
 		objImageContainer.appendChild(objHoverNav);
-	
+
 		var objPrevLink = document.createElement("a");
 		objPrevLink.setAttribute('id','prevLink');
 		objPrevLink.setAttribute('href','#');
 		objHoverNav.appendChild(objPrevLink);
-		
+
 		var objNextLink = document.createElement("a");
 		objNextLink.setAttribute('id','nextLink');
 		objNextLink.setAttribute('href','#');
 		objHoverNav.appendChild(objNextLink);
-	
+
 		var objLoading = document.createElement("div");
 		objLoading.setAttribute('id','loading');
 		objImageContainer.appendChild(objLoading);
-	
+
 		var objLoadingLink = document.createElement("a");
 		objLoadingLink.setAttribute('id','loadingLink');
 		objLoadingLink.setAttribute('href','#');
 		objLoadingLink.onclick = function() { myLightbox.end(); return false; }
 		objLoading.appendChild(objLoadingLink);
-	
+
 		var objLoadingImage = document.createElement("img");
 		objLoadingImage.setAttribute('src', fileLoadingImage);
 		objLoadingLink.appendChild(objLoadingImage);
@@ -287,39 +189,56 @@ Lightbox.prototype = {
 		var objImageData = document.createElement("div");
 		objImageData.setAttribute('id','imageData');
 		objImageDataContainer.appendChild(objImageData);
-	
-		var objImageDetails = document.createElement("div");
-		objImageDetails.setAttribute('id','imageDetails');
-		objImageData.appendChild(objImageDetails);
-	
-		var objCaption = document.createElement("span");
-		objCaption.setAttribute('id','caption');
-		objImageDetails.appendChild(objCaption);
-	
-		var objNumberDisplay = document.createElement("span");
-		objNumberDisplay.setAttribute('id','numberDisplay');
-		objImageDetails.appendChild(objNumberDisplay);
-		
+
 		var objBottomNav = document.createElement("div");
 		objBottomNav.setAttribute('id','bottomNav');
 		objImageData.appendChild(objBottomNav);
-	
+
 		var objBottomNavCloseLink = document.createElement("a");
 		objBottomNavCloseLink.setAttribute('id','bottomNavClose');
 		objBottomNavCloseLink.setAttribute('href','#');
 		objBottomNavCloseLink.onclick = function() { myLightbox.end(); return false; }
+		objBottomNavCloseLink.innerHTML = '&#38281;&#12376;&#12427;';
+		objBottomNavCloseLink.setAttribute('title',objBottomNavCloseLink.innerHTML);
 		objBottomNav.appendChild(objBottomNavCloseLink);
-	
-		var objBottomNavCloseImage = document.createElement("img");
-		objBottomNavCloseImage.setAttribute('src', fileBottomNavCloseImage);
-		objBottomNavCloseLink.appendChild(objBottomNavCloseImage);
+
+		var objBottomNavOriginalLinkNew = document.createElement("a");
+		objBottomNavOriginalLinkNew.setAttribute('id','originalLinkNew');
+		objBottomNavOriginalLinkNew.setAttribute('href','#');
+		objBottomNavOriginalLinkNew.onclick = function() { myLightbox.viewOriginalNew(); return false; };
+		objBottomNavOriginalLinkNew.style.display = 'none';
+		objBottomNavOriginalLinkNew.innerHTML = '&#26032;&#12375;&#12356;&#12454;&#12452;&#12531;&#12489;&#12454;&#12391;&#38283;&#12367;';
+		objBottomNavOriginalLinkNew.setAttribute('title',objBottomNavOriginalLinkNew.innerHTML);
+		objBottomNav.appendChild(objBottomNavOriginalLinkNew);
+
+		var objBottomNavOriginalLink = document.createElement("a");
+		objBottomNavOriginalLink.setAttribute('id','originalLink');
+		objBottomNavOriginalLink.setAttribute('href','#');
+		objBottomNavOriginalLink.onclick = function() { myLightbox.viewOriginal(); return false; };
+		objBottomNavOriginalLink.style.display = 'none';
+		objBottomNavOriginalLink.innerHTML = '&#21516;&#12376;&#12454;&#12452;&#12531;&#12489;&#12454;&#12391;&#12458;&#12522;&#12472;&#12490;&#12523;&#30011;&#20687;&#12434;&#38283;&#12367;';
+		objBottomNavOriginalLink.setAttribute('title',objBottomNavOriginalLink.innerHTML);
+		objBottomNav.appendChild(objBottomNavOriginalLink);
+
+		var objImageDetails = document.createElement("div");
+		objImageDetails.setAttribute('id','imageDetails');
+		objImageData.appendChild(objImageDetails);
+
+		var objCaption = document.createElement("span");
+		objCaption.setAttribute('id','caption');
+		objImageData.appendChild(objCaption);
+
+		var objNumberDisplay = document.createElement("span");
+		objNumberDisplay.setAttribute('id','numberDisplay');
+		objImageData.appendChild(objNumberDisplay);
+
 	},
-	
+
 	//
 	//	start()
 	//	Display overlay and lightbox. If image is part of a set, add siblings to imageArray.
 	//
-	start: function(imageLink) {	
+	start: function(imageLink) {
 
 		hideSelectBoxes();
 
@@ -329,15 +248,14 @@ Lightbox.prototype = {
 		new Effect.Appear('overlay', { duration: 0.2, from: 0.0, to: 0.8 });
 
 		imageArray = [];
-		imageNum = 0;		
+		imageNum = 0;
 
 		if (!document.getElementsByTagName){ return; }
-		var anchors = document.getElementsByTagName('a');
+		var anchors = document.getElementById('body').getElementsByTagName('a');
 
-		// if image is NOT part of a set..
 		if((imageLink.getAttribute('rel') == 'lightbox')){
 			// add single image to imageArray
-			imageArray.push(new Array(imageLink.getAttribute('href'), imageLink.getAttribute('title')));			
+			imageArray.push(new Array(imageLink.getAttribute('href'), imageLink.getAttribute('title')));
 		} else {
 		// if image is part of a set..
 
@@ -352,14 +270,14 @@ Lightbox.prototype = {
 			while(imageArray[imageNum][0] != imageLink.getAttribute('href')) { imageNum++;}
 		}
 
-		// calculate top offset for the lightbox and display 
+		// calculate top offset for the lightbox and display
 		var arrayPageSize = getPageSize();
 		var arrayPageScroll = getPageScroll();
-		var lightboxTop = arrayPageScroll[1] + (arrayPageSize[3] / 15);
+		var lightboxTop = arrayPageScroll[1] + (arrayPageSize[3] / 30);
 
 		Element.setTop('lightbox', lightboxTop);
 		Element.show('lightbox');
-		
+
 		this.changeImage(imageNum);
 	},
 
@@ -367,8 +285,8 @@ Lightbox.prototype = {
 	//	changeImage()
 	//	Hide most elements and preload image in preparation for resizing image container.
 	//
-	changeImage: function(imageNum) {	
-		
+	changeImage: function(imageNum) {
+
 		activeImage = imageNum;	// update global var
 
 		// hide elements during transition
@@ -378,22 +296,78 @@ Lightbox.prototype = {
 		Element.hide('prevLink');
 		Element.hide('nextLink');
 		Element.hide('imageDataContainer');
-		Element.hide('numberDisplay');		
-		
+		Element.hide('numberDisplay');
+
 		imgPreloader = new Image();
-		
+
 		// once image is preloaded, resize image container
 		imgPreloader.onload=function(){
+			clearTimeout(mytimer);
 			Element.setSrc('lightboxImage', imageArray[activeImage][0]);
 			myLightbox.resizeImageContainer(imgPreloader.width, imgPreloader.height);
 		}
 		imgPreloader.src = imageArray[activeImage][0];
+		
+		var mytimer = setTimeout(function(){
+				this.onload = function(){
+					Element.setSrc('lightboxImage', this.src);
+					myLightbox.resizeImageContainer(this.width, this.height);
+				}.bind(this);
+				this.src = './plugin_data/lightbox/images/timeout.gif';
+			}.bind(imgPreloader),imagebox_timeout);
 	},
 
 	//
 	//	resizeImageContainer()
 	//
-	resizeImageContainer: function( imgWidth, imgHeight) {
+	resizeImageContainer: function( imgWidth, imgHeight, notfound) {
+
+		document.getElementById('bottomNavClose').style.display = 'block';
+		document.getElementById('originalLinkNew').style.display = 'none';
+		document.getElementById('originalLink').style.display = 'none';
+		var boxHeight = imgHeight + 36 + (borderSize * 3);
+		var boxWidth = imgWidth + (borderSize * 2);
+		var ratio = 0.8;
+		
+		if(arrayPageSize[3] <= boxHeight | arrayPageSize[2] <= boxWidth){
+			if(arrayPageSize[3] <= boxHeight) {
+				imgRatio = imgWidth / imgHeight;
+				imgHeight = (arrayPageSize[3] - 36 - (borderSize * 3)) * ratio;
+				imgWidth = imgHeight * imgRatio;
+				if(arrayPageSize[2] <= boxWidth) {
+					imgRatio = imgHeight / imgWidth;
+					imgWidth = (arrayPageSize[2] - (borderSize * 2)) * ratio;
+					imgHeight = imgWidth * imgRatio;
+					if(arrayPageSize[3] <= boxHeight) {
+						imgRatio = imgWidth / imgHeight;
+						imgHeight = (arrayPageSize[3] - 36 - (borderSize * 3)) * ratio;
+						imgWidth = imgHeight * imgRatio;
+					}
+				}
+			} else if(arrayPageSize[2] <= boxWidth) {
+				imgRatio = imgHeight / imgWidth;
+				imgWidth = (arrayPageSize[2] - (borderSize * 2)) * ratio;
+				imgHeight = imgWidth * imgRatio;
+				if(arrayPageSize[3] <= boxHeight) {
+					imgRatio = imgWidth / imgHeight;
+					imgHeight = (arrayPageSize[3] - 36 - (borderSize * 3)) * ratio;
+					imgWidth = imgHeight * imgRatio;
+					if(arrayPageSize[2] <= boxWidth) {
+						imgRatio = imgHeight / imgWidth;
+						imgWidth = (arrayPageSize[2] - (borderSize * 2)) * ratio;
+						imgHeight = imgWidth * imgRatio;
+					}
+				}
+			}
+		document.getElementById('originalLinkNew').style.display = 'block';
+		document.getElementById('originalLink').style.display = 'block';
+		}
+		
+
+		document.getElementById('lightboxImage').width = imgWidth;
+		document.getElementById('lightboxImage').height = imgHeight;
+		
+		document.getElementById('imageDetails').style.width = imgWidth - 220 + 'px';
 
 		// get current height and width
 		this.wCur = Element.getWidth('outerImageContainer');
@@ -410,10 +384,10 @@ Lightbox.prototype = {
 		if(!( hDiff == 0)){ new Effect.Scale('outerImageContainer', this.yScale, {scaleX: false, duration: resizeDuration, queue: 'front'}); }
 		if(!( wDiff == 0)){ new Effect.Scale('outerImageContainer', this.xScale, {scaleY: false, delay: resizeDuration, duration: resizeDuration}); }
 
-		// if new and old image are same size and no scaling transition is necessary, 
+		// if new and old image are same size and no scaling transition is necessary,
 		// do a quick pause to prevent image flicker.
 		if((hDiff == 0) && (wDiff == 0)){
-			if (navigator.appVersion.indexOf("MSIE")!=-1){ pause(250); } else { pause(100);} 
+			if (navigator.appVersion.indexOf("MSIE")!=-1){ pause(250); } else { pause(100);}
 		}
 
 		Element.setHeight('prevLink', imgHeight);
@@ -422,7 +396,7 @@ Lightbox.prototype = {
 
 		this.showImage();
 	},
-	
+
 	//
 	//	showImage()
 	//	Display image and begin preloading neighbors.
@@ -438,20 +412,20 @@ Lightbox.prototype = {
 	//	Display caption, image number, and bottom nav.
 	//
 	updateDetails: function() {
-	
+
 		Element.show('caption');
 		Element.setInnerHTML( 'caption', imageArray[activeImage][1]);
-		
-		// if image is part of set display 'Image x of x' 
+
+		// if image is part of set display 'Image x of x'
 		if(imageArray.length > 1){
 			Element.show('numberDisplay');
 			Element.setInnerHTML( 'numberDisplay', "Image " + eval(activeImage + 1) + " of " + imageArray.length);
 		}
 
 		new Effect.Parallel(
-			[ new Effect.SlideDown( 'imageDataContainer', { sync: true, duration: resizeDuration + 0.25, from: 0.0, to: 1.0 }), 
-			  new Effect.Appear('imageDataContainer', { sync: true, duration: 1.0 }) ], 
-			{ duration: 0.65, afterFinish: function() { myLightbox.updateNav();} } 
+			[ new Effect.SlideDown( 'imageDataContainer', { sync: true, duration: resizeDuration + 0.25, from: 0.0, to: 1.0 }),
+			  new Effect.Appear('imageDataContainer', { sync: true, duration: 1.0 }) ],
+			{ duration: 0.65, afterFinish: function() { myLightbox.updateNav();} }
 		);
 	},
 
@@ -461,7 +435,7 @@ Lightbox.prototype = {
 	//
 	updateNav: function() {
 
-		Element.show('hoverNav');				
+		Element.show('hoverNav');
 
 		// if not first image in set, display prev image button
 		if(activeImage != 0){
@@ -478,7 +452,7 @@ Lightbox.prototype = {
 				myLightbox.changeImage(activeImage + 1); return false;
 			}
 		}
-		
+
 		this.enableKeyboardNav();
 	},
 
@@ -486,7 +460,7 @@ Lightbox.prototype = {
 	//	enableKeyboardNav()
 	//
 	enableKeyboardNav: function() {
-		document.onkeydown = this.keyboardAction; 
+		document.onkeydown = this.keyboardAction;
 	},
 
 	//
@@ -507,7 +481,7 @@ Lightbox.prototype = {
 		}
 
 		key = String.fromCharCode(keycode).toLowerCase();
-		
+
 		if((key == 'x') || (key == 'o') || (key == 'c')){	// close lightbox
 			myLightbox.end();
 		} else if(key == 'p'){	// display previous image
@@ -539,17 +513,28 @@ Lightbox.prototype = {
 			preloadPrevImage = new Image();
 			preloadPrevImage.src = imageArray[activeImage - 1][0];
 		}
-	
+
 	},
 
 	//
 	//	end()
 	//
 	end: function() {
+		document.getElementById('bottomNavClose').style.display = 'none';
+		document.getElementById('originalLinkNew').style.display = 'none';
+		document.getElementById('originalLink').style.display = 'none';
 		this.disableKeyboardNav();
 		Element.hide('lightbox');
 		new Effect.Fade('overlay', { duration: 0.2});
 		showSelectBoxes();
+	},
+
+	viewOriginalNew: function() {
+		window.open(document.getElementById('lightboxImage').src);
+	},
+
+	viewOriginal: function() {
+		window.location.href = document.getElementById('lightboxImage').src;
 	}
 }
 
@@ -572,7 +557,7 @@ function getPageScroll(){
 		yScroll = document.body.scrollTop;
 	}
 
-	arrayPageScroll = new Array('',yScroll) 
+	arrayPageScroll = new Array('',yScroll)
 	return arrayPageScroll;
 }
 
@@ -585,10 +570,10 @@ function getPageScroll(){
 // Edit for Firefox by pHaez
 //
 function getPageSize(){
-	
+
 	var xScroll, yScroll;
-	
-	if (window.innerHeight && window.scrollMaxY) {	
+
+	if (window.innerHeight && window.scrollMaxY) {
 		xScroll = document.body.scrollWidth;
 		yScroll = window.innerHeight + window.scrollMaxY;
 	} else if (document.body.scrollHeight > document.body.offsetHeight){ // all but Explorer Mac
@@ -598,7 +583,7 @@ function getPageSize(){
 		xScroll = document.body.offsetWidth;
 		yScroll = document.body.offsetHeight;
 	}
-	
+
 	var windowWidth, windowHeight;
 	if (self.innerHeight) {	// all except Explorer
 		windowWidth = self.innerWidth;
@@ -609,24 +594,24 @@ function getPageSize(){
 	} else if (document.body) { // other Explorers
 		windowWidth = document.body.clientWidth;
 		windowHeight = document.body.clientHeight;
-	}	
-	
+	}
+
 	// for small pages with total height less then height of the viewport
 	if(yScroll < windowHeight){
 		pageHeight = windowHeight;
-	} else { 
+	} else {
 		pageHeight = yScroll;
 	}
 
 	// for small pages with total width less then width of the viewport
-	if(xScroll < windowWidth){	
+	if(xScroll < windowWidth){
 		pageWidth = windowWidth;
 	} else {
 		pageWidth = xScroll;
 	}
 
 
-	arrayPageSize = new Array(pageWidth,pageHeight,windowWidth,windowHeight) 
+	arrayPageSize = new Array(pageWidth,pageHeight,windowWidth,windowHeight)
 	return arrayPageSize;
 }
 
@@ -643,7 +628,7 @@ function getKey(e){
 		keycode = e.which;
 	}
 	key = String.fromCharCode(keycode).toLowerCase();
-	
+
 	if(key == 'x'){
 	}
 }
@@ -654,13 +639,16 @@ function getKey(e){
 // listenKey()
 //
 function listenKey () {	document.onkeypress = getKey; }
-	
+
 // ---------------------------------------------------
 
 function showSelectBoxes(){
 	selects = document.getElementsByTagName("select");
 	for (i = 0; i != selects.length; i++) {
-		selects[i].style.visibility = "visible";
+		if (!selects[i].id.match(/^edit_/))  // for fusen plugin by nao-pon
+		{
+			selects[i].style.visibility = "visible";
+		}
 	}
 }
 
@@ -669,7 +657,10 @@ function showSelectBoxes(){
 function hideSelectBoxes(){
 	selects = document.getElementsByTagName("select");
 	for (i = 0; i != selects.length; i++) {
-		selects[i].style.visibility = "hidden";
+		if (!selects[i].id.match(/^edit_/))  // for fusen plugin by nao-pon
+		{
+			selects[i].style.visibility = "hidden";
+		}
 	}
 }
 
@@ -691,8 +682,6 @@ function pause(numberMillis) {
 }
 
 // ---------------------------------------------------
-
-
 
 function initLightbox() { myLightbox = new Lightbox(); }
 Event.observe(window, 'load', initLightbox, false);
