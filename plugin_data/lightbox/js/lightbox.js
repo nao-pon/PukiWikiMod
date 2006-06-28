@@ -119,6 +119,13 @@ Lightbox.prototype = {
 		this.imgPreloader = null;
 		this.myAjax = null;
 		
+		//regexp my host name
+		this.myhost = location.protocol+"//"+location.host;
+		var reg = /([\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:\\])/g;
+		//for NN4.x bug
+		this.myhost = this.myhost.replace(reg, "##__BACK_SLASH__##$1").replace(/##__BACK_SLASH__##/g, '\\');
+		this.myhost = new RegExp("^"+this.myhost,"i");
+		
 		var anchors = document.getElementById('body').getElementsByTagName('a');
 		
 		// loop through all anchor tags
@@ -315,7 +322,7 @@ Lightbox.prototype = {
 		this.imgPreloader.src = imageArray[activeImage][0];
 		
 		// Check URL found or notfound?
-		if (this.imgPreloader.src.match(/^http/))
+		if (this.imgPreloader.src.match(/^http/i) && !this.imgPreloader.src.match(this.myhost))
 		{
 			this.checkUrl(this.imgPreloader.src);
 		}
