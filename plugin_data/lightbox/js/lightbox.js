@@ -14,15 +14,11 @@
 //
 //
 // -----------------------------------------------------------------------------------
-/*
-var headHTML = document.getElementsByTagName('head')[0];
-var linkCSS = document.createElement("link");
-linkCSS.setAttribute('rel','stylesheet');
-linkCSS.setAttribute('href','\/js\/lightbox\/css\/lightbox.css');
-linkCSS.setAttribute('type','text\/css');
-linkCSS.setAttribute('media','all,print');
-headHTML.appendChild(linkCSS);
-*/
+//
+//  edited by nao-pon - http://hypweb.net/
+//  $Id: lightbox.js,v 1.5 2006/06/28 23:35:16 nao-pon Exp $
+//
+// -----------------------------------------------------------------------------------
 //
 //	Configuration
 //
@@ -316,7 +312,7 @@ Lightbox.prototype = {
 		this.imgPreloader.onload=function(){
 			this.myAjax = null;
 			clearTimeout(this.timer);
-			Element.setSrc('lightboxImage', imageArray[activeImage][0]);
+			Element.setSrc('lightboxImage', this.imgPreloader.src);
 			this.resizeImageContainer(this.imgPreloader.width, this.imgPreloader.height);
 		}.bind(this);
 		this.imgPreloader.src = imageArray[activeImage][0];
@@ -328,7 +324,7 @@ Lightbox.prototype = {
 		}
 		
 		this.timer = setTimeout(function(){
-			this.imgPreloader.src = imageArray[activeImage][0] = './plugin_data/lightbox/images/timeout.gif';
+			this.imgPreloader.src = './plugin_data/lightbox/images/timeout.gif';
 		}.bind(this),lightbox_timeout);
 	},
 	
@@ -340,6 +336,7 @@ Lightbox.prototype = {
 			url, 
 			{
 				method: 'GET',
+				requestHeaders: ['Referer',document.location],
 				onComplete: this.onCheckedUrl.bind(this)
 			});
 	},
@@ -349,14 +346,14 @@ Lightbox.prototype = {
 		var rc = eval(Req.responseText);
 		if (rc != 200)
 		{
-			this.imgPreloader.src = imageArray[activeImage][0] = './plugin_data/lightbox/images/notfound.gif';
+			this.imgPreloader.src = './plugin_data/lightbox/images/notfound.gif';
 		}
 	},
 	
 	//
 	//	resizeImageContainer()
 	//
-	resizeImageContainer: function( imgWidth, imgHeight, notfound) {
+	resizeImageContainer: function( imgWidth, imgHeight ) {
 
 		document.getElementById('bottomNavClose').style.display = 'block';
 		document.getElementById('originalLinkNew').style.display = 'none';
@@ -455,7 +452,7 @@ Lightbox.prototype = {
 		// if image is part of set display 'Image x of x'
 		if(imageArray.length > 1){
 			Element.show('numberDisplay');
-			Element.setInnerHTML( 'numberDisplay', "Image " + eval(activeImage + 1) + " of " + imageArray.length);
+			Element.setInnerHTML( 'numberDisplay', "<a href=\""+imageArray[activeImage][0]+"\" title=\"Open this window\">Image " + eval(activeImage + 1) + "</a> of " + imageArray.length);
 		}
 
 		new Effect.Parallel(
