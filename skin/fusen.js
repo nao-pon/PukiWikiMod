@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.13 2006/01/08 13:29:43 nao-pon Exp $
+// $Id: fusen.js,v 1.14 2006/06/28 23:25:26 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -120,22 +120,24 @@ function fusen_busy(busy)
 	
 	for(var id in fusenObj)
 	{
-		obj = getElement('fusen_id' + id);
-		set_cursor = (fusenObj[id].lk)? 'auto' : 'move';
-		set_cursor = (busy)? 'wait' : set_cursor;
-		obj.style.cursor = set_cursor;
-		if (busy)
+		if (!isNaN(id))
 		{
-			obj.onmousedown = null;
-		}
-		else
-		{
-			fusen_set_onmousedown(obj,id);
-		}
+			obj = getElement('fusen_id' + id);
+			set_cursor = (fusenObj[id].lk)? 'auto' : 'move';
+			set_cursor = (busy)? 'wait' : set_cursor;
+			obj.style.cursor = set_cursor;
+			if (busy)
+			{
+				obj.onmousedown = null;
+			}
+			else
+			{
+				fusen_set_onmousedown(obj,id);
+			}
 
-		getElement('fusen_id' + id + 'resize').style.cursor = r_cursor;
-		getElement('fusen_id' + id + 'wresize').style.cursor = w_cursor;
-		
+			getElement('fusen_id' + id + 'resize').style.cursor = r_cursor;
+			getElement('fusen_id' + id + 'wresize').style.cursor = w_cursor;
+		}
 	}
 }
 
@@ -355,31 +357,37 @@ function fusen_getdata(mod)
 						
 						if (fusenObj)
 						{
-							eval( 'fusenObj_N = ' + txt );
+							eval( 'var fusenObj_N = ' + txt );
 							
 							// 新規 or 編集された付箋
 							for (var id in fusenObj_N)
 							{
-								if (!fusenObj[id] || fusenObj[id].tt < fusenObj_N[id].tt)
+								if (!isNaN(id))
 								{
-									change_status = true;
-									edit_item[id] = true;
-									if (fusenObj[id])
+									if (!fusenObj[id] || fusenObj[id].tt < fusenObj_N[id].tt)
 									{
-										getElement('fusen_id' + id).id = 'fusen_id_remove' + id;
+										change_status = true;
+										edit_item[id] = true;
+										if (fusenObj[id])
+										{
+											getElement('fusen_id' + id).id = 'fusen_id_remove' + id;
+										}
+										fusenObj[id] = fusenObj_N[id];
 									}
-									fusenObj[id] = fusenObj_N[id];
 								}
 							}
 							// 削除された付箋
 							for (var id in fusenObj)
 							{
-								if (!fusenObj_N[id])
+								if (!isNaN(id))
 								{
-									change_status = true;
-									fusen_removelines(id);
-									obj.removeChild(getElement('fusen_id' + id));
-									delete fusenObj[id];
+									if (!fusenObj_N[id])
+									{
+										change_status = true;
+										fusen_removelines(id);
+										obj.removeChild(getElement('fusen_id' + id));
+										delete fusenObj[id];
+									}
 								}
 							}
 						}
@@ -397,31 +405,34 @@ function fusen_getdata(mod)
 							
 							for(var id in edit_item)
 							{
-								// 編集権限
-								fusenObj[id].auth = false;
-								if (fusenX_admin) fusenObj[id].auth = true;
-								else if (fusenX_uid && fusenX_uid == fusenObj[id].uid) fusenObj[id].auth = true;
-								else if (!fusenObj[id].uid && fusenX_ucd && fusenX_ucd == fusenObj[id].ucd) fusenObj[id].auth = true;
-								
-								var cobj = fusen_create(id, fusenObj[id]);
-								document.getElementById('fusen_area').appendChild(cobj);
-								fusen_set_onmousedown(cobj,id)
-								cobj.onmouseover = fusen_onmouseover;
-								cobj.onmouseout = fusen_onmouseout;
-								fusenFullFlg[id] = false;
-								
-								// サイズ再設定
-								if (!fusenObj[id].fix)
+								if (!isNaN(id))
 								{
-									fusen_size_init(cobj);
+									// 編集権限
+									fusenObj[id].auth = false;
+									if (fusenX_admin) fusenObj[id].auth = true;
+									else if (fusenX_uid && fusenX_uid == fusenObj[id].uid) fusenObj[id].auth = true;
+									else if (!fusenObj[id].uid && fusenX_ucd && fusenX_ucd == fusenObj[id].ucd) fusenObj[id].auth = true;
+									
+									var cobj = fusen_create(id, fusenObj[id]);
+									document.getElementById('fusen_area').appendChild(cobj);
+									fusen_set_onmousedown(cobj,id)
+									cobj.onmouseover = fusen_onmouseover;
+									cobj.onmouseout = fusen_onmouseout;
+									fusenFullFlg[id] = false;
+									
+									// サイズ再設定
+									if (!fusenObj[id].fix)
+									{
+										fusen_size_init(cobj);
+									}
+									
+									if (change_status && getElement('fusen_id_remove' + id))
+									{
+										obj.removeChild(getElement('fusen_id_remove' + id));
+									}
+									
+									if (change_status) {fusen_setlines(id);}
 								}
-								
-								if (change_status && getElement('fusen_id_remove' + id))
-								{
-									obj.removeChild(getElement('fusen_id_remove' + id));
-								}
-								
-								if (change_status) {fusen_setlines(id);}
 							}
 							
 							if (fusenDustboxFlg)
@@ -523,12 +534,15 @@ function fusen_grep(pat) {
 	fusenMovingObj = null;
 	var re = new RegExp(pat, 'im');
 	for(var id in fusenObj) {
-		if (!fusenDustboxFlg && (fusenObj[id].del)) continue;
-		if (fusenDustboxFlg && !(fusenObj[id].del)) continue;
-		if (fusenObj[id].disp.match(re) || fusenObj[id].name.match(re)) {
-			getElement('fusen_id' + id).style.visibility = "visible";
-		} else {
-			getElement('fusen_id' + id).style.visibility = "hidden";
+		if (!isNaN(id))
+		{
+			if (!fusenDustboxFlg && (fusenObj[id].del)) continue;
+			if (fusenDustboxFlg && !(fusenObj[id].del)) continue;
+			if (fusenObj[id].disp.match(re) || fusenObj[id].name.match(re)) {
+				getElement('fusen_id' + id).style.visibility = "visible";
+			} else {
+				getElement('fusen_id' + id).style.visibility = "hidden";
+			}
 		}
 	}
 }
@@ -773,26 +787,32 @@ function fusen_del_multi()
 		var elm;
 		for(var id in fusenObj)
 		{
-			elm = getElement('list_delbox_'+id);
-			if(elm && elm.checked == true)
+			if (!isNaN(id))
 			{
-				ids[id] = id;
+				elm = getElement('list_delbox_'+id);
+				if(elm && elm.checked == true)
+				{
+					ids[id] = id;
+				}
 			}
 		}
 		getElement('edit_id').value = ids.join(",");
 		getElement('edit_mode').value = 'del_m';
 		for(var id in ids)
 		{
-			// 表示更新
-			getElement('fusen_id' + id).style.visibility = "hidden";
-			fusen_set_menu_html(getElement('fusen_id' + id + 'menu'),id,'del');
-			getElement('fusen_id' + id).style.border = fusenBorderObj['del'];
-			fusenObj[id].del = true;
-			
-			if (!fusenDustboxFlg)
+			if (!isNaN(id))
 			{
-				fusen_removelines(id);
-				fusen_setlines(id);
+				// 表示更新
+				getElement('fusen_id' + id).style.visibility = "hidden";
+				fusen_set_menu_html(getElement('fusen_id' + id + 'menu'),id,'del');
+				getElement('fusen_id' + id).style.border = fusenBorderObj['del'];
+				fusenObj[id].del = true;
+				
+				if (!fusenDustboxFlg)
+				{
+					fusen_removelines(id);
+					fusen_setlines(id);
+				}
 			}
 		}
 		
@@ -1003,13 +1023,16 @@ function fusen_dustbox()
 	fusenMovingObj = null;
 	fusenDustboxFlg = !fusenDustboxFlg;
 	for(var id in fusenObj) {
-		var obj = getElement('fusen_id' + id);
-		if (fusenObj[id].del) {
-			if (fusenDustboxFlg) obj.style.visibility = 'visible';
-			else obj.style.visibility = 'hidden';
-		} else {
-			if (fusenDustboxFlg) obj.style.visibility = 'hidden';
-			else obj.style.visibility = 'visible';
+		if (!isNaN(id))
+		{
+			var obj = getElement('fusen_id' + id);
+			if (fusenObj[id].del) {
+				if (fusenDustboxFlg) obj.style.visibility = 'visible';
+				else obj.style.visibility = 'hidden';
+			} else {
+				if (fusenDustboxFlg) obj.style.visibility = 'hidden';
+				else obj.style.visibility = 'visible';
+			}
 		}
 	}
 	if (fusenDustboxFlg)
@@ -1230,13 +1253,16 @@ function fusen_create(id, obj) {
 function fusen_removelines(t_id) {
 	var id, lineid, obj;
 	for(id in fusenObj) {
-		if (fusenObj[id].ln)
+		if (!isNaN(id))
 		{
-			if (!t_id || t_id == id || t_id == fusenObj[id].ln)
+			if (fusenObj[id].ln)
 			{
-				lineid = 'line' + id + '_' + fusenObj[id].ln;
-				obj = getElement(lineid);
-				if (obj) obj.parentNode.removeChild(obj);
+				if (!t_id || t_id == id || t_id == fusenObj[id].ln)
+				{
+					lineid = 'line' + id + '_' + fusenObj[id].ln;
+					obj = getElement(lineid);
+					if (obj) obj.parentNode.removeChild(obj);
+				}
 			}
 		}
 	}
@@ -1250,7 +1276,11 @@ function fusen_setlines(t_id)
 		{
 			for (var id in fusenLines[t_id])
 			{
-				fusen_setline2(id, fusenObj[id].ln);
+				if (!isNaN(id))
+				{
+					alert(parseInt(id));
+					fusen_setline2(id, fusenObj[id].ln);
+				}
 			}
 		}
 	}
@@ -1259,12 +1289,15 @@ function fusen_setlines(t_id)
 		if (!!t_id) fusenLines[t_id] = new Array();
 		for(var id in fusenObj)
 		{
-			if (fusenObj[id].ln && !fusenObj[id].del && fusenObj[fusenObj[id].ln] && !fusenObj[fusenObj[id].ln].del)
+			if (!isNaN(id))
 			{
-				if (!t_id || t_id == id || t_id == fusenObj[id].ln)
+				if (fusenObj[id].ln && !fusenObj[id].del && fusenObj[fusenObj[id].ln] && !fusenObj[fusenObj[id].ln].del)
 				{
-					fusen_setline2(id, fusenObj[id].ln);
-					if (!!t_id) {fusenLines[t_id][id] = true;}
+					if (!t_id || t_id == id || t_id == fusenObj[id].ln)
+					{
+						fusen_setline2(id, fusenObj[id].ln);
+						if (!!t_id) {fusenLines[t_id][id] = true;}
+					}
 				}
 			}
 		}
@@ -1575,7 +1608,10 @@ function fusen_onmousedown(e) {
 
 	}
 	for(var id in fusenObj) {
-		getElement('fusen_id' + id).style.zIndex = 1;
+		if (!isNaN(id))
+		{
+			getElement('fusen_id' + id).style.zIndex = 1;
+		}
 	}
 	fusenMovingObj.style.zIndex = 90;
 	fusenMovingFlg = false;
@@ -1843,17 +1879,20 @@ function fusen_select_clear(mode)
 	
 	for(var id in fusenObj)
 	{
-		if (fusenObj[id].del) {
-			border = fusenBorderObj['del'];
-		} else  if (fusenObj[id].lk) {
-			border = fusenBorderObj['lock'];
-		} else {
-			border = fusenBorderObj['normal'];
-		}
-		with(getElement('fusen_id' + id))
+		if (!isNaN(id))
 		{
-			style.border = border;
-			style.zIndex = 1;
+			if (fusenObj[id].del) {
+				border = fusenBorderObj['del'];
+			} else  if (fusenObj[id].lk) {
+				border = fusenBorderObj['lock'];
+			} else {
+				border = fusenBorderObj['normal'];
+			}
+			with(getElement('fusen_id' + id))
+			{
+				style.border = border;
+				style.zIndex = 1;
+			}
 		}
 	}
 }
@@ -1949,29 +1988,32 @@ function fusen_list_make()
 	tmp = '<ul><form>';
 	for(var id in fusenObj)
 	{
-		listcount ++;
-		
-		// リスト表示追加
-		addtxt = fusenObj[id].disp.replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/[\s]+/g,' ');
-		if (addtxt.length > 30) addtxt = addtxt.substr(0,30) + '...';
-		if (!addtxt.replace(/^[\s]+$/,'')) addtxt = "- no text -";
-		
-		dustbox = 0;
-		delbox = '';
-		if (fusenObj[id].del)
+		if (!isNaN(id))
 		{
-			addtxt = '(ごみ箱)' + addtxt;
-			//dustbox = 1;
-		}
-		else
-		{
-			if (fusenObj[id].auth)
+			listcount ++;
+			
+			// リスト表示追加
+			addtxt = fusenObj[id].disp.replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/[\s]+/g,' ');
+			if (addtxt.length > 30) addtxt = addtxt.substr(0,30) + '...';
+			if (!addtxt.replace(/^[\s]+$/,'')) addtxt = "- no text -";
+			
+			dustbox = 0;
+			delbox = '';
+			if (fusenObj[id].del)
 			{
-				delbox = '<input type="checkbox" id="list_delbox_'+id+'" style="cursor:auto;" />';
-				flg_delbox = true;
+				addtxt = '(ごみ箱)' + addtxt;
+				//dustbox = 1;
 			}
+			else
+			{
+				if (fusenObj[id].auth)
+				{
+					delbox = '<input type="checkbox" id="list_delbox_'+id+'" style="cursor:auto;" />';
+					flg_delbox = true;
+				}
+			}
+			tmp += '<li>'+delbox+'<a href="javascript:fusen_select('+id+')">'+addtxt+'</a></li>';
 		}
-		tmp += '<li>'+delbox+'<a href="javascript:fusen_select('+id+')">'+addtxt+'</a></li>';
 	}
 	
 	if (flg_delbox) burn += " [ <a href=\"JavaScript:fusen_del_multi()\" title=\"チェックした付箋をごみ箱へ捨てる\">チェックをごみ箱へ</a> ]";
