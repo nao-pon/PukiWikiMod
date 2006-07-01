@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.59 2006/06/23 17:35:40 nao-pon Exp $
+// $Id: convert_html.php,v 1.60 2006/07/01 12:46:58 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -92,41 +92,42 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		if (!$X_uid && file_exists($filename) && ($cache || (filemtime($filename) + PAGE_CACHE_MIN * 60) > time()) && empty($vars['xoops_block']))
 		{
 			$htmls = join('',file($filename));
-			list ($var_data, $str) = explode("\0",$htmls,2);
-			if (!$str)
+			if (strpos($htmls,"\x08") !== false)
 			{
-				$var_data = unserialize(rtrim(array_shift($htmls)));
-				$str = join('',$htmls);
-			}
-			else
-			{
+				list ($var_data, $str) = explode("\x08",$htmls,2);
 				$var_data = unserialize($var_data);
-			}
+					
+				if (!is_array($var_data)) $var_data = array();
+				$related_link = $var_data[0];
+				$noattach =  $var_data[1];
+				$noheader =  $var_data[2];
+				$h_excerpt =  $var_data[3];
+				$wiki_ads_shown =  $var_data[4];
+				$vars['is_rsstop'] =  $var_data[5];
+				$foot_explain = $var_data[6];
+				$wiki_strong_words = $var_data[7];
+				$contents = (isset($var_data[8]))? $var_data[8] : "";
+				$pwm_plugin_flg = (isset($var_data[9]))? $var_data[9] : "";
+				$show_comments = (isset($var_data[10]))? $var_data[10] : true;
+				$related = (isset($var_data[11]))? $var_data[11] : array();
+				$vars['author_ucd'] = (isset($var_data[12]))? $var_data[12] : "\t";
+				$stack = (isset($var_data[13]))? $var_data[13] : array();
 				
-			if (!is_array($var_data)) $var_data = array();
-			$related_link = $var_data[0];
-			$noattach =  $var_data[1];
-			$noheader =  $var_data[2];
-			$h_excerpt =  $var_data[3];
-			$wiki_ads_shown =  $var_data[4];
-			$vars['is_rsstop'] =  $var_data[5];
-			$foot_explain = $var_data[6];
-			$wiki_strong_words = $var_data[7];
-			$contents = (isset($var_data[8]))? $var_data[8] : "";
-			$pwm_plugin_flg = (isset($var_data[9]))? $var_data[9] : "";
-			$show_comments = (isset($var_data[10]))? $var_data[10] : true;
-			$related = (isset($var_data[11]))? $var_data[11] : array();
-			$vars['author_ucd'] = (isset($var_data[12]))? $var_data[12] : "\t";
-			$stack = (isset($var_data[13]))? $var_data[13] : array();
-			
-			$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
-			
-			$convert_load--;
-			
-			if (!$ret_array)
-				return $str;
+				$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
+				
+				$convert_load--;
+				
+				if (!$ret_array)
+					return $str;
+				else
+					return array($str, $contents);
+			}
 			else
-				return array($str, $contents);
+			{
+				// 旧タイプのキャッシュファイル
+				unlink($filename);
+				$string = get_source($page);
+			}
 
 		}
 		else
@@ -208,7 +209,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 		$var_data[11] = $related;
 		$var_data[12] = $vars['author_ucd'];
 		$var_data[13] = $stack;
-		$html = serialize($var_data)."\0".$str;
+		$html = serialize($var_data)."\x08".$str;
 		
 		//キャッシュ書き込み
 		if ($fp = @fopen($filename,"w"))
