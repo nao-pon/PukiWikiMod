@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.60 2006/07/01 12:46:58 nao-pon Exp $
+// $Id: convert_html.php,v 1.61 2006/07/07 04:17:06 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -28,7 +28,6 @@ class pukiwiki_converter
 			$_article_no = $article_no;
 			$_show_comments = $show_comments;
 			$_related = $related;
-			$_stack = $stack;
 			$_foot_explain = $foot_explain;
 			
 			//初期化
@@ -36,7 +35,6 @@ class pukiwiki_converter
 			$article_no = 0;
 			$vars['is_rsstop'] = 0;
 			$related = array();
-			$stack = array();
 			$foot_explain = array();
 			
 			//現ページ名書き換え
@@ -64,7 +62,6 @@ class pukiwiki_converter
 			$article_no = $_article_no;
 			$show_comments = $_show_comments;
 			$related = array_merge($_related, $related);
-			$stack = array_merge($_stack, $stack);
 			$foot_explain = array_merge($_foot_explain, $foot_explain);
 		}
 		return $ret;
@@ -111,7 +108,7 @@ function convert_html($string,$is_intable=false,$page_cvt=false,$cache=false,$re
 				$show_comments = (isset($var_data[10]))? $var_data[10] : true;
 				$related = (isset($var_data[11]))? $var_data[11] : array();
 				$vars['author_ucd'] = (isset($var_data[12]))? $var_data[12] : "\t";
-				$stack = (isset($var_data[13]))? $var_data[13] : array();
+				$stack = array_merge($stack,((isset($var_data[13]))? $var_data[13] : array()));
 				
 				$wiki_head_keywords = array_merge($wiki_head_keywords,$wiki_strong_words);
 				
