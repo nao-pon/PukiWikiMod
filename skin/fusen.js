@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.14 2006/06/28 23:25:26 nao-pon Exp $
+// $Id: fusen.js,v 1.15 2006/07/07 04:08:41 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -1278,7 +1278,6 @@ function fusen_setlines(t_id)
 			{
 				if (!isNaN(id))
 				{
-					alert(parseInt(id));
 					fusen_setline2(id, fusenObj[id].ln);
 				}
 			}
