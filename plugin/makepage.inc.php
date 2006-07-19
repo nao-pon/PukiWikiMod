@@ -1,5 +1,5 @@
 <?php
-// $Id: makepage.inc.php,v 1.17 2006/04/21 14:25:04 nao-pon Exp $
+// $Id: makepage.inc.php,v 1.18 2006/07/19 07:51:52 nao-pon Exp $
 
 function plugin_makepage_init()
 {
@@ -123,6 +123,7 @@ function plugin_makepage_action()
 	foreach($words as $word)
 	{
 		@set_time_limit(120);
+		$word = trim($word);
 		if (function_exists("mb_convert_kana")) $word = mb_convert_kana($word, "KVs");
 		$word = reform2pagename($word);
 		$page = add_bracket($vars['prefix'].strip_bracket($word));
