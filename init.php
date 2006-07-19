@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.66 2006/06/24 01:13:34 nao-pon Exp $
+// $Id: init.php,v 1.67 2006/07/19 07:52:59 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -12,9 +12,6 @@ define('INI_FILE','./pukiwiki.ini.php');
 
 // PukiWikiMod Version
 require('./version.php');
-
-// Copyright.
-define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"PukiWikiMod\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2006 ishii &amp; nao-pon License is GNU/GPL.");
 
 //文字エンコード
 define('SOURCE_ENCODING','EUC-JP');
@@ -90,6 +87,9 @@ $stack['addheaders'] = array();
 if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
 	die_message(INI_FILE." is not found.");
 require(INI_FILE);
+
+// Copyright.
+define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"<a href=\"http://hypweb.net/xoops/wiki/159.html\" target=\"{$link_target}\">PukiWikiMod</a>\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2006 ishii &amp; nao-pon License is GNU/GPL.");
 
 // コメント機能の設定値読み込み
 $use_xoops_comments = (isset($xoopsModuleConfig['com_rule']) && XOOPS_COMMENT_APPROVENONE != $xoopsModuleConfig['com_rule'])? 1 : 0;
@@ -337,8 +337,9 @@ if (isset($vars['pgid']))
 	else
 	{
 		header( "HTTP/1.1 404 Not Found" );
-		$vars['page'] = $defaultpage;
-		$vars['cmd'] = "read";
+		redirect_header(get_url_by_name($defaultpage),1,str_replace('$1',$page_title,$_title_notfound));
+		//$vars['page'] = $defaultpage;
+		//$vars['cmd'] = "read";
 	}
 }
 
