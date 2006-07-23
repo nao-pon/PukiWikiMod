@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: pukiwiki.ini.php,v 1.51 2006/07/22 02:54:32 nao-pon Exp $
+// $Id: pukiwiki.ini.php,v 1.52 2006/07/23 23:28:46 nao-pon Exp $
 //
 // PukiWiki setting file
 
@@ -266,7 +266,7 @@ $disabled_plugin = "map";
 /////////////////////////////////////////////////
 // TrackBackでのPing先URL抽出時に除外するプラグイン
 // カンマ区切りで、#をつけずに記述
-$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,aws,blogs,google,gimage,newsclip,xoopsblock,yahoo";
+$notb_plugin = "include,calendar2,showrss,calendar_viewer,bugtrack_list,tracker_list,aws,blogs,google,gimage,newsclip,xoopsblock,yahoo,siteimage";
 
 /////////////////////////////////////////////////
 // 検索用Plainソース作成時に除外するプラグイン
