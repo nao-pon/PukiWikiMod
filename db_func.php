@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.38 2006/04/07 12:15:58 nao-pon Exp $
+// $Id: db_func.php,v 1.39 2006/08/02 11:35:56 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -482,7 +482,12 @@ function plain_db_write($page,$action)
 		$_X_admin = $_GLOBALS['X_admin'];
 		$_GLOBALS['X_admin'] = 1;
 		
-		$data = convert_html($data);
+//		$data = convert_html($data);
+		$pcon = new pukiwiki_converter();
+		$pcon->safe = TRUE;
+		$pcon->page = $page;
+		$pcon->string = $data;
+		$data = $pcon->convert();
 		
 		$_GLOBALS['X_admin'] = $_X_admin;
 		
@@ -501,6 +506,12 @@ function plain_db_write($page,$action)
 
 		$data = preg_replace("/".preg_quote("<a href=\"$script?cmd=edit&amp;page=","/")."[^\"]+".preg_quote("\">$_symbol_noexists</a>","/")."/","",$data);
 		$data = str_replace($spc[0],$spc[1],strip_tags($data)).join(',',$rel_pages);
+		
+		// 英数字は半角,カタカナは全角,ひらがなはカタカナに
+		if (function_exists("mb_convert_kana"))
+		{
+			$data = mb_convert_kana($data,'aKCV');
+		}
 	}
 	$data = addslashes(preg_replace("/[\s]+/","",$data));
 	//echo $data."<hr>";
