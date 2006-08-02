@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.61 2006/07/07 04:17:06 nao-pon Exp $
+// $Id: convert_html.php,v 1.62 2006/08/02 12:11:27 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -285,7 +285,7 @@ class convert
 		//表内箇所の判定のため表と表の間は空行が2行必要
 		$string = str_replace("|\n\n|","|\n\n\n|",$string);
 		//表内はすべて置換
-		$string = preg_replace("/(^|\n)(\|[^\r]+?\|)(\n[^|]|$)/e","'$1'.stripslashes(str_replace('->\n','___td_br___','$2')).'$3'",$string);
+		$string = preg_replace("/(^|\n)(\|[^\r]+?\|)(\n[^|]|$)/e","'$1'.str_replace('\\\"','\"',str_replace('->\n','___td_br___','$2')).'$3'",$string);
 		//表と表の間は空行2行を1行に戻す
 		$string = str_replace("|\n\n\n|","|\n\n|",$string);
 		

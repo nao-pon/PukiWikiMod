@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.78 2006/06/13 13:39:19 nao-pon Exp $
+// $Id: func.php,v 1.79 2006/08/02 12:11:27 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -732,9 +732,9 @@ function auto_br($msg){
 		//表と表の間は空行が2行必要
 		$msg = str_replace("|\n\n|","|\n\n\n|",$msg);
 		//まずは、表内の -> を取り除く
-		$msg = preg_replace("/(^|\n)(\|[^\r]+?\|)(\n[^|]|$)/e","'$1'.stripslashes(str_replace('->\n','\n','$2')).'$3'",$msg);
+		$msg = preg_replace("/(^|\n)(\|[^\r]+?\|)(\n[^|]|$)/e","'$1'.str_replace('\\\"','\"',str_replace('->\n','\n','$2')).'$3'",$msg);
 		//とりあえず表内の改行はすべて置換
-		$msg = preg_replace("/(^|\n)(\|[^\r]+?\|)(\n[^|]|$)/e","'$1'.stripslashes(str_replace('\n','->\n','$2')).'$3'",$msg);
+		$msg = preg_replace("/(^|\n)(\|[^\r]+?\|)(\n[^|]|$)/e","'$1'.str_replace('\\\"','\"',str_replace('\n','->\n','$2')).'$3'",$msg);
 		//そして行区切の箇所は、取り除く
 		$msg = preg_replace("/\|(c|h)?(->\n)+\|/e","str_replace('->','','$0')",$msg);		
 		//表と表の間は空行2行を1行に戻す
