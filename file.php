@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.73 2006/06/22 02:46:13 nao-pon Exp $
+// $Id: file.php,v 1.74 2006/08/22 07:57:40 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -891,7 +891,14 @@ function get_pg_auther_name($str,$is_id=FALSE)
 	
 	$member_handler =& xoops_gethandler('member');
 	$user =& $member_handler->getUser($uid);
-	return $user->getVar("uname");
+	if (is_object($user))
+	{
+		return $user->getVar("uname");
+	}
+	else
+	{
+		return "$no_name";
+	}
 }
 
 // ページ作成者のE-mailアドレスを得る
