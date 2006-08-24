@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.67 2006/07/19 07:52:59 nao-pon Exp $
+// $Id: init.php,v 1.68 2006/08/24 12:41:21 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -93,6 +93,12 @@ define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"<a href=\"http://hypweb.net/xoops/wik
 
 // コメント機能の設定値読み込み
 $use_xoops_comments = (isset($xoopsModuleConfig['com_rule']) && XOOPS_COMMENT_APPROVENONE != $xoopsModuleConfig['com_rule'])? 1 : 0;
+
+// Spam Sites の設定値読み込み
+if (file_exists(CACHE_DIR . 'spamsites.dat'))
+{
+	$pwm_config['spam_site_url'] = '/^'.trim(join('',file(CACHE_DIR . 'spamsites.dat'))).'/i';
+}
 
 // XOOPSデータ読み込み
 // $anon_writable:編集可能(Yes:1 No:0)

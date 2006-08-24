@@ -1,0 +1,7 @@
+*Spam Sites
+Spam サイトの設定ページです。
+
+*NoLink
+以下のURLは自動リンクされません。
+|http://koihitomiman.aiux.net|
+|http://members.lycos.co.uk/kotowaru|

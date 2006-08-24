@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.54 2006/06/27 00:13:56 nao-pon Exp $
+// $Id: make_link.php,v 1.55 2006/08/24 12:41:21 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -439,16 +439,30 @@ EOD;
 	}
 	function toString()
 	{
-		global $link_target,$alias_set_status;
+		global $link_target,$alias_set_status,$pwm_config;
+		global $_msg_link_is_virus,$_msg_link_is_spam;
 		//プラグインで付加された<a href>タグを取り除く
 		$this->alias = preg_replace("/<a href[^>]*>(.*)<\/a>/s","$1",$this->alias);
 		$status_script = ($alias_set_status)? " onMouseOver=\"window.status='".str_replace("'","\'",strip_tags($this->alias))."';return true\" onMouseOut=\"window.status='';return true\"":"";
 		//リンク先がイメージ？
 		$isimg = ($this->type == "img")? " type=\"img\"" : "";
-		if ($this->separator == ">")
-			{return "<a href=\"{$this->name}\" title=\"{$this->name}\"{$isimg}{$status_script}>{$this->alias}</a>";}
+		if (preg_match("/\.(?:scr|pif|com|cmd|bat)$/i",$this->name))
+		{
+			//リンク先がウィルスかな？
+			return "<span title=\"{$_msg_link_is_virus}\">".$this->alias."</span>";
+		}
+		else if (!empty($pwm_config['spam_site_url']) && preg_match($pwm_config['spam_site_url'],$this->name))
+		{
+			//Spamサイト
+			return "<span title=\"{$_msg_link_is_spam}\">".$this->alias."</span>(<a href=\"{$this->name}\" title=\"{$this->name}\" rel=\"nofollow\" target=\"$link_target\"{$isimg}{$status_script}>SPAM Site</a>)";
+		}
 		else
-			{return "<a href=\"{$this->name}\" title=\"{$this->name}\" target=\"$link_target\"{$isimg}{$status_script}>{$this->alias}</a>";}
+		{
+			if ($this->separator == ">")
+				{return "<a href=\"{$this->name}\" title=\"{$this->name}\"{$isimg}{$status_script}>{$this->alias}</a>";}
+			else
+				{return "<a href=\"{$this->name}\" title=\"{$this->name}\" target=\"$link_target\"{$isimg}{$status_script}>{$this->alias}</a>";}
+		}
 	}
 }
 // url (InterWiki definition type)

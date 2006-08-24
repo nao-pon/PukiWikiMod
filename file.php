@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.74 2006/08/22 07:57:40 nao-pon Exp $
+// $Id: file.php,v 1.75 2006/08/24 12:41:21 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -320,6 +320,12 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			$X_uid = $_X_uid;
 		}
 		
+		// Spam Sites の datファイルを生成
+		if ($page == "[[:config/SpamSites]]")
+		{
+			make_spam_sites_dat();
+		}
+
 		// ページHTMLキャッシュとRSSキャッシュを削除
 		delete_page_html($page);
 		
@@ -1397,6 +1403,31 @@ function push_page_changes($id,$txt)
 		fputs($fp,join($sep,$adds));
 		fclose($fp);
 	}
+}
+
+// Spam Site 判定用データ生成
+function make_spam_sites_dat ()
+{
+
+	$config = &new Config('SpamSites');
+	$config->read();
+	$nolinks = $config->get('NoLink');
+	unset($config);
+	
+	$nolinks = array_unique($nolinks);
+	sort($nolinks, SORT_STRING);
+	$result = get_autolink_pattern_sub($nolinks, 0, count($nolinks), 0);
+
+	$fp = fopen(CACHE_DIR . 'spamsites.dat', 'wb') or
+		die_message('Cannot write autolink file ' .
+		CACHE_DIR . '/spamsites.dat' .
+		'<br />Maybe permission is not writable');
+	set_file_buffer($fp, 0);
+	flock($fp, LOCK_EX);
+	rewind($fp);
+	fputs($fp, $result);
+	flock($fp, LOCK_UN);
+	fclose($fp);
 }
 
 // _If needed_, re-create the file to change/correct ownership into PHP's

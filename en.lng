@@ -72,6 +72,8 @@ $_msg_read_more = '<< Read more >>';
 $_msg_trackback = 'Track Back';
 $_msg_pagecomment = 'Page comments';
 $_msg_pings = 'Sended pings';
+$_msg_link_is_virus = 'Warning: Possibility of the virus';
+$_msg_link_is_spam = 'Warning: Spam Site';
 
 ///////////////////////////////////////
 // symbols

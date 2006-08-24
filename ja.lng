@@ -80,6 +80,8 @@ $_msg_read_more = '<< 続きを読む >>';
 $_msg_trackback = 'トラックバック';
 $_msg_pagecomment = 'ページコメント';
 $_msg_pings = '送信した通知Ping';
+$_msg_link_is_virus = 'システムからの警告: ウィルスの可能性があります';
+$_msg_link_is_spam = 'システムからの警告: Spam サイトです';
 
 ///////////////////////////////////////
 // symbols
