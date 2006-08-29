@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.55 2006/08/24 12:41:21 nao-pon Exp $
+// $Id: make_link.php,v 1.56 2006/08/29 12:31:55 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -446,7 +446,7 @@ EOD;
 		$status_script = ($alias_set_status)? " onMouseOver=\"window.status='".str_replace("'","\'",strip_tags($this->alias))."';return true\" onMouseOut=\"window.status='';return true\"":"";
 		//リンク先がイメージ？
 		$isimg = ($this->type == "img")? " type=\"img\"" : "";
-		if (preg_match("/\.(?:scr|pif|com|cmd|bat)$/i",$this->name))
+		if (preg_match("/^.+:\/\/.+\/.+\.(?:scr|pif|com|cmd|bat)$/i",$this->name))
 		{
 			//リンク先がウィルスかな？
 			return "<span title=\"{$_msg_link_is_virus}\">".$this->alias."</span>";
