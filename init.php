@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.68 2006/08/24 12:41:21 nao-pon Exp $
+// $Id: init.php,v 1.69 2006/08/29 12:33:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // cmd と plugin は同時使用不可
@@ -177,6 +177,24 @@ if (!empty($_COOKIE)) {$_COOKIE = input_filter($_COOKIE);}
 
 if (!empty($_POST))
 {
+	//禁止URLのチェック
+	if (!$X_admin && file_exists(CACHE_DIR."spamdeny.dat"))
+	{
+		$_denyregex = trim(join('',file(CACHE_DIR."spamdeny.dat")));
+		if (!empty($_denyregex) && $_denyregex != "(?!)")
+		{
+			foreach($_POST as $_tmp)
+			{
+				if (!is_array($_tmp) && preg_match("/".$_denyregex."/i",$_tmp))
+				{
+					//echo $_tmp."<br>";
+					header("Location: ".XOOPS_URL."/");
+					exit();
+				}
+			}
+		}
+		unset($_denyregex,$_tmp);
+	}
 	//XOOPS Protector モジュール で 挿入された末尾の */ を取り除く
 	foreach(array('msg','msg_before','msg_after','body','areaedit_msg','original','headdata','taildata','question','answer','pages','page') as $_tmp)
 	{

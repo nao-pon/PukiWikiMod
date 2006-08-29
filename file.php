@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.75 2006/08/24 12:41:21 nao-pon Exp $
+// $Id: file.php,v 1.76 2006/08/29 12:33:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -1412,6 +1412,7 @@ function make_spam_sites_dat ()
 	$config = &new Config('SpamSites');
 	$config->read();
 	$nolinks = $config->get('NoLink');
+	$noposts = $config->get('NoPost');
 	unset($config);
 	
 	$nolinks = array_unique($nolinks);
@@ -1419,8 +1420,23 @@ function make_spam_sites_dat ()
 	$result = get_autolink_pattern_sub($nolinks, 0, count($nolinks), 0);
 
 	$fp = fopen(CACHE_DIR . 'spamsites.dat', 'wb') or
-		die_message('Cannot write autolink file ' .
+		die_message('Cannot write spamsites file ' .
 		CACHE_DIR . '/spamsites.dat' .
+		'<br />Maybe permission is not writable');
+	set_file_buffer($fp, 0);
+	flock($fp, LOCK_EX);
+	rewind($fp);
+	fputs($fp, $result);
+	flock($fp, LOCK_UN);
+	fclose($fp);
+	
+	$noposts = array_unique($noposts);
+	sort($noposts, SORT_STRING);
+	$result = get_autolink_pattern_sub($noposts, 0, count($noposts), 0);
+
+	$fp = fopen(CACHE_DIR . 'spamdeny.dat', 'wb') or
+		die_message('Cannot write spamdeny file ' .
+		CACHE_DIR . '/spamdeny.dat' .
 		'<br />Maybe permission is not writable');
 	set_file_buffer($fp, 0);
 	flock($fp, LOCK_EX);
