@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.76 2006/08/29 12:33:19 nao-pon Exp $
+// $Id: file.php,v 1.77 2006/08/31 23:23:12 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -1413,6 +1413,7 @@ function make_spam_sites_dat ()
 	$config->read();
 	$nolinks = $config->get('NoLink');
 	$noposts = $config->get('NoPost');
+	$nopostreg = $config->get('NoPostRegex');
 	unset($config);
 	
 	$nolinks = array_unique($nolinks);
@@ -1433,6 +1434,21 @@ function make_spam_sites_dat ()
 	$noposts = array_unique($noposts);
 	sort($noposts, SORT_STRING);
 	$result = get_autolink_pattern_sub($noposts, 0, count($noposts), 0);
+	
+	//NoPostRegex
+	if ($nopostreg)
+	{
+		$_regs = array();
+		foreach($nopostreg as $_reg)
+		{
+			if ($_reg)
+			{
+				$_regs[] = "(?:".str_replace("/","\/",$_reg).")";	
+			}
+		}
+		$result = "(?:".$result."|(?:".join("|",$_regs)."))";
+		
+	}
 
 	$fp = fopen(CACHE_DIR . 'spamdeny.dat', 'wb') or
 		die_message('Cannot write spamdeny file ' .
