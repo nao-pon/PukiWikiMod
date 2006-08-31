@@ -1,0 +1,4 @@
+#freeze	uid:1	aid:0	gid:0
+// author:1
+*:config/ 以下は各種設定をするページです。
+#ls2(,pagename)
