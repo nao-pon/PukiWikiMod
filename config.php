@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: config.php,v 1.8 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: config.php,v 1.9 2006/08/31 23:22:42 nao-pon Exp $
 //
 /*
  * プラグインの設定をPukiWikiのページに記述する
@@ -88,7 +88,8 @@ class Config
 					$obj->set_key($line);
 				}
 			}
-			else if ($head == '-' and $level > 1)
+			//else if ($head == '-' and $level > 1)
+			else if ($head == '-')
 			{
 				if (!is_a($obj,'ConfigTable_Direct'))
 				{
