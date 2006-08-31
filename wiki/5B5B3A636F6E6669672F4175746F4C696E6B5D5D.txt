@@ -1,0 +1,39 @@
+#freeze	uid:1	aid:0	gid:0
+// author:1
+*オートリンクの設定
+
+#contents
+
+*IgnoreList
+　この表で指定した文字列は、指定した文字列全体がページ名として存在しない限り、部分文字列がAutoLinkによって置換されないようになります。
+
+|CENTER:|c
+|除外文字列|h
+|東京都|
+
+　文字列全体が用語として存在するときに、それ自身をページ名の対象にしたくないときは、次のForceIgnoreListに記述してください。
+
+*ForceIgnoreList
+　この表で指定した文字列は、指定した文字列全体および部分文字列が、AutoLinkによって置換されないようになります。
+
+|CENTER:|c
+|除外文字列|h
+|code|
+|quote|
+|color|
+|url|
+|size|
+|font|
+|img|
+|align|
+|lol:|
+|oops:|
+|cry:|
+|evil:|
+|roll:|
+|pint:|
+|hammer:|
+|idea:|
+
+
+　文字列全体が用語として存在するときに、それ自身をAutoLinkの対象にしたいときは、前のIgnoreListに記述してください。
