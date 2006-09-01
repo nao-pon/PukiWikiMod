@@ -25,14 +25,13 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: index.php,v 1.10 2006/08/24 15:11:55 nao-pon Exp $
+// $Id: index.php,v 1.11 2006/09/01 11:49:25 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
 
 //XOOPS設定読み込み
 include("../../mainfile.php");
-global $xoopsUser,$xoopsDB,$xoopsConfig;
 
 /////////////////////////////////////////////////
 // プログラムファイル読み込み
@@ -50,10 +49,6 @@ require('link.php');
 require('proxy.php');
 require('db_func.php');
 require('trackback.php');
-if (!extension_loaded('mbstring'))
-{
-	require('mbstring.php');
-}
 require("init.php");
 
 /////////////////////////////////////////////////

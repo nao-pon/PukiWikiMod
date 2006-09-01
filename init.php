@@ -1,7 +1,15 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.69 2006/08/29 12:33:19 nao-pon Exp $
+// $Id: init.php,v 1.70 2006/09/01 11:49:25 nao-pon Exp $
 /////////////////////////////////////////////////
+
+// mbstring Check
+// XOOPS本体とかブロックで他の代用品が読み込まれている場合を想定して
+// function_exists() で判断
+if (!function_exists('mb_convert_encoding'))
+{
+	include_once('mbstring.php');
+}
 
 // cmd と plugin は同時使用不可
 	if ((isset($_POST['cmd']) && isset($_POST['plugin'])) || (isset($_GET['cmd']) && isset($_GET['plugin'])))
