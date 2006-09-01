@@ -12,34 +12,21 @@
  * 2006-04-20 2.0 GoogleMaps API ver2
  */
 
-// Goodle Map ID
-define ('PLUGIN_GOOGLEMAPS2_DEF_KEY', 'ABQIAAAAv2QINn0BFSDyNh38h-ot6RQ7maE_5AwHc1O-LHFbA5gzoHcPRRQnvRnshwL2nk8tkhRKIpZJ_P3gLA');
-
-define ('PLUGIN_GOOGLEMAPS2_DEF_SERVER', 'us');//GoogleMapサーバーホスト(jp, us)
-define ('PLUGIN_GOOGLEMAPS2_DEF_MAPNAME', 'googlemaps2');     //Map名
-define ('PLUGIN_GOOGLEMAPS2_DEF_WIDTH'  , '400px');           //横幅
-define ('PLUGIN_GOOGLEMAPS2_DEF_HEIGHT' , '400px');           //縦幅
-define ('PLUGIN_GOOGLEMAPS2_DEF_LAT'    ,  35.036198);        //経度
-define ('PLUGIN_GOOGLEMAPS2_DEF_LNG'    ,  135.732103);       //緯度
-define ('PLUGIN_GOOGLEMAPS2_DEF_ZOOM'   ,  13);       //ズームレベル
-define ('PLUGIN_GOOGLEMAPS2_DEF_TYPE'   ,  'normal'); //マップのタイプ(normal, satellite, hybrid)
-define ('PLUGIN_GOOGLEMAPS2_DEF_MAPCTRL',  'normal'); //マップコントロール(none,smallzoom,small,normal,large)
-define ('PLUGIN_GOOGLEMAPS2_DEF_TYPECTRL'    ,'normal');  //maptype切替コントロール(none, normal)
-define ('PLUGIN_GOOGLEMAPS2_DEF_SCALECTRL'   ,'none');    //スケールコントロール(none, normal)
-define ('PLUGIN_GOOGLEMAPS2_DEF_OVERVIEWCTRL','none');    //オーバービューマップ(none, hide, show)
-define ('PLUGIN_GOOGLEMAPS2_DEF_OVERVIEWTYPE', 'normal'); //オーバービューマップのタイプ(normal, satellite, hybrid)
-define ('PLUGIN_GOOGLEMAPS2_DEF_OVERVIEWWIDTH', '150');  //オーバービューマップの横幅
-define ('PLUGIN_GOOGLEMAPS2_DEF_OVERVIEWHEIGHT','150');  //オーバービューマップの縦幅
-define ('PLUGIN_GOOGLEMAPS2_DEF_API', 2);                //APIの後方互換用フラグ(1=1系, 2=2系). 廃止予定。
-define ('PLUGIN_GOOGLEMAPS2_DEF_TOGGLEMARKER', true);     //マーカーの表示切替チェックの表示
-define ('PLUGIN_GOOGLEMAPS2_DEF_NOICONNAME'  , '標準マーカー'); //アイコン無しマーカーのラベル
-define ('PLUGIN_GOOGLEMAPS2_DEF_USETOOL'   ,  2);         //タグ生成ツール(0:表示なし, 1:マーカー用のみ, 2:マーカーと地図用)
+function plugin_googlemaps2_init()
+{
+	// config 読み込み
+	$config_file = PLUGIN_DATA_DIR."googlemaps2/config.php";
+	if (file_exists($config_file))
+	{
+		include($config_file);
+	}
+}
 
 function plugin_googlemaps2_get_default () {
 	global $vars;
 	return array(
 		'map'        => PLUGIN_GOOGLEMAPS2_DEF_MAPNAME,
-		'key'            => PLUGIN_GOOGLEMAPS2_DEF_KEY,
+		'key'            => (PLUGIN_GOOGLEMAPS2_DEF_KEY)? PLUGIN_GOOGLEMAPS2_DEF_KEY : 'ABQIAAAAv2QINn0BFSDyNh38h-ot6RR7mgPdW6gOZV_PvH6uKxrQxi_kMxQdnrNUwY6bBhsUf_q-K_RFktoHsg',
 		'width'          => PLUGIN_GOOGLEMAPS2_DEF_WIDTH,
 		'height'         => PLUGIN_GOOGLEMAPS2_DEF_HEIGHT,
 		'lat'            => PLUGIN_GOOGLEMAPS2_DEF_LAT,
@@ -338,7 +325,7 @@ function plugin_googlemaps2_get_maptype($type) {
 function plugin_googlemaps2_init_output($key, $noiconname, $host) {
 	global $stack;
 	$host = ($host == 'jp')? "maps.google.co.jp" : "maps.google.com";
-	$js = XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/plugin_data/googlemap2/js/init.js";
+	$js = XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/plugin_data/googlemaps2/js/init.js";
 	$stack['addheaders']['googlemap2'] = <<<EOD
 <script src="http://{$host}/maps?file=api&amp;v=2&amp;key=$key" type="text/javascript" charset="UTF-8"></script>
 <script src="{$js}" type="text/javascript" charset="UTF-8"></script>
