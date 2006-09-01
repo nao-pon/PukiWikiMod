@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.56 2006/08/29 12:31:55 nao-pon Exp $
+// $Id: make_link.php,v 1.57 2006/09/01 14:31:09 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -531,9 +531,9 @@ EOD;
 		list(,$alias,$name) = $this->splice($arr);
 		$_mail = "";
 		$_i = 0;
-		while($name[$_i])
+		while(isset($name[$_i]))
 		{
-			$_mail .= "&#".ord($name[$_i]).";";
+			$_mail .= "&#".ord((string)$name[$_i]).";";
 			$_i++;
 		}
 		$name = $_mail;
