@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: yahoo.inc.php,v 1.4 2006/06/26 23:32:58 nao-pon Exp $
+// $Id: yahoo.inc.php,v 1.5 2006/09/01 01:35:42 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #yahoo([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -324,6 +324,7 @@ function plugin_yahoo_build_web($xml,$target,$col)
 		mb_convert_variables(SOURCE_ENCODING,"UTF-8",$dats);
 		foreach ($dats as $dat)
 		{
+			if (plugin_yahoo_check_ngsite($dat['ClickUrl'])) {continue;}
 			if ($cnt++ % $limit === 0 && $cnt !== 1) $html .= "</ul></div>".$sdiv."<ul>";
 			$html .= "<li>";
 			$html .= "<a href='".$dat['ClickUrl']."' target='{$target}'>".htmlspecialchars($dat['Title'])."</a>";
@@ -356,6 +357,7 @@ function plugin_yahoo_build_img($xml,$target,$col)
 		mb_convert_variables(SOURCE_ENCODING,"UTF-8",$dats);
 		foreach ($dats as $dat)
 		{
+			if (plugin_yahoo_check_ngsite($dat['ClickUrl'])) {continue;}
 			$title = "[".htmlspecialchars($dat['Title'])."]".htmlspecialchars($dat['Summary']);
 			$size = $dat['Width']." x ".$dat['Height']." ".$dat['FileSize'];
 			$site = "[ <a href=\"".htmlspecialchars($dat['RefererUrl'])."\" target='{$target}'>Site</a> ]";
@@ -392,6 +394,7 @@ function plugin_yahoo_build_mov($xml,$target,$col)
 		mb_convert_variables(SOURCE_ENCODING,"UTF-8",$dats);
 		foreach ($dats as $dat)
 		{
+			if (plugin_yahoo_check_ngsite($dat['ClickUrl'])) {continue;}
 			$title = "[".htmlspecialchars($dat['Title'])."]".htmlspecialchars($dat['Summary']);
 			$size = $dat['Width']." x ".$dat['Height'];
 			$site = "[ <a href=\"".htmlspecialchars($dat['RefererUrl'])."\" target='{$target}'>Site</a> ]";
@@ -417,4 +420,21 @@ function plugin_yahoo_build_rel($xml,$target,$col)
 	return $html;
 }
 
+function plugin_yahoo_check_ngsite($url)
+{
+	global $plugin_yahoo_dataset;
+	static $ngsites = null;
+	if (is_null($ngsites))
+	{
+		$ngsites = explode(" ",$plugin_yahoo_dataset['ng_site']);
+	}
+	foreach($ngsites as $ngsite)
+	{
+		if ($ngsite && preg_match("#".preg_quote($ngsite,"#")."#i",$url))
+		{
+			return true;
+		}
+	}
+	return false;
+}
 ?>
