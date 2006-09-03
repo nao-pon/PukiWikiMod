@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.47 2006/06/25 06:37:23 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.48 2006/09/03 13:03:38 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -1009,7 +1009,7 @@ EOD;
 		if ((!$X_admin && $X_uid !== $uid && $X_uid != $this->status['owner']) || $X_uid == 0)
 		// 管理者とページ作成者とファイル所有者以外
 		{
-			if ((ATTACH_PASSWORD_REQUIRE and md5($pass) != $this->status['pass']) || $this->status['owner'])
+			if ((ATTACH_PASSWORD_REQUIRE and (!$pass || md5($pass) != $this->status['pass'])) || $this->status['owner'])
 				return attach_info('err_password');
 			
 			if (ATTACH_DELETE_ADMIN_ONLY or $this->age)
@@ -1062,7 +1062,7 @@ EOD;
 		if ((!$X_admin && $X_uid !== $uid && $X_uid != $this->status['owner']) || $X_uid == 0)
 		// 管理者とページ作成者とファイル所有者以外
 		{
-			if ((ATTACH_PASSWORD_REQUIRE and md5($pass) != $this->status['pass']) || $this->status['owner'])
+			if ((ATTACH_PASSWORD_REQUIRE and (!$pass || md5($pass) != $this->status['pass'])) || $this->status['owner'])
 				return attach_info('err_password');
 		}
 		$this->getstatus();
@@ -1083,7 +1083,7 @@ EOD;
 		if ((!$X_admin && $X_uid !== $uid && $X_uid != $this->status['owner']) || $X_uid == 0)
 		// 管理者とページ作成者とファイル所有者以外
 		{
-			if ((ATTACH_PASSWORD_REQUIRE and md5($pass) != $this->status['pass']) || $this->status['owner'])
+			if ((ATTACH_PASSWORD_REQUIRE and (!$pass || md5($pass) != $this->status['pass'])) || $this->status['owner'])
 				return attach_info('err_password');
 		}
 		
@@ -1105,7 +1105,7 @@ EOD;
 		if ((!$X_admin && $X_uid !== $uid && $X_uid != $this->status['owner']) || $X_uid == 0)
 		// 管理者とページ作成者とファイル所有者以外
 		{
-			if ((ATTACH_PASSWORD_REQUIRE and md5($pass) != $this->status['pass']) || $this->status['owner'])
+			if ((ATTACH_PASSWORD_REQUIRE and (!$pass || md5($pass) != $this->status['pass'])) || $this->status['owner'])
 				return attach_info('err_password');
 		}
 		
