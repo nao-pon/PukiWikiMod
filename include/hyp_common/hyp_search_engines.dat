@@ -1,6 +1,7 @@
 /////////////////////////////////
 // HypGetQueryWord ENGINE DEFS //
 // http://hypweb.net           //
+// $ID$
 /////////////////////////////////
 
 /////////////////////////////
@@ -58,7 +59,7 @@ Search.com|http://*search.com/*|q=
 Supereva|http://*.supereva.it/*|q=
 Tiscali|http://search-dyn.tiscali.it/*|key=
 Virgilio|http://search.virgilio.it/*|qs=
-Voilà.Fr|http://*voila.fr/*|kw=
+Voil?Fr|http://*voila.fr/*|kw=
 Web.de|http://*web.de/*|su=
 Yahoo!|http://*yahoo.com/*|p=
 
