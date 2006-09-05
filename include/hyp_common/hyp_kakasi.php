@@ -1,5 +1,5 @@
 <?php
-// $Id: hyp_kakasi.php,v 1.2 2006/04/27 08:50:12 nao-pon Exp $
+// $Id: hyp_kakasi.php,v 1.3 2006/09/05 13:18:57 nao-pon Exp $
 // Hyp_KAKASI Class by nao-pon http://hypweb.net
 ////////////////////////////////////////////////
 

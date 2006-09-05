@@ -1,5 +1,5 @@
 <?php
-// $Id: hyp_get_engine.php,v 1.1 2006/04/25 11:38:38 nao-pon Exp $
+// $Id: hyp_get_engine.php,v 1.2 2006/09/05 13:18:57 nao-pon Exp $
 // HypGetQueryWord Class by nao-pon http://hypweb.net
 ////////////////////////////////////////////////
 
