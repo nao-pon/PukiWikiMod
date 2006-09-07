@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: rss.php,v 1.29 2006/04/21 14:29:07 nao-pon Exp $
+// $Id: rss.php,v 1.30 2006/09/07 16:15:34 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // RecentChanges の RSS を出力
@@ -89,7 +89,6 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 		if ($page) $title = preg_replace("/^".preg_quote($page_utf8,"/")."\//","",$title);
 		$title = htmlspecialchars($title);
 
-//		$dcdate = substr_replace(date("Y-m-d\TH:i:sO"),':',-2,0);
 		$desc = date("D, d M Y H:i:s T",filemtime(get_filename(encode($line))));
 		$dcdate =  substr_replace(date("Y-m-d\TH:i:sO",filemtime(get_filename(encode($line)))),':',-2,0);
 		$pgid = get_pgid_by_name($line);
@@ -116,37 +115,23 @@ function catrss($rss,$page,$with_content="",$list_count=0)
 		{
 			// 新規追加行
 			$addfile = DIFF_DIR."add_".$pgid.".cgi";
-			$addtext = "";
+			$desc = "";
 			if (file_exists($addfile))
 			{
-				$addtext = trim(join('',file($addfile)));
-				if ($addtext)
-				{
-					$addtext = strip_tags(str_replace(array("\r","\n"),"",$addtext));
-					$addtext = preg_replace("/&$entity_pattern;/",'',$addtext);
-					//$addtext = htmlspecialchars($addtext);
-				}
+				$desc = trim(join('',file($addfile)));
+				$desc = str_replace("&#182;"," ",$desc);
 			}
 			
-			$vars["page"] = $post["page"] = $get["page"] = $line;
-			
-			//$content = convert_html($line,false,true,true);
-			
-			$pcon->string = $line;
-			$content = $pcon->convert();
-			
-			if (strlen($addtext) < 250)
+			// 新規データーがなければページコンバート
+			if (!$desc)
 			{
-				if ($addtext) $addtext .= "...";
-				$vars["page"] = $post["page"] = $get["page"] = $line;
-				$desc = strip_tags(str_replace(array("\r","\n"),"",$content));
-				$desc = $addtext.preg_replace("/&$entity_pattern;/",'',$desc);
-				//$desc = htmlspecialchars($desc);
+				$pcon->string = $line;
+				$desc = $pcon->convert();
 			}
-			else
-			{
-				$desc = $addtext;
-			}
+
+			$desc = strip_tags(str_replace(array("\r","\n"),"",$desc));
+			$desc = preg_replace("/&$entity_pattern;/",'',$desc);
+
 			$desc = mb_substr($desc,0,250,SOURCE_ENCODING);
 			$desc .= (strlen($desc) > 250)? "..." : "";
 			
