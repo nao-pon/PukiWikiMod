@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.17 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.18 2006/09/07 00:05:56 nao-pon Exp $
 
 if( ! defined( 'XOOPS_ROOT_PATH' ) ) exit ;
 $mydirname = basename( dirname( __FILE__ ) ) ;
@@ -46,6 +46,14 @@ define ('PWM_XOOPS_SERACH_INCLUDED',true);
 
 function wiki_search_base($pwm_dirname, $pwm_dirnum, $queryarray, $andor, $limit, $offset, $userid){
 	global $xoopsDB,$xoopsUser;
+
+	// mbstring Check
+	// XOOPS本体とかブロックで他の代用品が読み込まれている場合を想定して
+	// function_exists() で判断
+	if (!function_exists('mb_convert_encoding'))
+	{
+		include_once(XOOPS_ROOT_PATH."/modules/".$pwm_dirname.'mbstring.php');
+	}
 
 	include (XOOPS_ROOT_PATH."/modules/".$pwm_dirname."/cache/config.php");
 	$use_static_url = (int)$use_static_url;
@@ -86,10 +94,19 @@ function wiki_search_base($pwm_dirname, $pwm_dirnum, $queryarray, $andor, $limit
 	// because count() returns 1 even if a supplied variable
 	// is not an array, we must check if $querryarray is really an array
 	if ( is_array($queryarray) && $count = count($queryarray) ) {
-		$sql .= "AND ((p.name LIKE '%$queryarray[0]%' OR t.plain LIKE '%$queryarray[0]%')";
+		// 英数字は半角,カタカナは全角,ひらがなはカタカナに
+		if (function_exists("mb_convert_kana"))
+		{
+			$word = mb_convert_kana($queryarray[0],'aKCV');
+		}
+		$sql .= "AND ((p.name LIKE '%{$word}%' OR t.plain LIKE '%{$word}%')";
 		for($i=1;$i<$count;$i++){
+			if (function_exists("mb_convert_kana"))
+			{
+				$word = mb_convert_kana($queryarray[$i],'aKCV');
+			}
 			$sql .= " $andor ";
-			$sql .= "(p.name LIKE '%$queryarray[$i]%' OR t.plain LIKE '%$queryarray[$i]%')";
+			$sql .= "(p.name LIKE '%{$word}%' OR t.plain LIKE '%{$word}%')";
 		}
 		$sql .= ") ";
 	}

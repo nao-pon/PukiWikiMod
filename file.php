@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.77 2006/08/31 23:23:12 nao-pon Exp $
+// $Id: file.php,v 1.78 2006/09/07 00:05:56 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -96,13 +96,10 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 				}
 			}
 			
-			if (is_page($page))
-			{
-				// 追加データファイル保存
-				// pcomment 動作時は親ページ
-				$_pgid = (!empty($post['refer']))? get_pgid_by_name($post['refer']) : $pgid;
-				if ($mail_add) {push_page_changes($_pgid,$mail_add);}
-			}
+			// 追加データファイル保存
+			// pcomment 動作時は親ページ
+			$_pgid = (!empty($post['refer']))? get_pgid_by_name($post['refer']) : $pgid;
+			if ($mail_add) {push_page_changes($_pgid,$mail_add);}
 			
 			// バックアップの作成
 			// 日付はバックアップを作成した日時
