@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.40 2006/09/07 11:57:39 nao-pon Exp $
+// $Id: db_func.php,v 1.41 2006/09/07 12:49:03 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -488,6 +488,10 @@ function plain_db_write($page,$action)
 		$pcon->page = $page;
 		$pcon->string = $data;
 		$data = $pcon->convert();
+
+		// remove javascript
+		$data = preg_replace("#<script.+?/script>#i","",$data);
+
 		
 		$_GLOBALS['X_admin'] = $_X_admin;
 		
