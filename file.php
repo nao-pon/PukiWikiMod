@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.79 2006/09/07 12:35:16 nao-pon Exp $
+// $Id: file.php,v 1.80 2006/09/07 12:49:50 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -1410,6 +1410,9 @@ function push_page_changes($id,$txt,$del=false)
 	$pcon->page = get_pgname_by_id($id);
 	$pcon->string = $txt;
 	$txt = $pcon->convert();
+	
+	// remove javascript
+	$txt = preg_replace("#<script.+?/script>#i","",$txt);
 	
 	array_unshift($adds,$txt);
 	
