@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ud_plain.php,v 1.2 2006/04/06 13:32:15 nao-pon Exp $
+// $Id: ud_plain.php,v 1.3 2006/09/07 11:49:06 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -41,17 +41,13 @@ $filename = CACHE_DIR.encode($page).".udp";
 if (file_exists($filename))
 {
 	unlink($filename);
-	if (is_page($page))
+	if (is_page($vars["page"]))
 	{
 		// plane_text DB ¤ò¹¹¿·
-		if(!plain_db_write($page,"update"))
+		if(!plain_db_write($vars["page"],"update"))
 			echo "error!";
 	}
 
 }
-
-header("Content-Type: image/gif");
-readfile('image/transparent.gif');
-
-exit;
+exit();
 ?>
