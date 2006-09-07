@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.39 2006/08/02 11:35:56 nao-pon Exp $
+// $Id: db_func.php,v 1.40 2006/09/07 11:57:39 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -437,7 +437,7 @@ function plain_db_write($page,$action)
 {
 	global $xoopsDB,$noplain_plugin,$post,$get,$vars;
 	global $no_plugins;
-	global $pagereading_config_page;
+	global $pagereading_config_page,$whatsdeleted;
 	global $script,$_symbol_noexists;
 	global $pwm_plugin_flg,$fusen_enable_allpage;
 	global $related;
@@ -494,6 +494,31 @@ function plain_db_write($page,$action)
 		// リンク先ページ名
 		$rel_pages = array_keys($related);
 		$rel_pages = array_unique($rel_pages);
+		
+		// 未作成ページ
+		if ($s_page != $whatsdeleted)
+		{
+			$yetlists = $notyet = array();
+			foreach($rel_pages as $_tmp)
+			{
+				$_tmp = add_bracket($_tmp);
+				if (!is_page($_tmp))
+				{
+					$notyet[] = $_tmp;
+				}
+			}
+			if (file_exists(CACHE_DIR."yetlist.dat"))
+			{
+				$yetlists = unserialize(join("",file(CACHE_DIR."yetlist.dat")));
+			}
+			if (isset($yetlists[$page])) {unset($yetlists[$page]);}
+			if ($action != "delete" && $notyet) {$yetlists[$page] = $notyet;}
+			if ($fp = fopen(CACHE_DIR."yetlist.dat","wb"))
+			{
+				fputs($fp, serialize($yetlists));
+				fclose($fp);
+			}
+		}
 
 		// 付箋
 		if ($fusen_enable_allpage && empty($pwm_plugin_flg['fusen']['convert']))

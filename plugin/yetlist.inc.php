@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: yetlist.inc.php,v 1.6 2004/11/24 13:15:35 nao-pon Exp $
+// $Id: yetlist.inc.php,v 1.7 2006/09/07 11:57:39 nao-pon Exp $
 //
 function plugin_yetlist_init() {
 	if (LANG == "ja"){
@@ -23,21 +23,17 @@ function plugin_yetlist_action()
 	);
 	
 	$refer = array();
-	$pages = array_diff(get_existpages(CACHE_DIR,'.ref'),get_existpages());
-	foreach ($pages as $page)
-	{
-		$page = add_bracket($page);
-		foreach (file(CACHE_DIR.encode($page).'.ref') as $line)
-		{
-			list($_page) = explode("\t",$line);
-			$refer[$page][] = $_page;
-		}
-	}
 	
-	if (count($refer) == 0)
+	if (file_exists(CACHE_DIR."yetlist.dat"))
 	{
-		$retval['body'] = "no page!";
-		return $retval;
+		$yetlists = unserialize(join("",file(CACHE_DIR."yetlist.dat")));
+	}
+	foreach ($yetlists as $ref => $notyets)
+	{
+		foreach ($notyets as $notyet)
+		{
+			$refer[$notyet][] = $ref; 	
+		}
 	}
 	
 	ksort($refer,SORT_STRING);
@@ -45,16 +41,16 @@ function plugin_yetlist_action()
 	foreach($refer as $page=>$refs)
 	{
 		$r_page = rawurlencode($page);
-		$s_page = htmlspecialchars($page);
+		$s_page = htmlspecialchars(strip_bracket($page));
 		
 		$link_refs = array();
 		foreach(array_unique($refs) as $_refer)
 		{
 			$r_refer = rawurlencode($_refer);
-			$s_refer = htmlspecialchars($_refer);
+			//$_refer = strip_bracket($_refer);
+			$s_refer = htmlspecialchars(strip_bracket($_refer));
 			
-			$link_refs[] = "<a href=\"$script?$r_refer\">$s_refer</a>";
-			//$link_refs[] = make_pagelink($_refer);
+			$link_refs[] = make_pagelink($_refer,$s_refer);
 		}
 		$link_ref = join(' ',$link_refs);
 		// 参照元ページが複数あった場合、referは最後のページを指す(いいのかな)
