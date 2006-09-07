@@ -25,7 +25,7 @@ define ('PLUGIN_GOOGLEMAPS2_MK_DEF_AJUMP', '[説明]'); //infoWindowから本文中への
 //FMTINFOはマップ上のマーカーをクリックして表示されるフキダシの（中の）雛型
 //今のとこ%title%と%caption%の置換えのみ。
 define ('PLUGIN_GOOGLEMAPS2_MK_DEF_FORMATLIST' , '<b>%title%</b> - %caption%');
-define ('PLUGIN_GOOGLEMAPS2_MK_DEF_FORMATINFO' , '<b>%title%</b><br><div style=\'width:200px;\'><span style=\'float:left;\'>%image%</span>%caption%</div>');
+define ('PLUGIN_GOOGLEMAPS2_MK_DEF_FORMATINFO' , '<b>%title%</b><br><div style=\'width:200px;\'><span style=\'float:left;padding-right:5px;margin-right:5px;\'>%image%</span>%caption%</div>');
 
 //リストをクリックするとマップにフォーカスさせる。(0 or 1)
 define ('PLUGIN_GOOGLEMAPS2_MK_DEF_ALINK' , 1);
