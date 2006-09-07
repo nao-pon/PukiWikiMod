@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.78 2006/09/07 00:05:56 nao-pon Exp $
+// $Id: file.php,v 1.79 2006/09/07 12:35:16 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -67,7 +67,16 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		$add_text = (isset($mail_op['text']))? $mail_op['text'] : "";
 	}
 	
-	if ($postdata) $postdata = rtrim($postdata)."\n";
+	$delete = false;
+	$postdata = rtrim($postdata);
+	if ($postdata)
+	{
+		$postdata .= "\n";
+	}
+	else
+	{
+		$delete = true;
+	}
 	
 	if ($pagereading_config_page != $s_page)
 	{
@@ -99,14 +108,14 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			// 追加データファイル保存
 			// pcomment 動作時は親ページ
 			$_pgid = (!empty($post['refer']))? get_pgid_by_name($post['refer']) : $pgid;
-			if ($mail_add) {push_page_changes($_pgid,$mail_add);}
+			push_page_changes($_pgid,$mail_add,$delete);
 			
 			// バックアップの作成
 			// 日付はバックアップを作成した日時
 			$oldposttime = time();
 			
 			// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
-			if(!$postdata && $del_backup)
+			if($delete && $del_backup)
 				backup_delete(BACKUP_DIR.encode($page).".txt");
 			else if($do_backup && is_page($page))
 				make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
@@ -1370,9 +1379,18 @@ function get_pagename_aliases()
 }
 
 // ページ内容追加履歴の書き出し
-function push_page_changes($id,$txt)
+function push_page_changes($id,$txt,$del=false)
 {
 	$add_file = DIFF_DIR."add_".$id.".cgi";
+
+	if ($del)
+	{
+		@unlink($add_file);
+		return;
+	}
+	
+	if (!$txt) {return;}
+
 	$sep = "&#182;<!--ADD_TEXT_SEP-->\n";
 	$limit = 5;
 	
