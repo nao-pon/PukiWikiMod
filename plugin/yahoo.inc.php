@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: yahoo.inc.php,v 1.5 2006/09/01 01:35:42 nao-pon Exp $
+// $Id: yahoo.inc.php,v 1.6 2006/09/08 11:51:00 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #yahoo([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -18,6 +18,7 @@ function plugin_yahoo_init()
 		'err_setconfig'  => '※ 設定エラー: [ '.PLUGIN_DATA_DIR.'yahoo/config.php ] に設定情報を記入してください。',
 		'err_nonwritable'  => '※ 設定エラー: ディレクトリ [ '.PLUGIN_DATA_DIR.'yahoo/ ] に書き込み権限がありません。',
 		'writable_check'  => 1,
+		'YouTubeNAVI' => 1,
 	));
 	
 	// config 読み込み
@@ -55,6 +56,7 @@ function plugin_yahoo_init()
 	'col_img'    => 5, // 表示列数の規定値(Image)
 	'col_mov'    => 4, // 表示列数の規定値(Movie)
 	'cache_time' => 360, // Cache time (min) 360m = 6h
+	'YouTubeNAVI'=> 1, // 動画検索時 YouTube NAVI へのリンクを付加する
 	//////// Config ///////
 ));
 ?>
@@ -66,7 +68,7 @@ EOT;
 		}
 	}
 	
-	$data['plugin_yahoo_dataset'] = array_merge($data['plugin_yahoo_dataset'], $msg['plugin_yahoo_dataset']);
+	$data['plugin_yahoo_dataset'] = array_merge($msg['plugin_yahoo_dataset'], $data['plugin_yahoo_dataset']);
 	
 	set_plugin_messages($data);
 }
@@ -123,6 +125,7 @@ function plugin_yahoo_convert()
 	}
 	$mode = array_shift($args);
 	$query = array_shift($args);
+	$youtube = "";
 
 	// mode 判定
 	$mode = trim(strtolower($mode));
@@ -144,6 +147,10 @@ function plugin_yahoo_convert()
 			$mode = "mov";
 			$more = "http://video.search.yahoo.co.jp/bin/query?p=".rawurlencode($query)."&ei=EUC-JP&b=";
 			$more_add = 0;
+			if (!empty($plugin_yahoo_dataset['YouTubeNAVI']))
+			{
+				$youtube = ' [ <a href="http://youtube.navi-gate.org/tag/'.plugin_yahoo_youtube_urlencode(mb_convert_encoding($query,"UTF-8",SOURCE_ENCODING)).'/" target="'.$link_target.'">YouTube NAVI: '.htmlspecialchars($query).'</a> ]';
+			}
 			break;
 		//case "related":
 		//case "rel":
@@ -172,7 +179,7 @@ function plugin_yahoo_convert()
 <a href="http://developer.yahoo.co.jp/about" target="'.$link_target.'"><img src="http://i.yimg.jp/images/yjdn/yjdn_attbtn2_105_17.gif" width="105" height="17" title="Webサービス by Yahoo! JAPAN" alt="Webサービス by Yahoo! JAPAN" border="0" style="margin:15px 15px 15px 15px"></a>
 <!-- End Yahoo! JAPAN Web Services Attribution Snippet -->';
 
-	return "<p><div class='pwm_yahoo'>{$ret}</div>{$cr}{$more}</p>";
+	return "<p><div class='pwm_yahoo'>{$ret}</div>{$cr}{$more}{$youtube}</p>";
 
 }
 
@@ -436,5 +443,10 @@ function plugin_yahoo_check_ngsite($url)
 		}
 	}
 	return false;
+}
+
+function plugin_yahoo_youtube_urlencode($tag)
+{
+	return (preg_match('/^[0-9a-z\-\. ]([0-9a-z\-\._ ]+)?$/i', $tag))? urlencode($tag) : "_".encode($tag);
 }
 ?>
