@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.81 2006/09/07 16:18:53 nao-pon Exp $
+// $Id: file.php,v 1.82 2006/09/19 07:35:19 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -115,7 +115,7 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 			push_page_changes($pgid,$mail_add,$delete);
 			
 			// pcomment 動作時は親ページも
-			if (!empty($post['refer']))
+			if (!empty($post['refer']) && $post['refer'] != $page)
 			{
 				push_page_changes(get_pgid_by_name($post['refer']),$mail_add);
 			}
@@ -367,11 +367,17 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 		if ($google_sitemap_page && $action != "delete")
 		{
 			$work = CACHE_DIR."google_sitemap.udp";
-			if (!file_exists($work) || time() - filemtime($work) > 3600) //1時間に1回以内
+			if (!file_exists($work) || time() - filemtime($work) > 1800) //1時間に2回以内
 			{
 				touch($work);
-				$url = "http://www.google.com/webmasters/sitemaps/ping?sitemap=".rawurlencode(XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/?".$google_sitemap_page);
-				http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,FALSE);
+				// index xmlファイルの作成
+				$vars['need_return'] = true;
+				$vars['view'] = "";
+				if (do_plugin_action("google_sitemap"))
+				{
+					$url = "http://www.google.com/webmasters/sitemaps/ping?sitemap=".rawurlencode(XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/".$google_sitemap_page.".xml");
+					http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,FALSE);
+				}
 			}
 		}
 	}
