@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.inc.php,v 1.22 2006/04/07 12:15:58 nao-pon Exp $
+// $Id: comment.inc.php,v 1.23 2006/09/24 14:56:23 nao-pon Exp $
 
 global $name_cols, $comment_cols, $msg_format, $name_format;
 global $msg_format, $now_format, $comment_format;
@@ -54,7 +54,7 @@ function plugin_comment_action()
 		$post['msg'] = preg_replace("/\n/","",$post['msg']);
 		
 		$postdata = "";
-		$postdata_old  = file(get_filename(encode($post["refer"])));
+		$postdata_old  = get_source($post["refer"]);
 		$comment_no = 0;
 		if ($post['above']==1){
 			$comment_ins = 1;
@@ -179,7 +179,7 @@ function plugin_comment_action()
 }
 function plugin_comment_convert()
 {
-	global $script,$comment_no,$vars,$name_cols,$comment_cols,$digest;
+	global $script,$comment_no,$vars,$name_cols,$comment_cols;
 	global $_btn_comment,$_btn_name,$_msg_comment,$vars,$comment_ins;
 	
 	$options = func_get_args();
@@ -229,7 +229,9 @@ function plugin_comment_convert()
 
 	if((arg_check("read")||$vars["cmd"] == ""||arg_check("unfreeze")||arg_check("freeze")||$vars["write"]||$vars["comment"]))
 		$button = "<input type=\"submit\" name=\"comment\" value=\"".htmlspecialchars($btn_text)."\" />\n";
-
+	
+	$digest = md5(@join("",get_source($vars["page"])));
+	
 	$string = "<br /><form action=\"$script\" method=\"post\">\n"
 		 ."<div>\n"
 		 ."<input type=\"hidden\" name=\"comment_no\" value=\"".htmlspecialchars($comment_no)."\" />\n"
