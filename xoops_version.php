@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.18 2006/04/08 09:21:26 nao-pon Exp $
+// $Id: xoops_version.php,v 1.19 2006/09/28 23:21:17 nao-pon Exp $
 
 $pwm_dirname = basename( dirname( __FILE__ ) ) ;
 if( preg_match( '/^(\D+)(\d*)$/' , $pwm_dirname , $regs ) ) {
@@ -15,7 +15,7 @@ $modversion['author'] = "";
 $modversion['help'] = "";
 $modversion['license'] = "GPL see LICENSE";
 $modversion['official'] = 1;
-$modversion['image'] = "pukiwiki.gif";
+$modversion['image'] = "image/pukiwiki{$pwm_number}.gif";
 $modversion['dirname'] = $pwm_dirname;
 include_once(XOOPS_ROOT_PATH."/modules/".$modversion['dirname']."/version.php");
 $modversion['version'] = _XOOPS_WIKI_VERSION;
