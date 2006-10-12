@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: rename.inc.php,v 1.9 2006/04/06 13:32:16 nao-pon Exp $
+// $Id: rename.inc.php,v 1.10 2006/10/12 23:33:47 nao-pon Exp $
 //
 
 /*
@@ -333,14 +333,14 @@ function rename_phase3($pages)
 		{
 			$msg .= '<li>';
 			$msg .= make_pagelink(decode($page),strip_bracket(decode($page)));
-			$msg .= $_rename_messages['msg_arrow'];
+			$msg .= make_link($_rename_messages['msg_arrow']);
 			$msg .= htmlspecialchars(strip_bracket(decode($pages[$page])));
 			if (count($arr) > 0)
 			{
 				$msg .= "<ul>\n";
 				foreach ($arr as $ofile=>$nfile)
 				{
-					$msg .= '<li>'.$ofile.$_rename_messages['msg_arrow'].$nfile."</li>\n";
+					$msg .= '<li>'.$ofile.make_link($_rename_messages['msg_arrow']).$nfile."</li>\n";
 				}
 				$msg .= '</ul>';
 			}
@@ -373,7 +373,7 @@ EOD;
 		$ret['body'] .= "<li>".
 			//make_pagelink(decode($old)).
 			strip_bracket(decode($old)).
-			$_rename_messages['msg_arrow'].
+			make_link($_rename_messages['msg_arrow']).
 			strip_bracket(htmlspecialchars(decode($new))).
 			"</li>\n";
 	}
