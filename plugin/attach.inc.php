@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.48 2006/09/03 13:03:38 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.49 2006/12/22 01:57:34 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -1422,7 +1422,7 @@ class AttachPages
 			}
 			
 			// 添付ファイルのあるページ数カウント
-			$query = "SELECT p.id FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." p INNER JOIN ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." a ON p.id=a.pgid{$where} GROUP BY a.pgid;";
+			$query = "SELECT DISTINCT p.id FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." p INNER JOIN ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." a ON p.id=a.pgid{$where}";
 			$result = $xoopsDB->query($query);
 			
 			$this->count = 0;
@@ -1438,7 +1438,7 @@ class AttachPages
 			$order = ($f_order == "name")? " ORDER BY p.name ASC" : " ORDER BY p.editedtime DESC";
 			$limit = " LIMIT $start,$max";
 			
-			$query = "SELECT p.name,p.editedtime FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." p INNER JOIN ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." a ON p.id=a.pgid{$where} GROUP BY a.pgid{$order}{$limit};";
+			$query = "SELECT DISTINCT p.name,p.editedtime FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." p INNER JOIN ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_attach")." a ON p.id=a.pgid{$where} {$order}{$limit};";
 			if (!$result = $xoopsDB->query($query)) echo "QUERY ERROR : ".$query;
 			
 			
