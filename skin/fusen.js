@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.15 2006/07/07 04:08:41 nao-pon Exp $
+// $Id: fusen.js,v 1.16 2006/12/22 01:58:00 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -945,7 +945,7 @@ function fusen_show(id)
 		var top = mouseY;
 		var left = mouseX;
 	}
-	//window.status = left+":"+top;
+	window.status = left+":"+top;
 	getElement(id).style.left = left + "px";
 	getElement(id).style.top = top + "px";
 	
@@ -1569,6 +1569,7 @@ function fusen_drawLine2(x, y, w, h, color, nid, border){
 // Event
 
 function fusen_onmousedown(e) {
+
 	if (IE)
 	{
 		if (event.button != 1) return;
@@ -1619,27 +1620,21 @@ function fusen_onmousedown(e) {
 
 function fusen_onmousemove(e)
 {
+	if (!fusenMovingObj) return;
+
 	var nowpos;
 	if(IE)
 	{
-		if (document.compatMode && document.compatMode=='CSS1Compat')
-		{
-			mouseX = document.documentElement.scrollLeft + event.clientX;
-			mouseY = document.documentElement.scrollTop + event.clientY;
-		}
-		else
-		{
-			mouseX = document.body.scrollLeft + event.clientX;
-			mouseY = document.body.scrollTop + event.clientY;
-		}
 		nowpos = event.clientX + "," + event.clientY;
 	} else {
-		mouseX = e.pageX;
-		mouseY = e.pageY;
-		nowpos = e.pageX + "," +e.pageY;
+		nowpos = e.pageX + "," + e.pageY;
 	}
+	
 	if (fusenMovingObj && nowpos != (fusenClickX + "," + fusenClickY))
 	{
+		this.cancelBubble = true;
+		fusenMovingFlg = true;
+
 		var id = fusenMovingObj.id.replace('fusen_id','');
 		if (fusenResizeFlg)
 		{
@@ -1679,11 +1674,9 @@ function fusen_onmousemove(e)
 			}
 			fusenMovingObj.style.left = x + "px";
 			fusenMovingObj.style.top = y + "px";
-			if (IE && fusenMovingObj.id.indexOf('fusen_id') != -1){fusenMovingObj.focus();} //描画リフレッシュのため(IEのみ)
 			window.status = "付箋 "+id+" を移動中...[ X:"+x+", Y:"+y+" ]";
 		}
 		if (!fusenDustboxFlg) {fusen_setlines(id);}
-		fusenMovingFlg = true;
 		return false;
 	}
 }
@@ -2046,19 +2039,36 @@ window.onload = function() {
 	//getElement('fusen_area').style.width = '1000px;'
 	fusen_set_elements();
 	fusen_init(1);
-
-	if (IE) {
-		var __fusen_ondblclick_save = document.ondblclick;
-		document.ondblclick = function() {
-			if (__fusen_ondblclick_save) __fusen_ondblclick_save();
-			if (!fusenDblClick) fusen_new(true);
+	
+	var root = (IE)? document : window;
+	
+	var _save = root.ondblclick;
+	root.ondblclick = function() {
+		if (_save) _save();
+		if (!fusenDblClick) fusen_new(true);
+	};
+	
+	var _save = root.onmousedown;
+	root.onmousedown = function(e) {
+		if (_save) _save();
+		if (IE)
+		{
+			if (document.compatMode && document.compatMode=='CSS1Compat')
+			{
+				mouseX = document.documentElement.scrollLeft + event.clientX;
+				mouseY = document.documentElement.scrollTop + event.clientY;
+			}
+			else
+			{
+				mouseX = document.body.scrollLeft + event.clientX;
+				mouseY = document.body.scrollTop + event.clientY;
+			}
 		}
-	} else {
-		var __fusen_ondblclick_save = window.ondblclick;
-		window.ondblclick = function() {
-			if (__fusen_ondblclick_save) __fusen_ondblclick_save();
-			if (!fusenDblClick) fusen_new(true);
+		else
+		{
+			mouseX = e.pageX;
+			mouseY = e.pageY;
 		}
-	}
+	};
 }
 
