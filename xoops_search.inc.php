@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 // ------------------------------------------------------------------------- //
-// $Id: xoops_search.inc.php,v 1.18 2006/09/07 00:05:56 nao-pon Exp $
+// $Id: xoops_search.inc.php,v 1.19 2006/12/22 01:59:09 nao-pon Exp $
 
 if( ! defined( 'XOOPS_ROOT_PATH' ) ) exit ;
 $mydirname = basename( dirname( __FILE__ ) ) ;
@@ -95,17 +95,16 @@ function wiki_search_base($pwm_dirname, $pwm_dirnum, $queryarray, $andor, $limit
 	// is not an array, we must check if $querryarray is really an array
 	if ( is_array($queryarray) && $count = count($queryarray) ) {
 		// 英数字は半角,カタカナは全角,ひらがなはカタカナに
-		if (function_exists("mb_convert_kana"))
-		{
-			$word = mb_convert_kana($queryarray[0],'aKCV');
-		}
-		$sql .= "AND ((p.name LIKE '%{$word}%' OR t.plain LIKE '%{$word}%')";
-		for($i=1;$i<$count;$i++){
+		$sql .= "AND (";
+		for($i=0; $i<$count; $i++){
+			if ($i) $sql .= " $andor ";
 			if (function_exists("mb_convert_kana"))
 			{
-				$word = mb_convert_kana($queryarray[$i],'aKCV');
+				// 英数字は半角,カタカナは全角,ひらがなはカタカナに
+				$word = addslashes(mb_convert_kana($queryarray[$i],'aKCV'));
+			} else {
+				$word = addslashes($queryarray[$i]);
 			}
-			$sql .= " $andor ";
 			$sql .= "(p.name LIKE '%{$word}%' OR t.plain LIKE '%{$word}%')";
 		}
 		$sql .= ") ";
