@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: html.php,v 1.66 2006/06/23 14:19:58 nao-pon Exp $
+// $Id: html.php,v 1.67 2007/01/25 04:33:28 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // 本文をページ名から出力
@@ -522,6 +522,10 @@ function make_related($page,$tag='')
 		arsort($links);
 	}
 	$_links = array();
+	
+	// 過負荷防止最大1000ページ
+	$links = array_splice($links, 0, 1000);
+	
 	foreach ($links as $page=>$lastmod)
 	{
 		if (!$lastmod || preg_match("/$non_list/",$page))
