@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.82 2006/09/19 07:35:19 nao-pon Exp $
+// $Id: file.php,v 1.83 2007/01/25 04:07:08 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -947,8 +947,12 @@ function get_pg_auther_mail($page)
 	
 	$member_handler =& xoops_gethandler('member');
 	$user =& $member_handler->getUser($uid);
-	//strip_tags:XOOPS 1.3 系対策
-	return strip_tags($user->getVar("email"));
+	if (is_object($user) && method_exists($user, 'getVar')) {
+		//strip_tags:XOOPS 1.3 系対策
+		return strip_tags($user->getVar("email"));
+	} else {
+		return '';
+	}
 }
 
 //編集権限継承がセットされている上位ページ凍結情報を得る
