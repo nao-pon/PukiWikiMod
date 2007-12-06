@@ -25,7 +25,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: index.php,v 1.11 2006/09/01 11:49:25 nao-pon Exp $
+// $Id: index.php,v 1.12 2007/12/06 04:22:22 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -1256,7 +1256,8 @@ var pukiwiki_root_url = "'.XOOPS_WIKI_HOST.XOOPS_WIKI_URL.'/";
 			$xoopsTpl->assign("xoops_meta_keywords",implode(',',$wiki_head_keywords).",".$xoopsTpl->get_template_vars("xoops_meta_keywords"));
 		}
 		// desciption
-		$xoopsTpl->assign("xoops_meta_description",mb_strcut(preg_replace("/\s+/","",strip_tags(preg_replace("/<script[^>]>.*?<\/script>/is","",$body))),0,200));
+		$xoopsTpl->assign("xoops_meta_description", $xoopsTpl->get_template_vars("xoops_meta_description") .
+			mb_strcut(preg_replace("/\s+/","",strip_tags(preg_replace("/<script[^>]>.*?<\/script>/is","",$body))),0,200));
 	}
 	else
 	{
