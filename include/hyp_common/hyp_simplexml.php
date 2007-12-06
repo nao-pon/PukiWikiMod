@@ -1,5 +1,5 @@
 <?php
-// $Id: hyp_simplexml.php,v 1.3 2006/09/05 13:18:57 nao-pon Exp $
+// $Id: hyp_simplexml.php,v 1.4 2007/12/06 05:47:39 nao-pon Exp $
 // HypSimpleXML Class by nao-pon http://hypweb.net
 // Based on SimpleXML
 // added function 'XMLstr_in()'

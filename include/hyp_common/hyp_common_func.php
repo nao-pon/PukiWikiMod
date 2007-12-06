@@ -1,5 +1,5 @@
 <?php
-// $Id: hyp_common_func.php,v 1.8 2006/09/05 13:18:57 nao-pon Exp $
+// $Id: hyp_common_func.php,v 1.9 2007/12/06 05:47:39 nao-pon Exp $
 // HypCommonFunc Class by nao-pon http://hypweb.net
 ////////////////////////////////////////////////
 
@@ -8,6 +8,11 @@ if( ! class_exists( 'HypCommonFunc' ) )
 
 class HypCommonFunc
 {
+	function get_version() {
+		include (dirname(__FILE__) . '/version.php');
+		return $version;
+	}
+	
 	// 1バイト文字をエンティティ化
 	function str_to_entity(&$str)
 	{
@@ -164,8 +169,7 @@ EOF;
 		$q_word = str_replace(" ","|",preg_quote(join(' ',$words),"/"));
 		
 		$match = array();
-		if (preg_match("/$q_word/i",$text,$match))
-		{
+		if (preg_match("/$q_word/i",$text,$match)) {
 			$ret = ltrim(preg_replace('/\s+/', ' ', $text));
 			list($pre, $aft) = array_pad(preg_split("/$q_word/i", $ret, 2), 2, "");
 			$m = intval($l/2);
@@ -176,8 +180,10 @@ EOF;
 			if (strlen($aft) > $m) $ret .= " ...";
 		}
 		
-		if (!$ret)
+		if (!$ret) {
 			$ret = $strcut($text, 0, $l);
+			$ret = preg_replace('/&([^;]+)?$/', '', $ret);
+		}
 		
 		return htmlspecialchars($ret, ENT_NOQUOTES);
 	}
@@ -254,7 +260,7 @@ EOF;
 		}
 		else
 		{
-			if (!HypCommonFunc::chech_memory4gd($org_w,$org_h))
+			if (!HypCommonFunc::check_memory4gd($org_w,$org_h))
 			{
 				// メモリー制限に引っ掛かりそう。（マージン 1MB）
 				return $o_file;
@@ -307,7 +313,7 @@ EOF;
 						// 透過色なし
 						$dst_im = $imagecreate($width,$height);
 						$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$org_w,$org_h);
-						imagetruecolortopalette ($dst_im,imagecolorstotal ($src_im));
+						if (function_exists('imagetruecolortopalette')) imagetruecolortopalette ($dst_im, false, imagecolorstotal($src_im));
 					}
 					touch($s_file);
 					if ($s_ext == "jpg")
@@ -356,7 +362,7 @@ EOF;
 						// 透過色なし
 						$dst_im = $imagecreate($width,$height);
 						$imageresize ($dst_im,$src_im,0,0,0,0,$width,$height,$org_w,$org_h);
-						imagetruecolortopalette ($dst_im,imagecolorstotal ($src_im));
+						if (function_exists('imagetruecolortopalette')) imagetruecolortopalette ($dst_im, false, imagecolorstotal($src_im));
 					}
 				}
 				else
@@ -394,7 +400,7 @@ EOF;
 
 		$ro_file = realpath($o_file);
 		$rs_file = realpath(dirname($s_file))."/".basename($s_file);
-		
+
 		// Make Thumb and check success
 		if ( ini_get('safe_mode') != "1" )
 		{
@@ -421,6 +427,114 @@ EOF;
 			return $o_file;
 		}
 		return $s_file;
+	}
+
+	// 画像をリサイズする
+	function ImageResize($img, $isize='', $quality=75) {
+		
+		$size = @getimagesize($img);
+		if (!$size) return false;//画像ファイルではない
+		
+		$img = realpath($img);
+		
+		if (!preg_match('/^([\d]+)?x([\d]+)?|([\d]+)%?$/i', trim($isize), $arg)) return false;
+		
+		if (!empty($arg[3])) {
+			$zoom = round($arg[3] / 100);
+		} else {
+			$w = (empty($arg[1]))? $size[0] : $arg[1];
+			$h = (empty($arg[2]))? $size[1] : $arg[2];
+			$zoom_w = $w / $size[0];
+			$zoom_h = $h / $size[1];
+			$zoom = min($zoom_w, $zoom_h);
+		}
+		$w = round($size[0] * $zoom);
+		$h = round($size[1] * $zoom);
+		
+		$tmp = $img . '.tmp';
+		$done = HypCommonFunc::make_thumb($img, $tmp, $w, $h, '1,99', TRUE, $quality);
+		
+		if ($done === $img) return false;
+		
+		unlink($img);
+		copy($tmp, $img);
+		unlink($tmp);
+		
+		return true;
+	}
+	
+	// 画像を角丸にする
+	function ImageMagickRoundCorner($o_file, $s_file = '', $corner = 10, $edge = 0, $refresh = FALSE) {
+		
+		if (!defined('HYP_IMAGEMAGICK_PATH') || !HYP_IMAGEMAGICK_PATH) return $o_file;
+		
+		if ($o_file === $s_file) $s_file = '';
+		
+		// すでに作成済み
+		if (!$refresh && $s_file && file_exists($s_file)) return $s_file;
+		
+		$is_own = FALSE;
+		if (!$s_file) {
+			// CGI を直接叩かれて悪戯されないように一時ファイルを利用
+			$s_file = $o_file . '.tmp';
+			$is_own = TRUE;
+		}
+
+		$size = @getimagesize($o_file);
+		if (!$size) return $o_file;//画像ファイルではない
+		
+		$ro_file = realpath($o_file);
+		$rs_file = realpath(dirname($s_file))."/".basename($s_file);
+		
+		if (file_exists($rs_file)) unlink($rs_file);
+		
+		// Make Thumb and check success
+		if ( ini_get('safe_mode') != "1" ) {
+			// 元画像のサイズ
+			$imw = $size[0];
+			$imh = $size[1];
+			$im_half = floor((min($imw, $imh)/2));
+		
+			// check value
+			$edge = min($edge, $im_half);
+			$corner = min($corner, $im_half);
+	
+			$tmpfile = $rs_file . '_tmp.png';
+	
+			$cmd = 'convert -size '.$imw.'x'.$imh.' xc:none -channel RGBA -fill white -draw "roundrectangle '.max(0,($edge-1)).','.max(1,($edge-1)).' '.($imw-$edge).','.($imh-$edge).' '.$corner.','.$corner.'" '.$ro_file.' -compose src_in -composite '.$tmpfile;
+			exec( HYP_IMAGEMAGICK_PATH . $cmd ) ;
+	
+			if ($edge) {
+				$cmd = 'convert -size '.$imw.'x'.$imh.' xc:none -fill none -stroke white -strokewidth '.$edge.' -draw "roundrectangle '.($edge-1).','.($edge-1).' '.($imw-$edge).','.($imh-$edge).' '.$corner.','.$corner.'" -shade 135x25 -blur 0x1 -normalize '.$tmpfile.' -compose overlay -composite '.$tmpfile;		
+				exec( HYP_IMAGEMAGICK_PATH . $cmd ) ;
+			}
+			copy ($tmpfile, $rs_file);
+			unlink($tmpfile);
+		} else {
+			// safeモードの場合は、CGIを起動して取得してみる
+			
+			$cmds = "?m=ro".
+					"&p=".rawurlencode(HYP_IMAGEMAGICK_PATH).
+					"&z=".$corner.
+					"&q=".$edge.
+					"&o=".rawurlencode($ro_file).
+					"&s=".rawurlencode($rs_file);
+			
+			HypCommonFunc::exec_image_magick_cgi($cmds);
+		}
+		
+		if( ! is_readable( $rs_file ) ) {
+			if (file_exists($rs_file)) unlink($rs_file);
+			return $ro_file;
+		}
+		
+		if ($is_own) {
+			unlink($ro_file);
+			copy($rs_file, $ro_file);
+			unlink($rs_file);
+		}
+		
+		return $rs_file;
 	}
 	
 	// GD のバージョンを取得
@@ -462,7 +576,7 @@ EOF;
 		return $match[0];
 	}
 	
-	function chech_memory4gd($w,$h)
+	function check_memory4gd($w,$h)
 	{
 		// GDで処理可能なメモリーサイズ
 		static $memory_limit = NULL;
@@ -470,15 +584,17 @@ EOF;
 		{
 			$memory_limit = HypCommonFunc::return_bytes(ini_get('memory_limit'));
 		}
-		// ビットマップ展開時のメモリー上のサイズ
-		$bitmap_size = $w * $h * 3 + 54;
-		
-		if ($bitmap_size > $memory_limit - memory_get_usage() - (1 * 1024 * 1024))
+		if ($memory_limit)
 		{
-			// メモリー制限に引っ掛かりそう。（マージン 1MB）
-			return false;
+			// ビットマップ展開時のメモリー上のサイズ
+			$bitmap_size = $w * $h * 3 + 54;
+			
+			if ($bitmap_size > $memory_limit - memory_get_usage() - (1 * 1024 * 1024))
+			{
+				// メモリー制限に引っ掛かりそう。（マージン 1MB）
+				return false;
+			}
 		}
-		
 		return true;
 	}
 	
@@ -515,7 +631,7 @@ EOF;
 					rename($tmpfname, $src);
 					//chmod($src, 0666);
 				}
-				unlink($tmpfname);
+				@unlink($tmpfname);
 				return $ret;
 			}
 			else
@@ -526,7 +642,7 @@ EOF;
 						"&q=".$quality.
 						"&s=".rawurlencode($src);
 							
-				return HypCommonFunc::exec_image_magick_cgi($cmds);				
+				return HypCommonFunc::exec_image_magick_cgi($cmds);
 			}
 		}
 		else if (defined('HYP_IMAGEMAGICK_PATH') && HYP_IMAGEMAGICK_PATH)
@@ -563,7 +679,7 @@ EOF;
 			// GD を使用
 			
 			// メモリーチェック
-			if (!HypCommonFunc::chech_memory4gd($w,$h)) return false;
+			if (!HypCommonFunc::check_memory4gd($w,$h)) return false;
 			
 			$angle = 360 - $angle;
 			if (($in = imageCreateFromJpeg($src)) === false) {
@@ -723,28 +839,29 @@ EOF;
 	}
 	
 	// 2ch BBQ あらしお断りシステム にリスティングされているかチェック
-	function IsBBQListed($safe_reg = '/^$/', $msg = false, $ip = NULL)
+	function IsBBQListed($safe_reg = '/^$/', $msg = true, $ip = NULL, $checker = array('list.dsbl.org', 'niku.2ch.net'))
 	{
 		if (is_null($ip)) $ip = $_SERVER['REMOTE_ADDR'];
 		if(! preg_match($safe_reg, $ip))
 		{
-			if (!$msg) $msg = '公開プロキシ経由での投稿はできません。';
-			
 			$host = array_reverse(explode('.', $ip));
-			$addr = sprintf("%d.%d.%d.%d.niku.2ch.net",
-				$host[0],$host[1],$host[2],$host[3]);
-			$addr = gethostbyname($addr);
-			if(preg_match("/^127\.0\.0/",$addr)) return $msg;
+			foreach($checker as $chk) {
+				$addr = sprintf("%d.%d.%d.%d.". $chk,
+					$host[0],$host[1],$host[2],$host[3]);
+				$addr = gethostbyname($addr);
+				if(preg_match("/^127\.0\.0/",$addr)) return $msg;
+			}
 		}
 		return false;
 	}
 	
 	// 2ch BBQ チェック用汎用関数
-	function BBQ_Check($safe_reg = "/^(127\.0\.0\.1)/", $msg = false, $ip = NULL)
+	function BBQ_Check($safe_reg = "/^(127\.0\.0\.1)/", $msg = true, $ip = NULL, $checker = array('list.dsbl.org', 'niku.2ch.net'))
 	{
 		if ($_SERVER['REQUEST_METHOD'] == 'POST')
 		{
-			if ($_msg = HypCommonFunc::IsBBQListed($safe_reg, $msg, $ip))
+			$_msg = HypCommonFunc::IsBBQListed($safe_reg, $msg, $ip, $checker);
+			if ($_msg !== false)
 			{
 				exit ($_msg);
 			}
@@ -753,13 +870,38 @@ EOF;
 	}
 	
 	// POST SPAM Check
-	function PostSpam_Check($post)
+	function PostSpam_Check($post, $encode = '', $encodehint = '')
 	{
+		if (function_exists('mb_convert_variables') && $encode) {
+			// 文字エンコード変換
+			if ($encodehint && isset($post[$encodehint])) {
+				$post_enc = mb_detect_encoding($post[$encodehint]);
+				if ($encode !== $post_enc) {
+					mb_convert_variables($encode, mb_detect_encoding($post[$encodehint]), $post);
+				}
+			} else {
+				// Key:url, excerpt があればトラックバックかも->文字コード変換
+				if (isset($post['url']) && isset($post['excerpt']) && function_exists('mb_convert_variables')) {
+					if (isset($post['charset']) && $post['charset'] != '') {
+						// TrackBack Ping で指定されていることがある
+						// うまくいかない場合は自動検出に切り替え
+						if (mb_convert_variables($encode,
+						    $post['charset'], $post) !== $post['charset']) {
+							mb_convert_variables($encode, 'auto', $post);
+						}
+					} else if (! empty($post)) {
+						// 全部まとめて、自動検出／変換
+						mb_convert_variables($encode, 'auto', $post);
+					}
+				}
+			}
+		}
+		
 		static $filters = NULL;
 		if (is_null($filters)) {$filters = HypCommonFunc::PostSpam_filter();}
 		$counts = array();
 		$counts[0] = $counts[1] = $counts[2] = $counts[3] = 0;
-		foreach($post as $dat)
+		foreach($post as $key => $dat)
 		{
 			$tmp = array();
 			$tmp['a'] = $tmp['bb'] = $tmp['url'] = $tmp['filter'] = 0;
@@ -769,6 +911,9 @@ EOF;
 			}
 			else
 			{
+				// NULLバイト削除
+				$dat = str_replace("\0", '', $dat);
+				
 				// <a> タグの個数
 				$tmp['a'] = count(preg_split("/<a.+?\/a>/i",$dat)) - 1;
 				// [url] タグの個数
@@ -780,15 +925,28 @@ EOF;
 				{
 					foreach($filters as $reg => $point)
 					{
-						$counts[3] += (count(preg_split($reg,$dat)) - 1) * $point;
-						//echo $dat."<br>".$reg.": ".$counts[3]."<hr>";
+						if ($reg === 'array_rule') {
+							if (isset($point['ignore_fileds'])) {
+								foreach($point['ignore_fileds'][0] as $checkkey => $targets) {
+									foreach($targets as $target) {
+										if (strtolower($checkkey) === strtolower($key) && $post[$key] ){
+											if (!$target || preg_match('/'.preg_quote($target,'/').'/i',$_SERVER['PHP_SELF'])) {
+												$tmp['filter'] += $point['ignore_fileds'][1];
+											}
+										}
+									}
+								}
+							}
+						} else {
+							$tmp['filter'] += (count(preg_split($reg,$dat)) - 1) * $point;
+						}
 					}
 				}
 			}
-			$counts[0] += $tmp['a'];
-			$counts[1] += $tmp['bb'];
-			$counts[2] += $tmp['url'];
-			$counts[3] += $tmp['filter'];
+			$counts[0] = max($counts[0], $tmp['a']);
+			$counts[1] = max($counts[1], $tmp['bb']);
+			$counts[2] = max($counts[2], $tmp['url']);
+			$counts[3] = max($counts[3], $tmp['filter']);
 		}
 		return $counts;
 	}
@@ -802,11 +960,11 @@ EOF;
 	}
 	
 	// POST SPAM Check 汎用関数
-	function get_postspam_avr($alink=1,$bb=1,$url=1)
+	function get_postspam_avr($alink=1,$bb=1,$url=1,$encode='EUC-JP',$encodehint='')
 	{
 		if ($_SERVER['REQUEST_METHOD'] == 'POST')
 		{
-			list($a_p,$bb_p,$url_p,$filter_p) = HypCommonFunc::PostSpam_Check($_POST);
+			list($a_p,$bb_p,$url_p,$filter_p) = HypCommonFunc::PostSpam_Check($_POST, $encode, $encodehint);
 			return $a_p * $alink + $bb_p * $bb + $url_p * $url + $filter_p;
 		}
 		else
@@ -815,15 +973,103 @@ EOF;
 		}
 	}
 	
+	// 機種依存文字フィルター
+	function dependence_filter($post)
+	{
+		if (!isset($post) || !function_exists("mb_ereg_replace")) {return $post;}
+		
+		//$post_enc = defined('HYP_POST_ENCODING')? HYP_POST_ENCODING : _CHARSET;
+		//if ($post_enc !== 'EUC-JP' && $post_enc !== 'UTF-8') {return $post;}
+		if (!defined('HYP_POST_ENCODING') || (HYP_POST_ENCODING !== 'EUC-JP' && HYP_POST_ENCODING !== 'UTF-8')) {return $post;}
+
+		static $bef = null;
+		static $aft = null;
+		
+		if (is_null($bef))
+		{
+			$mac = (empty($_SERVER["HTTP_USER_AGENT"]))? FALSE : strpos(strtolower($_SERVER["HTTP_USER_AGENT"]),"mac");
+			
+			if ($mac && HYP_POST_ENCODING !== 'UTF-8') {return $post;}
+			
+			$enc = (HYP_POST_ENCODING === 'UTF-8')? '_utf8' : '';
+			
+			$datfile = ($mac === FALSE)? dirname(__FILE__).'/win_ext'.$enc.'.dat' : dirname(__FILE__).'/mac_ext'.$enc.'.dat';
+	
+			if (file_exists($datfile))
+			{
+				$bef = $aft = array();
+				foreach(file($datfile) as $line)
+				{
+					if ($line[0] != "/" && $line[0] != "#")
+					{
+						list($bef[],$aft[]) = explode("\t",rtrim($line));	
+					}
+				}
+			}
+		}
+		
+		if (is_array($post))
+		{
+			foreach ($post as $_key=>$_val)
+			{
+				$post[$_key] = HypCommonFunc::dependence_filter($_val);
+			}	
+		}
+		else
+		{
+			mb_regex_encoding(HYP_POST_ENCODING);
+
+			// 半角カナを全角に
+			//$post = mb_convert_kana($post, "KV", "EUC-JP");
+			
+			// 変換テーブル
+			for ($i=0; $i<sizeof($bef); $i++)
+			{
+				$post = mb_ereg_replace($bef[$i], $aft[$i], $post);
+			}	
+		}
+
+		return $post;
+	}
+	
+	// 文字エンコード変換前に範囲外の文字を実体参照値に変換する
+	function encode_numericentity(& $arg, $toencode, $fromencode, $keys = array()) {
+		if (strtoupper($fromencode) === strtoupper($toencode)) return;
+		if (is_array($arg)) {
+			foreach (array_keys($arg) as $key) {
+				if (!$keys || in_array($key, $keys)) {
+					HypCommonFunc::encode_numericentity($arg[$key], $toencode, $fromencode, $keys);
+				}
+			}
+		} else {
+			if ($arg === mb_convert_encoding(mb_convert_encoding($arg, $toencode, $fromencode), $fromencode, $toencode)) {
+				return;
+			}
+			$str = '';
+			$max = mb_strlen($arg, $fromencode);
+			$convmap = array(0x0080, 0x10FFFF, 0, 0xFFFFFF);
+			for ($i = 0; $i < $max; $i++) {
+				$org = mb_substr($arg, $i, 1, $fromencode);
+				if ($org === mb_convert_encoding(mb_convert_encoding($org, $toencode, $fromencode), $fromencode, $toencode)) {
+					$str .= $org;
+				} else {
+					$str .= mb_encode_numericentity($org, $convmap, $fromencode);
+				} 
+			}
+			$arg = $str;
+		}
+		return;
+	}
+	
 	// リファラーから検索語と検索エンジンを取得し定数に定義する
-	function set_query_words($qw="HYP_QUERY_WORD",$qw2="HYP_QUERY_WORD2",$en="HYP_SEARCH_ENGINE_NAME",$tmpdir="")
+	function set_query_words($qw="HYP_QUERY_WORD",$qw2="HYP_QUERY_WORD2",$en="HYP_SEARCH_ENGINE_NAME",$tmpdir="",$enc='EUC-JP')
 	{
 		if (!defined($qw))
 		{
 			if (file_exists(dirname(__FILE__)."/hyp_get_engine.php"))
 			{
 				include_once(dirname(__FILE__)."/hyp_get_engine.php");
-				HypGetQueryWord::set_constants($qw,$qw2,$en,$tmpdir);
+				HypGetQueryWord::set_constants($qw,$qw2,$en,$tmpdir,$enc);
 			}
 			else
 			{
@@ -836,20 +1082,138 @@ EOF;
 	
 	// php.ini のサイズ記述をバイト値に変換
 	function return_bytes($val) {
-	   $val = trim($val);
-	   $last = strtolower($val{strlen($val)-1});
-	   switch($last) {
-	       // 'G' は、PHP 5.1.0 より有効となる
-	       case 'g':
-	           $val *= 1024;
-	       case 'm':
-	           $val *= 1024;
-	       case 'k':
-	           $val *= 1024;
-	   }
-	
-	   return $val;
+		$val = trim($val);
+		if ($val == '-1') $val = '';
+		if ($val) {
+			$last = strtolower($val{strlen($val)-1});
+			switch($last) {
+				// 'G' は、PHP 5.1.0 より有効となる
+				case 'g':
+					$val *= 1024;
+				case 'm':
+					$val *= 1024;
+				case 'k':
+					$val *= 1024;
+		   }
+		}
+		return $val;
 	}
+
+	// 配列から正規表現を得る
+	function get_reg_pattern(& $words, $minlen = 1)
+	{
+		$reg_words = array();
+
+		foreach ($words as $word)
+		{
+			if (strlen($word) >= $minlen)
+				$reg_words[] = $word;
+		}
+
+		if (count($reg_words) == 0)
+		{
+			$result = '(?!)';
+		}
+		else
+		{
+			$reg_words = array_unique($reg_words);
+			sort($reg_words, SORT_STRING);
+
+			$result = HypCommonFunc::get_reg_pattern_sub($reg_words, 0, count($reg_words), 0);
+		}
+		
+		return $result;
+	}
+
+	function get_reg_pattern_sub(& $words, $start, $end, $pos)
+	{
+		static $lev = 0;
+		
+		if ($end == 0) return '(?!)';
+		
+		$lev ++;
+		
+		$result = '';
+		$count = $i = $j = 0;
+		$x = (mb_strlen($words[$start]) <= $pos);
+		if ($x) { ++$start; }
+		
+		for ($i = $start; $i < $end; $i = $j)
+		{
+			$char = mb_substr($words[$i], $pos, 1);
+			for ($j = $i; $j < $end; $j++)
+			{
+				if (mb_substr($words[$j], $pos, 1) != $char) { break; }
+			}
+			if ($i != $start)
+			{
+				if ($lev === 1)
+				{
+					$result .= "\x08";
+				}
+				else
+				{
+					$result .= '|';
+				}
+				
+			}
+			if ($i >= ($j - 1))
+			{
+				$result .= str_replace(' ', '\\ ', preg_quote(mb_substr($words[$i], $pos), '/'));
+			}
+			else
+			{
+				$result .= str_replace(' ', '\\ ', preg_quote($char, '/')) .
+					HypCommonFunc::get_reg_pattern_sub($words, $i, $j, $pos + 1);
+			}
+			
+			++$count;
+		}
+		if ($lev === 1)
+		{
+			$limit = 1024 * 30; //マージンを持たせて 30kb で分割
+			$_result = "";
+			$size = 0;
+			foreach(explode("\x08",$result) as $key)
+			{
+				if (strlen($_result.$key) - $size > $limit)
+				{
+					$_result .= ")\x08(?:".$key;
+					$size = strlen($_result);
+				}
+				else
+				{
+					$_result .= ($_result ? "|" : "").$key;
+				}
+			}
+			$result = '(?:' . $_result . ')';
+		}
+		else
+		{
+			if ($x or $count > 1) { $result = '(?:' . $result . ')'; }
+			if ($x) { $result .= '?'; }
+		}
+		$lev --;
+		return $result;
+	}
+
+	function register_bad_ips( $ip = null )
+	{
+		if( empty( $ip ) ) $ip = $_SERVER['REMOTE_ADDR'] ;
+		if( empty( $ip ) ) return false ;
+	
+		$db = Database::getInstance() ;
+		$rs = $db->query( "SELECT conf_value FROM ".$db->prefix("config")." WHERE conf_name='bad_ips' AND conf_modid=0 AND conf_catid=1" ) ;
+		list( $bad_ips_serialized ) = $db->fetchRow( $rs ) ;
+		$bad_ips = unserialize( $bad_ips_serialized ) ;
+		$bad_ips[] = $ip ;
+	
+		$conf_value = addslashes( serialize( array_unique( $bad_ips ) ) ) ;
+		$db->queryF( "UPDATE ".$db->prefix("config")." SET conf_value='$conf_value' WHERE conf_name='bad_ips' AND conf_modid=0 AND conf_catid=1" ) ;
+	
+		return true ;
+	}
+
 }
 
 /*
@@ -883,7 +1247,10 @@ class Hyp_HTTP_Request
 	var $connect_timeout=30;
 	// 通信時タイムアウト
 	var $read_timeout=10;
+	// POST文字エンコード
+	var $content_charset='';
 	
+	var $network_reg = '/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}';
 	
 	// プロキシ使用？
 	var $use_proxy=0;
@@ -941,7 +1308,7 @@ class Hyp_HTTP_Request
 		$arr = parse_url($this->url);
 		if (!$this->connect_try) $this->connect_try = 1;
 		
-		$via_proxy = $this->use_proxy and via_proxy($arr['host']);
+		$via_proxy = $this->use_proxy ? ! $this->in_the_net($this->no_proxy, $arr['host']) : FALSE;
 		
 		// query
 		$arr['query'] = isset($arr['query']) ? '?'.$arr['query'] : '';
@@ -986,7 +1353,16 @@ class Hyp_HTTP_Request
 					$_send[] = $name.'='.urlencode($val);
 				}
 				$data = join('&',$_send);
-				$query .= "Content-Type: application/x-www-form-urlencoded\r\n";
+				
+				if (preg_match('/^[a-zA-Z0-9_-]+$/', $this->content_charset)) {
+					// Legacy but simple
+					$query .= 'Content-Type: application/x-www-form-urlencoded' . "\r\n";
+				} else {
+					// With charset (NOTE: Some implementation may hate this)
+					$query .= 'Content-Type: application/x-www-form-urlencoded' .
+						'; charset=' . strtolower($this->content_charset) . "\r\n";
+				}
+
 				$query .= 'Content-Length: '.strlen($data)."\r\n";
 				$query .= "\r\n";
 				$query .= $data;
@@ -1008,6 +1384,11 @@ class Hyp_HTTP_Request
 		while( !$fp && $connect_try_count < $this->connect_try )
 		{
 			@set_time_limit($this->connect_timeout + $max_execution_time);
+			
+			if ($now_execution_time = ini_get('max_execution_time')) {
+				$this->connect_timeout = min($this->connect_timeout, $now_execution_time - 10);
+			}
+			
 			$errno = 0;
 			$errstr = "";
 			$fp = fsockopen(
@@ -1101,43 +1482,44 @@ class Hyp_HTTP_Request
 		$this->data = $resp[1];   // Data
 		return;
 	}
+
 	// プロキシを経由する必要があるかどうか判定
-	function via_proxy($host)
+	// Check if the $host is in the specified network(s)
+	function in_the_net($networks = array(), $host = '')
 	{
-		static $ip_pattern = '/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:\/(.+))?$/';
-		
-		if (!$this->use_proxy)
-		{
-			return FALSE;
+		if (empty($networks) || $host == '') return FALSE;
+		if (! is_array($networks)) $networks = array($networks);
+	
+		$matches = array();
+	
+		if (preg_match($this->network_reg, $host, $matches)) {
+			$ip = $matches[1];
+		} else {
+			$ip = gethostbyname($host); // May heavy
 		}
-		$ip = gethostbyname($host);
 		$l_ip = ip2long($ip);
-		$valid = (is_long($l_ip) and long2ip($l_ip) == $ip); // valid ip address
-		
-		foreach ($this->no_proxy as $network)
-		{
-			$matches = array();
-			if ($valid and preg_match($ip_pattern,$network,$matches))
-			{
-				$l_net = ip2long($matches[1]);
-				$mask = array_key_exists(2,$matches) ? $matches[2] : 32;
-				$mask = is_numeric($mask) ?
-					pow(2,32) - pow(2,32 - $mask) : // "10.0.0.0/8"
-					ip2long($mask);                 // "10.0.0.0/255.0.0.0"
-				if (($l_ip & $mask) == $l_net)
-				{
-					return FALSE;
-				}
-			}
-			else
-			{
-				if (preg_match('/'.preg_quote($network,'/').'/',$host))
-				{
-					return FALSE;
-				}
+	
+		foreach ($networks as $network) {
+			if (preg_match($this->network_reg, $network, $matches) &&
+			    is_long($l_ip) && long2ip($l_ip) == $ip) {
+				// $host seems valid IPv4 address
+				// Sample: '10.0.0.0/8' or '10.0.0.0/255.0.0.0'
+				$l_net = ip2long($matches[1]); // '10.0.0.0'
+				$mask  = isset($matches[2]) ? $matches[2] : 32; // '8' or '255.0.0.0'
+				$mask  = is_numeric($mask) ?
+					pow(2, 32) - pow(2, 32 - $mask) : // '8' means '8-bit mask'
+					ip2long($mask);                   // '255.0.0.0' (the same)
+	
+				if (($l_ip & $mask) == $l_net) return TRUE;
+			} else {
+				// $host seems not IPv4 address. May be a DNS name like 'foobar.example.com'?
+				foreach ($networks as $network)
+					if (preg_match('/\.?\b' . preg_quote($network, '/') . '$/', $host))
+						return TRUE;
 			}
 		}
-		return TRUE;
+	
+		return FALSE; // Not found
 	}
 }
 }
@@ -1174,7 +1556,8 @@ function memory_get_usage()
 	if ( substr(PHP_OS,0,3) == 'WIN')
 	{
 		exec( 'tasklist /FI "PID eq ' . getmypid() . '" /FO LIST', $output );
-		return preg_replace( '/[\D]/', '', $output[5] ) * 1024;
+		$mem = (empty($output[5]))? 0 : intval(preg_replace( '/[\D]/', '', $output[5] ));
+		$mem = $mem * 1024;
 	}
 	else
 	{
@@ -1184,9 +1567,11 @@ function memory_get_usage()
 		$pid = getmypid();
 		exec("ps -eo%mem,rss,pid | grep $pid", $output);
 		$output = explode("  ", $output[0]);
+		$mem = (empty($output[1]))? 0 : intval($output[1]);
 		//rss is given in 1024 byte units
-		return $output[1] * 1024;
+		$mem = $mem * 1024;
 	}
+	return $mem;
 }
 }
 
@@ -1198,7 +1583,6 @@ if (file_exists(dirname(__FILE__)."/execpath.inc.php"))
 }
 // ImageMagick のパスを指定 (多くは /usr/bin/ ?)
 HypCommonFunc::set_exec_path("/usr/bin/");
-
 
 }
 ?>
