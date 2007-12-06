@@ -21,7 +21,7 @@
 //
 // fusen.js for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.js,v 1.16 2006/12/22 01:58:00 nao-pon Exp $
+// $Id: fusen.js,v 1.17 2007/12/06 04:19:43 nao-pon Exp $
 // 
 
 var offsetX = 0;
@@ -316,7 +316,12 @@ function fusen_getdata(mod)
 						return;
 					}
 					fusenLastModified = lm;
-					var txt = xmlhttp.responseText;
+					//var txt = xmlhttp.responseText;
+					if (! xmlhttp.responseXML.getElementsByTagName('fusen').length) {
+						var txt = '';
+					} else {
+						var txt = xmlhttp.responseXML.getElementsByTagName('fusen')[0].firstChild.nodeValue;
+					}
 					try
 					{
 						var obj = getElement('fusen_area');

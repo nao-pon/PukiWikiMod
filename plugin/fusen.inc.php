@@ -31,7 +31,7 @@
 //
 // fusen.inc.php for PukiWikiMod by nao-pon
 // http://hypweb.net
-// $Id: fusen.inc.php,v 1.19 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: fusen.inc.php,v 1.20 2007/12/06 04:19:43 nao-pon Exp $
 // 
 
 // fusen.jsのPATH
@@ -138,7 +138,7 @@ function plugin_fusen_convert() {
 	//if (!$html) $html = '<p></p>';
 	
 	$fusen_post = '_XOOPS_WIKI_HOST_' . XOOPS_WIKI_URL . "/index.php";
-	$fusen_url = str_replace(XOOPS_WIKI_PATH,'_XOOPS_WIKI_HOST_'.XOOPS_WIKI_URL,P_CACHE_DIR . "fusen_" .encode($vars['page']) . ".utxt");
+	$fusen_url = str_replace(XOOPS_WIKI_PATH,'_XOOPS_WIKI_HOST_'.XOOPS_WIKI_URL,P_CACHE_DIR . "fusen_" .encode($vars['page']) . ".xml");
 	$X_ucd = WIKI_UCD_DEF;
 	$js_refer = plugin_fusen_jsencode($refer);
 	$auth = ($X_admin || ($X_uid && get_pg_auther($refer) == $X_uid))? 1 : 0;
@@ -696,10 +696,11 @@ function plugin_fusen_gethtml($fusen_data)
 //JSONキャッシュファイル書き込み
 function plugin_fusen_putjson($dat,$page)
 {
-	$fname = P_CACHE_DIR . "fusen_". encode($page) . ".utxt";
+	$fname = P_CACHE_DIR . "fusen_". encode($page) . ".xml";
 	$json = plugin_fusen_getjson($dat);
-	$to = "UTF-8";
-	$json = str_replace("\0","",mb_convert_encoding($json, $to, SOURCE_ENCODING));
+	$to = 'UTF-8';
+	$json = '<?xml version="1.0" encoding="UTF-8"?'.'>'."\n".'<fusen><![CDATA[' . str_replace("\0","",mb_convert_encoding($json, $to, SOURCE_ENCODING)) . ']]></fusen>';
+	//$json = str_replace("\0","",mb_convert_encoding($json, $to, SOURCE_ENCODING));
 	
 	// 変更チェック
 	$old = @join('',@file($fname));
