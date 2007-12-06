@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.42 2006/09/09 03:11:43 nao-pon Exp $
+// $Id: db_func.php,v 1.43 2007/12/06 05:58:55 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -650,15 +650,15 @@ function attach_db_write($data,$action)
 	//if (!$pgid = $data['pgid']) return false;
 	
 	$pgid = (int)$data['pgid'];
-	$name = $data['name'];
-	$type = $data['type'];
+	$name = addslashes($data['name']);
+	$type = addslashes($data['type']);
 	$mtime = (int)$data['mtime'];
 	$size = (int)$data['size'];
 	// $mode normal=0, isbn=1, thumb=2
 	$mode = (preg_match("/^ISBN.*\.(dat|jpg)/",$name))? 1 : ((preg_match("/^\d\d?%/",$name))? 2 : 0);
 	$age = (int)$data['status']['age'];
 	$count = (int)$data['status']['count'][$age];
-	$pass = $data['status']['pass'];
+	$pass = addslashes($data['status']['pass']);
 	$freeze = (int)$data['status']['freeze'];
 	$copyright = (int)$data['status']['copyright'];
 	$owner = (int)$data['status']['owner'];
