@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.57 2006/09/01 14:31:09 nao-pon Exp $
+// $Id: make_link.php,v 1.58 2007/12/06 04:23:17 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -166,8 +166,10 @@ class InlineConverter
 		// ページ数が多い場合は、セパレータ \t で複数パターンに分割されている
 		foreach($auto as $pat)
 		{
-			$pattern = "/(<(?:a|A).*?<\/(?:a|A)>|<[^>]*>|&(?:#[0-9]+|#x[0-9a-f]+|[0-9a-zA-Z]+);)|($pat)/s";
-			$str = preg_replace_callback($pattern,array(&$this,'auto_link_replace'),$str);
+			$pattern = "/(<(?:a|A).*?<\/(?:a|A)>|<[^>]*>|&(?:#[0-9]+|#x[0-9a-f]+|[0-9a-zA-Z]+);)|($pat)/sS";
+			if (preg_match($pattern, '') !== FALSE) {
+				$str = preg_replace_callback($pattern,array(&$this,'auto_link_replace'),$str);
+			}
 		}
 		
 		return ;
@@ -1159,6 +1161,18 @@ function get_interwiki_url($name,$param)
 			$param = rawurlencode(rawurlencode($param));
 			break;
 					
+		
+		// HexEncode系
+		case 'hex_utf8':
+			$param = encode(mb_convert_encoding($param,'UTF-8',SOURCE_ENCODING));
+			break;
+		case 'hex_sjis':
+			$param = encode(mb_convert_encoding($param,'SJIS',SOURCE_ENCODING));
+			break;
+		case 'hex_euc-jp':
+			$param = encode(mb_convert_encoding($param,'EUC-JP',SOURCE_ENCODING));
+			break;
+		
 		default:
 			// エイリアスの変換
 			if (array_key_exists($opt,$encode_aliases))
