@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: aws.inc.php,v 1.16 2006/06/08 05:24:24 nao-pon Exp $
+// $Id: aws.inc.php,v 1.17 2008/02/25 03:08:42 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #aws([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -35,11 +35,12 @@ function plugin_aws_init()
 <?php
 \$data = array('plugin_aws_dataset'=>array(
 	//////// Config ///////
-	'xls_url'      => "", // XSLTファイルが置いてあるディレクトリURL
-	'amazon_dev_t' => "", // デベロッパートークン
 	'amazon_t'     => "", // アソシエイツID
-	'amazon_xml'   => "http://xml-jp.amznxslt.com",
 	'cache_time'   => 360, // Cache time (min) 360m = 6h
+	'template_map' => array(
+						// テンプレートマッピング
+						'From name' => 'To name',
+					),
 	//////// Config ///////
 ));
 ?>
@@ -99,6 +100,10 @@ function plugin_aws_action()
 
 function plugin_aws_convert()
 {
+	if ($error = check_HypSimpleAmazon()) {
+		return $error;
+	}
+
 	global $script,$vars,$plugin_aws_dataset;
 	
 	//$start = getmicrotime();
@@ -155,12 +160,18 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 	if (!$plugin_aws_dataset['writable_check'])
 		return array($plugin_aws_dataset['err_nonwritable'],false);
 	
-	if (!$xls_url || !$amazon_dev_t || !$amazon_t)
-		return array($plugin_aws_dataset['err_setconfig'],false);
+	//if (!$xls_url || !$amazon_dev_t || !$amazon_t)
+	//	return array($plugin_aws_dataset['err_setconfig'],false);
 	
 	$refresh = 0;
 	$ret = "";
-
+	
+	if (!empty($plugin_aws_dataset['template_map'])) {
+		if (array_key_exists($f, $plugin_aws_dataset['template_map'])) {
+			$f = $plugin_aws_dataset['template_map'][$f];
+		}
+	}
+	
 	$cache_file = P_CACHE_DIR.md5($f.$m.$k.$b.$s).".aws";
 	
 	if (!$do_refresh && is_readable($cache_file))
@@ -179,6 +190,7 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 	
 	if (!$ret)
 	{
+/*
 		$url = "";
 		if ($k) $k = rawurlencode(mb_convert_encoding($k, "UTF-8", "EUC-JP"));
 		
@@ -207,14 +219,37 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 		}
 		$ret = mb_convert_encoding($ret, "EUC-JP", "UTF-8");
 		$ret = str_replace("\0","",$ret);
-		
-		if ($ret && strpos(strtolower($ret),"<errormsg>") === FALSE)
+*/		
+		include_once XOOPS_TRUST_PATH . '/class/hyp_common/hsamazon/hyp_simple_amazon.php';
+		$ama = new HypSimpleAmazon($amazon_t);
+		$ama->encoding = SOURCE_ENCODING;
+
+		$options = array();
+		if ($s && preg_match("/(\+(titlerank|daterank))/", $s, $s_val))
 		{
-			$ret = str_replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","",$ret);
+			$options['Sort'] = $s_val[1];
+		}
+
+		if (!$m && $k) {
+			$ama->itemSearch($k, $options);
+		} else if ($b) {
+			$ama->setSearchIndex($m);
+			$ama->browseNodeSearch($b, $options);
+		} else if ($k) {
+			$ama->setSearchIndex($m);
+			$ama->itemSearch($k, $options);
+		}
+
+		$ret = $ama->getHTML($f);
+		$ama = NULL;
+		
+		//if ($ret && strpos(strtolower($ret),"<errormsg>") === FALSE)
+		//{
+			//$ret = str_replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?".">","",$ret);
 			
-			$ret = str_replace('/hypweb-22?','/ref=nosim/hypweb-22?',$ret);
+			//$ret = str_replace('/hypweb-22?','/ref=nosim/hypweb-22?',$ret);
 			
-			$ret = preg_replace('/(<img[^>]+>)/ie',"plugin_aws_add_imgsize_tag('$1')",$ret);
+			//$ret = preg_replace('/(<img[^>]+>)/ie',"plugin_aws_add_imgsize_tag('$1')",$ret);
 			
 			if (!strip_tags($ret)) $ret = $plugin_aws_dataset['msg_notfound'];
 			
@@ -223,7 +258,7 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 				fputs($fp,$ret);
 				fclose($fp);
 			}
-		}
+		//}
 	}
 	
 	return array($ret,$refresh);

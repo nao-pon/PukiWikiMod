@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.82 2007/12/06 05:26:11 nao-pon Exp $
+// $Id: func.php,v 1.83 2008/02/25 03:08:42 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1632,6 +1632,16 @@ function convert_trip($val)
 	{
 		return array($val,'');
 	}
+}
+
+function check_HypSimpleAmazon () {
+	$error = '';
+	if (!defined('XOOPS_TRUST_PATH')) {
+		return 'Set "XOOPS_TRUST_PATH" in mainfile.php';
+	} else if (!file_exists(XOOPS_TRUST_PATH . '/class/hyp_common/hsamazon/hyp_simple_amazon.php') || HypCommonFunc::get_version() < 20080224) {
+		return 'Require "HypCommonFunc" >= Ver. 20080224';
+	}
+	return '';
 }
 
 //// Compat ////
