@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: isbn.inc.php,v 1.24 2008/02/25 03:08:42 nao-pon Exp $
+// $Id: isbn.inc.php,v 1.25 2008/06/26 00:49:25 nao-pon Exp $
 //
 // *0.5: URL が存在しない場合、画像を表示しない。
 //			 Thanks to reimy.
@@ -85,9 +85,9 @@ function plugin_isbn_convert() {
 			$price = "<div style=\"text-align:right;\">価格: $tmpary[8]円 ⇒ $tmpary[2]円<br />".(int)$off."% Off</div>";
 			$listprice = '';
 		} else {
-			$listprice = ($tmpary[8] && $_price !== $_listprice)? "<div style=\"text-align:right;\">".str_replace('$1', $tmpary[8], $this->msg['price'])."</div>" : '';
+			$listprice = ($tmpary[8] && $_price !== $_listprice)? "<div style=\"text-align:right;\">".str_replace('$1', $tmpary[8], '価格: $1円')."</div>" : '';
 		}
-		$usedprice = ($tmpary[9])? "<div style=\"text-align:right;\">".str_replace('$1', $tmpary[9], $this->msg['used'])."</div>" : '';
+		$usedprice = ($tmpary[9])? "<div style=\"text-align:right;\">".str_replace('$1', $tmpary[9], 'USED: $1円')."</div>" : '';
 		
 		if ($title != '') {			// タイトル指定か自動取得か
 			$h_title = $title;
@@ -314,7 +314,7 @@ function plugin_isbn_cache_fetch($target, $dir, $check=true) {
 		($check && ISBN_AMAZON_EXPIRE_TIT * 3600 * 24 < time() - filemtime($filename))) {
 		// データを取りに行く
 		include_once XOOPS_TRUST_PATH . '/class/hyp_common/hsamazon/hyp_simple_amazon.php';
-		$ama = new HypSimpleAmazon($this->config['AMAZON_ASE_ID']);
+		$ama = new HypSimpleAmazon(AMAZON_ASE_ID);
 		$ama->encoding = SOURCE_ENCODING;
 		$ama->itemLookup($target);
 		$tmpary = $ama->getCompactArray();
