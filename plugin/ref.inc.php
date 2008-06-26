@@ -1,5 +1,5 @@
 <?php
-// $Id: ref.inc.php,v 1.29 2006/06/25 06:42:08 nao-pon Exp $
+// $Id: ref.inc.php,v 1.30 2008/06/26 00:45:01 nao-pon Exp $
 /*
 Last-Update:2002-10-29 rev.33
 
@@ -198,6 +198,20 @@ function is_picture($text,$page) {
 }
 // Flashかどうか
 function plugin_ref_is_flash($text) {
+	// ログファイル取得
+	$status = array('count'=>array(0),'age'=>'','pass'=>'','freeze'=>FALSE,'copyright'=>FALSE,'owner'=>0);
+	$log = $text . '.log';
+	if (file_exists($log)) {
+		$data = file($log);
+		foreach ($status as $key=>$value)
+		{
+			$status[$key] = chop(array_shift($data));
+		}
+		$status['count'] = explode(',',$status['count']);
+	}
+	
+	if (! X_check_admin($status['owner'])) return FALSE;
+	
 	$filename = preg_replace("/.*\//","",$text);
 	$filename = decode(preg_replace("/.*_/","",$text));
 	return preg_match("/.*\.swf/i",$filename);

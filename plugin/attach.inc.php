@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.49 2006/12/22 01:57:34 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.50 2008/06/26 00:45:01 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -1140,7 +1140,7 @@ EOD;
 		
 		// 画像以外はダウンロード扱いにする(XSS対策)
 		$_i_size = getimagesize($this->filename);
-		if ($_i_size[2])
+		if ($_i_size[2] > 0 && $_i_size[2] < 4)
 		{
 			header('Content-Disposition: inline; filename="'.$filename.'"');
 		}

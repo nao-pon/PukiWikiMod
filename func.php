@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.83 2008/02/25 03:08:42 nao-pon Exp $
+// $Id: func.php,v 1.84 2008/06/26 00:45:01 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1614,6 +1614,21 @@ function X_get_users($sort=true)
 	$users[$sort] = $ret;
 	return $ret;
 }
+
+// 管理者権限があるか調べる
+function X_check_admin ($uid = NULL) {
+	if (is_null($uid)) $uid = $this->root->userinfo['uid'];
+	
+	if (!$uid) return FALSE;
+	
+	$module_handler =& xoops_gethandler('module');
+	$member_handler =& xoops_gethandler('member');
+	
+	$XoopsModule =& $module_handler->getByDirname('pukiwiki');
+	$xoopsUser =& $member_handler->getUser($uid);
+	return $xoopsUser->isAdmin($XoopsModule->mid());
+}
+
 
 // #以降をトリップに変換して # で分割した配列で返す
 function convert_trip($val)
