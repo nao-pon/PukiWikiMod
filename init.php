@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.70 2006/09/01 11:49:25 nao-pon Exp $
+// $Id: init.php,v 1.71 2008/06/26 00:45:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // mbstring Check
@@ -270,6 +270,13 @@ if (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING']) {
 } else if (isset($_SERVER['argv']) && count($_SERVER['argv'])) {
 	$arg = $_SERVER['argv'][0];
 }
+// Remove session_name
+$arg = preg_replace('/(?:^|&)' . preg_quote(session_name(), '/') . '=[^&]+/', '', $arg);
+// K_TAI Render "_p_" (page numbar)
+$arg = preg_replace('/(?:^|&)_p_=[^&]+/', '', $arg);
+// K_TAI Render "_h_" (hash key)
+$arg = preg_replace('/(?:^|&)_h_=[^&]+/', '', $arg);
+
 $arg = input_filter($arg); // \0 ½üµî
 
 // unset QUERY_STRINGs
@@ -454,9 +461,9 @@ if (! isset($vars['cmd']) && ! isset($vars['plugin']) )
 {
 	$get['cmd']  = $post['cmd']  = $vars['cmd']  = 'read';
 	
-	// & °Ê¹ß¤ò½üµî(SID¼«Æ°ÉÕ²Ã´Ä¶­ÂÐºö)
-	$arg = preg_replace("/([^&]+)(&.*)?/","$1",$arg);
-	
+	// "&" °Ê¹ß¤òºï½ü
+	$arg = preg_replace('/&.*$/', '', $arg);	
+
 	$arg = rawurldecode($arg);
 	$arg = input_filter($arg);
 	
