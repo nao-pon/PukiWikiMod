@@ -1,5 +1,5 @@
 <?php
-// $Id: pcomment.inc.php,v 1.35 2006/05/12 05:26:06 nao-pon Exp $
+// $Id: pcomment.inc.php,v 1.36 2008/07/01 08:41:30 nao-pon Exp $
 /*
 Last-Update:2002-09-12 rev.15
 
@@ -261,6 +261,9 @@ function pcmt_insert($page) {
 	global $_title_updated,$no_name,$X_uid,$X_uname;
 	global $_title_paint_collided,$_msg_paint_collided;
 
+	// SPAM ?
+	//if (preg_match('/^[a-z]{10,}$/i', $post['msg'])) return FALSE;
+
 	$page = $post['page'];
 	if (!preg_match("/^$BracketName$/",$page))
 		return array('msg'=>'invalid page name.','body'=>'cannot add comment.','collided'=>TRUE);
@@ -378,8 +381,7 @@ function pcmt_insert($page) {
 	if (empty($post['notimestamp']))
 	{
 		pkwk_touch_file(DATA_DIR.encode($post['refer']).".txt");
-		//親ページのDB更新
-		pginfo_db_write($post['refer'],"update");
+		touch_db($post['refer']);
 		//Pingを送信するページ
 		$vars['ping_send_page'] = $post['refer'];
 	}
