@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.58 2007/12/06 04:23:17 nao-pon Exp $
+// $Id: make_link.php,v 1.59 2008/07/20 07:09:28 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -384,15 +384,19 @@ EOD;
 		
 		list(,$body) = $this->splice($arr);
 		
-		$id = ++$note_id[$pgid];
-		$note = make_link($body);
-		
-		$foot_explain[] = <<<EOD
+		if (preg_match('/^(?:e|i|s):[0-9a-f]{4}$/', $body)) {
+			$name = '((' . $body . '))';
+		} else {
+			$id = ++$note_id[$pgid];
+			$note = make_link($body);
+			
+			$foot_explain[] = <<<EOD
 <a id="notefoot_{$pgid}_{$id}" href="#notetext_{$pgid}_{$id}"><span class="note_super">*<!--includepos-->$id</span></a>
 <span class="small">$note</span>
 <br />
 EOD;
-		$name = "<a id=\"notetext_{$pgid}_{$id}\" href=\"#notefoot_{$pgid}_{$id}\" title=\"".strip_tags($note)."\"><span class=\"note_super\">*<!--includepos-->$id</span></a>";
+			$name = "<a id=\"notetext_{$pgid}_{$id}\" href=\"#notefoot_{$pgid}_{$id}\" title=\"".strip_tags($note)."\"><span class=\"note_super\">*<!--includepos-->$id</span></a>";
+		}
 		return parent::setParam($page,$name,$body);
 	}
 	function toString()
