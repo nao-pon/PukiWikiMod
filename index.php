@@ -25,13 +25,15 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// $Id: index.php,v 1.12 2007/12/06 04:22:22 nao-pon Exp $
+// $Id: index.php,v 1.13 2008/07/31 23:20:55 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
 
 //XOOPS設定読み込み
 include("../../mainfile.php");
+
+if (isset($_SERVER['_REQUEST_URI'])) $_SERVER['REQUEST_URI'] = $_SERVER['_REQUEST_URI'];
 
 /////////////////////////////////////////////////
 // プログラムファイル読み込み
