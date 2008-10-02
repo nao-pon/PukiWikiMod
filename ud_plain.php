@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: ud_plain.php,v 1.3 2006/09/07 11:49:06 nao-pon Exp $
+// $Id: ud_plain.php,v 1.4 2008/10/02 08:37:54 nao-pon Exp $
 /////////////////////////////////////////////////
 
 include 'initialize.php';
@@ -38,16 +38,23 @@ $get["page"] = $post["page"] = $vars["page"];
 
 $filename = CACHE_DIR.encode($page).".udp";
 
-if (file_exists($filename))
-{
+if (file_exists($filename)) {
 	unlink($filename);
 	if (is_page($vars["page"]))
 	{
+		$pgid = get_pgid_by_name($vars["page"]);
+		$query = "SELECT count(*) FROM ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_plain")." WHERE pgid = $pgid";
+		$result = $xoopsDB->query($query);
+		list($count) = mysql_fetch_row($result);
+		if (! $count) {
+			$action = 'insert';
+		} else {
+			$action = 'update';
+		}
 		// plane_text DB ¤ò¹¹¿·
-		if(!plain_db_write($vars["page"],"update"))
+		if(!plain_db_write($vars["page"], $action))
 			echo "error!";
 	}
-
 }
 exit();
 ?>
