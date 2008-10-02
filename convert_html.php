@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: convert_html.php,v 1.63 2006/08/24 15:11:55 nao-pon Exp $
+// $Id: convert_html.php,v 1.64 2008/10/02 08:37:27 nao-pon Exp $
 /////////////////////////////////////////////////
 class pukiwiki_converter
 {
@@ -446,7 +446,7 @@ class convert
 					$_tag = "<h$level><a name=\"ct{$pgid}_{$content_id_local}_{$content_count}\"></a>{$str}{$_fh_text} {$top_link}</h$level>";
 					if ($content_id_local == 1 && check_editable($vars['page'],FALSE,FALSE)) {
 						$para_num = $content_count + 1;
-						$para_link = "$script?cmd=edit&amp;id=$para_num&amp;page=" . rawurlencode($vars[page]);
+						$para_link = "$script?cmd=edit&amp;id=$para_num&amp;page=" . rawurlencode($vars['page']);
 						$para_link = "".sprintf(_EDIT_LINK, $para_link)."";
 						$_replaced = _PARAEDIT_LINK_POS;
 						eval(" \$_replaced = \"$_replaced\"; ");
