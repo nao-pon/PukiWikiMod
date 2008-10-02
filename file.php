@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: file.php,v 1.83 2007/01/25 04:07:08 nao-pon Exp $
+// $Id: file.php,v 1.84 2008/10/02 08:41:02 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // ソースを取得
@@ -112,23 +112,24 @@ function page_write($page,$postdata,$notimestamp=NULL,$aids="",$gids="",$vaids="
 				check_pginfo($page);
 				$pgid = get_pgid_by_name($page);
 			}
-			push_page_changes($pgid,$mail_add,$delete);
-			
 			// pcomment 動作時は親ページも
 			if (!empty($post['refer']) && $post['refer'] != $page)
 			{
 				push_page_changes(get_pgid_by_name($post['refer']),$mail_add);
 			}
+			if ($oldpostdata) {
+				push_page_changes($pgid,$mail_add,$delete);
 			
-			// バックアップの作成
-			// 日付はバックアップを作成した日時
-			$oldposttime = time();
-			
-			// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
-			if($delete && $del_backup)
-				backup_delete(BACKUP_DIR.encode($page).".txt");
-			else if($do_backup && is_page($page))
-				make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
+				// バックアップの作成
+				// 日付はバックアップを作成した日時
+				$oldposttime = time();
+				
+				// 編集内容が何も書かれていないとバックアップも削除する?しないですよね。
+				if($delete && $del_backup)
+					backup_delete(BACKUP_DIR.encode($page).".txt");
+				else if($do_backup && is_page($page))
+					make_backup(encode($page).".txt",$oldpostdata,$oldposttime);
+			}
 		}
 	}
 	
@@ -1203,7 +1204,7 @@ function check_readable($page, $auth_flag=true, $exit_flag=true){
 }
 
 // ページ情報を削除する
-function delete_page_info(&$str,$clr_anchor)
+function delete_page_info(&$str, $clr_anchor=false)
 {
 	$str = preg_replace("/(^|\n)(#freeze|#unvisible|\/\/ author(_ucd)?:)([^\n]*)?/","",$str);
 
