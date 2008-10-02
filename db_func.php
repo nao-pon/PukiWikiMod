@@ -1,7 +1,7 @@
 <?php
 // pukiwiki.php - Yet another WikiWikiWeb clone.
 //
-// $Id: db_func.php,v 1.43 2007/12/06 05:58:55 nao-pon Exp $
+// $Id: db_func.php,v 1.44 2008/10/02 08:38:47 nao-pon Exp $
 
 // 全ページ名を配列にDB版
 function get_existpages_db($nocheck=false,$page="",$limit=0,$order="",$nolisting=false,$nochiled=false,$nodelete=true,$strip=FALSE)
@@ -380,7 +380,8 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 		}
 		//if ($X_admin) echo $query;exit;
 		$result=$xoopsDB->queryF($query);
-		plain_db_write($page,"insert");
+		//plain_db_write($page,"insert");
+		need_update_plaindb($page);
 		
 		//投稿数カウントアップ
 		if ($uid && $countup_xoops)
@@ -414,7 +415,8 @@ function pginfo_db_write($page,$action,$aids="",$gids="",$vaids="",$vgids="",$fr
 			$query = "UPDATE ".$xoopsDB->prefix("pukiwikimod".PUKIWIKI_DIR_NUM."_pginfo")." SET vaids='$vaids', vgids='$vgids' WHERE ((name LIKE '$s_name/%') OR (name = '$comment_page') OR (name LIKE '$comment_page/%')) AND (unvisible = 0);";
 			$result=$xoopsDB->queryF($query);
 		}
-		plain_db_write($page,"update");
+		//plain_db_write($page,"update");
+		need_update_plaindb($page);
 	}
 	
 	// ページ削除
@@ -479,8 +481,8 @@ function plain_db_write($page,$action)
 			)
 		);
 		
-		$_X_admin = $_GLOBALS['X_admin'];
-		$_GLOBALS['X_admin'] = 1;
+		$_X_admin = $GLOBALS['X_admin'];
+		$GLOBALS['X_admin'] = 1;
 		
 //		$data = convert_html($data);
 		$pcon = new pukiwiki_converter();
@@ -493,7 +495,7 @@ function plain_db_write($page,$action)
 		$data = preg_replace("#<script.+?/script>#i","",$data);
 
 		
-		$_GLOBALS['X_admin'] = $_X_admin;
+		$GLOBALS['X_admin'] = $_X_admin;
 		
 		// リンク先ページ名
 		$rel_pages = array_keys($related);
