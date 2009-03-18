@@ -1,5 +1,5 @@
 <?php
-// $Id: comment_functions.php,v 1.6 2006/08/14 06:09:49 nao-pon Exp $
+// $Id: comment_functions.php,v 1.7 2009/03/18 07:19:40 nao-pon Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -29,6 +29,10 @@
 
 function pukiwiki_com_update($id, $total_num)
 {
+	if (! isset($_POST['com_dopost']) || ! empty($_POST['com_id'])) {
+		return true;
+	}
+	
 	global $xoopsDB,$xoopsUser;
 	// PukiWikiMod ディレクトリ名
 	$dir_name = basename(dirname(dirname( __FILE__ )));
