@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.71 2008/06/26 00:45:30 nao-pon Exp $
+// $Id: init.php,v 1.72 2009/03/18 08:19:52 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // mbstring Check
@@ -97,7 +97,7 @@ if(!file_exists(INI_FILE)||!is_readable(INI_FILE))
 require(INI_FILE);
 
 // Copyright.
-define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"<a href=\"http://hypweb.net/xoops/wiki/159.html\" target=\"{$link_target}\">PukiWikiMod</a>\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2006 ishii &amp; nao-pon License is GNU/GPL.");
+define("_XOOPS_WIKI_COPYRIGHT", "<strong>\"<a href=\"http://xoops.hypweb.net/wiki/159.html\" target=\"{$link_target}\">PukiWikiMod</a>\" "._XOOPS_WIKI_VERSION."</strong> Copyright &copy; 2003-2006 ishii &amp; nao-pon License is GNU/GPL.");
 
 // コメント機能の設定値読み込み
 $use_xoops_comments = (isset($xoopsModuleConfig['com_rule']) && XOOPS_COMMENT_APPROVENONE != $xoopsModuleConfig['com_rule'])? 1 : 0;
