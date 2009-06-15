@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: init.php,v 1.72 2009/03/18 08:19:52 nao-pon Exp $
+// $Id: init.php,v 1.73 2009/06/15 22:46:30 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // mbstring Check
@@ -280,11 +280,11 @@ $arg = preg_replace('/(?:^|&)_h_=[^&]+/', '', $arg);
 $arg = input_filter($arg); // \0 除去
 
 // unset QUERY_STRINGs
-foreach (array('QUERY_STRING', 'argv', 'argc') as $key) {
-	unset(${$key}, $_SERVER[$key], $HTTP_SERVER_VARS[$key]);
-}
+//foreach (array('QUERY_STRING', 'argv', 'argc') as $key) {
+//	unset(${$key}, $_SERVER[$key], $HTTP_SERVER_VARS[$key]);
+//}
 // $_SERVER['REQUEST_URI'] is used at func.php NOW
-unset($REQUEST_URI, $HTTP_SERVER_VARS['REQUEST_URI']);
+//unset($REQUEST_URI, $HTTP_SERVER_VARS['REQUEST_URI']);
 
 // mb_convert_variablesのバグ(?)対策: 配列で渡さないと落ちる
 $arg = array($arg);
