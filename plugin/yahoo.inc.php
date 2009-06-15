@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: yahoo.inc.php,v 1.6 2006/09/08 11:51:00 nao-pon Exp $
+// $Id: yahoo.inc.php,v 1.7 2009/06/15 22:44:41 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #yahoo([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -246,27 +246,27 @@ function plugin_yahoo_gethtml($mode,$query,$type,$max,$target,$col)
 	{
 		case "web":
 			$mode = "web";
-			$url = "http://api.search.yahoo.co.jp/WebSearchService/V1/webSearch?appid=PukiWikiMod&query={$query}&results={$max}&type={$type}";
+			$url = "http://search.yahooapis.jp/WebSearchService/V1/webSearch?appid=PukiWikiMod&query={$query}&results={$max}&type={$type}";
 			break;
 		case "image":
 		case "img":
 			$mode = "img";
-			$url = "http://api.search.yahoo.co.jp/ImageSearchService/V1/imageSearch?appid=PukiWikiMod&query={$query}&results={$max}&type={$type}";
+			$url = "http://search.yahooapis.jp/ImageSearchService/V1/imageSearch?appid=PukiWikiMod&query={$query}&results={$max}&type={$type}";
 			break;
 		case "movie":
 		case "mov":
 			$mode = "mov";
-			$url = "http://api.search.yahoo.co.jp/VideoSearchService/V1/videoSearch?appid=PukiWikiMod&query={$query}&results={$max}&type={$type}";
+			$url = "http://search.yahooapis.jp/VideoSearchService/V1/videoSearch?appid=PukiWikiMod&query={$query}&results={$max}&type={$type}";
 			break;
 		case "related":
 		case "rel":
 			$mode = "rel";
-			$url = "http://api.search.yahoo.co.jp/AssistSearchService/V1/webunitSearch?appid=PukiWikiMod&query={$query}&results={$max}";
+			$url = "http://search.yahooapis.jp/AssistSearchService/V1/webunitSearch?appid=PukiWikiMod&query={$query}&results={$max}";
 			break;
 		default:
 			// web
 			$mode = "web";
-			$url = "http://api.search.yahoo.co.jp/WebSearchService/V1/webSearch?appid=PukiWikiMod&query={$query}&results={$max}&type={$type}";
+			$url = "http://search.yahooapis.jp/WebSearchService/V1/webSearch?appid=PukiWikiMod&query={$query}&results={$max}&type={$type}";
 	}
 	
 	// データ取得
