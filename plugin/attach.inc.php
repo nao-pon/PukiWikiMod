@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-//  $Id: attach.inc.php,v 1.50 2008/06/26 00:45:01 nao-pon Exp $
+//  $Id: attach.inc.php,v 1.51 2009/06/15 22:49:16 nao-pon Exp $
 //  ORG: attach.inc.php,v 1.31 2003/07/27 14:15:29 arino Exp $
 //
 
@@ -131,9 +131,12 @@ function plugin_attach_convert()
 //-------- action
 function plugin_attach_action()
 {
-	global $vars,$post,$_attach_messages;
+	global $vars,$post,$_attach_messages,$_title_invalidwn;
 	global $X_admin;
 	
+	if (!is_pagename($vars['page'])) {
+		return array('result'=>FALSE,'msg'=>$_title_invalidwn);
+	}
 	
 	// backward compatible
 	if (array_key_exists('openfile',$vars))
@@ -654,7 +657,7 @@ EOD;
 <label for="_p_attach_fitimage_'.$pgid.'_'.$load[$page].'">'.$_attach_messages['msg_fit_size'].'</label>
 <input type=hidden name="pmode" value="paint" />
 <input type=hidden name="plugin" value="painter" />
-<input type=hidden name="refer" value="'.$page.'" />
+<input type=hidden name="refer" value="'.$s_page.'" />
 <input type=hidden name="retmode" value="upload" />
 </form>';
 	}

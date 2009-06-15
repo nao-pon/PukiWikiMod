@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: make_link.php,v 1.59 2008/07/20 07:09:28 nao-pon Exp $
+// $Id: make_link.php,v 1.60 2009/06/15 22:49:16 nao-pon Exp $
 // ORG: make_link.php,v 1.64 2003/11/22 04:50:26 arino Exp $
 //
 
@@ -384,7 +384,7 @@ EOD;
 		
 		list(,$body) = $this->splice($arr);
 		
-		if (preg_match('/^(?:e|i|s):[0-9a-f]{4}$/', $body)) {
+		if (preg_match('/^[eisv]:[0-9a-f]{4}$/i', $body)) {
 			$name = '((' . $body . '))';
 		} else {
 			$id = ++$note_id[$pgid];
@@ -1009,6 +1009,8 @@ function make_pagelink($page,$alias='#/#',$anchor='',$refer='',$not_where=TRUE)
 				$page_name = htmlspecialchars(replace_pagename_d2s($page,TRUE));
 				// 無限ループ防止　姑息だけど
 				$page_name = preg_replace("/^(#.*#)$/"," $1",$page_name);
+			} else {
+				$page_name = htmlspecialchars($page_name);
 			}
 			$link = make_pagelink($name,$page_name,'','',$not_where);
 			if ($i)
