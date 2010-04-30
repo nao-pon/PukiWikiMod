@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: yahoo.inc.php,v 1.7 2009/06/15 22:44:41 nao-pon Exp $
+// $Id: yahoo.inc.php,v 1.8 2010/04/30 00:39:51 nao-pon Exp $
 /////////////////////////////////////////////////
 
 // #yahoo([Format Filename],[Mode],[Key Word],[Node Number],[Sort Mode])
@@ -20,7 +20,7 @@ function plugin_yahoo_init()
 		'writable_check'  => 1,
 		'YouTubeNAVI' => 1,
 	));
-	
+
 	// config 読み込み
 	$config_file = PLUGIN_DATA_DIR."yahoo/config.php";
 	if (file_exists($config_file))
@@ -67,9 +67,9 @@ EOT;
 			include($config_file);
 		}
 	}
-	
+
 	$data['plugin_yahoo_dataset'] = array_merge($msg['plugin_yahoo_dataset'], $data['plugin_yahoo_dataset']);
-	
+
 	set_plugin_messages($data);
 }
 ?>
@@ -77,7 +77,7 @@ EOT;
 function plugin_yahoo_action()
 {
 	global $get,$plugin_yahoo_dataset;
-		
+
 	if ($get['pmode'] == "refresh")
 	{
 		foreach(array("m","q","t","ma","ta","c","ref") as $key)
@@ -85,18 +85,18 @@ function plugin_yahoo_action()
 			$$key = (isset($get[$key]))? $get[$key] : "";
 		}
 		$page = $ref;
-		
+
 		$filename = P_CACHE_DIR.md5($m.$q.$t.$ma.$ta.$c).".yah";
-		
+
 		$old_time = filemtime($filename);
 
 		if (!is_readable($filename) || time() - filemtime($filename) > $plugin_yahoo_dataset['cache_time'] * 60 )
 		{
 			// 処理中に別スレッドが走らないように
 			touch($filename);
-			
+
 			list($ret,$refresh) = plugin_yahoo_get($m,$q,$t,$ma,$ta,$c,TRUE);
-			
+
 			if ($ret)
 			{
 				// ページHTMLキャッシュを削除
@@ -110,14 +110,14 @@ function plugin_yahoo_action()
 		}
 		exit;
 	}
-	
+
 	return false;
 }
 
 function plugin_yahoo_convert()
 {
 	global $script, $vars, $plugin_yahoo_dataset, $link_target;
-	
+
 	$args = func_get_args();
 	if (count($args) < 2)
 	{
@@ -133,20 +133,20 @@ function plugin_yahoo_convert()
 	{
 		case "web":
 			$mode = "web";
-			$more = "http://search.yahoo.co.jp/search?p=".rawurlencode($query)."&ei=EUC-JP&b=";
+			$more = "http://search.yahoo.co.jp/search?p=".rawurlencode($query)."&amp;ei=EUC-JP&amp;b=";
 			$more_add = 1;
 			break;
 		case "image":
 		case "img":
 			$mode = "img";
-			$more = "http://images.search.yahoo.co.jp/bin/query?p=".rawurlencode($query)."&ei=EUC-JP&b=";
-			$more_add = 0;
+			$more = "http://image-search.yahoo.co.jp/search?p=".rawurlencode($query)."&amp;ei=EUC-JP";
+			$more_add = FALSE;
 			break;
 		case "movie":
 		case "mov":
 			$mode = "mov";
-			$more = "http://video.search.yahoo.co.jp/bin/query?p=".rawurlencode($query)."&ei=EUC-JP&b=";
-			$more_add = 0;
+			$more = "http://video.search.yahoo.co.jp/search/video?p=".rawurlencode($query)."&amp;ei=EUC-JP";
+			$more_add = FALSE;
 			if (!empty($plugin_yahoo_dataset['YouTubeNAVI']))
 			{
 				$youtube = ' [ <a href="http://youtube.navi-gate.org/tag/'.plugin_yahoo_youtube_urlencode(mb_convert_encoding($query,"UTF-8",SOURCE_ENCODING)).'/" target="'.$link_target.'">YouTube NAVI: '.htmlspecialchars($query).'</a> ]';
@@ -164,17 +164,17 @@ function plugin_yahoo_convert()
 	$prms = array("target"=>$link_target,"type"=>"and","max"=>$plugin_yahoo_dataset['max_'.$mode],"col"=>$plugin_yahoo_dataset['col_'.$mode]);
 	pwm_check_arg($args, &$prms);
 	$max = (int)$prms['max'];
-	$more = "<a href='".$more.($max+$more_add)."' target='".htmlspecialchars($prms['target'])."'>".sprintf($plugin_yahoo_dataset['msg_more'],htmlspecialchars($query),$plugin_yahoo_dataset['msg_'.$mode])."</a>";
-	
+	$more = "<a href='".$more.(($more_add !== FALSE)? ($max + $more_add) : '')."' target='".htmlspecialchars($prms['target'])."'>".sprintf($plugin_yahoo_dataset['msg_more'],htmlspecialchars($query),$plugin_yahoo_dataset['msg_'.$mode])."</a>";
+
 	list($ret,$refresh) = plugin_yahoo_get($mode,$query,$prms['type'],$max,$prms['target'],$prms['col']);
-	
+
 	// リフレッシュが必要
 	if ($refresh)
 	{
 		$vars['mc_refresh'][] = "?plugin=yahoo&pmode=refresh&ref=".rawurlencode(strip_bracket($vars["page"]))."&m=".rawurlencode($mode)."&q=".rawurlencode($query)."&t=".rawurlencode($prms['type'])."&ma=".rawurlencode($prms['max'])."&ta=".rawurlencode($prms['target'])."&c=".rawurlencode($prms['col']);
 	}
-	
-	
+
+
 	$cr = '<!-- Begin Yahoo! JAPAN Web Services Attribution Snippet -->
 <a href="http://developer.yahoo.co.jp/about" target="'.$link_target.'"><img src="http://i.yimg.jp/images/yjdn/yjdn_attbtn2_105_17.gif" width="105" height="17" title="Webサービス by Yahoo! JAPAN" alt="Webサービス by Yahoo! JAPAN" border="0" style="margin:15px 15px 15px 15px"></a>
 <!-- End Yahoo! JAPAN Web Services Attribution Snippet -->';
@@ -186,10 +186,10 @@ function plugin_yahoo_convert()
 function plugin_yahoo_get($mode,$query,$type,$max,$target,$col,$do_refresh=FALSE)
 {
 	global $plugin_yahoo_dataset;
-	
+
 	$xml_cache = $plugin_yahoo_dataset['cache_time'];
 	$cache_file = P_CACHE_DIR.md5($mode.$query.$type.$max.$target.$col).".yah";
-	
+
 	// キャッシュ判定
 	if (!$do_refresh && file_exists($cache_file))
 	{
@@ -197,19 +197,19 @@ function plugin_yahoo_get($mode,$query,$type,$max,$target,$col,$do_refresh=FALSE
 		$refresh = (filemtime($cache_file) > time() - $xml_cache * 60)? FALSE : TRUE;
 		return array($html,$refresh);
 	}
-	
+
 	if (!$plugin_yahoo_dataset['writable_check'])
 		return array($plugin_yahoo_dataset['err_nonwritable'],false);
-	
+
 	$html = plugin_yahoo_gethtml($mode,$query,$type,$max,$target,$col);
-	
+
 	// キャッシュ保存
 	if ($html && $fp = @fopen($cache_file,"wb"))
 	{
 		fputs($fp,$html);
 		fclose($fp);
 	}
-	
+
 	return array($html,0);
 
 }
@@ -218,7 +218,7 @@ function plugin_yahoo_gethtml($mode,$query,$type,$max,$target,$col)
 {
 	global $plugin_yahoo_dataset;
 	include_once("./include/hyp_common/hyp_simplexml.php");
-	
+
 	$qs = htmlspecialchars($query);
 	// RESTリクエストの構築
 	$query = rawurlencode(mb_convert_encoding(trim($query),"UTF-8",SOURCE_ENCODING));
@@ -268,7 +268,7 @@ function plugin_yahoo_gethtml($mode,$query,$type,$max,$target,$col)
 			$mode = "web";
 			$url = "http://search.yahooapis.jp/WebSearchService/V1/webSearch?appid=PukiWikiMod&query={$query}&results={$max}&type={$type}";
 	}
-	
+
 	// データ取得
 	$xml = http_request($url);
 	if ($xml['rc'] == 200 && $xml['data'])
@@ -294,7 +294,7 @@ function plugin_yahoo_gethtml($mode,$query,$type,$max,$target,$col)
 	{
 		return sprintf($plugin_yahoo_dataset['msg_notfound'],$qs,$plugin_yahoo_dataset['msg_'.$mode]);
 	}
-	
+
 	$func = "plugin_yahoo_build_".$mode;
 	$html = $func($xml,$target,$col);
 	return $html;
@@ -305,7 +305,7 @@ function plugin_yahoo_build_web($xml,$target,$col)
 	//$xml['totalResultsAvailable'];
     //$xml['totalResultsReturned'];
     //$xml['firstResultPosition'];
-	
+
 	$dats = array();
 	if (isset($xml['Result'][0]))
 	{
@@ -315,7 +315,7 @@ function plugin_yahoo_build_web($xml,$target,$col)
 	{
 		$dats[0] = (empty($xml['Result']))? array() : $xml['Result'];
 	}
-	
+
 	$html = "";
 	if ($dats)
 	{
@@ -340,7 +340,7 @@ function plugin_yahoo_build_web($xml,$target,$col)
 		}
 		$html .= "</ul>".$ediv;
 	}
-	
+
 	return $html;
 }
 
@@ -355,7 +355,7 @@ function plugin_yahoo_build_img($xml,$target,$col)
 	{
 		$dats[0] = (empty($xml['Result']))? array() : $xml['Result'];
 	}
-	
+
 	$html = "";
 	if ($dats)
 	{
@@ -377,7 +377,7 @@ function plugin_yahoo_build_img($xml,$target,$col)
 		}
 		$html .= "</tr></table>";
 	}
-	
+
 	return $html;
 }
 
@@ -392,7 +392,7 @@ function plugin_yahoo_build_mov($xml,$target,$col)
 	{
 		$dats[0] = (empty($xml['Result']))? array() : $xml['Result'];
 	}
-	
+
 	$html = "";
 	if ($dats)
 	{
@@ -417,13 +417,13 @@ function plugin_yahoo_build_mov($xml,$target,$col)
 		}
 		$html .= "</tr></table>";
 	}
-	
+
 	return $html;
 }
 
 function plugin_yahoo_build_rel($xml,$target,$col)
 {
-	
+
 	return $html;
 }
 
