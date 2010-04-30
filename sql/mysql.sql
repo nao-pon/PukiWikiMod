@@ -28,7 +28,14 @@ CREATE TABLE pukiwikimod_pginfo (
   `title` varchar(255) NOT NULL default '',
   `update` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `name` (`name`)
+  UNIQUE KEY `name` (`name`),
+  KEY `editedtime` (`editedtime`),
+  KEY `gids` (`gids`),
+  KEY `vgids` (`vgids`),
+  KEY `freeze` (`freeze`),
+  KEY `unvisible` (`unvisible`),
+  KEY `aids` (`aids`(255)),
+  KEY `vaids` (`vaids`(255))
 ) TYPE=MyISAM;
 
 # --------------------------------------------------------
@@ -70,7 +77,13 @@ CREATE TABLE `pukiwikimod_attach` (
  `freeze` tinyint(1) NOT NULL default '0',
  `copyright` tinyint(1) NOT NULL default '0',
  `owner` int(11) NOT NULL default '0',
- UNIQUE KEY `id` (`id`)
+  UNIQUE KEY `id` (`id`),
+  KEY `pgid` (`pgid`),
+  KEY `type` (`type`),
+  KEY `owner` (`owner`),
+  KEY `name` (`name`),
+  KEY `mode` (`mode`),
+  KEY `age` (`age`)
 ) TYPE=MyISAM;
 
 # --------------------------------------------------------
@@ -78,6 +91,7 @@ CREATE TABLE `pukiwikimod_attach` (
 CREATE TABLE `pukiwikimod_rel` (
   `pgid` int(11) NOT NULL default '0',
   `relid` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`pgid`,`relid`),
   KEY `pgid` (`pgid`),
   KEY `relid` (`relid`)
 ) TYPE=MyISAM;

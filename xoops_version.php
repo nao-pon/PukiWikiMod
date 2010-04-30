@@ -1,5 +1,5 @@
 <?php
-// $Id: xoops_version.php,v 1.19 2006/09/28 23:21:17 nao-pon Exp $
+// $Id: xoops_version.php,v 1.20 2010/04/30 00:49:35 nao-pon Exp $
 
 $pwm_dirname = basename( dirname( __FILE__ ) ) ;
 if( preg_match( '/^(\D+)(\d*)$/' , $pwm_dirname , $regs ) ) {
@@ -125,6 +125,8 @@ $modversion['comments']['itemName'] = 'pgid';
 $modversion['comments']['callbackFile'] = 'include/comment_functions.php';
 //$modversion['comments']['callback']['approve'] = 'pukiwiki_com_approve';
 $modversion['comments']['callback']['update'] = 'pukiwiki_com_update';
+
+$modversion['onUpdate'] = 'include/onupdate.php' ;
 
 // On Update
 if( ! empty( $_POST['fct'] ) && ! empty( $_POST['op'] ) && $_POST['fct'] == 'modulesadmin' && $_POST['op'] == 'update_ok' && $_POST['dirname'] == $modversion['dirname'] ) {
