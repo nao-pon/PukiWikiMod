@@ -2,7 +2,7 @@
 /////////////////////////////////////////////////
 // PukiWiki - Yet another WikiWikiWeb clone.
 //
-// $Id: proxy.php,v 1.15 2006/03/06 06:20:30 nao-pon Exp $
+// $Id: proxy.php,v 1.16 2010/04/30 00:40:37 nao-pon Exp $
 //
 
 /*
@@ -28,13 +28,13 @@ function http_request
 		$redirect_max=HTTP_REQUEST_URL_REDIRECT_MAX,
 		$blocking=TRUE,
 		$retry=1,
-		$c_timeout=30,
-		$r_timeout=10
+		$c_timeout=10,
+		$r_timeout=5
 	)
 {
 	global $use_proxy,$proxy_host,$proxy_port;
 	global $need_proxy_auth,$proxy_auth_user,$proxy_auth_pass,$no_proxy;
-	
+
 	$d = new Hyp_HTTP_Request();
 
 	$d->url = $url;
@@ -46,32 +46,32 @@ function http_request
 	$d->connect_try = $retry;
 	$d->connect_timeout = $c_timeout;
 	$d->read_timeout = $r_timeout;
-	
+
 	$d->use_proxy = $use_proxy;
 	$d->proxy_host = $proxy_host;
 	$d->proxy_port = $proxy_port;
-	
+
 	$d->need_proxy_auth = $need_proxy_auth;
 	$d->proxy_auth_user = $proxy_auth_user;
 	$d->proxy_auth_pass = $proxy_auth_pass;
-	
+
 	$d->no_proxy = $no_proxy;
-	
+
 	$d->get();
-	
+
 	return array(
 		'query'  => $d->query,      // Query String
 		'rc'     => $d->rc,         // Result code
 		'header' => $d->header,     // Header
 		'data'   => $d->data        // Data or Error Msg
-	);	
+	);
 }
 // プロキシを経由する必要があるかどうか判定
 function via_proxy($host)
 {
 	global $use_proxy,$no_proxy;
 	static $ip_pattern = '/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:\/(.+))?$/';
-	
+
 	if (!$use_proxy)
 	{
 		return FALSE;
@@ -79,7 +79,7 @@ function via_proxy($host)
 	$ip = gethostbyname($host);
 	$l_ip = ip2long($ip);
 	$valid = (is_long($l_ip) and long2ip($l_ip) == $ip); // valid ip address
-	
+
 	foreach ($no_proxy as $network)
 	{
 		$matches = array();
