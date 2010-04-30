@@ -1,6 +1,6 @@
 <?php
 // PukiWiki - Yet another WikiWikiWeb clone.
-// $Id: func.php,v 1.84 2008/06/26 00:45:01 nao-pon Exp $
+// $Id: func.php,v 1.85 2010/04/30 00:46:38 nao-pon Exp $
 /////////////////////////////////////////////////
 if (!defined("PLUGIN_INCLUDE_MAX")) define("PLUGIN_INCLUDE_MAX",4);
 
@@ -1604,8 +1604,13 @@ function X_get_users($sort=true)
 	
 	if (file_exists(XOOPS_ROOT_PATH.'/kernel/member.php')) {
 		// XOOPS 2
-		$X_M = xoops_gethandler('member');
-		$ret = $X_M->getUserList();
+		$xoopsDB =& Database::getInstance();
+		$sql = 'SELECT `uid`, `uname` FROM '.$xoopsDB->prefix('users');
+		$result = $xoopsDB->query($sql);
+		$ret = array();
+		while($myrow = $xoopsDB->fetchArray($result)) {
+			$ret[$myrow['uid']] = $myrow['uname'];
+		}
 	} else {
 		// XOOPS 1
 		$ret =  XoopsUser::getAllUsersList();
