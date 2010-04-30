@@ -1,5 +1,5 @@
 <?php
-// $Id: pukiwiki_page.php,v 1.17 2006/04/06 14:30:05 nao-pon Exp $
+// $Id: pukiwiki_page.php,v 1.18 2010/04/30 00:47:39 nao-pon Exp $
 
 if (! defined('PWM_BLOCK_PAGE_INCLUDED')) {
 define('PWM_BLOCK_PAGE_INCLUDED', true);
@@ -9,18 +9,18 @@ if (! defined('PWM_BLOCK_FUNC_INCLUDED')) include_once("block_function.php");
 function b_pukiwiki_page_show($options)
 {
 	global $xoopsConfig;
-	
+
 	$dir_name = $options[3];
 	$dir_num = preg_replace( '/^(\D+)(\d*)$/', "$2",$dir_name);
-	
+
 	$show_page = ($options[0])? $options[0] : "";
 	$cache_time = (empty($options[1]))? 0 : $options[1];
 	$cache_time = (int)$cache_time * 60;
 	$cache_no = (empty($options[2]))? "0" : $options[2];
-	$cache_file = XOOPS_ROOT_PATH."/modules/".$dir_name."/cache/p/xoops_block_{$cache_no}.dat";
-	
+	$cache_file = XOOPS_ROOT_PATH."/modules/".$dir_name."/cache/p/xoops_block_".((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')? 'SSL_' : '').$cache_no.".dat";
+
 	$wiki_url = XOOPS_URL."/modules/".$dir_name."/";
-	
+
 	if (file_exists($cache_file) && filemtime($cache_file) > time() - $cache_time)
 	{
 		$data = join('',@file($cache_file));
@@ -31,44 +31,36 @@ function b_pukiwiki_page_show($options)
 		if ($show_page)
 		{
 			$url = $wiki_url.'index.php?xoops_block=1&cmd=read&page='.rawurlencode($show_page);
-
-			include_once(XOOPS_ROOT_PATH."/class/snoopy.php");
-			$snoopy = new Snoopy;
-			
-			$snoopy->read_timeout = 10;
-			$snoopy->fetch($url);
-			if (strpos($snoopy->response_code,"200") === FALSE)
-			{
+			$ht = new Hyp_HTTP_Request();
+			$ht->connect_timeout = 5;
+			$ht->url = $url;
+			$ht->get();
+			$data = '';
+			if ($ht->rc != 200) {
 				if (file_exists($cache_file))
 					$data = join('',@file($cache_file));
 				else
-					$data = $error_str = $snoopy->response_code;
+					$data = $error_str = 'HTTP Error: ' . $ht->rc . ' ' . $this->data;
+			} else {
+				$data = $ht->data;
 			}
-			else
-			{
-				if (isset($snoopy->error) && !empty($snoopy->error))
-					$data = $error_str = $snoopy->error;
-				else
-					$data = $snoopy->results;
-			}
-			
 		}
-		
+
 		// Fatal, Parseエラーが出た場合
 		if (preg_match("#<b>(Fatal|Parse) error</b>:#",$data))
 			$data = "";
-		
+
 		if ($data != $error_str)
 		{
 			//マルチドメイン対応
 			$data = preg_replace("/(<[^>]+(href|action|src)=(\"|'))https?:\/\/".$_SERVER["HTTP_HOST"]."(:[\d]+)?/i","$1",$data);
-			
+
 			// SID 自動付加環境 は SID を削除
 			if (ini_get("session.use_trans_sid"))
 			{
 				$data = preg_replace("/(&|\?)?".preg_quote(ini_get("session.name"),"/")."=[0-9a-f]{32}/","",$data);
 			}
-			
+
 			if ($fp = fopen($cache_file,"wb"))
 			{
 				fputs($fp,$data);
@@ -76,7 +68,7 @@ function b_pukiwiki_page_show($options)
 			}
 		}
 	}
-	
+
 	if (strpos($data,"_gEsTnAmE_") !== FALSE)
 	{
 		global $xoopsUser,$xoopsModule,$xoopsConfig;
@@ -94,10 +86,10 @@ function b_pukiwiki_page_show($options)
 	}
 	// Ticket置換
 	$data = preg_replace("/<!\-\-XOOPS_TOKEN_INSERT\-\->/e","xb_get_token_html(".$dir_num.")",$data);
-	
+
 	// 外部リンクマーク用 class設定
 	//$data = preg_replace("/(<a[^>]+?)(href=(\"|')?(?!https?:\/\/".$_SERVER["HTTP_HOST"].")http)/","$1class=\"ext\" $2",$data);
-	
+
 	// CSS Link を発行
 	$css_url = (file_exists(XOOPS_THEME_PATH.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'))?
 		XOOPS_THEME_URL.'/'.$xoopsConfig['theme_set'].'/pukiwiki.css'
@@ -111,7 +103,7 @@ function b_pukiwiki_page_show($options)
 	}
 	// ページ用の .css
 	$css_tag .= xb_get_page_css_tag($show_page,$wiki_url,$dir_name);
-	
+
 	// ヘッダ情報付加
 	global $xoopsTpl;
 	if ($xoopsTpl)
@@ -122,7 +114,7 @@ function b_pukiwiki_page_show($options)
 	{
 		$data = $css_tag."\n".$data;
 	}
-	
+
 	$block['title'] = "PukiWiki - {$show_page}";
 	$block['content'] = $data;
 
