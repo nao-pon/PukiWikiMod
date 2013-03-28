@@ -66,6 +66,27 @@ function pkwk_http_request
 		'data'   => $d->data        // Data or Error Msg
 	);
 }
+
+// 後方互換用: pecl_http 拡張がインストールされている場合は、http_request（） が組み込み関数になっているので、
+// 独自のプラグインなどで http_request() をコールしている場合は、pkwk_http_request() に変更する必要あり。
+if (! function_exists('http_request')) {
+	function http_request
+		(
+			$url,
+			$method='GET',
+			$headers='',
+			$post=array(),
+			$redirect_max=HTTP_REQUEST_URL_REDIRECT_MAX,
+			$blocking=TRUE,
+			$retry=1,
+			$c_timeout=10,
+			$r_timeout=5
+		)
+	{
+		return pkwk_http_request($url, $method, $headers, $post, $redirect_max, $blocking, $retry, $c_timeout, $r_timeout );
+	}
+}
+
 // プロキシを経由する必要があるかどうか判定
 function via_proxy($host)
 {
