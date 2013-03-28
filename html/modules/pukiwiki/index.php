@@ -112,7 +112,7 @@ if($vars['cmd'] == "read")
 			if (file_exists(CACHE_DIR.$e_page.".udp"))
 			{
 				// 非同期でモードでデータ更新
-				http_request(
+				pkwk_http_request(
 				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/ud_plain.php?".$r_page
 				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
 			}
@@ -128,7 +128,7 @@ if($vars['cmd'] == "read")
 				fwrite($_fp, join("\n",array_values($vars['mc_refresh'])));
 				fclose($_fp);
 				// 非同期でモードでデータ更新
-				http_request(
+				pkwk_http_request(
 				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/mc_refrash.php". "?tgt_page=".rawurlencode($vars['page'])
 				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
 			}
@@ -137,7 +137,7 @@ if($vars['cmd'] == "read")
 			// ping送出に失敗している可能性があれば再送 (1件あたりのリミット:120秒)
 			if (file_exists(CACHE_DIR.$e_page.".tbf") && time() - filemtime(CACHE_DIR.$e_page.".tbf") > 120 )
 			{
-				http_request(
+				pkwk_http_request(
 				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/ping.php?p=".$r_page."&t=".$vars['is_rsstop']
 				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5,30,30);
 			}

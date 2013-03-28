@@ -64,7 +64,7 @@ function plugin_tenki_cache_image_fetch($target, $dir, $id) {
 	$filename = $dir.$id."_tenki.gif";
 	if (!is_readable($filename))
 	{
-		$data = http_request($target);
+		$data = pkwk_http_request($target);
 		if ($data['rc'] == 200 && $data['data'])
 		{
 			$data = $data['data'];

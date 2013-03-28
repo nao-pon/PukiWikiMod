@@ -54,7 +54,7 @@ function get_image_filename($q,$type,$exp)
 	include_once("include/hyp_common/hyp_common_func.php");
 	include_once("proxy.php");
 	
-	$result =  http_request($q);
+	$result =  pkwk_http_request($q);
 	if ($result['rc'] != 200)
 	{
 		return "";

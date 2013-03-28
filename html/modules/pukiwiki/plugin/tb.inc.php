@@ -96,7 +96,7 @@ function tb_save()
 	if (!$tb_check_link_to_me)
 	{
 		// URL 妥当性チェック
-		$result = http_request($url,'HEAD');
+		$result = pkwk_http_request($url,'HEAD');
 		if ($result['rc'] !== 200)
 		{
 			tb_xml_msg(1,'URL is fictitious.');
@@ -105,7 +105,7 @@ function tb_save()
 	else
 	{
 		// リンク無きトラックバックは無効
-		$result = http_request($url);
+		$result = pkwk_http_request($url);
 		if ($result['rc'] !== 200)
 		{
 			tb_xml_msg(1,'URL is fictitious.');

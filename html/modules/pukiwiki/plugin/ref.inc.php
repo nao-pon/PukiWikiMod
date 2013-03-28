@@ -570,7 +570,7 @@ function plugin_ref_cache_image_fetch($filename, &$url, $name)
 	$filename = UPLOAD_DIR.$filename;
 	if (!is_readable($filename))
 	{
-		$dat = http_request($url);
+		$dat = pkwk_http_request($url);
 		if ($dat['rc'] == 200 && $dat['data'])
 		{
 			plugin_ref_cache_image_save($dat['data'], $filename, $name);

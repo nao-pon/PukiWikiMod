@@ -77,7 +77,7 @@ foreach($data as $uri)
 	@set_time_limit(120);
 	
 	// データ更新 同期モードで順番に
-	$rc = http_request(
+	$rc = pkwk_http_request(
 	XOOPS_WIKI_HOST.$script.$uri
 	,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,1,3);
 

@@ -377,7 +377,7 @@ function file_write($dir,$page,$str,$notimestamp=NULL,$aids="",$gids="",$vaids="
 				if (do_plugin_action("google_sitemap"))
 				{
 					$url = "http://www.google.com/webmasters/sitemaps/ping?sitemap=".rawurlencode(XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/".$google_sitemap_page.".xml");
-					http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,FALSE);
+					pkwk_http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,FALSE);
 				}
 			}
 		}

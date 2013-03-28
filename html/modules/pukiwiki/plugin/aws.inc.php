@@ -208,7 +208,7 @@ function plugin_aws_get($f,$m,$k,$b,$s,$do_refresh=FALSE)
 		}
 		
 		//$ret = join('',@file($url));
-		$ret = http_request($url);
+		$ret = pkwk_http_request($url);
 		if ($ret['rc'] == 200 && $ret['data'])
 		{
 			$ret = $ret['data'];

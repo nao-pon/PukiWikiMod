@@ -6,7 +6,7 @@
 //
 
 /*
- * http_request($url)
+ * pkwk_http_request($url)
  *   HTTPリクエストを発行し、データを取得する
  * $url     : http://から始まるURL(http://user:pass@host:port/path?query)
  * $method  : GET, POST, HEADのいずれか(デフォルトはGET)
@@ -19,7 +19,7 @@
 // リダイレクト回数制限の初期値
 define('HTTP_REQUEST_URL_REDIRECT_MAX',10);
 
-function http_request
+function pkwk_http_request
 	(
 		$url,
 		$method='GET',

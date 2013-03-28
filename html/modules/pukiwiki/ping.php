@@ -74,7 +74,7 @@ if (file_exists($filename))
 	convert_html($page,false,true);
 	
 	//キャッシュ作成 (RSS)
-	http_request($rss_url);
+	pkwk_http_request($rss_url);
 	
 	sleep(2);
 	

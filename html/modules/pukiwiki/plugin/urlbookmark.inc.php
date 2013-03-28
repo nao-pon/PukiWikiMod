@@ -210,7 +210,7 @@ function plugin_urlbookmark_get_title($url) {
 	$str = "";
 	$found_title = false;
 	
-	$data = http_request($url);
+	$data = pkwk_http_request($url);
 	if ($data['rc'] !== 200)
 	{
 		return '';

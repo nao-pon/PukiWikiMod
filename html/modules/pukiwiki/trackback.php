@@ -94,7 +94,7 @@ function tb_send($page,$data="")
 		touch($filename);
 		
 		// 非同期モードで別スレッド処理 Blokking=0,Retry=5,接続タイムアウト=30,ソケットタイムアウト=30)
-		$ret = http_request(
+		$ret = pkwk_http_request(
 		XOOPS_URL."/modules/".PUKIWIKI_DIR_NAME."/ping.php?p=".rawurlencode($page)."&t=".$vars['is_rsstop']
 		,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0,5,30,30);
 		
@@ -218,7 +218,7 @@ function tb_send($page,$data="")
 				{
 					continue;
 				}
-				$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
+				$result = pkwk_http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
 				tb_debug_output
 				(
 					$tb_id."\n"
@@ -268,7 +268,7 @@ function tb_send($page,$data="")
 
 			$done = false;
 			// XML RPC Ping を打ってみる
-			$result = http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,3,10,30);
+			$result = pkwk_http_request($tb_id,'POST',"Content-Type: text/xml\r\n",$rpcdata,3,TRUE,3,10,30);
 			tb_debug_output
 			(
 				$tb_id."\n"
@@ -288,7 +288,7 @@ function tb_send($page,$data="")
 				{
 					//set_time_limit(120); // 処理実行時間を長めに再設定
 					//Track Back Ping
-					$result = http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
+					$result = pkwk_http_request($tb_id,'POST','',$putdata,3,TRUE,3,10,30);
 					tb_debug_output
 					(
 						$tb_id."\n"
@@ -426,7 +426,7 @@ function tb_get_url($url)
 		return '';
 	}
 	
-	$data = http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,TRUE,3,10,60);
+	$data = pkwk_http_request($url,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,TRUE,3,10,60);
 	
 	if ($data['rc'] !== 200)
 	{

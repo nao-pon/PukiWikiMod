@@ -376,7 +376,7 @@ function plugin_isbn_cache_image_fetch($target, $dir, $check=true) {
 		}
 		
 		if ($url) {
-			$data = http_request($url);
+			$data = pkwk_http_request($url);
 			if ($data['rc'] == 200 && $data['data']) {
 				$data = $data['data'];
 			} else 	{

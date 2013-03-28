@@ -137,7 +137,7 @@ function plugin_newsclip_get($word,$do_refresh=FALSE)
 		
 		$target = $goo."/news/search/search.php?MT=".$r_word."&kind=web&day=all&web.x=44&web.y=14";
 		
-		$data = http_request($target);
+		$data = pkwk_http_request($target);
 		if ($data['rc'] !== 200)
 		{
 			if (file_exists($c_file))

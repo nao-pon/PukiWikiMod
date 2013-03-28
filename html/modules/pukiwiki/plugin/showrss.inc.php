@@ -316,7 +316,7 @@ function plugin_showrss_get_rss($target,$usecache,$do_refresh=false)
 	if ($time === NULL)
 	{
 		// rss本体を取得
-		$data = http_request($target);
+		$data = pkwk_http_request($target);
 		if ($data['rc'] !== 200)
 		{
 			// エラー時キャッシュがあればキャッシュを返す

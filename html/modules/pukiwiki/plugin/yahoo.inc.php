@@ -270,7 +270,7 @@ function plugin_yahoo_gethtml($mode,$query,$type,$max,$target,$col)
 	}
 
 	// データ取得
-	$xml = http_request($url);
+	$xml = pkwk_http_request($url);
 	if ($xml['rc'] == 200 && $xml['data'])
 	{
 		$xml = $xml['data'];
