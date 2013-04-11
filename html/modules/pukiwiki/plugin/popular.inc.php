@@ -158,7 +158,7 @@ function plugin_popular_convert()
 	{
 		$_style = $_list_left_margin + $_list_margin;
 		$_style = " style=\"margin-left:". $_style ."px;padding-left:". $_style ."px;\"";
-		$items = '<ul class="popular_list"'.$_style.'">';
+		$items = '<ul class="popular_list"'.$_style.'>';
 		$new_mark = "";
 		
 		foreach ($counters as $page=>$count) {
