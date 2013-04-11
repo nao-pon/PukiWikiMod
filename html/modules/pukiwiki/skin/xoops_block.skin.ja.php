@@ -16,15 +16,9 @@ $body = preg_replace("/(<img[^>]+src=('|\")?)\.\//","$1".$pukiwiki_url,$body);
 ?>
 
 <!-- PukiWiki Block -->
-<script type="text/javascript">
-<!--
-var pukiwiki_root_url = "<?php echo $pukiwiki_url ?>";
--->
-</script>
 <table border="0" cellspacing="0" style="width:100%;" onmouseup=pukiwiki_pos() onkeyup=pukiwiki_pos()>
  <tr>
   <td class="pukiwiki_body">
-	<script language=javascript src="<?php echo $pukiwiki_url ?>skin/default.ja.js"></script>
 	<div class="wiki_content">
 	<?php echo $body ?>
 	</div>

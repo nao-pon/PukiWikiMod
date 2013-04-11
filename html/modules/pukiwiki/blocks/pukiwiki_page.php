@@ -104,11 +104,20 @@ function b_pukiwiki_page_show($options)
 	// ページ用の .css
 	$css_tag .= xb_get_page_css_tag($show_page,$wiki_url,$dir_name);
 
+	$js_tag = <<<EOD
+	<script type="text/javascript">
+	<!--
+	var pukiwiki_root_url = "{$wiki_url}";
+	-->
+	</script>
+	<script type="text/javascript" src="{$wiki_url}skin/default.ja.js"></script>
+EOD;
+	
 	// ヘッダ情報付加
 	global $xoopsTpl;
 	if ($xoopsTpl)
 	{
-		$xoopsTpl->assign('xoops_block_header',$xoopsTpl->get_template_vars('xoops_block_header').$css_tag);
+		$xoopsTpl->assign('xoops_block_header',$xoopsTpl->get_template_vars('xoops_block_header').$css_tag.$js_tag);
 	}
 	else
 	{
