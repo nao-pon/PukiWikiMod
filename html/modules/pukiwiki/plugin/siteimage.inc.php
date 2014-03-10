@@ -16,7 +16,7 @@ function plugin_siteimage_inline()
 	$args = func_get_args();
 	$url = array_shift($args);
 	$prms = array("nolink"=>false,"target"=>$link_target);
-	pwm_check_arg($args, &$prms);
+	pwm_check_arg($args, $prms);
 	return plugin_siteimage_make($url, $prms['nolink'], $prms['target']);
 }
 
@@ -26,7 +26,7 @@ function plugin_siteimage_convert()
 	$args = func_get_args();
 	$url = array_shift($args);
 	$prms = array("nolink"=>false,"target"=>$link_target,"around"=>false,"left"=>false,"right"=>false,"center"=>false);
-	pwm_check_arg($args, &$prms);
+	pwm_check_arg($args, $prms);
 	$style = "width:128px;height:128px;margin:10px;";
 	if ($prms['around'])
 	{

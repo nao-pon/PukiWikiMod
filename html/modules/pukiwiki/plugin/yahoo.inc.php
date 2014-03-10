@@ -162,7 +162,7 @@ function plugin_yahoo_convert()
 	}
 
 	$prms = array("target"=>$link_target,"type"=>"and","max"=>$plugin_yahoo_dataset['max_'.$mode],"col"=>$plugin_yahoo_dataset['col_'.$mode]);
-	pwm_check_arg($args, &$prms);
+	pwm_check_arg($args, $prms);
 	$max = (int)$prms['max'];
 	$more = "<a href='".$more.(($more_add !== FALSE)? ($max + $more_add) : '')."' target='".htmlspecialchars($prms['target'])."'>".sprintf($plugin_yahoo_dataset['msg_more'],htmlspecialchars($query),$plugin_yahoo_dataset['msg_'.$mode])."</a>";
 
