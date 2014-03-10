@@ -112,9 +112,10 @@ if($vars['cmd'] == "read")
 			if (file_exists(CACHE_DIR.$e_page.".udp"))
 			{
 				// 非同期でモードでデータ更新
+				$_arr = array();
 				pkwk_http_request(
 				XOOPS_WIKI_HOST.XOOPS_WIKI_URL."/ud_plain.php?".$r_page
-				,'GET','',array(),HTTP_REQUEST_URL_REDIRECT_MAX,0);
+				,'GET','',$_arr,HTTP_REQUEST_URL_REDIRECT_MAX,0);
 			}
 			
 			//モジュール用キャッシュデータの更新
