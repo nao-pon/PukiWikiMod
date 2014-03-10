@@ -1166,7 +1166,15 @@ function get_interwiki_url($name,$param)
 		case 'dbl':
 			$param = rawurlencode(rawurlencode($param));
 			break;
-					
+		case 'dbl_utf8':
+			$param = rawurlencode(rawurlencode(mb_convert_encoding($param,'UTF-8',SOURCE_ENCODING)));
+			break;
+		case 'dbl_sjis':
+			$param = rawurlencode(rawurlencode(mb_convert_encoding($param,'SJIS',SOURCE_ENCODING)));
+			break;
+		case 'dbl_euc-jp':
+			$param = rawurlencode(rawurlencode(mb_convert_encoding($param,'EUC-JP',SOURCE_ENCODING)));
+			break;
 		
 		// HexEncode·Ï
 		case 'hex_utf8':
